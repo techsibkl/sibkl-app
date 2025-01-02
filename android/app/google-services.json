@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "95786525908",
+    "project_id": "leafy-loader-444703-d0",
+    "storage_bucket": "leafy-loader-444703-d0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:95786525908:android:36ed76bab31cfe864a4741",
+        "android_client_info": {
+          "package_name": "com.sibkl.cms"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsA7SMsKwdjse5phfj1ydEutCGAPCKSL4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
