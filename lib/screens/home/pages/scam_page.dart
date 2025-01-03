@@ -3,14 +3,14 @@
 // import "package:sibkl_cms/controllers/user_details_controller.dart";
 // import "package:sibkl_cms/screens/chat/pages/chat_main.dart";
 // import "package:sibkl_cms/controllers/theme_service_controller.dart";
-// import "package:sibkl_cms/models/scam_model.dart";
-// import "package:sibkl_cms/screens/home/widgets/scam_detail_card.dart";
+// import "package:sibkl_cms/models/Notification_model.dart";
+// import "package:sibkl_cms/screens/home/widgets/Notification_detail_card.dart";
 // import "package:sibkl_cms/shared/my_fab.dart";
 // import "package:sibkl_cms/shared/my_page_appbar.dart";
 
-// class ScamPage extends StatelessWidget {
-//   final Scam scam;
-//   const ScamPage({super.key, required this.scam});
+// class NotificationPage extends StatelessWidget {
+//   final Notification Notification;
+//   const NotificationPage({super.key, required this.Notification});
 
 //   @override
 //   Widget build(BuildContext context) {
@@ -36,21 +36,21 @@
 //                         crossAxisAlignment: CrossAxisAlignment.center,
 //                         children: [
 //                           MyPageAppBar(
-//                               title: "PreScam.AI",
+//                               title: "PreNotification.AI",
 //                               appBarType: MyAppBarType.xmark),
 //                           SizedBox(height: 10),
 //                           Chip(
 //                             label: Text(
-//                               userDetailsController.completedScamIDs
-//                                       .contains(scam.id)
+//                               userDetailsController.completedNotificationIDs
+//                                       .contains(Notification.id)
 //                                   ? "COMPLETED"
 //                                   : "NOT COMPLETED",
 //                               style: TextStyle(
 //                                   fontSize: 10,
 //                                   fontWeight: FontWeight.w400,
 //                                   overflow: TextOverflow.ellipsis,
-//                                   color: userDetailsController.completedScamIDs
-//                                           .contains(scam.id)
+//                                   color: userDetailsController.completedNotificationIDs
+//                                           .contains(Notification.id)
 //                                       ? Theme.of(context).colorScheme.secondary
 //                                       : Colors.red[400]),
 //                             ),
@@ -58,8 +58,8 @@
 //                                 Theme.of(context).scaffoldBackgroundColor,
 //                             labelPadding: EdgeInsets.fromLTRB(2, 0, 2, 0),
 //                             side: BorderSide(
-//                                 color: userDetailsController.completedScamIDs
-//                                         .contains(scam.id)
+//                                 color: userDetailsController.completedNotificationIDs
+//                                         .contains(Notification.id)
 //                                     ? Theme.of(context).colorScheme.secondary
 //                                     : Colors.red[400]!),
 //                           ),
@@ -72,7 +72,7 @@
 //                               child: ClipRRect(
 //                                 borderRadius: BorderRadius.circular(15),
 //                                 child: Image.asset(
-//                                   scam.img,
+//                                   Notification.img,
 //                                   fit: BoxFit.cover,
 //                                 ),
 //                               ),
@@ -80,7 +80,7 @@
 //                           ),
 //                           SizedBox(height: 5),
 //                           Text(
-//                             scam.title,
+//                             Notification.title,
 //                             textAlign: TextAlign.center,
 //                             style: TextStyle(
 //                                 fontSize: 28,
@@ -88,7 +88,7 @@
 //                                 color: themeService.textColor),
 //                           ),
 //                           SizedBox(height: 30),
-//                           ScamDetailCard(scam: scam),
+//                           NotificationDetailCard(Notification: Notification),
 //                           SizedBox(height: 30),
 //                           Card(
 //                             color: Theme.of(context).cardColor,
@@ -113,7 +113,7 @@
 //                                     ),
 //                                     SizedBox(height: 8),
 //                                     Text(
-//                                       scam.longDescription,
+//                                       Notification.longDescription,
 //                                       style: TextStyle(
 //                                           fontSize: 14,
 //                                           fontWeight: FontWeight.w400,
@@ -149,7 +149,7 @@
 //                                           color: themeService.textColor),
 //                                     ),
 //                                     SizedBox(height: 8),
-//                                     ...scam.identify.map((string) {
+//                                     ...Notification.identify.map((string) {
 //                                       return Padding(
 //                                         padding: const EdgeInsets.fromLTRB(
 //                                             0, 0, 0, 12),
@@ -202,7 +202,7 @@
 //           ],
 //         ),
 //         floatingActionButton:
-//             MyFAB(onPressedFunc: () => Get.to(() => ChatPage(scam: scam))),
+//             MyFAB(onPressedFunc: () => Get.to(() => ChatPage(Notification: Notification))),
 //         floatingActionButtonLocation: FloatingActionButtonLocation.endFloat,
 //       ),
 //     );

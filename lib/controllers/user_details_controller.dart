@@ -95,13 +95,13 @@ class UserDetailsController extends GetxController {
   //   }
   // }
 
-  // Future<void> updateScamComplete(Scam scam) async {
-  //   if (!completedScamIDs.contains(scam.id)) {
-  //     completedScamIDs.add(scam.id);
+  // Future<void> updateNotificationComplete(Notification Notification) async {
+  //   if (!completedNotificationIDs.contains(Notification.id)) {
+  //     completedNotificationIDs.add(Notification.id);
   //   }
   //   isLoading(true);
   //   ReturnValue result =
-  //       await _db.updateUser({"completedScamIDs": completedScamIDs});
+  //       await _db.updateUser({"completedNotificationIDs": completedNotificationIDs});
   //   isLoading(false);
   //   if (!result.success) {
   //     Get.showSnackbar(GetSnackBar(
@@ -146,7 +146,7 @@ class UserDetailsController extends GetxController {
       "fullName": editedFullName,
       // "genderIsMale": genderIsMaleController.value,
       // "points": 0,
-      // "completedScamIDs": [],
+      // "completedNotificationIDs": [],
     });
     isLoading(false);
     authService.reload();

@@ -6,6 +6,6 @@ class SmallCubeLoading extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SpinKitFoldingCube(color: Color.fromARGB(255, 66, 64, 81), size: 25);
+    return SpinKitFoldingCube(color: Color.fromARGB(255, 185, 164, 164), size: 25);
   }
 }

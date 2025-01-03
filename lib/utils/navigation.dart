@@ -2,6 +2,8 @@ import "package:get/get.dart";
 import "package:sibkl_cms/screens/auth/pages/auth_home.dart";
 import "package:sibkl_cms/screens/auth/pages/auth_wrapper.dart";
 import "package:sibkl_cms/screens/home/home_wrapper.dart";
+import "package:sibkl_cms/screens/profile/pages/edit_email.dart";
+import "package:sibkl_cms/screens/profile/pages/edit_username.dart";
 
 // Future navigateToCredits() async {
 //   return await Get.to(() => CreditsPage());
@@ -40,13 +42,13 @@ Future navigateOffAllAuthHome() async {
 //       transition: Transition.noTransition);
 // }
 
-// Future navigateToEditUsername() async {
-//   return await Get.to(() => EditUsernamePage());
-// }
+Future navigateToEditUsername() async {
+  return await Get.to(() => EditUsernamePage());
+}
 
-// Future navigateToEditEmail() async {
-//   return await Get.to(() => EditEmailPage());
-// }
+Future navigateToEditEmail() async {
+  return await Get.to(() => EditEmailPage());
+}
 
 // Future navigateToEditGender() async {
 //   return await Get.to(() => EditGenderPage());

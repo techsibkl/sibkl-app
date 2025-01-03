@@ -7,13 +7,13 @@ class MyThemeServiceController extends GetxController {
   static final ThemeData light = ThemeData(
     fontFamily: "Nunito",
   ).copyWith(
-    primaryColor: Color.fromARGB(255, 98, 83, 154),
+    primaryColor: Color(0xFFAC2212),
     scaffoldBackgroundColor: Color(0xFFF1EDFC),
-    splashColor: Color.fromARGB(255, 11, 11, 32),
+    splashColor: Color.fromARGB(255, 32, 11, 11),
     cardColor: Color.fromARGB(255, 248, 246, 253),
     dialogBackgroundColor: Colors.white,
     colorScheme: ColorScheme.fromSwatch().copyWith(
-      secondary: Color(0xFF4CB092),
+      secondary: Color(0xFFFFA900),
       surface: Colors.white,
     ),
     dividerColor: Colors.black54,
@@ -23,13 +23,14 @@ class MyThemeServiceController extends GetxController {
   static final ThemeData dark = ThemeData(
     fontFamily: "Nunito",
   ).copyWith(
-    primaryColor: Color(0xFF5D42BF),
+    primaryColor: Color(0xFFAC2212),
     scaffoldBackgroundColor: Color(0xFF1a1a1a),
-    splashColor: Color.fromARGB(255, 11, 11, 32),
+    splashColor: Color(0xFF9C1B04),
+    // splashColor: Color.fromARGB(255, 32, 11, 11),
     cardColor: Color(0xFF272525),
     dialogBackgroundColor: Color(0xFF272525),
     colorScheme: ColorScheme.fromSwatch().copyWith(
-      secondary: Color(0xFF4CB092),
+      secondary: Color(0xFFFFA900),
       surface: Color(0xFF1a1a1a),
     ),
     dividerColor: Colors.white.withOpacity(0.3),

@@ -12,10 +12,13 @@ class SplashScreen extends StatelessWidget {
         children: [
           Expanded(child: Container()),
           Center(
-            child: Image(
-              image: AssetImage("assets/icons/pre-scam-ai-icon.png"),
-              height: 120,
-              width: 120,
+            child: ClipRRect(
+              borderRadius: BorderRadius.circular(100),
+              child: Image(
+                image: AssetImage("assets/images/sibkl-logo.png"),
+                height: 120,
+                width: 120,
+              ),
             ),
           ),
           Expanded(child: Container()),

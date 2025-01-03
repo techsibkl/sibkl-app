@@ -22,13 +22,16 @@ class AuthHome extends StatelessWidget {
                 Container(
                   alignment: Alignment.center,
                   padding: EdgeInsets.symmetric(horizontal: 100),
-                  child: Image(
-                    image: AssetImage("assets/icons/pre-scam-ai-icon.png"),
+                  child: ClipRRect(
+                    borderRadius: BorderRadius.circular(100),
+                    child: Image(
+                      image: AssetImage("assets/images/sibkl-logo.png"),
+                    ),
                   ),
                 ),
                 SizedBox(height: 20),
                 Text(
-                  "PreScam.AI",
+                  "SIBKL",
                   style: TextStyle(
                     fontSize: 35,
                     fontWeight: FontWeight.bold,
@@ -38,7 +41,7 @@ class AuthHome extends StatelessWidget {
                 ),
                 SizedBox(height: 5),
                 Text(
-                  "AI Vaccine for Scams",
+                  "Strong. Excellent. Dynamic.",
                   style: TextStyle(
                     fontSize: 15,
                     fontWeight: FontWeight.w400,

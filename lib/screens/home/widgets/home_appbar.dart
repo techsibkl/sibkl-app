@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import "package:get/get.dart";
 import "package:sibkl_cms/controllers/theme_service_controller.dart";
 import "package:sibkl_cms/controllers/user_details_controller.dart";
+import "package:sibkl_cms/screens/profile/pages/profile_main.dart";
 
 class HomeAppBar extends StatelessWidget {
   const HomeAppBar({
@@ -42,7 +43,7 @@ class HomeAppBar extends StatelessWidget {
                   ),
                   SizedBox(height: 2.5),
                   Text(
-                    "PreScam.AI",
+                    "SIBKL Community",
                     style: TextStyle(
                       fontSize: 25,
                       fontWeight: FontWeight.bold,
@@ -52,7 +53,7 @@ class HomeAppBar extends StatelessWidget {
                 ]),
           ),
           GestureDetector(
-            // onTap: () => Get.to(() => const UserProfile()),
+            onTap: () => Get.to(() => const UserProfile()),
             child: Container(
               alignment: Alignment.center,
               padding: EdgeInsets.all(0),

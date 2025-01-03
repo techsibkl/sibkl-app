@@ -62,7 +62,7 @@ class _AuthSignUpState extends State<AuthSignUp> {
                         Align(
                           alignment: Alignment.centerLeft,
                           child: Text(
-                            "Create Pre-Scam AI account with your email!",
+                            "Create SIBKL account with your email!",
                             style: TextStyle(
                                 fontFamily: "Nunito",
                                 color: themeService.textColor54,

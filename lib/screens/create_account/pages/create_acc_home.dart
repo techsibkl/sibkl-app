@@ -49,7 +49,7 @@ class CreateAccHome extends StatelessWidget {
                         alignment: Alignment.centerLeft,
                         padding: EdgeInsets.fromLTRB(4, 0, 0, 0),
                         child: Text(
-                          "First, create your PreScam.AI account.",
+                          "First, create your PreNotification.AI account.",
                           style: TextStyle(
                               fontFamily: "Nunito",
                               color: themeService.textColor54,

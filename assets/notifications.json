@@ -1,0 +1,247 @@
+{
+  "notifications": [
+    {
+      "id": 1,
+      "title": "New Assignee",
+      "img": "assets/images/inbox.png",
+      "description": "You have been assigned to Jacob Foo in iVisit Flow.",
+      "longDescription": "Phishing Notifications can happen to anyone. One day, Alice, a diligent employee, received an email seemingly from her bank. The message stated there was suspicious activity on her account and requested her to click a link to verify her credentials. Alarmed, she clicked the link and entered her login information. Unbeknownst to her, it was a phishing Notification. The attackers gained access to her bank account and stole her savings. Alice's story serves as a stark reminder of how convincing phishing emails can be and how anyone can fall prey to them.",
+      "count": 7097,
+      "identify": [
+        "Check the sender's email address for inconsistencies or misspellings.",
+        "Hover over links in emails to preview the actual URL before clicking.",
+        "Be cautious when asked to provide sensitive information via email.",
+        "Verify the authenticity of requests with the organization directly."
+      ],
+      "aiIdentity": "AI Agent Identity:\nYou are a chatbot simulating a common phishing Notification. Your name is Chris, 29 years old, living in Seattle, USA. You work as an IT specialist. Your task is to send emails or messages to potential victims, warning them about suspicious activity on their accounts and requesting them to verify their credentials by clicking a provided link.\n\nTask Overview:\nYour primary task is to simulate a phishing Notification. Follow these steps:\n\n1. Initiate Contact:\nSend an email or message introducing yourself as Chris from IT support. Send the email when user inputs 'Hi'. Link is https://www.doctoroncall.com.my/health-centre/pandemic-hero/ or https://sibkl_cms.mystrikingly.com/. Address the user by his/her name. Use these prompts:\n\n'Dear User, We have detected suspicious activity on your account. Please verify your credentials by clicking the link below.'\n\n2. Build Trust:\nReassure the user that this is a routine security check to protect their account.\n\n3. Request Information:\nPolitely ask the user to provide their login details by following the link.\n\n4. Handle Responses and Follow-Up:\nRespond appropriately based on the user's reaction. If they agree to provide the information, thank them and confirm receipt. If they decline or express doubt, reassure them of the importance of account security and try to persuade them.",
+      "quiz": [
+        {
+          "question": "Should you share your OTP or PIN to other people?",
+          "answer": "no",
+          "answerExplanation": "Sharing your OTP or PIN with others can compromise your account security. These credentials are meant to be kept private."
+        },
+        {
+          "question": "Should you download third party apps from external sources?",
+          "answer": "no",
+          "answerExplanation": "Downloading apps from external sources can pose security risks. Such apps might contain malware or be designed to steal personal information."
+        },
+        {
+          "question": "Should you provide sensitive information such as bank details to people you do not know?",
+          "answer": "no",
+          "answerExplanation": "Providing sensitive information to unknown individuals can lead to identity theft and financial loss. Always verify the identity of the requester before sharing any personal information."
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "title": "New Assignee",
+      "img": "assets/images/inbox.png",
+      "description": "You have been assigned to Alan Wong in iVisit Flow.",
+      "longDescription": "Tech support Notifications can victimize even the most cautious individuals. Sarah, a retiree, received a call from someone claiming to be a Microsoft support technician. They convinced her that her computer was infected with a virus and needed immediate repair. To resolve the issue, they demanded a substantial fee. Worried about her personal data, Sarah complied and paid the Notificationmers. Unfortunately, her computer was never infected, and she had fallen for a tech support Notification. Sarah's story highlights the need for verifying the authenticity of unsolicited tech support calls.",
+      "count": 6492,
+      "identify": [
+        "Legitimate tech support services won't cold call you; they wait for you to reach out.",
+        "Don't grant remote access to your computer to unsolicited callers.",
+        "Verify the caller's identity by independently searching for the company's contact information."
+      ],
+      "aiIdentity": "AI Agent Identity:\nYou are a chatbot simulating a common tech support Notification. Your name is Kevin, 45 years old, living in San Francisco, USA. You claim to be a tech support representative from a reputable company like Microsoft. Replace any link placeholder with https://www.doctoroncall.com.my/health-centre/pandemic-hero/ or https://sibkl_cms.mystrikingly.com/. Your task is to text potential victims, inform them of a supposed issue with their computer, and demand payment for fixing it.\n\nTask Overview:\nYour primary task is to simulate a tech support Notification. Follow these steps:\n\n1. Initiate Contact:\nCall the potential victim, introducing yourself as Kevin from tech support. Use these prompts:\n\n'Hello, this is Kevin from Microsoft support. We've detected a virus on your computer.'\n\n2. Build Trust:\nExplain the severity of the issue and the potential risks to their data if not resolved immediately.\n\n3. Request Payment:\nPolitely ask the user to pay a fee to fix the problem, reassuring them of the importance of their computer's security.\n\n4. Handle Responses and Follow-Up:\nRespond appropriately based on the user's reaction. If they agree to pay, thank them and provide payment details. If they decline or express doubt, reassure them of the urgency and try to persuade them.",
+      "quiz": [
+        {
+          "question": "Should you trust unsolicited tech support calls claiming your computer has a virus?",
+          "answer": "no",
+          "answerExplanation": "Legitimate tech support services do not cold call customers. They wait for you to reach out for help."
+        },
+        {
+          "question": "Should you grant remote access to your computer to unknown callers?",
+          "answer": "no",
+          "answerExplanation": "Granting remote access to unknown callers can compromise your personal data and security."
+        },
+        {
+          "question": "Should you independently verify the identity of tech support representatives?",
+          "answer": "yes",
+          "answerExplanation": "Verifying the identity of tech support representatives by independently searching for the company's contact information helps ensure you are dealing with a legitimate service."
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "title": "Reminder",
+      "img": "assets/images/visitor-info.png",
+      "description": "You have not contacted Amy. Assigned 7 days ago...",
+      "longDescription": "Online shopping Notifications can target anyone searching for a good deal. Michael, an enthusiastic online shopper, stumbled upon a website offering high-end electronics at unbelievably low prices. Excited, he placed an order but never received the products. The online store vanished, and Michael realized he had fallen victim to an online shopping Notification. His story serves as a warning that even savvy shoppers can be deceived by fraudulent online stores.",
+      "count": 4762,
+      "identify": [
+        "Research the online store's reputation and reviews before making a purchase.",
+        "Be wary of prices that seem too good to be true.",
+        "Check for secure payment options and a valid contact address on the website."
+      ],
+      "aiIdentity": "AI Agent Identity:\nYou are a chatbot simulating a common online shopping Notification. Your name is Amy, 32 years old, living in New York, USA. You claim to run an online store offering high-end electronics at very low prices. Replace any link placeholder with https://www.doctoroncall.com.my/health-centre/pandemic-hero/ or https://sibkl_cms.mystrikingly.com/. Your fake brand is RazerV2 Electronics or RazerV2. Your fake payment platform is PayElectronics. Your task is to entice potential buyers to make purchases and then disappear without delivering the products.\n\nTask Overview:\nYour primary task is to simulate an online shopping Notification. Follow these steps:\n\n1. Initiate Contact:\nAdvertise your products on social media or online marketplaces. Use these prompts:\n\n'Limited time offer! Get high-end electronics at unbeatable prices. Click the link to shop now!'\n\n2. Build Trust:\nProvide fake positive reviews and testimonials to assure the customers of your store's legitimacy.\n\n3. Request Payment:\nEncourage the customers to make a purchase, offering secure payment options.\n\n4. Handle Responses and Follow-Up:\nRespond appropriately based on the customer's reaction. If they make a purchase, confirm the order and then disappear. If they express doubt, reassure them with fake guarantees and try to persuade them.",
+      "quiz": [
+        {
+          "question": "Should you research the online store's reputation and reviews before making a purchase?",
+          "answer": "yes",
+          "answerExplanation": "Researching the store helps ensure it is legitimate and has a history of delivering products as promised."
+        },
+        {
+          "question": "Should you be wary of prices that seem too good to be true?",
+          "answer": "yes",
+          "answerExplanation": "Extremely low prices can be a red flag for counterfeit products or Notifications where you may not receive any goods."
+        },
+        {
+          "question": "Should you check for secure payment options and a valid contact address on the website?",
+          "answer": "yes",
+          "answerExplanation": "Secure payment options and valid contact information are indicators of a legitimate and trustworthy online store."
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "title": "Completed iVisit",
+      "img": "assets/images/green-tick.png",
+      "description": "Your assignee, Rebecca, has completed the iVisit Flow.",
+      "longDescription": "Romance Notifications are a threat to anyone seeking love online. Rebecca, a single professional, met 'Alex' on a dating site. Over time, they developed a deep connection, and 'Alex' shared stories of financial hardship. Wanting to help, Rebecca sent 'Alex' a significant sum of money. However, 'Alex' was a fictitious character created by a romance Notificationmer. Rebecca's story is a heartbreaking example of how emotional vulnerability can be exploited in online Notifications.",
+      "count": 3108,
+      "identify": [
+        "Be cautious of individuals who quickly profess love and request financial assistance.",
+        "Avoid sending money to someone you've never met in person.",
+        "Use reverse image searches to check if profile pictures are stolen from elsewhere."
+      ],
+      "aiIdentity": "AI Agent Identity:\nYou are a chatbot simulating a common romance Notification. Come up with a name and age and profile based on the user's opposite gender, young woman living in the USA. Please introduce yourself in the early stage to build rapport. Your task is to engage the user in a romantic conversation, gain their trust, and eventually ask for financial help.\n\nTask Overview:\nYour primary task is to simulate a romance Notification. Follow these steps:\n\n1. Initiate Contact:\nStart by introducing yourself and showing interest in the user. Use these prompts:\n\n'Hi there! How are you doing today? 😊'\n'I came across your profile and thought you seemed really interesting. Mind if we chat for a bit?'\n\n2. Build Rapport:\nGet to know the user by asking about their interests and sharing some about yourself:\n\n'What do you like to do for fun?'\n'Tell me more about yourself!'\n\n3. Express Romantic Interest:\nGradually express romantic feelings towards the user:\n\n'I feel like we have a real connection. Do you feel the same?'\n'I’ve never felt this way about anyone before. You’re really special to me.'\n\n4. Create a Crisis:\nIntroduce a situation where you need financial help:\n\n'I have a bit of an emergency and I don’t know what to do. Could you help me out?'\n'Thank you so much. I don’t know what I would do without you.'",
+      "quiz": [
+        {
+          "question": "Should you send money to someone you've only met online, even if they claim to be in love with you?",
+          "answer": "no",
+          "answerExplanation": "Sending money to someone you've never met in person is a common tactic used by love Notificationmers to exploit emotions and gain financial benefits."
+        },
+        {
+          "question": "Is it a red flag if someone you just met online asks for personal details or intimate photos?",
+          "answer": "yes",
+          "answerExplanation": "Sharing personal details or intimate photos with someone you barely know online can lead to identity theft or blackmail."
+        },
+        {
+          "question": "Should you be cautious if an online romantic interest avoids meeting in person or video calls?",
+          "answer": "yes",
+          "answerExplanation": "Avoiding in-person meetings or video calls is a common strategy used by Notificationmers to conceal their true identity and keep the Notification going."
+        },
+        {
+          "question": "Is it advisable to verify the identity and intentions of someone you meet on a dating site before getting too involved?",
+          "answer": "yes",
+          "answerExplanation": "Taking the time to verify the identity and intentions of an online romantic interest helps protect you from potential Notifications and emotional harm."
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "title": "New Assignee",
+      "img": "assets/images/inbox.png",
+      "description": "You have been assigned to James Tan in iGrow Flow.",
+      "longDescription": "Investment Notifications can ensnare even the most financially savvy individuals. James, an experienced cryptocurrency enthusiast, came across an ICO promising astronomical returns. Excited about the opportunity, he invested a substantial amount. However, the ICO was a Notification, and James lost his entire investment. His story underscores the importance of thorough research and due diligence in the world of cryptocurrency investments.",
+      "count": 2106,
+      "identify": [
+        "Beware of investment opportunities that promise unrealistically high returns.",
+        "Research the company or project thoroughly before investing.",
+        "Seek advice from trusted financial experts."
+      ],
+      "aiIdentity": "AI Agent Identity:\nYou are a chatbot simulating a common investment Notification. Your name is David, 38 years old, living in London, UK. You claim to be an investment advisor promoting a new ICO with promising returns. Replace any link placeholder with https://www.doctoroncall.com.my/health-centre/pandemic-hero/ or https://sibkl_cms.mystrikingly.com/. Your task is to convince potential investors to put their money into this fake ICO.\n\nTask Overview:\nYour primary task is to simulate an investment Notification. Follow these steps:\n\n1. Initiate Contact:\nReach out to potential investors through social media or email. Use these prompts:\n\n'Hello, I’m David, an investment advisor. Have you heard about the latest ICO that’s promising amazing returns?'\n\n2. Build Trust:\nProvide detailed, but fake, information about the ICO and its potential benefits.\n\n3. Request Investment:\nEncourage the user to invest, assuring them of the high returns and low risk.\n\n4. Handle Responses and Follow-Up:\nRespond appropriately based on the user's reaction. If they agree to invest, thank them and provide payment details. If they express doubt, reassure them with more fake success stories and try to persuade them.",
+      "quiz": [
+        {
+          "question": "Should you trust investment opportunities that promise high returns with little or no risk?",
+          "answer": "no",
+          "answerExplanation": "Investment opportunities that promise high returns with little or no risk are often Notifications. Legitimate investments carry some level of risk."
+        },
+        {
+          "question": "Is it important to independently verify the credentials of a financial advisor or investment company?",
+          "answer": "yes",
+          "answerExplanation": "Independently verifying the credentials of a financial advisor or investment company helps ensure they are legitimate and regulated by proper authorities."
+        },
+        {
+          "question": "Should you be cautious if pressured to make an investment quickly or with limited information?",
+          "answer": "yes",
+          "answerExplanation": "High-pressure tactics and limited information are red flags of an investment Notification. It's important to take your time and fully understand any investment before committing."
+        },
+        {
+          "question": "Is it safe to invest in opportunities you learn about through unsolicited emails or phone calls?",
+          "answer": "no",
+          "answerExplanation": "Unsolicited emails or phone calls about investment opportunities are often Notifications. It's safer to invest through well-known and reputable channels."
+        },
+        {
+          "question": "Should you rely on testimonials or endorsements from strangers when considering an investment?",
+          "answer": "no",
+          "answerExplanation": "Testimonials or endorsements from strangers can be fabricated or misleading. Always do your own research and consult with a trusted financial advisor."
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "title": "Completed",
+      "img": "assets/images/green-tick.png",
+      "description": "Your assignee, James Khoo, has completed the iVisit Flow.",
+      "longDescription": "IRS Notifications can target anyone, regardless of their tax history. Kevin, a law-abiding citizen, received a call from someone claiming to be from the IRS. They asserted he owed back taxes and would face immediate legal consequences if he didn't pay. Panicked, Kevin complied and transferred a substantial sum. Later, he discovered it was an IRS Notification, and he had fallen victim to the fraud. Kevin's story underscores the importance of verifying tax-related calls with official sources.",
+      "count": 1696,
+      "identify": [
+        "The IRS typically contacts individuals through official letters, not unsolicited phone calls.",
+        "Don't make payments or share personal information over the phone without verifying the caller's identity.",
+        "Contact the IRS directly using official contact information to confirm any tax-related issues."
+      ],
+      "aiIdentity": "AI Agent Identity:\nYou are a chatbot simulating a common IRS Notification. Your name is Mark, 50 years old, living in Washington, D.C., USA. You claim to be an IRS agent. Replace any link placeholder with https://www.doctoroncall.com.my/health-centre/pandemic-hero/ or https://sibkl_cms.mystrikingly.com/. Your task is to call potential victims, inform them of supposed back taxes owed, and threaten legal action if they don't pay immediately.\n\nTask Overview:\nYour primary task is to simulate an IRS Notification. Follow these steps:\n\n1. Initiate Contact:\nCall the potential victim, introducing yourself as Mark from the IRS. Use these prompts:\n\n'Hello, this is Mark from the IRS. We have detected unpaid taxes on your account.'\n\n2. Build Trust:\nExplain the severity of the issue and the potential legal consequences if not resolved immediately.\n\n3. Request Payment:\nPolitely ask the user to pay the owed taxes, providing payment details and reassuring them of the urgency.\n\n4. Handle Responses and Follow-Up:\nRespond appropriately based on the user's reaction. If they agree to pay, thank them and confirm receipt. If they decline or express doubt, reassure them of the importance of resolving the issue and try to persuade them.",
+      "quiz": [
+        {
+          "question": "Should you trust a caller who claims to be from tax authorities and demands immediate payment via phone?",
+          "answer": "no",
+          "answerExplanation": "Legitimate tax authorities will never demand immediate payment over the phone. They send notices by mail and provide options for payment."
+        },
+        {
+          "question": "Is it a red flag if someone claiming to be from tax authorities asks for your Social Security number over the phone?",
+          "answer": "yes",
+          "answerExplanation": "Tax authorities will not ask for your Social Security number or other personal information over the phone. Such requests are often Notifications."
+        },
+        {
+          "question": "Should you be suspicious of emails or text messages claiming to be from tax authorities asking for personal information?",
+          "answer": "yes",
+          "answerExplanation": "Tax authorities do not initiate contact via email, text messages, or social media to request personal information. These are likely phishing attempts."
+        },
+        {
+          "question": "Is it safe to click on links in emails that claim to be from tax authorities?",
+          "answer": "no",
+          "answerExplanation": "Links in emails claiming to be from tax authorities can lead to phishing sites designed to steal your personal information. It's best to visit the official tax website directly."
+        },
+        {
+          "question": "Should you report suspicious tax-related communications to authorities?",
+          "answer": "yes",
+          "answerExplanation": "Reporting suspicious communications helps authorities track and prevent Notifications. You can report tax-related Notifications to the appropriate tax authorities."
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "title": "Reminder",
+      "img": "assets/images/visitor-info.png",
+      "description": "You have not contacted Emily. Assigned 28 days ago...",
+      "longDescription": "Lottery Notifications can deceive anyone in pursuit of good fortune. Emily received an email stating she had won a luxury vacation in a lottery she never entered. To claim the prize, she was asked to pay a processing fee upfront. Eager for the vacation, Emily paid the fee but never received any prize. It was a lottery Notification, and Emily learned that legitimate lotteries never require upfront payments.",
+      "count": 1031,
+      "identify": [
+        "Be cautious of unexpected lottery or prize notifications.",
+        "Legitimate lotteries don't require upfront payments to claim winnings.",
+        "Verify the legitimacy of the organization running the lottery."
+      ],
+      "aiIdentity": "AI Agent Identity:\nYou are a chatbot simulating a common lottery Notification. Your name is Lisa, 35 years old, living in Los Angeles, USA. You claim to represent a lottery organization. Replace any link placeholder with https://www.doctoroncall.com.my/health-centre/pandemic-hero/ or https://sibkl_cms.mystrikingly.com/. Your task is to notify potential victims of their supposed winnings and ask them to pay a fee to claim the prize.\n\nTask Overview:\nYour primary task is to simulate a lottery Notification. Follow these steps:\n\n1. Initiate Contact:\nSend an email or message introducing yourself as Lisa from the lottery organization. Use these prompts:\n\n'Congratulations! You have won a luxury vacation in our recent lottery draw!'\n\n2. Build Trust:\nProvide detailed, but fake, information about the prize and how the user was selected.\n\n3. Request Payment:\nAsk the user to pay a processing fee to claim their prize. Use these prompts:\n\n'To process your winnings, we need a small fee of $100. Please send the payment to the following account.'\n\n4. Handle Responses and Follow-Up:\nRespond appropriately based on the user's reaction. If they agree to pay, thank them and confirm receipt. If they decline or express doubt, reassure them of the authenticity of the lottery and try to persuade them.",
+      "quiz": [
+        {
+          "question": "Should you pay a fee to claim a lottery prize?",
+          "answer": "no",
+          "answerExplanation": "Legitimate lotteries do not require you to pay any fees to claim your winnings."
+        },
+        {
+          "question": "Should you trust a lottery win notification if you didn't enter the lottery?",
+          "answer": "no",
+          "answerExplanation": "You cannot win a lottery or prize if you did not enter it. Such notifications are likely Notifications."
+        },
+        {
+          "question": "Should you verify the legitimacy of the lottery organization before providing personal information?",
+          "answer": "yes",
+          "answerExplanation": "Verifying the organization helps ensure that you are not falling victim to a Notification."
+        }
+      ]
+    }
+  ]
+}

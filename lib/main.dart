@@ -53,14 +53,14 @@ class SIBKLCmsApp extends StatelessWidget {
         transitionDuration: Duration(milliseconds: 300),
         defaultTransition: Transition.rightToLeft,
         debugShowCheckedModeBanner: false,
-        title: "PreScam.AI",
+        title: "SIBKL Community",
         themeMode: MyThemeServiceController().themeMode,
         theme: MyThemeServiceController.light,
         darkTheme: MyThemeServiceController.dark,
         builder: (context, child) {
           return MediaQuery(
             data: MediaQuery.of(context)
-                .copyWith(textScaler: TextScaler.linear(0.8)),
+                .copyWith(textScaler: TextScaler.linear(0.9)),
             child: child!,
           );
         },

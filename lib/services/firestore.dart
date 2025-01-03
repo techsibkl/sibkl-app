@@ -30,7 +30,7 @@ class DatabaseService extends GetxController {
       final Map<String, dynamic> data = doc.data() as Map<String, dynamic>;
       appUser.fullName.value = data["fullName"]?.toString() ?? "";
       // appUser.points.value = data["points"];
-      // appUser.completedScamIDs.value = List<int>.from(data["completedScamIDs"]);
+      // appUser.completedNotificationIDs.value = List<int>.from(data["completedNotificationIDs"]);
       // appUser.genderIsMale = data["genderIsMale"];
       // getRanking();
 

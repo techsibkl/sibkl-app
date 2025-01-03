@@ -1,10 +1,10 @@
 // import "package:flutter/cupertino.dart";
 // import "package:flutter/material.dart";
-// import "package:sibkl_cms/models/scam_model.dart";
+// import "package:sibkl_cms/models/Notification_model.dart";
 
-// class ScamDetailCard extends StatelessWidget {
-//   final Scam scam;
-//   const ScamDetailCard({super.key, required this.scam});
+// class NotificationDetailCard extends StatelessWidget {
+//   final Notification Notification;
+//   const NotificationDetailCard({super.key, required this.Notification});
 
 //   @override
 //   Widget build(BuildContext context) {
@@ -35,7 +35,7 @@
 //                   ),
 //                   SizedBox(height: 2),
 //                   Text(
-//                     "${scam.quiz.length * 100}",
+//                     "${Notification.quiz.length * 100}",
 //                     maxLines: 2,
 //                     overflow: TextOverflow.ellipsis,
 //                     style: TextStyle(
@@ -61,7 +61,7 @@
 //                   ),
 //                   SizedBox(height: 2),
 //                   Text(
-//                     "${scam.quiz.length}",
+//                     "${Notification.quiz.length}",
 //                     maxLines: 2,
 //                     overflow: TextOverflow.ellipsis,
 //                     style: TextStyle(

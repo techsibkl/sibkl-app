@@ -13,7 +13,7 @@ const textInputDecoration = InputDecoration(
   focusedBorder: OutlineInputBorder(
     borderRadius: BorderRadius.all(Radius.circular(10)),
     borderSide: BorderSide(
-      color: Color(0xFF5D42BF),
+      color: Color(0xFFAC2212),
       width: 2,
     ),
   ),
