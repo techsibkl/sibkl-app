@@ -1,13 +1,16 @@
 import { Image } from "expo-image";
-import { Platform, StyleSheet, Text, View } from "react-native";
+import { Button, Platform, StyleSheet, Text, View } from "react-native";
 
 import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
 import { useQuery } from "@tanstack/react-query";
+import { useCounterStore } from "@/stores/useCounterStore";
 
 export default function HomeScreen() {
+  const { count, increase } = useCounterStore();
+
   const { data, isLoading, isError } = useQuery({
     queryKey: ["hello"],
     queryFn: async () => {
@@ -36,9 +39,11 @@ export default function HomeScreen() {
         </Text>
       </View>
       <View className="flex-1 items-center justify-center bg-white">
-        <Text className="text-xl font-bold text-blue-500">
-          {data}
-        </Text>
+        <Text className="text-xl font-bold text-blue-500">{data}</Text>
+      </View>
+      <View style={{ padding: 20 }}>
+        <Text>Count: {count}</Text>
+        <Button title="Increase" onPress={increase} />
       </View>
       <ThemedView style={styles.titleContainer} className="bg-blue-600">
         <ThemedText type="title">Welcome to SIBKL!</ThemedText>
