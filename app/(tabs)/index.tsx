@@ -5,8 +5,21 @@ import { HelloWave } from "@/components/HelloWave";
 import ParallaxScrollView from "@/components/ParallaxScrollView";
 import { ThemedText } from "@/components/ThemedText";
 import { ThemedView } from "@/components/ThemedView";
+import { useQuery } from "@tanstack/react-query";
 
 export default function HomeScreen() {
+  const { data, isLoading, isError } = useQuery({
+    queryKey: ["hello"],
+    queryFn: async () => {
+      // Simulate API
+      await new Promise((r) => setTimeout(r, 500));
+      return "Query Client is working ✅";
+    },
+  });
+
+  if (isLoading) return <Text>Loading...</Text>;
+  if (isError) return <Text>Something went wrong ❌</Text>;
+
   return (
     <ParallaxScrollView
       headerBackgroundColor={{ light: "#A1CEDC", dark: "#1D3D47" }}
@@ -20,6 +33,11 @@ export default function HomeScreen() {
       <View className="flex-1 items-center justify-center bg-white">
         <Text className="text-xl font-bold text-blue-500">
           Welcome to Nativewind!
+        </Text>
+      </View>
+      <View className="flex-1 items-center justify-center bg-white">
+        <Text className="text-xl font-bold text-blue-500">
+          {data}
         </Text>
       </View>
       <ThemedView style={styles.titleContainer} className="bg-blue-600">
