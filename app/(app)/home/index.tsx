@@ -66,7 +66,7 @@ const DashboardScreen = () => {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-background">
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <StatusBar
         className="bg-background dark:bg-background-dark"
         barStyle={isDark ? "light-content" : "dark-content"}
