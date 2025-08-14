@@ -4,6 +4,7 @@ import type React from "react"
 import { useState } from "react"
 import { View, Text, ScrollView, TouchableOpacity, Image, StatusBar } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 interface Cell {
   id: string
@@ -204,7 +205,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ userId }) => {
   }
 
   return (
-    <View className="flex-1 bg-[#FCFCFC]">
+    <SafeAreaView className="flex-1 bg-[#FCFCFC]">
       <StatusBar barStyle="dark-content" />
 
       {/* Header with gradient background */}
@@ -257,7 +258,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ userId }) => {
       <ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
         {renderTabContent()}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   )
 }
 

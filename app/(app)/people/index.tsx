@@ -3,6 +3,7 @@
 import { Ionicons } from "@expo/vector-icons"
 import { useState } from "react"
 import { Image, ScrollView, StatusBar, Text, TextInput, TouchableOpacity, View } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 interface Person {
   id: string
@@ -58,7 +59,7 @@ const PeopleScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" />
 
       {/* Header */}
@@ -127,36 +128,7 @@ const PeopleScreen = () => {
         ))}
       </ScrollView>
 
-      {/* Bottom Navigation */}
-      <View className="flex-row justify-around items-center py-4 pb-8 bg-black border-t border-gray-800">
-        <TouchableOpacity className="items-center">
-          <Ionicons name="refresh" size={24} color="#666" />
-          <Text className="text-xs text-gray-400 mt-1">Updates</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <Ionicons name="call" size={24} color="white" />
-          <Text className="text-xs text-white mt-1">Calls</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center">
-          <Ionicons name="people" size={24} color="#666" />
-          <Text className="text-xs text-gray-400 mt-1">Communities</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center relative">
-          <Ionicons name="chatbubbles" size={24} color="#666" />
-          <View className="absolute -top-1 -right-1 bg-green-500 rounded-full w-5 h-5 justify-center items-center">
-            <Text className="text-white text-xs font-bold">36</Text>
-          </View>
-          <Text className="text-xs text-gray-400 mt-1">Chats</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="items-center relative">
-          <Ionicons name="settings" size={24} color="#666" />
-          <View className="absolute -top-1 -right-1 bg-green-500 rounded-full w-4 h-4 justify-center items-center">
-            <Text className="text-white text-xs font-bold">1</Text>
-          </View>
-          <Text className="text-xs text-gray-400 mt-1">Settings</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </SafeAreaView>
   )
 }
 

@@ -1,4 +1,5 @@
 import { ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 const DashboardScreen = () => {
   const progressItems = [
@@ -47,7 +48,7 @@ const DashboardScreen = () => {
   )
 
   return (
-    <View className="flex-1 bg-[#FCFCFC]">
+    <SafeAreaView className="flex-1 bg-[#FCFCFC]">
       <StatusBar barStyle="dark-content" backgroundColor="#FCFCFC" />
 
       {/* Header */}
@@ -113,26 +114,7 @@ const DashboardScreen = () => {
           </View>
         ))}
       </ScrollView>
-
-      {/* Bottom Navigation */}
-      <View className="flex-row justify-around items-center py-4 pb-8 bg-white border-t border-gray-100">
-        <TouchableOpacity className="p-2">
-          <Text className="text-xl text-[#699EFF]">🏠</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="p-2">
-          <Text className="text-xl text-gray-400">📁</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="bg-[#699EFF] w-12 h-12 rounded-full justify-center items-center">
-          <Text className="text-2xl text-white font-bold">+</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="p-2">
-          <Text className="text-xl text-gray-400">⏱️</Text>
-        </TouchableOpacity>
-        <TouchableOpacity className="p-2">
-          <Text className="text-xl text-gray-400">👤</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </SafeAreaView>
   )
 }
 

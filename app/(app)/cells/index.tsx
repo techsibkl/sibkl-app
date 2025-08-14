@@ -3,6 +3,7 @@
 import { useState } from "react"
 import { View, Text, ScrollView, TouchableOpacity, TextInput, StatusBar } from "react-native"
 import { Ionicons } from "@expo/vector-icons"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 interface Cell {
   id: string
@@ -115,7 +116,7 @@ const CellsScreen = () => {
   )
 
   return (
-    <View className="flex-1 bg-[#1a1a2e]">
+    <SafeAreaView className="flex-1 bg-[#1a1a2e]">
       <StatusBar barStyle="light-content" />
 
       {/* Header with Search */}
@@ -137,7 +138,7 @@ const CellsScreen = () => {
       <ScrollView className="flex-1 px-5 pt-5" showsVerticalScrollIndicator={false}>
         {filteredCells.length > 0 ? <View>{filteredCells.map(renderCellCard)}</View> : renderEmptyState()}
       </ScrollView>
-    </View>
+    </SafeAreaView>
   )
 }
 

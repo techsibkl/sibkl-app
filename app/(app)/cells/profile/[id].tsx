@@ -2,6 +2,7 @@
 
 import { useState } from "react"
 import { View, Text, TouchableOpacity, ScrollView, TextInput, Image } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 interface Member {
   id: string
@@ -113,7 +114,7 @@ const CellProfileScreen = () => {
   }
 
   return (
-    <View className="flex-1 bg-gray-900">
+    <SafeAreaView className="flex-1 bg-gray-900">
       {/* Status bar */}
       <View className="h-12 bg-gray-900" />
 
@@ -194,7 +195,7 @@ const CellProfileScreen = () => {
 
       {/* Tab content */}
       {renderTabContent()}
-    </View>
+    </SafeAreaView>
   )
 }
 

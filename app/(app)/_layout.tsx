@@ -97,7 +97,7 @@ export default function AppLayout() {
           ),
         }}
       />
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="people/profile/[id]"
         options={{
           href: null, // removes it from tab navigation
@@ -108,7 +108,7 @@ export default function AppLayout() {
         options={{
           href: null, // removes it from tab navigation
         }}
-      />
+      /> */}
     </Tabs>
   );
 }

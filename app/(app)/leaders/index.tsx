@@ -2,6 +2,7 @@
 
 import { ChevronLeftIcon, ChevronRightIcon } from "lucide-react-native"
 import { Linking, ScrollView, StatusBar, Text, TouchableOpacity, View } from "react-native"
+import { SafeAreaView } from "react-native-safe-area-context"
 
 const LeadersPage = () => {
   // const [searchText, setSearchText] = useState("")
@@ -66,7 +67,7 @@ const LeadersPage = () => {
   }
 
   return (
-    <View className="flex-1 bg-black">
+    <SafeAreaView className="flex-1 bg-black">
       <StatusBar barStyle="light-content" backgroundColor="#000000" />
 
       {/* Header */}
@@ -116,44 +117,8 @@ const LeadersPage = () => {
         ))}
       </ScrollView>
 
-      {/* Bottom Navigation */}
-      <View className="flex-row items-center justify-around bg-gray-900 py-3 border-t border-gray-800">
-        <TouchableOpacity className="items-center py-2">
-          <View className="w-6 h-6 mb-1">
-            <View className="w-full h-full bg-gray-500 rounded" />
-          </View>
-          <Text className="text-gray-500 text-xs">Home</Text>
-        </TouchableOpacity>
 
-        <TouchableOpacity className="items-center py-2">
-          <View className="w-6 h-6 mb-1">
-            <View className="w-full h-full bg-gray-500 rounded" />
-          </View>
-          <Text className="text-gray-500 text-xs">Bible</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity className="items-center py-2">
-          <View className="w-6 h-6 mb-1">
-            <View className="w-full h-full bg-gray-500 rounded" />
-          </View>
-          <Text className="text-gray-500 text-xs">Plans</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity className="items-center py-2">
-          <View className="w-6 h-6 mb-1">
-            <View className="w-full h-full bg-blue-500 rounded" />
-          </View>
-          <Text className="text-blue-500 text-xs font-medium">Discover</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity className="items-center py-2">
-          <View className="w-6 h-6 mb-1">
-            <View className="w-full h-full bg-gray-500 rounded" />
-          </View>
-          <Text className="text-gray-500 text-xs">More</Text>
-        </TouchableOpacity>
-      </View>
-    </View>
+    </SafeAreaView>
   )
 }
 
