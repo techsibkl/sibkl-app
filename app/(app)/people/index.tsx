@@ -3,7 +3,7 @@
 import PeopleList from "@/components/People/PeopleList";
 import SharedHeader from "@/components/shared/SharedHeader";
 import { useThemeColors } from "@/hooks/useThemeColor";
-import { Ionicons } from "@expo/vector-icons";
+import { Search } from "lucide-react-native";
 import { useState } from "react";
 import { ScrollView, StatusBar, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -65,10 +65,10 @@ const PeopleScreen = () => {
       person.phone.includes(searchQuery)
   );
 
-  const handlePersonPress = (person: Person) => {
-    // Navigate to profile or handle person selection
-    console.log("Opening profile for:", person.fullName);
-  };
+  // const handlePersonPress = (person: Person) => {
+  //   // Navigate to profile or handle person selection
+  //   console.log("Opening profile for:", person.fullName);
+  // };
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
@@ -80,8 +80,7 @@ const PeopleScreen = () => {
       <SharedHeader title="People">
         {/* Search Bar */}
         <View className="flex-row items-center rounded-xl px-4 py-3 bg-white border border-border">
-          {" "}
-          <Ionicons name="search" size={20} color="#999" />
+          <Search size={20} color="#999" />
           <TextInput
             className="flex-1 text-text-secondary text-base ml-3"
             placeholder="Search"

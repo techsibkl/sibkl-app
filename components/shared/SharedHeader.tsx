@@ -1,9 +1,9 @@
-import { View, Text } from "react-native";
-import React from "react";
+import React, { ReactElement } from "react";
+import { Text, View } from "react-native";
 
 export type SharedHeaderProps = {
   title: string;
-  children: React.ReactNode;
+  children?: ReactElement | ReactElement[];
 };
 
 const SharedHeader = ({ title, children }: SharedHeaderProps) => {
