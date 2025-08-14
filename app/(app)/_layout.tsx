@@ -1,66 +1,112 @@
-import { Tabs } from 'expo-router';
-import { Grid3X3, Home, Settings, Star, Users } from 'lucide-react-native';
+import { Tabs } from "expo-router";
+import {
+  Circle,
+  GraduationCap,
+  Home,
+  Settings,
+  Users,
+} from "lucide-react-native";
 
 export default function AppLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#007AFF',
-        tabBarInactiveTintColor: '#8E8E93',
+        tabBarActiveTintColor: "#007AFF",
+        tabBarInactiveTintColor: "#8E8E93",
         tabBarStyle: {
-          backgroundColor: '#F2F2F7',
+          height: 70,
+          paddingTop: 10,
+          backgroundColor: "#F2F2F7",
           borderTopWidth: 0.5,
-          borderTopColor: '#E5E5EA',
+          borderTopColor: "#E5E5EA",
         },
         headerStyle: {
-          backgroundColor: '#F2F2F7',
+          backgroundColor: "#F2F2F7",
         },
-        headerTintColor: '#000',
+        headerTintColor: "#000",
+        headerShown: false,
       }}
     >
       <Tabs.Screen
-        name="home"
+        name="home/index"
         options={{
-          title: 'Home',
-          tabBarIcon: ({ color, size }) => (
-            <Home size={size} color={color} />
+          title: "Home",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Home
+              size={size}
+              color={color}
+              strokeWidth={1}
+              fill={focused ? color : "none"}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="cell"
+        name="cells/index"
         options={{
-          title: 'Cell',
-          tabBarIcon: ({ color, size }) => (
-            <Grid3X3 size={size} color={color} />
+          title: "Cells",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Circle
+              size={size}
+              color={color}
+              strokeWidth={1}
+              fill={focused ? color : "none"}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="people"
+        name="people/index"
         options={{
-          title: 'People',
-          tabBarIcon: ({ color, size }) => (
-            <Users size={size} color={color} />
+          title: "People",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Users
+              size={size}
+              color={color}
+              strokeWidth={1}
+              fill={focused ? color : "none"}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="leaders"
+        name="leaders/index"
         options={{
-          title: 'Leaders',
-          tabBarIcon: ({ color, size }) => (
-            <Star size={size} color={color} />
+          title: "Leaders",
+          tabBarIcon: ({ color, size, focused }) => (
+            <GraduationCap
+              size={size}
+              color={color}
+              strokeWidth={1}
+              fill={focused ? color : "none"}
+            />
           ),
         }}
       />
       <Tabs.Screen
-        name="settings"
+        name="settings/index"
         options={{
-          title: 'Settings',
-          tabBarIcon: ({ color, size }) => (
-            <Settings size={size} color={color} />
+          title: "Settings",
+          tabBarIcon: ({ color, size, focused }) => (
+            <Settings
+              size={size}
+              color={color}
+              strokeWidth={1}
+              fill={focused ? color : "none"}
+            />
           ),
+        }}
+      />
+      <Tabs.Screen
+        name="people/profile/[id]"
+        options={{
+          href: null, // removes it from tab navigation
+        }}
+      />
+      <Tabs.Screen
+        name="cells/profile/[id]"
+        options={{
+          href: null, // removes it from tab navigation
         }}
       />
     </Tabs>
