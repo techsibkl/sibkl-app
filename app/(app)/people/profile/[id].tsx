@@ -1,19 +1,19 @@
 "use client";
 
+import CellList from "@/components/Cells/CellList";
+import { Ionicons } from "@expo/vector-icons";
+import { Calendar, Mail, MapPin, Phone, User } from "lucide-react-native";
 import type React from "react";
 import { useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
   Image,
+  ScrollView,
   StatusBar,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
-import CellList from "@/components/Cells/CellList";
-import { Calendar, LocationEditIcon, Mail, MapPin, Phone, User } from "lucide-react-native";
 
 interface Cell {
   id: string;
