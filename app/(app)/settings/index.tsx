@@ -75,8 +75,7 @@ export default function SettingsScreen() {
 
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-        {/* Status Bar Spacer */}
-        <View className="h-12" />
+ 
 
         {/* Header */}
         <SharedHeader title="Settings"/>

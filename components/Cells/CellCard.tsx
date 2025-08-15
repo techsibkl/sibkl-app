@@ -1,3 +1,4 @@
+import { useRouter } from "expo-router";
 import { ChevronRight, Users } from "lucide-react-native";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -7,11 +8,13 @@ type CellCardProps = {
 };
 
 const CellCard = ({ cell }: CellCardProps) => {
+  const router = useRouter();
+
   return (
     <TouchableOpacity
-      key={cell.id}
       className="rounded-2xl p-5 mb-4"
       style={{ backgroundColor: cell.backgroundColor }}
+      onPress={() => router.push(`/cells/profile/${cell.id}`)}
       activeOpacity={0.8}
     >
       <View className=" flex-row ">
