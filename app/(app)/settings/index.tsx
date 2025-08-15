@@ -1,5 +1,5 @@
+import SharedHeader from "@/components/shared/SharedHeader";
 import {
-  ChevronLeft,
   CircleQuestionMark,
   FileText,
   LockKeyhole,
@@ -74,25 +74,19 @@ export default function SettingsScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
-      <View className="flex-1 bg-gray-900">
+    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
         {/* Status Bar Spacer */}
         <View className="h-12" />
 
         {/* Header */}
-        <View className="flex-row items-center px-4 py-4">
-          <TouchableOpacity className="mr-4">
-            <ChevronLeft className="w-6 h-6 text-white" />
-          </TouchableOpacity>
-          <Text className="text-white text-xl font-semibold">Settings</Text>
-        </View>
+        <SharedHeader title="Settings"/>
 
         {/* Settings Options */}
-        <View className="flex-1 px-4 pt-6">
+        <View className="flex-1 px-4 ">
           {settingsOptions.map((option, index) => (
             <TouchableOpacity
               key={option.id}
-              className="flex-row items-center py-4 border-b border-gray-800"
+              className="flex-row items-center py-4 "
               onPress={option.onPress}
               disabled={option.hasToggle}
             >
@@ -104,7 +98,7 @@ export default function SettingsScreen() {
               {/* Content */}
               <View className="flex-1">
                 <Text
-                  className={`text-lg font-medium ${option.isDestructive ? "text-red-500" : "text-white"}`}
+                  className={`text-lg font-medium ${option.isDestructive ? "text-red-500" : "text-text"}`}
                 >
                   {option.title}
                 </Text>
@@ -129,7 +123,6 @@ export default function SettingsScreen() {
             </TouchableOpacity>
           ))}
         </View>
-      </View>
     </SafeAreaView>
   );
 }
