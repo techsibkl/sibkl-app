@@ -4,8 +4,9 @@ import CellList from "@/components/Cells/CellList";
 import SharedHeader from "@/components/shared/SharedHeader";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Ionicons } from "@expo/vector-icons";
+import { Search } from "lucide-react-native";
 import { useState } from "react";
-import { ScrollView, StatusBar, Text, TextInput, View } from "react-native";
+import { ScrollView, StatusBar, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 interface Cell {
@@ -76,7 +77,7 @@ const CellsScreen = () => {
       {/* Header with Search */}
       <SharedHeader title="Cells">
         <View className="flex-row items-center rounded-xl px-4 py-3 bg-white border border-border">
-          <Ionicons name="search" size={20} color="#999" className="mr-2" />
+          <Search size={20} color="#999" className="mr-2" />
           <TextInput
             className="flex-1 text-text-secondary text-base"
             placeholder="Search cells..."
