@@ -4,37 +4,33 @@ import {
   ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack } from "expo-router";
+import { Stack, useRouter, useSegments } from "expo-router";
 import { StatusBar } from "expo-status-bar";
+import { useEffect } from "react";
 import "react-native-reanimated";
 import "../global.css";
-import { useEffect } from 'react';
-import { useRouter, useSegments } from 'expo-router';
 
 import { useColorScheme } from "@/hooks/useColorScheme";
+import { useAuthStore } from "@/stores/authStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { AuthProvider, useAuthContext } from "@/context/AuthContext";
 
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
-  const { isAuthenticated, isLoading } = useAuthContext();
   const segments = useSegments();
   const router = useRouter();
+  const { user } = useAuthStore();
 
   useEffect(() => {
-    if (isLoading) return; // Don't navigate while loading
+    const inAuthGroup = segments[0] === "(auth)";
 
-    const inAuthGroup = segments[0] === '(auth)';
-
-    if (isAuthenticated && inAuthGroup) {
-      // Redirect away from auth screens if logged in
-      router.replace('/home');
-    } else if (!isAuthenticated && !inAuthGroup) {
-      // Redirect to sign in if not logged in
-      router.replace('/sign-in');
+    if (!user && !inAuthGroup) {
+      router.replace("/(auth)/sign-in");
+    } else if (user && inAuthGroup) {
+      // Already logged in → go to app
+      router.replace("/(app)/home");
     }
-  }, [isAuthenticated, segments, isLoading]);
+  }, [user, segments, router]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
@@ -58,12 +54,10 @@ export default function RootLayout() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <AuthProvider>
-        <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-          <RootLayoutNav />
-          <StatusBar style="auto" />
-        </ThemeProvider>
-      </AuthProvider>
+      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
+        <RootLayoutNav />
+        <StatusBar style="auto" />
+      </ThemeProvider>
     </QueryClientProvider>
   );
 }

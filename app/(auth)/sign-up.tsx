@@ -1,4 +1,3 @@
-import { useAuthContext } from "@/context/AuthContext";
 import { Link } from "expo-router";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
 import React, { useState } from "react";
@@ -15,7 +14,6 @@ interface LoginFormData {
 const Page = () => {
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
-    const { signIn, isLoading } = useAuthContext();
   
     const {
       control,
@@ -34,7 +32,6 @@ const Page = () => {
     const onSubmit = async (data: LoginFormData): Promise<void> => {
       try {
         // For now, just use the toggle function from context
-        signIn();
       } catch (error) {
         Alert.alert("Error", "Failed to sign in. Please try again.");
       }
@@ -153,7 +150,7 @@ const Page = () => {
             </View>
 
             {/* Sign in button */}
-            <TouchableOpacity
+            {/* <TouchableOpacity
               className={`w-full h-12 rounded-lg items-center justify-center mb-6 ${
                 isLoading ? 'bg-gray-400' : 'bg-blue-600'
               }`}
@@ -163,7 +160,7 @@ const Page = () => {
               <Text className="text-white font-semibold text-base">
                 {isLoading ? 'Signing Up...' : 'Sign Up'}
               </Text>
-            </TouchableOpacity>
+            </TouchableOpacity> */}
 
             {/* Sign up link */}
             <View className="items-center">

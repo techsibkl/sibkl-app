@@ -27,11 +27,7 @@ export const useAuthContext = () => {
 };
 
 export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [user, setUser] = useState<User | null>({
-    id: '1',
-    email: 'test@example.com',
-    name: 'Test User',
-  });
+  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   // Mock user data for testing

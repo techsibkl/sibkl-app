@@ -12,7 +12,6 @@ import {
 import { useForm, Controller } from "react-hook-form";
 import { Eye, EyeOff, Mail, Lock } from "lucide-react-native";
 import { Link } from "expo-router";
-import { useAuthContext } from "@/context/AuthContext";
 
 interface LoginFormData {
   email: string;
@@ -22,7 +21,6 @@ interface LoginFormData {
 
 const Page = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const { signIn, isLoading } = useAuthContext();
 
   const {
     control,
@@ -41,7 +39,6 @@ const Page = () => {
   const onSubmit = async (data: LoginFormData): Promise<void> => {
     try {
       // For now, just use the toggle function from context
-      signIn();
     } catch (error) {
       Alert.alert("Error", "Failed to sign in. Please try again.");
     }
@@ -185,20 +182,20 @@ const Page = () => {
             {/* Sign in button */}
             <TouchableOpacity
               className={`w-full h-12 rounded-lg items-center justify-center mb-6 ${
-                isLoading ? 'bg-gray-400' : 'bg-blue-600'
+                 'bg-blue-600'
               }`}
               onPress={handleSubmit(onSubmit)}
-              disabled={isLoading}
+              // disabled={isLoading}
             >
               <Text className="text-white font-semibold text-base">
-                {isLoading ? 'Signing In...' : 'Sign In'}
+                {'Sign In'}
               </Text>
             </TouchableOpacity>
 
             {/* Sign up link */}
             <View className="items-center">
               <Text className="text-gray-600 text-sm">
-                Don't have an account?{' '}
+                Dont have an account?{' '}
                 <Link href="/sign-up" asChild>
                   <Text className="text-blue-600 font-semibold">Sign Up</Text>
                 </Link>
