@@ -1,18 +1,18 @@
+import { useAuthStore } from "@/stores/authStore";
+import { Link } from "expo-router";
+import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
 import React, { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
-  View,
+  Alert,
+  Image,
+  SafeAreaView,
+  ScrollView,
   Text,
   TextInput,
   TouchableOpacity,
-  SafeAreaView,
-  ScrollView,
-  Image,
-  Alert,
+  View,
 } from "react-native";
-import { useForm, Controller } from "react-hook-form";
-import { Eye, EyeOff, Mail, Lock } from "lucide-react-native";
-import { Link } from "expo-router";
-import { useAuthStore } from "@/stores/authStore";
 
 interface LoginFormData {
   email: string;
@@ -33,7 +33,7 @@ const Page = () => {
     watch,
   } = useForm<LoginFormData>({
     defaultValues: {
-      email: "rczhisawsome@gmail.com",
+      email: "rayeschoo777@gmail.com",
       password: "123456",
       rememberMe: false,
     },
