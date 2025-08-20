@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "95786525908",
+    "project_id": "leafy-loader-444703-d0",
+    "storage_bucket": "leafy-loader-444703-d0.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:95786525908:android:9680a875c798b5c14a4741",
+        "android_client_info": {
+          "package_name": "com.sibkl.app"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "95786525908-cpgl90po22cdvo22fdo234mm5oqrrb48.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDsA7SMsKwdjse5phfj1ydEutCGAPCKSL4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "95786525908-cpgl90po22cdvo22fdo234mm5oqrrb48.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "95786525908-fm9t5j3bhqm3tsjjpagdr4iigk85r6h2.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.sibklCms"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

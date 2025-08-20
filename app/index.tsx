@@ -1,16 +1,15 @@
-import { useRouter } from 'expo-router';
-import { ActivityIndicator, Text, View } from 'react-native';
+import { Redirect} from 'expo-router';
 
 export default function Index() {
-  const router = useRouter();
 
- 
+   return <Redirect href="/(auth)/sign-in" />;
+
 
   // Show loading spinner while determining auth state
-  return (
-    <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
-      <Text>Inside Index.tsx</Text>
-      <ActivityIndicator size="large" color="#007AFF" />
-    </View>
-  );
+  // return (
+  //   <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+  //     <Text>Inside Index.tsx</Text>
+  //     <ActivityIndicator size="large" color="#007AFF" />
+  //   </View>
+  // );
 }

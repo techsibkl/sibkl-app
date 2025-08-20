@@ -6,7 +6,10 @@ export type AuthState = {
   isLoading: boolean;
   isAuthenticated: boolean;
   setUser: (user: FirebaseAuthTypes.User | null) => void;
+  signIn: (email: string, password: string) => Promise<FirebaseAuthTypes.User | null>;
+  signUp: (email: string, password: string) => Promise<FirebaseAuthTypes.User | null>;
   signOut: () => Promise<void>;
+  init: () => void;
 };
 
 export interface AppUser {

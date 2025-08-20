@@ -19,9 +19,15 @@ const queryClient = new QueryClient();
 function RootLayoutNav() {
   const segments = useSegments();
   const router = useRouter();
-  const { user } = useAuthStore();
+  const { user, isLoading, init } = useAuthStore();
 
   useEffect(() => {
+      init()
+    },[])
+
+  useEffect(() => {
+    if(isLoading) return;
+
     const inAuthGroup = segments[0] === "(auth)";
 
     if (!user && !inAuthGroup) {
@@ -30,7 +36,7 @@ function RootLayoutNav() {
       // Already logged in → go to app
       router.replace("/(app)/home");
     }
-  }, [user, segments, router]);
+  }, [user, isLoading, segments, router]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

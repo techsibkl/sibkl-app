@@ -9,15 +9,18 @@
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.sibkl.app",
+      "googleServicesFile": "./GoogleService-Info.plist"
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/images/adaptive-icon.png",
         "backgroundColor": "#ffffff"
       },
+      "googleServicesFile": "./google-services.json",
       "edgeToEdgeEnabled": true,
-      "package": "com.rayes.sibklapp"
+      "package": "com.sibkl.app"
     },
     "web": {
       "bundler": "metro",
@@ -26,6 +29,13 @@
     },
     "plugins": [
       "expo-router",
+      "@react-native-firebase/app",
+      "@react-native-firebase/auth",
+      ["expo-build-properties", {
+        "ios": {
+          "useFrameworks": "static"
+        }
+      }],
       [
         "expo-splash-screen",
         {
@@ -34,7 +44,8 @@
           "resizeMode": "contain",
           "backgroundColor": "#ffffff"
         }
-      ]
+      ],
+      "expo-build-properties"
     ],
     "experiments": {
       "typedRoutes": true

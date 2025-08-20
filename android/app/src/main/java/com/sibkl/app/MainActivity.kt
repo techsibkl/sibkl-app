@@ -1,4 +1,4 @@
-package com.rayes.sibklapp
+package com.sibkl.app
 import expo.modules.splashscreen.SplashScreenManager
 
 import android.os.Build

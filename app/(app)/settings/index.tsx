@@ -1,4 +1,5 @@
 import SharedHeader from "@/components/shared/SharedHeader";
+import { useAuthStore } from "@/stores/authStore";
 import {
   CircleQuestionMark,
   FileText,
@@ -8,10 +9,11 @@ import {
   SquareArrowRight,
 } from "lucide-react-native";
 import { useState } from "react";
-import { View, Text, TouchableOpacity, Switch, Alert } from "react-native";
+import { Alert, Switch, Text, TouchableOpacity, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 export default function SettingsScreen() {
+  const {signOut} = useAuthStore();
   const [darkTheme, setDarkTheme] = useState(true);
 
   const handleLogout = () => {
@@ -20,7 +22,7 @@ export default function SettingsScreen() {
       {
         text: "Logout",
         style: "destructive",
-        onPress: () => console.log("Logged out"),
+        onPress: async () => await signOut(),
       },
     ]);
   };

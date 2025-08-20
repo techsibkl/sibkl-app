@@ -1,4 +1,4 @@
-package com.rayes.sibklapp
+package com.sibkl.app
 
 import android.app.Application
 import android.content.res.Configuration

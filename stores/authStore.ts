@@ -1,5 +1,5 @@
 import { AuthState } from "@/services/User/user.types";
-import auth from "@react-native-firebase/auth";
+import { createUserWithEmailAndPassword, FirebaseAuthTypes, getAuth, onAuthStateChanged, signInWithEmailAndPassword, signOut } from "@react-native-firebase/auth";
 import { create } from "zustand";
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -7,15 +7,43 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoading: true,
   isAuthenticated: false,
 
-  setUser: (user) =>
+  setUser: (user: FirebaseAuthTypes.User | null) =>
     set({
       user,
-      isAuthenticated: !user,
+      isAuthenticated: !!user,
       isLoading: false,
     }),
 
-  signOut: async () => {
-    auth().signOut();
-    set({ user: null, isAuthenticated: false });
+  // Sign in with email + password
+  signIn: async (email: string, password: string) => {
+    const { user } = await signInWithEmailAndPassword(getAuth(), email, password);
+    set({ user, isAuthenticated: true, isLoading: false });
+    console.log("user was set:", user)
+    return user;
   },
+
+  // Register new account
+  signUp: async (email: string, password: string) => {
+    const { user } = await createUserWithEmailAndPassword(getAuth(), email, password);
+    set({ user, isAuthenticated: true, isLoading: false });
+    return user;
+  },
+
+  // Sign out
+  signOut: async () => {
+    await signOut(getAuth());
+    set({ user: null, isAuthenticated: false });
+    console.log("user has signed out:", )
+  },
+
+  init:() => {
+    onAuthStateChanged(getAuth(), (user) => {
+      set({
+        user,
+        isAuthenticated: !!user,
+        isLoading: false,
+      });
+    })
+  }
+
 }));
