@@ -1,11 +1,15 @@
 "use client";
 
 import CellList from "@/components/Cells/CellList";
+import { useSinglePersonQuery } from "@/hooks/People/useSinglePersonQuery";
+import { displayDateAsStr} from "@/utils/helper";
 import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams } from "expo-router";
 import { Calendar, Mail, MapPin, Phone, User } from "lucide-react-native";
 import type React from "react";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   Image,
   ScrollView,
   StatusBar,
@@ -15,57 +19,16 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-interface Cell {
-  id: string;
-  name: string;
-  subtitle: string;
-  memberCount: number;
-  backgroundColor: string;
-  iconColor: string;
-  members: string[];
-}
-
-interface ProfileScreenProps {
-  userId?: string;
-}
-
-const ProfileScreen: React.FC<ProfileScreenProps> = ({ userId }) => {
+const ProfileScreen = () => {
   const [activeTab, setActiveTab] = useState("Info");
+  const { id } = useLocalSearchParams();
 
-  // Sample profile data - would be fetched based on userId
-  const profileData = {
-    name: "Amanda Smith",
-    username: "@amandasmith",
-    avatar: "/placeholder.svg?height=120&width=120",
-    phone: "+1 (555) 123-4567",
-    email: "amanda.smith@example.com",
-    address: "123 Main St, City, State 12345",
-    dateOfBirth: "March 15, 1990",
-    occupation: "Product Designer",
-    emergencyContact: "John Smith - +1 (555) 987-6543",
-  };
-
-  // Sample cells data for this user
-  const userCells: Cell[] = [
-    {
-      id: "1",
-      name: "Fame Fusion",
-      subtitle: "Live start soon",
-      memberCount: 432,
-      backgroundColor: "#FFD4B3",
-      iconColor: "#8B7355",
-      members: ["👤", "👤", "👤", "👤"],
-    },
-    {
-      id: "2",
-      name: "Spotlight Alliance",
-      subtitle: "Live start soon",
-      memberCount: 432,
-      backgroundColor: "#B3E5D1",
-      iconColor: "#5A8B6B",
-      members: ["👤", "👤", "👤", "👤"],
-    },
-  ];
+  const {
+    data: person,
+    isPending,
+    error,
+    isError,
+  } = useSinglePersonQuery(Number(id));
 
   const tabs = ["Info", "Cells", "Flows"];
 
@@ -86,7 +49,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ userId }) => {
             <View className="flex-1">
               <Text className="text-sm text-gray-500">Phone</Text>
               <Text className="text-base text-gray-800 font-medium">
-                {profileData.phone}
+                {person?.phone}
               </Text>
             </View>
           </View>
@@ -100,7 +63,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ userId }) => {
             <View className="flex-1">
               <Text className="text-sm text-gray-500">Email</Text>
               <Text className="text-base text-gray-800 font-medium">
-                {profileData.email}
+                {person?.email}
               </Text>
             </View>
           </View>
@@ -114,13 +77,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ userId }) => {
             <View className="flex-1">
               <Text className="text-sm text-gray-500">Address</Text>
               <Text className="text-base text-gray-800 font-medium">
-                {profileData.address}
+                {person?.address_line1}
               </Text>
             </View>
           </View>
 
           <View className="flex-row items-center py-3 border-b border-gray-100">
-           <Calendar
+            <Calendar
               size={20}
               color="#d6361e" // Tailwind's primary-500 hex value
               style={{ marginRight: 12 }}
@@ -128,15 +91,13 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ userId }) => {
             <View className="flex-1">
               <Text className="text-sm text-gray-500">Date of Birth</Text>
               <Text className="text-base text-gray-800 font-medium">
-                {profileData.dateOfBirth}
+                {displayDateAsStr(person?.birth_date)}
               </Text>
             </View>
           </View>
 
-         
-
           <View className="flex-row items-center py-3">
-           <User
+            <User
               size={20}
               color="#d6361e" // Tailwind's primary-500 hex value
               style={{ marginRight: 12 }}
@@ -144,7 +105,7 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ userId }) => {
             <View className="flex-1">
               <Text className="text-sm text-gray-500">Emergency Contact</Text>
               <Text className="text-base text-gray-800 font-medium">
-                {profileData.emergencyContact}
+                {person?.emergency_contact_name}
               </Text>
             </View>
           </View>
@@ -155,9 +116,23 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ userId }) => {
 
   const renderCellGroups = () => (
     <View className=" mx-6 mt-4">
-      <CellList cells={userCells} />
+      <CellList cells={person?.cells!} />
     </View>
   );
+
+  if (isPending)
+    return (
+      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
+        <ActivityIndicator />
+      </SafeAreaView>
+    );
+  if (isError)
+    return (
+      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
+        <Text>{error.message}</Text>
+        <Text>{error.name}</Text>
+      </SafeAreaView>
+    );
 
   const renderFlows = () => (
     <View className="px-5 py-6">
@@ -208,10 +183,8 @@ const ProfileScreen: React.FC<ProfileScreenProps> = ({ userId }) => {
             className="w-24 h-24 rounded-full mb-4 border-4 border-white"
           />
           <Text className="text-2xl font-bold text-gray-800 mb-1">
-            {profileData.name}
+            {person?.full_name}
           </Text>
-
-         
         </View>
       </View>
 

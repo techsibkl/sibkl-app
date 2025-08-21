@@ -1,4 +1,4 @@
-export const displayDateAsStr = (value: string | Date | null, showYear: boolean = true): string => {
+export const displayDateAsStr = (value: string | Date | null | undefined, showYear: boolean = true): string => {
   if (!value) return "-";
 
   // Skip numbers, only allow string and Date

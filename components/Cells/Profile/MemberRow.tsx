@@ -1,4 +1,5 @@
 import { Person } from "@/services/Person/person.type";
+import { useRouter } from "expo-router";
 import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
@@ -7,10 +8,9 @@ type MemberRowProps = {
 };
 
 const MemberRow = ({ member }: MemberRowProps) => {
-
-  console.log(member)
+  const router = useRouter();
   return (
-    <TouchableOpacity className="flex-row items-center py-3  px-4">
+    <TouchableOpacity className="flex-row items-center py-3 px-4" onPress={() => router.push(`/(app)/people/profile/${member.id}`)}>
       <Image
         source={require("../../../assets/images/person.png")}
         className="w-12 h-12 rounded-full mr-4"
