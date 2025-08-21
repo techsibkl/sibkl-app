@@ -2,9 +2,10 @@ import { FlashList } from '@shopify/flash-list'
 import React from 'react'
 import EmptyList from '../Cells/EmptyList'
 import PeopleRow from './PeopleRow'
+import { Person } from '@/services/Person/person.type'
 
 type PeopleListProps = {
-    people: any[]
+    people: Person[]
 }
 
 const PeopleList = ({people} : PeopleListProps) => {

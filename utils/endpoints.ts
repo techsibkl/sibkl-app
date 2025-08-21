@@ -1,11 +1,17 @@
 import { apiBaseUrl } from "./tempEnv";
 
-function _endpoint(name:string){
+function _endpoint(name: string) {
   return `${apiBaseUrl}/${name}`;
 }
 
 export const apiEndpoints = {
-    cells: {
-        getAll: _endpoint("cells")
-    }
-}
+  people: {
+    getAll: _endpoint("people"),
+    getById: (id: number | string) => _endpoint(`people/${id}`),
+  },
+  cells: {
+    getAll: _endpoint("cells"),
+  },
+
+  getPersonOfUid: _endpoint("getPersonOfUid"),
+};

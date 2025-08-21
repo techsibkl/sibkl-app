@@ -4,12 +4,12 @@ import Header from "@/components/Home/Header";
 import Notification from "@/components/Home/Notification";
 import NotificationList from "@/components/Home/NotificationList";
 import { useThemeColors } from "@/hooks/useThemeColor";
+import { useAuthStore } from "@/stores/authStore";
 import { ScrollView, StatusBar } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const DashboardScreen = () => {
   const { isDark } = useThemeColors();
-
   const notifications = [
     {
       id: 1,

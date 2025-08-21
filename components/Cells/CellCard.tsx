@@ -14,11 +14,11 @@ const CellCard = ({ cell }: CellCardProps) => {
 
   return (
     <TouchableOpacity
-      className="rounded-2xl p-5 mb-4 bg-primary-400"
+      className="rounded-2xl p-5 mb-4 bg-white shadow-md"
       onPress={() => router.push(`/cells/profile/${cell.id}`)}
       activeOpacity={0.8}
     >
-      <View className=" flex-row ">
+      <View className=" flex-row">
         <View className="flex-1 space-y-3">
           <View className="flex-row items-center justify-center flex-1 ">
             <View className="w-12 h-12 rounded-full justify-center items-center mr-4 bg-primary-500">
@@ -29,12 +29,12 @@ const CellCard = ({ cell }: CellCardProps) => {
                 {cell.cell_name}
               </Text>
               <Text className="text-xs text-text-secondary">
-                {cell.meeting_day} • {cell.meeting_time}
+                Leader: {cell.cell_leader_1_name}
               </Text>
             </View>
           </View>
 
-          <View className=" py-1">
+          {/* <View className=" py-1">
             <View className="">
               <View className="flex-row items-center ">
                 {memberCount > 0 ? (
@@ -51,12 +51,12 @@ const CellCard = ({ cell }: CellCardProps) => {
                     ))
                 ) : (
                   <Text className="text-xs text-gray-600 font-medium ml-2">
-                    No Members Yet
+                    No Members Yet 
                   </Text>
                 )}
               </View>
             </View>
-          </View>
+          </View> */}
         </View>
         <View className="items-center justify-center">
           <TouchableOpacity className="w-10 h-10 rounded-full bg-white/30 justify-center items-center border border-white/20 border-dashed flex">

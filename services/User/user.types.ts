@@ -1,11 +1,12 @@
 import { FirebaseAuthTypes } from "@react-native-firebase/auth";
+import { Person } from "../Person/person.type";
 
 // Example state with Zustand
 export type AuthState = {
-  user: FirebaseAuthTypes.User | null;
+  user: AppUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  setUser: (user: FirebaseAuthTypes.User | null) => void;
+  setUser: (user: AppUser | null) => void;
   signIn: (email: string, password: string) => Promise<FirebaseAuthTypes.User | null>;
   signUp: (email: string, password: string) => Promise<FirebaseAuthTypes.User | null>;
   signOut: () => Promise<void>;
@@ -16,5 +17,5 @@ export interface AppUser {
   uid?: string;
   email: string;
   people_id: number;
-//   person: Person | null;
+  person: Person | null;
 }
