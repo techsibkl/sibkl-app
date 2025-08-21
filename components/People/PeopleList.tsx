@@ -1,22 +1,28 @@
-import { FlashList } from '@shopify/flash-list'
-import React from 'react'
-import EmptyList from '../Cells/EmptyList'
-import PeopleRow from './PeopleRow'
-import { Person } from '@/services/Person/person.type'
+import { Person } from "@/services/Person/person.type";
+import { FlashList } from "@shopify/flash-list";
+import React from "react";
+import EmptyList from "../Cells/EmptyList";
+import PeopleRow from "./PeopleRow";
 
 type PeopleListProps = {
-    people: Person[]
-}
+  people: Person[];
+};
 
-const PeopleList = ({people} : PeopleListProps) => {
+const PeopleList = ({ people }: PeopleListProps) => {
+  const renderItem = ({ item }: { item: Person }) => (
+    <PeopleRow person={item} />
+  );
+
   return (
     <FlashList
       data={people}
-      renderItem={({ item: person }) => <PeopleRow person={person} />}
+      keyExtractor={(item) => item.id.toString()}
+      renderItem={renderItem}
       ListEmptyComponent={<EmptyList />}
       estimatedItemSize={100}
+      removeClippedSubviews
     />
-  )
-}
+  );
+};
 
-export default PeopleList
+export default PeopleList;

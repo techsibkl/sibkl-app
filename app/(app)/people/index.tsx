@@ -24,7 +24,7 @@ const PeopleScreen = () => {
 
   const filteredPeople = (people ?? []).filter(
     (person) =>
-      person?.fullName?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      person?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
       person?.phone?.includes(searchQuery)
   );
 

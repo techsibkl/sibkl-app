@@ -2,9 +2,9 @@
 
 import CellList from "@/components/Cells/CellList";
 import { useSinglePersonQuery } from "@/hooks/People/useSinglePersonQuery";
-import { displayDateAsStr} from "@/utils/helper";
+import { displayDateAsStr } from "@/utils/helper";
 import { Ionicons } from "@expo/vector-icons";
-import { useLocalSearchParams } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { Calendar, Mail, MapPin, Phone, User } from "lucide-react-native";
 import type React from "react";
 import { useState } from "react";
@@ -21,6 +21,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 
 const ProfileScreen = () => {
   const [activeTab, setActiveTab] = useState("Info");
+  const router = useRouter();
   const { id } = useLocalSearchParams();
 
   const {
@@ -166,7 +167,7 @@ const ProfileScreen = () => {
       <StatusBar barStyle="dark-content" />
 
       <View className="justify-between flex flex-row px-4">
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color="#333" />
         </TouchableOpacity>
         <TouchableOpacity>
