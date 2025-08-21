@@ -2,10 +2,14 @@
 
 import MembersList from "@/components/Cells/Profile/MembersList";
 import ComingSoon from "@/components/shared/ComingSoon";
+import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
+import { Person } from "@/services/Person/person.type";
 import { Ionicons } from "@expo/vector-icons";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import { useState } from "react";
 import {
+  ActivityIndicator,
   ScrollView,
   StatusBar,
   Text,
@@ -14,62 +18,25 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-interface Member {
-  id: string;
-  name: string;
-  avatar: string;
-  role: string;
-  subtitle: string;
-}
-
 const CellProfileScreen = () => {
+  const router = useRouter();
   const { isDark } = useThemeColors();
+  const { id } = useLocalSearchParams();
+
+  const {
+    data: cell,
+    isPending,
+    error,
+    isError,
+  } = useSingleCellQuery(Number(id));
 
   const [activeTab, setActiveTab] = useState<
     "people" | "announcements" | "attendance"
   >("people");
   const [searchQuery, setSearchQuery] = useState("");
 
-  const members: Member[] = [
-    {
-      id: "1",
-      name: "You",
-      avatar: "/placeholder.svg?height=40&width=40",
-      role: "Cell Leader",
-      subtitle: "Love • Jesus • Ambassador",
-    },
-    {
-      id: "2",
-      name: "Pastor Miranda",
-      avatar: "/placeholder.svg?height=40&width=40",
-      role: "Cell owner",
-      subtitle: "When we're hungry...",
-    },
-    {
-      id: "3",
-      name: "Elysse Goh",
-      avatar: "/placeholder.svg?height=40&width=40",
-      role: "Cell admin",
-      subtitle: "nothing i hold on to",
-    },
-    {
-      id: "4",
-      name: "Mary (GG)",
-      avatar: "/placeholder.svg?height=40&width=40",
-      role: "Member",
-      subtitle: "Blessed to be a blessing",
-    },
-    {
-      id: "5",
-      name: "John Smith",
-      avatar: "/placeholder.svg?height=40&width=40",
-      role: "Member",
-      subtitle: "Walking in faith",
-    },
-  ];
-
-  const filteredMembers = members.filter((member) =>
-    member.name.toLowerCase().includes(searchQuery.toLowerCase())
+  const filteredMembers = (cell?.members ?? []).filter((member : Person) =>
+    member?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   const renderTabContent = () => {
@@ -91,6 +58,20 @@ const CellProfileScreen = () => {
     }
   };
 
+  if (isPending)
+    return (
+      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
+        <ActivityIndicator />
+      </SafeAreaView>
+    );
+  if (isError)
+    return (
+      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
+        <Text>{error.message}</Text>
+        <Text>{error.name}</Text>
+      </SafeAreaView>
+    );
+
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       <StatusBar
@@ -98,7 +79,7 @@ const CellProfileScreen = () => {
         barStyle={isDark ? "light-content" : "dark-content"}
       />
       <View className="justify-between flex flex-row px-4">
-        <TouchableOpacity>
+        <TouchableOpacity onPress={() => router.back()}>
           <Ionicons name="chevron-back" size={24} color="#333" />
         </TouchableOpacity>
         <TouchableOpacity>
@@ -112,12 +93,14 @@ const CellProfileScreen = () => {
             <Text className="text-white text-2xl font-bold">tc</Text>
           </View>
           <Text className="text-text text-2xl font-bold text-center mb-2">
-            SIBKL Campus Serving Teams
+            {cell.cell_name}
           </Text>
           <Text className="text-text-secondary text-base">
-            Cell • {members.length} members
+            Cell • {cell.members?.length} member{cell.members?.length === 1 ? "" : "s"}
           </Text>
         </View>
+
+        <Text>{Array.isArray(cell.members)}</Text>
 
         {/* Tab bar */}
         <View className="flex-row mx-6 mb-6">

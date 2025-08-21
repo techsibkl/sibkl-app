@@ -10,7 +10,6 @@ type CellCardProps = {
 
 const CellCard = ({ cell }: CellCardProps) => {
   const router = useRouter();
-  const memberCount = cell.members?.length || 0;
 
   return (
     <TouchableOpacity
