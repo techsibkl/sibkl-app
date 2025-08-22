@@ -12,8 +12,8 @@ export const apiEndpoints = {
   cells: {
     getAll: _endpoint("cells"),
     getById: (id: number | string) => _endpoint(`cells/${id}`),
-
   },
 
+  createAccount: _endpoint("createAccount"),
   getPersonOfUid: _endpoint("getPersonOfUid"),
 };

@@ -16,8 +16,8 @@ const PeopleList = ({ people }: PeopleListProps) => {
   return (
     <FlashList
       data={people}
-      keyExtractor={(item) => item.id.toString()}
       renderItem={renderItem}
+      keyExtractor={(item) => item.id.toString()}
       ListEmptyComponent={<EmptyList />}
       estimatedItemSize={100}
       removeClippedSubviews

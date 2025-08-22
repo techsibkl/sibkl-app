@@ -1,3 +1,4 @@
+import { ProfileFormData } from "@/app/(auth)/complete-profile";
 import { AppUser, AuthState } from "@/services/User/user.types";
 import { apiEndpoints } from "@/utils/endpoints";
 import { secureFetch } from "@/utils/secureFetch";
@@ -35,26 +36,88 @@ export const useAuthStore = create<AuthState>((set) => ({
   },
 
   // Register new account
-  signUp: async (email: string, password: string) => {
-    const { user } = await createUserWithEmailAndPassword(
-      getAuth(),
-      email,
-      password
-    );
-    set({ isAuthenticated: true, isLoading: false });
-    return user;
+  signUp: async (
+    email: string,
+    password: string,
+    profileData: ProfileFormData
+  ) => {
+    try {
+      // 1. Create user in Firebase
+      const { user } = await createUserWithEmailAndPassword(
+        getAuth(),
+        email,
+        password
+      );
+
+      if (!user) {
+        throw new Error("User creation failed. No Firebase user returned.");
+      }
+
+
+      // 2. Create profile in backend
+      const response = await secureFetch(`${apiEndpoints.createAccount}`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(profileData),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Backend account creation failed: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      if (!data.success) {
+        throw new Error(data.message || "Account creation failed on backend");
+      }
+
+      const personResponse = await secureFetch(apiEndpoints.getPersonOfUid, {
+        method: "GET",
+      });
+
+      if (!personResponse.ok) {
+        throw new Error(`Failed to fetch person: ${personResponse.status}`);
+      }
+
+      const personJson = await personResponse.json().catch(() => {
+        throw new Error("Failed to parse JSON from getPersonOfUid response");
+      });
+
+      if (!personJson.success || !personJson.data) {
+        throw new Error("Could not find a person matching your credentials");
+      }
+
+      // 4. Build appUser object
+      const appUser = {
+        uid: user.uid,
+        email: user.email ?? "",
+        people_id: personJson.data.people_id,
+        person: personJson.data,
+      };
+
+      set({ isAuthenticated: true, isLoading: false, user: appUser });
+
+      return user;
+    } catch (error) {
+      console.error("SignUp error:", error);
+
+      // Reset auth state if something failed mid-way
+      set({ isAuthenticated: false, isLoading: false, user: null });
+
+      return null;
+    }
   },
 
   // Sign out
   signOut: async () => {
     await signOut(getAuth());
     set({ user: null, isAuthenticated: false });
-    console.log("user has signed out:");
   },
 
   init: () => {
     onAuthStateChanged(getAuth(), async (firebaseUser) => {
-      console.log("user:", firebaseUser);
 
       if (!firebaseUser) {
         set({
@@ -90,7 +153,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         const json = await response.json();
 
         console.log("person info:", json);
-        
+
         if (json.success && json.data) {
           appUser = {
             ...appUser,

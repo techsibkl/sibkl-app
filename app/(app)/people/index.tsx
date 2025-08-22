@@ -5,14 +5,13 @@ import SharedHeader from "@/components/shared/SharedHeader";
 import { usePeopleQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Search } from "lucide-react-native";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import {
   ActivityIndicator,
-  ScrollView,
   StatusBar,
-  TextInput,
-  View,
   Text,
+  TextInput,
+  View
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -22,11 +21,13 @@ const PeopleScreen = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredPeople = (people ?? []).filter(
-    (person) =>
-      person?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      person?.phone?.includes(searchQuery)
+ const filteredPeople = useMemo(() => {
+  return (people ?? []).filter((person) =>
+    person?.full_name?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    person?.phone?.includes(searchQuery)
   );
+}, [people, searchQuery]);
+
 
   // const handlePersonPress = (person: Person) => {
   //   // Navigate to profile or handle person selection
@@ -70,9 +71,9 @@ const PeopleScreen = () => {
       </SharedHeader>
 
       {/* People List */}
-      <ScrollView className="flex-1 px-5" showsVerticalScrollIndicator={false}>
+      <View className="flex-1 px-5">
         <PeopleList people={filteredPeople} />
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };

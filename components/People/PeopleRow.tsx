@@ -1,7 +1,7 @@
 import { Person } from "@/services/Person/person.type";
 import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
-import { Image, StyleSheet, Text, TouchableOpacity, View } from "react-native";
+import { Image, Text, TouchableOpacity, View } from "react-native";
 
 type PeopleRowProps = {
   person: Person;
@@ -11,9 +11,8 @@ const PeopleRowComponent = ({ person }: PeopleRowProps) => {
   const router = useRouter();
 
   const handlePress = useCallback(() => {
-    console.log("supposed to redirect");
     router.push(`/people/profile/${person.id}`);
-  }, []);
+  }, [person.id, router]);
 
   return (
     <TouchableOpacity
@@ -56,29 +55,3 @@ const PeopleRowComponent = ({ person }: PeopleRowProps) => {
 
 const PeopleRow = React.memo(PeopleRowComponent);
 export default PeopleRow;
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingVertical: 24,
-    borderBottomWidth: 1,
-    borderColor: "#e5e5e5",
-  },
-  avatar: {
-    width: 48,
-    height: 48,
-    borderRadius: 24,
-    marginRight: 16,
-    overflow: "hidden",
-  },
-  name: {
-    fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 4,
-  },
-  phone: {
-    fontSize: 14,
-    color: "#666",
-  },
-});

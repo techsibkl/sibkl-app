@@ -8,7 +8,6 @@ import { useAuthStore } from "@/stores/authStore";
 import { Search } from "lucide-react-native";
 import { useState } from "react";
 import {
-  ScrollView,
   StatusBar,
   Text,
   TextInput,
@@ -57,13 +56,12 @@ const CellsScreen = () => {
       </SharedHeader>
 
       {/* Content */}
-      <ScrollView
+      <View
         className="flex-1 px-5 pt-5"
-        showsVerticalScrollIndicator={false}
       >
         <CellList cells={filteredCells} />
       
-      </ScrollView>
+      </View>
     </SafeAreaView>
   );
 };
