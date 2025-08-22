@@ -57,7 +57,7 @@ const Page = () => {
   };
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SafeAreaView className="flex-1 bg-background">
       <ScrollView
         className="flex-1 px-6 py-8"
         showsVerticalScrollIndicator={false}
@@ -87,7 +87,7 @@ const Page = () => {
           <View className="space-y-6">
             {/* Email input */}
             <View className="mb-6">
-              <Text className="text-sm font-medium text-gray-700 mb-2">
+              <Text className="text-sm font-medium text-text mb-2">
                 Email
               </Text>
               <View className="relative">
@@ -105,7 +105,7 @@ const Page = () => {
                   }}
                   render={({ field: { onChange, onBlur, value } }) => (
                     <TextInput
-                      className="pl-12 h-12 bg-gray-50 border border-gray-200 rounded-lg text-gray-800"
+                      className="pl-12 h-12 bg-white border border-border rounded-lg text-text"
                       placeholder="Enter your email"
                       placeholderTextColor="#9ca3af"
                       onBlur={onBlur}
@@ -119,7 +119,7 @@ const Page = () => {
                   name="email"
                 />
                 {errors.email && (
-                  <Text className="text-red-500 text-sm mt-1">
+                  <Text className="text-primary-500 text-sm mt-1">
                     {errors.email.message}
                   </Text>
                 )}
@@ -128,7 +128,7 @@ const Page = () => {
 
             {/* Password input */}
             <View className="mb-6">
-              <Text className="text-sm font-medium text-gray-700 mb-2">
+              <Text className="text-sm font-medium text-text mb-2">
                 Password
               </Text>
               <View className="relative">
@@ -146,7 +146,7 @@ const Page = () => {
                   }}
                   render={({ field: { onChange, onBlur, value } }) => (
                     <TextInput
-                      className="pl-12 pr-12 h-12 bg-gray-50 border border-gray-200 rounded-lg text-gray-800"
+                      className="pl-12 pr-12 h-12 bg-white border border-border rounded-lg text-text"
                       placeholder="Enter your password"
                       placeholderTextColor="#9ca3af"
                       onBlur={onBlur}
@@ -170,7 +170,7 @@ const Page = () => {
                   )}
                 </TouchableOpacity>
                 {errors.password && (
-                  <Text className="text-red-500 text-sm mt-1">
+                  <Text className="text-primary-500 text-sm mt-1">
                     {errors.password.message}
                   </Text>
                 )}
@@ -202,7 +202,7 @@ const Page = () => {
               />
               <Link href="/forgot-password" asChild>
                 <TouchableOpacity>
-                  <Text className="text-sm text-blue-600 font-medium">
+                  <Text className="text-sm text-primary-600 font-medium">
                     Forgot Password?
                   </Text>
                 </TouchableOpacity>
@@ -211,7 +211,7 @@ const Page = () => {
 
             {/* Sign in button */}
             <TouchableOpacity
-              className={`w-full h-12 rounded-lg items-center justify-center mb-6 ${"bg-blue-600"}`}
+              className={`w-full h-12 rounded-lg items-center justify-center mb-6 ${"bg-primary-600"}`}
               onPress={handleSubmit(onSubmit)}
               // disabled={isLoading}
             >
@@ -225,7 +225,7 @@ const Page = () => {
               <Text className="text-gray-600 text-sm">
                 Dont have an account?{" "}
                 <Link href="/sign-up" asChild>
-                  <Text className="text-blue-600 font-semibold">Sign Up</Text>
+                  <Text className="text-primary-600 font-semibold">Sign Up</Text>
                 </Link>
               </Text>
             </View>

@@ -56,7 +56,7 @@ const Page = () => {
 
   return (
       <KeyboardAwareScrollView
-        className="flex-1 px-6 py-8"
+        className="flex-1 px-6 py-8 bg-background"
         enableOnAndroid={true}
         extraScrollHeight={60} // 👈 pushes inputs above keyboard
         keyboardShouldPersistTaps="handled"
@@ -74,8 +74,8 @@ const Page = () => {
                   resizeMode="contain"
                 />
               </View>
-              <Text className="text-2xl font-bold text-gray-800">New Here</Text>
-              <Text className="text-gray-500 mt-2 text-center">
+              <Text className="text-2xl font-bold text-text">New Here</Text>
+              <Text className="text-text-secondary mt-2 text-center">
                 Create your account
               </Text>
             </View>
@@ -155,7 +155,7 @@ const Page = () => {
 
               {/* Submit button */}
               <TouchableOpacity
-                className="w-full h-12 bg-blue-600 rounded-lg items-center justify-center mb-6"
+                className="w-full h-12 bg-primary-600 rounded-lg items-center justify-center mb-6"
                 onPress={handleSubmit(onSubmit)}
               >
                 <Text className="text-white font-semibold text-base">
@@ -165,10 +165,10 @@ const Page = () => {
 
               {/* Sign in link */}
               <View className="items-center">
-                <Text className="text-gray-600 text-sm">
+                <Text className="text-text text-sm">
                   Already have an account?{" "}
                   <Link href="/sign-in" asChild>
-                    <Text className="text-blue-600 font-semibold">Sign In</Text>
+                    <Text className="text-primary-600 font-semibold">Sign In</Text>
                   </Link>
                 </Text>
               </View>

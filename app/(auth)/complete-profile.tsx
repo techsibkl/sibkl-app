@@ -104,7 +104,7 @@ const Page = () => {
       keyboardShouldPersistTaps="handled"
       contentContainerStyle={{ flexGrow: 1 }}
     >
-      <SafeAreaView className="flex-1 bg-white mb-4">
+      <SafeAreaView className="flex-1 bg-background mb-4">
         <View className="max-w-sm mx-auto w-full">
           {/* Logo - Replace with your app logo */}
           <View className="items-center mb-12 mt-8">
@@ -118,16 +118,16 @@ const Page = () => {
                 resizeMode="contain"
               />
             </View>
-            <Text className="text-2xl font-bold text-gray-800">
+            <Text className="text-2xl font-bold text-text">
               Complete Profile
             </Text>
-            <Text className="text-gray-500 mt-2 text-center">
+            <Text className="text-text-secondary mt-2 text-center">
               You&apos;re almost there!!
             </Text>
           </View>
         </View>
 
-        <View className="space-y-6 px-5">
+        <View className="px-5">
           <FormField
             name="first_name"
             label="First Name (required)"
@@ -292,7 +292,7 @@ const Page = () => {
 
         {/* Complete button */}
         <TouchableOpacity
-          className="bg-blue-500 p-4 rounded-lg mt-4 mx-5"
+          className="bg-primary-600 p-4 rounded-lg mt-4 mx-5"
           onPress={handleSubmit(onSubmit)}
           disabled={isSubmitting}
         >
