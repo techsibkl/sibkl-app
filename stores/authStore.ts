@@ -12,6 +12,7 @@ import {
 import { create } from "zustand";
 
 export const useAuthStore = create<AuthState>((set) => ({
+  firebaseUser: null,
   user: null,
   isLoading: true,
   isAuthenticated: false,
@@ -30,7 +31,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       email,
       password
     );
-    set({ isAuthenticated: true, isLoading: false });
+    set({firebaseUser:user, isAuthenticated: true, isLoading: false });
     console.log("user was set:", user);
     return user;
   },
@@ -97,7 +98,7 @@ export const useAuthStore = create<AuthState>((set) => ({
         person: personJson.data,
       };
 
-      set({ isAuthenticated: true, isLoading: false, user: appUser });
+      set({firebaseUser: user, isAuthenticated: true, isLoading: false, user: appUser });
 
       return user;
     } catch (error) {
@@ -121,6 +122,7 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       if (!firebaseUser) {
         set({
+          firebaseUser: null,
           user: null,
           isAuthenticated: false,
           isLoading: false,
@@ -139,6 +141,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       if (!firebaseUser.emailVerified) {
         // here you might show toast / navigate to sign-up
         set({
+          firebaseUser: firebaseUser,
           user: appUser,
           isAuthenticated: false,
         });
@@ -168,6 +171,7 @@ export const useAuthStore = create<AuthState>((set) => ({
       }
 
       set({
+        firebaseUser: firebaseUser,
         user: appUser,
         isAuthenticated: !!appUser.person, // only true if profile is complete
         isLoading: false,

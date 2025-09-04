@@ -31,8 +31,7 @@ export type ProfileFormData = {
   emergency_contact_relationship: string;
 };
 const Page = () => {
-  const [selectedDate, setSelectedDate] = useState(new Date());
-  const { step1Data, setData } = signUpStore();
+  const { step1Data } = signUpStore();
   const { signUp } = useAuthStore();
   const router = useRouter();
 

@@ -19,20 +19,26 @@ const queryClient = new QueryClient();
 function RootLayoutNav() {
   const segments = useSegments();
   const router = useRouter();
-  const { user, isLoading, init } = useAuthStore();
+  const { firebaseUser, user, isLoading, init } = useAuthStore();
 
   useEffect(() => {
-      init()
-    },[])
+    init();
+  }, []);
 
   useEffect(() => {
-    if(isLoading) return;
+    if (isLoading) return;
 
     const inAuthGroup = segments[0] === "(auth)";
 
-    if (!user && !inAuthGroup) {
+    if (!firebaseUser && !inAuthGroup) {
       router.replace("/(auth)/sign-in");
-    } else if (user && inAuthGroup) {
+    }else if (firebaseUser && !firebaseUser.emailVerified && !inAuthGroup) {
+      router.replace("/(auth)/verify-email");
+    }else if (!user && !inAuthGroup) {
+      router.replace("/(auth)/sign-in");
+    }else if (user && !user.person) {
+      router.replace("/(auth)/complete-profile");
+    }else if (user && inAuthGroup) {
       // Already logged in → go to app
       router.replace("/(app)/home");
     }

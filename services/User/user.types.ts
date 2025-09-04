@@ -1,9 +1,10 @@
+import { ProfileFormData } from "@/app/(auth)/complete-profile";
 import { FirebaseAuthTypes } from "@react-native-firebase/auth";
 import { Person } from "../Person/person.type";
-import { ProfileFormData } from "@/app/(auth)/complete-profile";
 
 // Example state with Zustand
 export type AuthState = {
+  firebaseUser: FirebaseAuthTypes.User | null;
   user: AppUser | null;
   isLoading: boolean;
   isAuthenticated: boolean;
