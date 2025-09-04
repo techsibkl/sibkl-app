@@ -2,10 +2,12 @@ import { useCategorResourceQuery } from "@/hooks/Resource/useCategoryResroucesQu
 import { MediaResource } from "@/services/Resource/resource.type";
 import { FlashList } from "@shopify/flash-list";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, ChevronRight } from "lucide-react-native";
+import { ChevronLeft, Search } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
+  Image,
+  Linking,
   Text,
   TextInput,
   TouchableOpacity,
@@ -30,7 +32,13 @@ const CategoryResources = () => {
     [data]
   );
 
-  // const filteredResources = useFilteredResources(resources, searchQuery);
+  const handleItemPress = async (url: string) => {
+    try {
+      await Linking.openURL(url);
+    } catch (error) {
+      console.error("Error opening URL:", error);
+    }
+  };
 
   const filteredResources = useMemo(
     () =>
@@ -51,7 +59,7 @@ const CategoryResources = () => {
   return (
     <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
       {/* Header */}
-      <View className="flex-row items-center px-4 py-3 border-b border-gray-200">
+      <View className="flex-row items-center px-4 py-3 ">
         <TouchableOpacity onPress={() => router.back()}>
           <ChevronLeft size={24} color="#333" />
         </TouchableOpacity>
@@ -61,13 +69,16 @@ const CategoryResources = () => {
       </View>
 
       {/* Search */}
-      <View className="px-4 py-3">
-        <TextInput
-          className="bg-white border border-gray-300 rounded-lg px-4 py-2"
-          placeholder={`Search ${category}...`}
-          value={searchQuery}
-          onChangeText={setSearchQuery}
-        />
+      <View className="px-5 pb-2">
+        <View className="flex-row items-center rounded-xl px-4 py-3 bg-white border border-border">
+          <Search size={20} color="#999" />
+          <TextInput
+            className="flex-1 text-text-secondary text-base ml-3"
+            placeholder={`Search ${category}...`}
+            value={searchQuery}
+            onChangeText={setSearchQuery}
+          />
+        </View>
       </View>
 
       {/* List */}
@@ -77,16 +88,42 @@ const CategoryResources = () => {
         estimatedItemSize={80}
         contentContainerStyle={{ paddingHorizontal: 16, paddingBottom: 24 }}
         renderItem={({ item }) => (
-          <TouchableOpacity className="bg-gray-100 rounded-lg p-4 mb-3 flex-row items-center justify-between">
+          <TouchableOpacity
+            className="bg-background border-border border rounded-lg p-4 mb-3 flex-row items-center justify-between"
+            onPress={() => handleItemPress(item.drive_view_link)}
+          >
             <View className="flex-1">
-              <Text className="text-base font-medium text-text mb-1">
+              <Image
+                source={{
+                  uri: item.thumbnail_id
+                    ? `https://drive.google.com/thumbnail?id=${item.thumbnail_id}`
+                    : `https://drive.google.com/thumbnail?id=${item.drive_file_id}`,
+                }}
+                className="w-full h-56 rounded-lg mb-3"
+                resizeMode="contain"
+              />
+              <Text
+                className="text-base font-medium text-text mb-1"
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
                 {item.title}
               </Text>
-              <Text className="text-sm text-gray-500">
-                {item.file_type} • {item.description || "No description"}
+              <Text
+                className="text-xs text-gray-500"
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
+                {item.file_type === "PDF" ? "PDF Document" : "Video"}
+              </Text>
+              <Text
+                className="text-sm text-gray-500"
+                numberOfLines={2}
+                ellipsizeMode="tail"
+              >
+                {item.description || "No description"}
               </Text>
             </View>
-            <ChevronRight size={20} color="#6B7280" />
           </TouchableOpacity>
         )}
         onEndReached={() => {

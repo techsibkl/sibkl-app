@@ -47,7 +47,8 @@ const CategoryItemsList = ({ items }: CategoryItemsListProps) => {
             >
               {item.title}
             </Text>
-            <Text className="text-text-secondary text-sm capitalize">
+            <Text className="text-text-secondary text-sm capitalize" numberOfLines={2}
+              ellipsizeMode="tail">
               {item.file_type === "PDF" ? "PDF Document" : "Video"}
             </Text>
           </View>
