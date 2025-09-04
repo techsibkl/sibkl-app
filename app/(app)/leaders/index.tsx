@@ -6,7 +6,7 @@ import { useFilteredResources } from "@/hooks/Resource/useFilteredResources";
 import { useResourcesQuery } from "@/hooks/Resource/useResourceQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Search } from "lucide-react-native";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { ScrollView, StatusBar, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -50,7 +50,7 @@ const LeadersPage = () => {
       </SharedHeader>
 
       <ScrollView className="flex-1 px-4" showsVerticalScrollIndicator={false}>
-        <CategoryList categories={groupedResources} />
+        <CategoryList groupedResources={groupedResources} />
       </ScrollView>
     </SafeAreaView>
   );
