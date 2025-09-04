@@ -1,7 +1,7 @@
-import { View, Text, TouchableOpacity } from "react-native";
-import React from "react";
 import { FlashList } from "@shopify/flash-list";
 import { ChevronRightIcon } from "lucide-react-native";
+import React from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 import CategoryItemsList from "./CategoryItemsList";
 
 type CategoryListProps = {
@@ -10,6 +10,8 @@ type CategoryListProps = {
 
 const CategoryList = ({ categories }: CategoryListProps) => {
   return (
+    <>
+
     <FlashList
       data={categories}
       keyExtractor={(_, index) => index.toString()}
@@ -19,8 +21,9 @@ const CategoryList = ({ categories }: CategoryListProps) => {
           {/* Category Header */}
           <View className="flex-row items-center justify-between mb-4">
             <Text className="text-text-secondary text-xl font-bold">
-              {category.title}
+              {category}
             </Text>
+            <Text>{JSON.stringify(category)}</Text>
             <TouchableOpacity className="flex-row items-center">
               <Text className="text-text-secondary/60 text-sm mr-1">
                 See All
@@ -34,6 +37,8 @@ const CategoryList = ({ categories }: CategoryListProps) => {
         </View>
       )}
     />
+    </>
+    
   );
 };
 
