@@ -8,6 +8,8 @@ export async function secureFetch(input: RequestInfo, init: RequestInit = {}) {
   // New modular API: call getIdToken() as a function
   const token = await user.getIdToken(); // still a method call
 
+  // console.log("token", token)
+
   const headers = {
     ...init.headers,
     Authorization: `Bearer ${token}`,

@@ -109,6 +109,12 @@ export default function AppLayout() {
           href: null, // removes it from tab navigation
         }}
       />
+      <Tabs.Screen
+        name="leaders/[category]"
+        options={{
+          href: null, // removes it from tab navigation
+        }}
+      />
     </Tabs>
   );
 }

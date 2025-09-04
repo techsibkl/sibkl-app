@@ -2,10 +2,10 @@ import { CATEGORIES } from "@/constants/const_resources";
 import { MediaResource } from "@/services/Resource/resource.type";
 import { useMemo } from "react";
 
-export function useFilteredResources(
+export const useFilteredResources = (
   resources: MediaResource[] | undefined,
   searchQuery: string
-) {
+) => {
   return useMemo(() => {
     if (!resources) return [];
 

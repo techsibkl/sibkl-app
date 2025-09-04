@@ -155,8 +155,6 @@ export const useAuthStore = create<AuthState>((set) => ({
 
         const json = await response.json();
 
-        console.log("person info:", json);
-
         if (json.success && json.data) {
           appUser = {
             ...appUser,
