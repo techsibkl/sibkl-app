@@ -2,11 +2,11 @@ import { FormDateInput } from "@/components/shared/FormDateInput";
 import { FormField } from "@/components/shared/FormField";
 import { FormSelect } from "@/components/shared/FormSelect";
 import { useAuthStore } from "@/stores/authStore";
+import { useClaimStore } from "@/stores/claimStore";
 import { signUpStore } from "@/stores/signUpStore";
 import { AgeGroup } from "@/utils/types/utils.types";
-import { DateTimePicker } from "@expo/ui/jetpack-compose";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React, { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
@@ -32,13 +32,15 @@ export type ProfileFormData = {
 };
 const Page = () => {
   const { step1Data } = signUpStore();
+  const { selectedProfile } = useClaimStore();
   const { signUp } = useAuthStore();
   const router = useRouter();
-
+  console.log("selected profile:", selectedProfile);
   const {
     control,
     handleSubmit,
     setValue,
+    reset,
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormData>({
     defaultValues: {
@@ -61,6 +63,33 @@ const Page = () => {
       emergency_contact_relationship: "",
     },
   });
+
+    // ✅ When selectedProfile changes, update the form values
+  useEffect(() => {
+    if (selectedProfile) {
+      // reset({
+      //   first_name: selectedProfile.first_name ?? "",
+      //   last_name: selectedProfile.last_name ?? "",
+      //   email: selectedProfile.email ?? "",
+      //   phone: selectedProfile.phone ?? "",
+      //   gender: selectedProfile.gender ?? "male",
+      //   marital_status: selectedProfile.marital_status ?? "",
+      //   birth_date: selectedProfile.birth_date ?? "",
+      //   occupation: selectedProfile.occupation ?? "",
+      //   age: selectedProfile.age?.toString() ?? "",
+      //   age_group: selectedProfile.age_group ?? AgeGroup.Age13_17,
+      //   address_line1: selectedProfile.address_line1 ?? "",
+      //   city: selectedProfile.city ?? "",
+      //   state: selectedProfile.state ?? "",
+      //   postcode: selectedProfile.postcode ?? "",
+      //   emergency_contact_name: selectedProfile.emergency_contact_name ?? "",
+      //   emergency_contact_phone: selectedProfile.emergency_contact_phone ?? "",
+      //   emergency_contact_relationship:
+      //     selectedProfile.emergency_contact_relationship ?? "",
+      // });
+      console.log("filling in form with selected profile data!")
+    }
+  }, [selectedProfile, reset]);
 
   const onSubmit = async (data: ProfileFormData) => {
     console.log("Form submitted:", data);
