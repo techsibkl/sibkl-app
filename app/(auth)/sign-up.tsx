@@ -14,13 +14,6 @@ import {
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-interface SignUpFormData {
-  email: string;
-  password: string;
-  first_name: string;
-  last_name: string;
-  phone: string;
-}
 const PAGE_SIZE = 20;
 
 const Page = () => {
@@ -130,7 +123,7 @@ const Page = () => {
 
         {/* List */}
         <FlashList
-          data={filteredProfiles}
+          data={visibleProfiles}
           keyExtractor={(item) => item.id.toString()}
           estimatedItemSize={80}
           ListEmptyComponent={

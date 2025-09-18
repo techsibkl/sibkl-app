@@ -50,7 +50,7 @@ export type Person = {
   [key: string]: any;
 };
 
-export type maskedPerson = {
+export type MaskedPerson = {
   id: number;
   first_name: string;
   last_name: string;

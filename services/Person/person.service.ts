@@ -4,7 +4,7 @@ import { secureFetch } from "@/utils/secureFetch";
 import { ReturnVal } from "@/utils/types/returnVal.types";
 import { Cell } from "../Cell/cell.types";
 import { District } from "../District/district.types";
-import { Person, maskedPerson } from "./person.type";
+import { Person, MaskedPerson } from "./person.type";
 
 export async function fetchPeople(id: number | void): Promise<Person[]> {
   // Fetch data from the server
@@ -29,7 +29,7 @@ export async function fetchPeople(id: number | void): Promise<Person[]> {
   return result;
 }
 
-export async function fetchPeopleWithNoUid(): Promise<maskedPerson[] | null> {
+export async function fetchPeopleWithNoUid(): Promise<MaskedPerson[] | null> {
   // Fetch data from the server
   try {
     let response = await secureFetch(
@@ -45,7 +45,7 @@ export async function fetchPeopleWithNoUid(): Promise<maskedPerson[] | null> {
       };
     }
 
-    return json?.data as maskedPerson[];
+    return json?.data as MaskedPerson[];
   } catch (error) {
     console.error(error);
     return null;

@@ -1,4 +1,5 @@
 import { FormField } from "@/components/shared/FormField";
+import { useClaimStore } from "@/stores/claimStore";
 import { Eye, EyeOff } from "lucide-react-native";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -10,13 +11,14 @@ const Page = () => {
     password: string;
   };
 
+  const { selectedProfile } = useClaimStore();
   const [showPassword, setShowPassword] = useState(false);
   const {
     control,
     handleSubmit,
     formState: { errors, isSubmitting },
   } = useForm<signUpFormData>({
-    defaultValues: { email: "", password: "" },
+    defaultValues: { email: selectedProfile?.email ?? "", password: "" },
   });
 
   const signUp = (email: string, password: string) => {
@@ -55,6 +57,7 @@ const Page = () => {
           label="Email"
           control={control}
           errors={errors}
+          editable={selectedProfile ? false : true}
         />
 
         {/* Password */}
@@ -75,6 +78,22 @@ const Page = () => {
             </TouchableOpacity>
           }
         />
+
+        {selectedProfile && (
+          <View>
+            <Text className="text-sm text-text-secondary">
+              *You can change the information below later
+            </Text>
+
+            <Text className="font-semibold text-lg text-text">
+              Full Name: {selectedProfile?.full_name}
+            </Text>
+
+            <Text className="text-sm text-text-secondary">
+              Phone: {selectedProfile?.phone}
+            </Text>
+          </View>
+        )}
 
         {/* Submit */}
         <TouchableOpacity

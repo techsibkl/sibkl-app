@@ -1,10 +1,13 @@
+import { MaskedPerson } from "@/services/Person/person.type";
+import { useClaimStore } from "@/stores/claimStore";
 import { useRouter } from "expo-router";
-import React, { useState } from "react";
+import React from "react";
 import { Alert, Text, TouchableOpacity } from "react-native";
 
 export default function ProfileItem({ item }: { item: any }) {
   const router = useRouter();
-//   const [showConfirm, setShowConfirm] = useState(false);
+  const claimStore = useClaimStore();
+  //   const [showConfirm, setShowConfirm] = useState(false);
 
   const handlePress = () => {
     Alert.alert(
@@ -20,8 +23,8 @@ export default function ProfileItem({ item }: { item: any }) {
           onPress: () => {
             // Optionally store the selected profile in a Zustand store
             // useClaimStore.getState().setSelectedProfile(item);
-
-            router.push("/(auth)/new-account");
+            claimStore.setSelectedProfile(item as MaskedPerson);
+            router.push("/(auth)/selected-account");
           },
         },
       ]
