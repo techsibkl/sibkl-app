@@ -1,5 +1,7 @@
 import { FormField } from "@/components/shared/FormField";
 import { sendOTP } from "@/services/OTP/otp.service";
+import { useSignUpStore } from "@/stores/signUpStore";
+import { useRouter } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -12,6 +14,8 @@ const Page = () => {
   };
 
   const [showPassword, setShowPassword] = useState(false);
+  const router = useRouter();
+  const signUpStore = useSignUpStore();
   const {
     control,
     handleSubmit,
@@ -21,25 +25,28 @@ const Page = () => {
   });
 
   const signUp = async (email: string, password: string) => {
-    console.log(
-      "sneding verification email for this email:",
-      email,
-      "and password:",
-      password
-    );
+    console.log("sending verification email for:", email);
+
+    // 1. Send OTP
     const result = await sendOTP(email);
     console.log("result of sending OTP:", result);
+
+    // 2. Save pending signup to store
+    signUpStore.setPendingSignUp({ email, password });
+
+    return result;
   };
 
   const onSubmit = async (data: signUpFormData) => {
     try {
       await signUp(data.email, data.password);
-      Alert.alert("Success", "Account created successfully!");
+
+      // Navigate to OTP verification page
+      router.push("/(auth)/verify-otp");
     } catch (err: any) {
-      Alert.alert("Error", err.message || "Failed to create account.");
+      Alert.alert("Error", err.message || "Failed to send verification code.");
     }
   };
-
   return (
     <SafeAreaView className="flex-1 bg-background">
       <ScrollView
