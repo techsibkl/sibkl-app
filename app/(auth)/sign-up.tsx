@@ -1,12 +1,20 @@
 import { FormField } from "@/components/shared/FormField";
+import { usePeopleWithNouidQuery } from "@/hooks/People/usePeopleWithNoUid";
 import { FoundProfile, useClaimStore } from "@/stores/claimStore";
 import { signUpStore } from "@/stores/signUpStore";
 import { Link, useRouter } from "expo-router";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { SafeAreaView } from "react-native-safe-area-context";
 
 interface SignUpFormData {
   email: string;
@@ -18,6 +26,8 @@ interface SignUpFormData {
 
 const Page = () => {
   const router = useRouter();
+  const { isPending, isError, error, data } = usePeopleWithNouidQuery();
+
   const [showPassword, setShowPassword] = useState<boolean>(false);
   const { step1Data, setData } = signUpStore();
   const setFoundProfiles = useClaimStore((s) => s.setFoundProfiles);
@@ -70,6 +80,21 @@ const Page = () => {
     }
   };
 
+  if (isPending)
+    return (
+      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
+        <ActivityIndicator />
+      </SafeAreaView>
+    );
+  if (isError)
+    return (
+      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
+        {/* <Text>{JSON.stringify(error)}</Text> */}
+        <Text>{error.message}</Text>
+        <Text>{error.name}</Text>
+      </SafeAreaView>
+    );
+
   return (
     <KeyboardAwareScrollView
       className="flex-1 px-6 py-8 bg-background"
@@ -94,6 +119,7 @@ const Page = () => {
           <Text className="text-text-secondary mt-2 text-center">
             Create your account
           </Text>
+          {/* <Text>{JSON.stringify(data)}</Text> */}
         </View>
 
         <View className="space-y-6">

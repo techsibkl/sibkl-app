@@ -8,6 +8,7 @@ export const apiEndpoints = {
   people: {
     getAll: _endpoint("people"),
     getById: (id: number | string) => _endpoint(`people/${id}`),
+    geteWithNoUid: _endpoint(`people/with-no-uid`),
   },
   cells: {
     getAll: _endpoint("cells"),
