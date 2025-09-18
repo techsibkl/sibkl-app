@@ -1,8 +1,9 @@
 import { FormField } from "@/components/shared/FormField";
+import { sendOTP } from "@/services/OTP/otp.service";
 import { Eye, EyeOff } from "lucide-react-native";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import { Alert, ScrollView, Text, TouchableOpacity } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 const Page = () => {
   type signUpFormData = {
@@ -19,13 +20,15 @@ const Page = () => {
     defaultValues: { email: "", password: "" },
   });
 
-  const signUp = (email: string, password: string) => {
+  const signUp = async (email: string, password: string) => {
     console.log(
       "sneding verification email for this email:",
       email,
       "and password:",
       password
     );
+    const result = await sendOTP(email);
+    console.log("result of sending OTP:", result);
   };
 
   const onSubmit = async (data: signUpFormData) => {
