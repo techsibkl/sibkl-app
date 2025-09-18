@@ -32,15 +32,12 @@ export async function fetchPeople(id: number | void): Promise<Person[]> {
 export async function fetchPeopleWithNoUid(): Promise<maskedPerson[] | null> {
   // Fetch data from the server
   try {
-    console.log(apiEndpoints.people.geteWithNoUid);
     let response = await secureFetch(
       apiEndpoints.people.geteWithNoUid,
       { method: "GET" },
       { allowUnauthenticated: true }
     );
-    console.log("response:", response);
     let json: ReturnVal = await response.json();
-    console.log(json);
     if (!json.success) {
       throw {
         status: json.status_code,

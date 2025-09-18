@@ -1,15 +1,13 @@
-import { FormField } from "@/components/shared/FormField";
+import ProfileItem from "@/components/Auth/ProfileItem";
 import { usePeopleWithNouidQuery } from "@/hooks/People/usePeopleWithNoUid";
-import { FoundProfile, useClaimStore } from "@/stores/claimStore";
-import { signUpStore } from "@/stores/signUpStore";
+import { FlashList } from "@shopify/flash-list";
 import { Link, useRouter } from "expo-router";
-import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
-import React, { useState } from "react";
-import { useForm } from "react-hook-form";
+import React, { useMemo, useState } from "react";
 import {
   ActivityIndicator,
   Image,
   Text,
+  TextInput,
   TouchableOpacity,
   View,
 } from "react-native";
@@ -23,60 +21,49 @@ interface SignUpFormData {
   last_name: string;
   phone: string;
 }
+const PAGE_SIZE = 20;
 
 const Page = () => {
   const router = useRouter();
-  const { isPending, isError, error, data } = usePeopleWithNouidQuery();
-
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const { step1Data, setData } = signUpStore();
-  const setFoundProfiles = useClaimStore((s) => s.setFoundProfiles);
-
   const {
-    control,
-    handleSubmit,
-    formState: { errors },
-  } = useForm<SignUpFormData>({
-    defaultValues: {
-      email: step1Data.email || "thomasawtoft@gmail.com",
-      password: step1Data.password || "123456",
-      first_name: step1Data.first_name || "Tom",
-      last_name: step1Data.last_name || "Choo",
-      phone: step1Data.phone || "0127412466",
-    },
-  });
+    isPending,
+    isError,
+    error,
+    data: maskedPeople,
+  } = usePeopleWithNouidQuery();
+  const [firstNameQuery, setFirstNameQuery] = useState("");
+  const [lastNameQuery, setLastNameQuery] = useState("");
+  const [page, setPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
 
-  const onSubmit = (values: SignUpFormData) => {
-    setData(values);
-    console.log("Saved in store:", signUpStore.getState().step1Data);
+  // Filter logic
+  const filteredProfiles = useMemo(() => {
+    return (maskedPeople ?? []).filter((person) => {
+      const matchFirst =
+        firstNameQuery === "" ||
+        person?.first_name
+          ?.toLowerCase()
+          .includes(firstNameQuery.toLowerCase());
+      const matchLast =
+        lastNameQuery === "" ||
+        person?.last_name?.toLowerCase().includes(lastNameQuery.toLowerCase());
+      return matchFirst && matchLast;
+    });
+  }, [firstNameQuery, lastNameQuery, maskedPeople]);
 
-    // Fire an api to see if got result for anyone matching the info that was just submitted
-    const hasPotentialMatches = true;
-    if (hasPotentialMatches) {
-      const fakeProfiles: FoundProfile[] = [
-        {
-          id: "1",
-          full_name: "Amanda Smith",
-          email: "amanda.smith@example.com",
-        },
-        {
-          id: "2",
-          full_name: "John Doe",
-          email: "john.doe@example.com",
-        },
-        {
-          id: "3",
-          full_name: "Sarah Johnson",
-          email: "sarah.johnson@example.com",
-        },
-      ];
-      setFoundProfiles(fakeProfiles);
+  // Paginate results
+  const visibleProfiles = useMemo(
+    () => filteredProfiles.slice(0, page * PAGE_SIZE),
+    [filteredProfiles, page]
+  );
 
-      console.log("Found Potential Account Matches");
-      router.push("/(auth)/claim");
-    } else {
-      console.log("No Account Matches Found");
-      router.push("/(auth)/complete-profile");
+  const handleLoadMore = () => {
+    if (page * PAGE_SIZE < filteredProfiles.length && !loadingMore) {
+      setLoadingMore(true);
+      setTimeout(() => {
+        setPage((prev) => prev + 1);
+        setLoadingMore(false);
+      }, 300); // Simulate async
     }
   };
 
@@ -115,92 +102,71 @@ const Page = () => {
               resizeMode="contain"
             />
           </View>
-          <Text className="text-2xl font-bold text-text">New Here</Text>
+          <Text className="text-2xl font-bold text-text">New Here?</Text>
           <Text className="text-text-secondary mt-2 text-center">
-            Create your account
+            SIBKL has an extensive database of our members your info might
+            already be with us
           </Text>
-          {/* <Text>{JSON.stringify(data)}</Text> */}
+          <Text className="text-text-secondary mt-2 text-center">
+            Enter your first and last name to help you find out
+          </Text>
         </View>
 
-        <View className="space-y-6">
-          {/* Email */}
-          <FormField
-            name="email"
-            label="Email"
-            control={control}
-            errors={errors}
-            icon={<Mail size={20} color="#6b7280" />}
-            rules={{
-              required: "Email is required",
-              pattern: { value: /^\S+@\S+$/i, message: "Invalid email" },
-            }}
-            placeholder="Enter your email"
-            keyboardType="email-address"
+        {/* Inputs */}
+        <View className="mb-4">
+          <TextInput
+            placeholder="First name"
+            value={firstNameQuery}
+            onChangeText={setFirstNameQuery}
+            className="bg-white border border-gray-300 rounded-lg px-4 py-3 mb-3"
           />
+          <TextInput
+            placeholder="Last name"
+            value={lastNameQuery}
+            onChangeText={setLastNameQuery}
+            className="bg-white border border-gray-300 rounded-lg px-4 py-3"
+          />
+        </View>
 
-          {/* Password */}
-          <FormField
-            name="password"
-            label="Password"
-            control={control}
-            errors={errors}
-            icon={<Lock size={20} color="#6b7280" />}
-            rules={{
-              required: "Password is required",
-              minLength: { value: 6, message: "At least 6 characters" },
-            }}
-            placeholder="Enter your password"
-            secureTextEntry={!showPassword}
-            rightIcon={
-              <TouchableOpacity onPress={() => setShowPassword(!showPassword)}>
-                {showPassword ? (
-                  <EyeOff size={20} color="#9ca3af" />
-                ) : (
-                  <Eye size={20} color="#9ca3af" />
-                )}
+        {/* List */}
+        <FlashList
+          data={filteredProfiles}
+          keyExtractor={(item) => item.id.toString()}
+          estimatedItemSize={80}
+          ListEmptyComponent={
+            <View>
+              <Text className="text-gray-500 text-center">
+                We Could Not find a profile matching
+              </Text>
+              <Text className="text-gray-500 text-center">
+                &ldquo;{firstNameQuery + " " + lastNameQuery}&ldquo;{" "}
+              </Text>
+
+              <TouchableOpacity
+                className="mt-3 w-full h-12 rounded-lg items-center justify-center mb-6 bg-primary-600"
+                onPress={() => router.push("/(auth)/new-account")}
+              >
+                <Text className="text-white font-semibold text-base">
+                  Create Account Instead?
+                </Text>
               </TouchableOpacity>
-            }
-          />
+            </View>
+          }
+          renderItem={({ item }) => <ProfileItem item={item} />}
+          onEndReached={handleLoadMore}
+          onEndReachedThreshold={0.5}
+          ListFooterComponent={
+            loadingMore ? (
+              <ActivityIndicator
+                size="small"
+                color="#007AFF"
+                className="my-4"
+              />
+            ) : null
+          }
+        />
 
-          {/* First Name */}
-          <FormField
-            name="first_name"
-            label="First Name"
-            control={control}
-            errors={errors}
-            rules={{ required: "First name is required" }}
-            placeholder="Enter your first name"
-          />
-
-          {/* Last Name */}
-          <FormField
-            name="last_name"
-            label="Last Name"
-            control={control}
-            errors={errors}
-            rules={{ required: "Last name is required" }}
-            placeholder="Enter your last name"
-          />
-
-          {/* Phone */}
-          <FormField
-            name="phone"
-            label="Phone Number"
-            control={control}
-            errors={errors}
-            rules={{ required: "Phone number is required" }}
-            placeholder="Enter your phone number"
-            keyboardType="phone-pad"
-          />
-
-          {/* Submit button */}
-          <TouchableOpacity
-            className="w-full h-12 bg-primary-600 rounded-lg items-center justify-center mb-6"
-            onPress={handleSubmit(onSubmit)}
-          >
-            <Text className="text-white font-semibold text-base">Sign Up</Text>
-          </TouchableOpacity>
-
+        <View className="space-y-6">
           {/* Sign in link */}
           <View className="items-center">
             <Text className="text-text text-sm">
