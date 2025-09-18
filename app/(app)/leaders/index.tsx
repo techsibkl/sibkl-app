@@ -7,20 +7,30 @@ import { useResourcesQuery } from "@/hooks/Resource/useResourceQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Search } from "lucide-react-native";
 import { useState } from "react";
-import { ScrollView, StatusBar, Text, TextInput, View } from "react-native";
+import {
+  ActivityIndicator,
+  ScrollView,
+  StatusBar,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
 const LeadersPage = () => {
   const { isDark } = useThemeColors();
-  const { data: resources, isPending, isError} = useResourcesQuery();
+  const { data: resources, isPending, isError } = useResourcesQuery();
   const [searchQuery, setSearchQuery] = useState("");
 
   const groupedResources = useFilteredResources(resources, searchQuery);
 
   // const grouped
-  if (isPending) {
-    return <Text>Loading...</Text>;
-  }
+  if (isPending)
+    return (
+      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
+        <ActivityIndicator />
+      </SafeAreaView>
+    );
 
   if (isError || !resources) {
     return <Text>Error loading resources</Text>;
