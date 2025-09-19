@@ -20,3 +20,23 @@ export const sendOTP = async (email: string) => {
     console.error(error);
   }
 };
+
+export const verifyOTP = async (email: string, otpCode: string) => {
+  try {
+    const response = await secureFetch(
+      `${apiEndpoints.otp.verify}`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email: email, otpCode: otpCode }),
+      },
+      { allowUnauthenticated: true }
+    );
+    const json = await response.json();
+    return json;
+  } catch (error) {
+    console.error(error);
+  }
+};

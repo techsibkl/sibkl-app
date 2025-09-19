@@ -18,7 +18,8 @@ export const apiEndpoints = {
     getAll: _endpoint("resources"),
   },
   otp: {
-    create: _endpoint("otp/create")
+    create: _endpoint("otp/create"),
+    verify: _endpoint("otp/verify"),
   },
   createAccount: _endpoint("createAccount"),
   getPersonOfUid: _endpoint("getPersonOfUid"),
