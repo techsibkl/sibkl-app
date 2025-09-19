@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "@casl/ability": "^6.7.3",
+    "@expo/ui": "~0.1.1-alpha.10",
     "@expo/vector-icons": "^14.1.0",
     "@gorhom/bottom-sheet": "^5.2.3",
     "@react-native-firebase/app": "^23.0.1",
@@ -53,8 +54,7 @@
     "react-native-web": "~0.20.0",
     "react-native-webview": "13.13.5",
     "tailwindcss": "^3.4.17",
-    "zustand": "^5.0.7",
-    "@expo/ui": "~0.1.1-alpha.10"
+    "zustand": "^5.0.7"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

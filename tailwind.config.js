@@ -38,7 +38,7 @@ module.exports = {
         
         // Custom background and surface colors
         background: {
-          DEFAULT: '#FCFCFC',        // Your provided background
+          DEFAULT: '#F5F5F5',        // Your provided background
           dark: '#0a0a0a',           // Dark mode background
           secondary: '#f8f9fa',      // Light secondary background
           'secondary-dark': '#1a1a1a', // Dark secondary background
