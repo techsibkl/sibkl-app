@@ -125,7 +125,7 @@ const Page = () => {
         <FlashList
           data={visibleProfiles}
           keyExtractor={(item) => item.id.toString()}
-          estimatedItemSize={80}
+          estimatedItemSize={81}
           ListEmptyComponent={
             <View>
               <Text className="text-gray-500 text-center">

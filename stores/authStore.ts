@@ -1,9 +1,9 @@
 import { ProfileFormData } from "@/app/(auth)/complete-profile";
-import { AppUser, AuthState } from "@/services/User/user.types";
+import { AppUser } from "@/services/User/user.types";
 import { apiEndpoints } from "@/utils/endpoints";
 import { secureFetch } from "@/utils/secureFetch";
 import {
-  createUserWithEmailAndPassword,
+  FirebaseAuthTypes,
   getAuth,
   onAuthStateChanged,
   signInWithEmailAndPassword,
@@ -11,7 +11,26 @@ import {
 } from "@react-native-firebase/auth";
 import { create } from "zustand";
 
-export const useAuthStore = create<AuthState>((set) => ({
+// Example state with Zustand
+export type AuthState = {
+  firebaseUser: FirebaseAuthTypes.User | null;
+  user: AppUser | null;
+  isLoading: boolean;
+  isAuthenticated: boolean;
+  setFirebaseUser: (firebaseUser: FirebaseAuthTypes.User | null) => void;
+  setUser: (user: AppUser | null) => void;
+  signIn: (
+    email: string,
+    password: string
+  ) => Promise<FirebaseAuthTypes.User | null>;
+  signUp: (
+    profileData: ProfileFormData
+  ) => Promise<FirebaseAuthTypes.User | null>;
+  signOut: () => Promise<void>;
+  init: () => void;
+};
+
+export const useAuthStore = create<AuthState>((set, get) => ({
   firebaseUser: null,
   user: null,
   isLoading: true,
@@ -24,6 +43,9 @@ export const useAuthStore = create<AuthState>((set) => ({
       isLoading: false,
     }),
 
+  setFirebaseUser: (firebaseUser: FirebaseAuthTypes.User | null) =>
+    set({ firebaseUser: firebaseUser }),
+
   // Sign in with email + password
   signIn: async (email: string, password: string) => {
     const { user } = await signInWithEmailAndPassword(
@@ -31,31 +53,21 @@ export const useAuthStore = create<AuthState>((set) => ({
       email,
       password
     );
-    set({firebaseUser:user, isAuthenticated: true, isLoading: false });
+    set({ firebaseUser: user, isAuthenticated: true, isLoading: false });
     console.log("user was set:", user);
     return user;
   },
 
   // Register new account
-  signUp: async (
-    email: string,
-    password: string,
-    profileData: ProfileFormData
-  ) => {
+  signUp: async (profileData: ProfileFormData) => {
     try {
-      // 1. Create user in Firebase
-      const { user } = await createUserWithEmailAndPassword(
-        getAuth(),
-        email,
-        password
-      );
+      const { firebaseUser } = get();
 
-      if (!user) {
-        throw new Error("User creation failed. No Firebase user returned.");
+      if (!firebaseUser) {
+        throw new Error(`No Firebase User Found`);
       }
 
-
-      // 2. Create profile in backend
+      // 1. Create profile in backend
       const response = await secureFetch(`${apiEndpoints.createAccount}`, {
         method: "POST",
         headers: {
@@ -92,15 +104,19 @@ export const useAuthStore = create<AuthState>((set) => ({
 
       // 4. Build appUser object
       const appUser = {
-        uid: user.uid,
-        email: user.email ?? "",
+        uid: firebaseUser.uid,
+        email: firebaseUser.email ?? "",
         people_id: personJson.data.people_id,
         person: personJson.data,
       };
 
-      set({firebaseUser: user, isAuthenticated: true, isLoading: false, user: appUser });
+      set({
+        isAuthenticated: true,
+        isLoading: false,
+        user: appUser,
+      });
 
-      return user;
+      return firebaseUser;
     } catch (error) {
       console.error("SignUp error:", error);
 
@@ -119,7 +135,6 @@ export const useAuthStore = create<AuthState>((set) => ({
 
   init: () => {
     onAuthStateChanged(getAuth(), async (firebaseUser) => {
-
       if (!firebaseUser) {
         set({
           firebaseUser: null,

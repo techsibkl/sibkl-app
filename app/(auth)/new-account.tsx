@@ -39,7 +39,7 @@ const Page = () => {
 
   const onSubmit = async (data: signUpFormData) => {
     try {
-      await signUp(data.email, data.password);
+      await signUp(data.email.trim(), data.password.trim());
 
       // Navigate to OTP verification page
       router.push("/(auth)/verify-otp");

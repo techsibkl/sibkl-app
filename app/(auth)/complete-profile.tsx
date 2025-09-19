@@ -93,13 +93,12 @@ const Page = () => {
 
   const onSubmit = async (data: ProfileFormData) => {
     console.log("Form submitted:", data);
-    const user = await signUp(data.email, pendingSignUp?.password!, data);
+    const user = await signUp(data);
     if (!user) {
       console.error("Something went wrong signing up ");
       return;
     }
-    user.sendEmailVerification();
-    router.push("/(auth)/verify-email");
+    router.push("/(app)/home");
   };
 
   // Watch birth_date for auto-calculating age + age_group

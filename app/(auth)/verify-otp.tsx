@@ -1,6 +1,11 @@
 import { sendOTP, verifyOTP } from "@/services/OTP/otp.service";
+import { useAuthStore } from "@/stores/authStore";
 import { useClaimStore } from "@/stores/claimStore";
 import { useSignUpStore } from "@/stores/signUpStore";
+import {
+  createUserWithEmailAndPassword,
+  getAuth,
+} from "@react-native-firebase/auth";
 import { useRouter } from "expo-router";
 import { Mail, RefreshCw } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
@@ -18,6 +23,7 @@ const Page = () => {
   const router = useRouter();
   const claimStore = useClaimStore();
   const { pendingSignUp } = useSignUpStore();
+  const authStore = useAuthStore();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
@@ -82,9 +88,28 @@ const Page = () => {
       }
 
       console.log("result:", result);
-      // Simulate success/failure
+      // success/failure
       if (result.success) {
-        Alert.alert("Success", result.message);
+        // create firebase account
+        const email = result.data.email.trim();
+
+        const { user } = await createUserWithEmailAndPassword(
+          getAuth(),
+          email,
+          pendingSignUp?.password!
+        );
+
+        authStore.setFirebaseUser(user);
+
+        // get full person if selectedProfile is true
+        if (claimStore.selectedProfile) {
+          console.log(
+            "Linking user:",
+            user.uid,
+            " with person id of",
+            claimStore.selectedProfile.id
+          );
+        }
         router.push("/(auth)/complete-profile");
         // onVerificationSuccess?.()
       } else {
