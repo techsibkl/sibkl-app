@@ -28,7 +28,7 @@ const Page = () => {
     console.log("sending verification email for:", email);
 
     // 1. Send OTP
-    const result = await sendOTP(email);
+    const result = await sendOTP(null, email);
     console.log("result of sending OTP:", result);
 
     // 2. Save pending signup to store

@@ -1,5 +1,8 @@
 import { FormField } from "@/components/shared/FormField";
+import { sendOTP } from "@/services/OTP/otp.service";
 import { useClaimStore } from "@/stores/claimStore";
+import { useSignUpStore } from "@/stores/signUpStore";
+import { useRouter } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
@@ -10,8 +13,9 @@ const Page = () => {
     email: string;
     password: string;
   };
-
+  const router = useRouter();
   const { selectedProfile } = useClaimStore();
+  const signUpStore = useSignUpStore();
   const [showPassword, setShowPassword] = useState(false);
   const {
     control,
@@ -21,19 +25,24 @@ const Page = () => {
     defaultValues: { email: selectedProfile?.email ?? "", password: "" },
   });
 
-  const signUp = (email: string, password: string) => {
+  const signUp = async (password: string) => {
     console.log(
       "sneding verification email for this email:",
-      email,
-      "and password:",
-      password
+      selectedProfile?.email
     );
+    // 1. Send OTP
+
+    const result = await sendOTP(selectedProfile?.id!, null);
+    console.log("result of sending OTP:", result.message);
+
+    signUpStore.setPendingSignUp({ email: "", password });
   };
 
   const onSubmit = async (data: signUpFormData) => {
     try {
-      await signUp(data.email, data.password);
-      Alert.alert("Success", "Account created successfully!");
+      await signUp(data.password);
+      // Navigate to OTP verification page
+      router.push("/(auth)/verify-otp");
     } catch (err: any) {
       Alert.alert("Error", err.message || "Failed to create account.");
     }

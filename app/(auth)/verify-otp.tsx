@@ -1,4 +1,5 @@
 import { sendOTP, verifyOTP } from "@/services/OTP/otp.service";
+import { useClaimStore } from "@/stores/claimStore";
 import { useSignUpStore } from "@/stores/signUpStore";
 import { useRouter } from "expo-router";
 import { Mail, RefreshCw } from "lucide-react-native";
@@ -15,6 +16,7 @@ import {
 
 const Page = () => {
   const router = useRouter();
+  const claimStore = useClaimStore();
   const { pendingSignUp } = useSignUpStore();
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [isLoading, setIsLoading] = useState(false);
@@ -57,17 +59,28 @@ const Page = () => {
     }
 
     setIsLoading(true);
-    if (!pendingSignUp || !pendingSignUp.email) {
-      Alert.alert("No Email found", "Please try again later");
-      return;
-    }
+
     try {
       // TODO: Implement OTP verification API call
       console.log("[v0] Verifying OTP:", otpString);
 
+      let result;
       // Simulate API call
       // await new Promise((resolve) => setTimeout(resolve, 2000));
-      const result = await verifyOTP(pendingSignUp.email, otpString);
+      if (claimStore.selectedProfile) {
+        result = await verifyOTP(
+          claimStore.selectedProfile.id,
+          null,
+          otpString
+        );
+      } else {
+        if (!pendingSignUp || !pendingSignUp.email) {
+          Alert.alert("No Email found", "Please try again later");
+          return;
+        }
+        result = await verifyOTP(null, pendingSignUp.email, otpString);
+      }
+
       console.log("result:", result);
       // Simulate success/failure
       if (result.success) {
@@ -92,10 +105,7 @@ const Page = () => {
 
   const handleResendOTP = async () => {
     if (!canResend) return;
-    if (!pendingSignUp || !pendingSignUp.email) {
-      console.error("[v0] OTP verification error:", "no email found");
-      return;
-    }
+
     try {
       // TODO: Implement resend OTP API call
       console.log("[v0] Resending OTP to:", pendingSignUp?.email);
@@ -103,7 +113,16 @@ const Page = () => {
       // Simulate API call
       setResendTimer(30);
       setCanResend(false);
-      await sendOTP(pendingSignUp.email);
+
+      if (claimStore.selectedProfile) {
+        await sendOTP(claimStore.selectedProfile.id, null);
+      } else {
+        if (!pendingSignUp || !pendingSignUp.email) {
+          console.error("[v0] OTP verification error:", "no email found");
+          return;
+        }
+        await sendOTP(null, pendingSignUp.email);
+      }
       Alert.alert(
         "OTP Sent",
         "A new verification code has been sent to your email."

@@ -1,8 +1,23 @@
 import { apiEndpoints } from "@/utils/endpoints";
 import { secureFetch } from "@/utils/secureFetch";
 
-export const sendOTP = async (email: string) => {
+export const sendOTP = async (
+  personid: number | null,
+  email: string | null
+) => {
   try {
+    let payload = {};
+    if (personid && !email) {
+      payload = {
+        person_id: personid,
+      };
+    }
+    if (!personid && email) {
+      payload = {
+        email: email,
+      };
+    }
+
     const response = await secureFetch(
       `${apiEndpoints.otp.create}`,
       {
@@ -10,19 +25,37 @@ export const sendOTP = async (email: string) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: email }),
+        body: JSON.stringify(payload),
       },
       { allowUnauthenticated: true }
     );
     const json = await response.json();
-    return json.data;
+    return json;
   } catch (error) {
     console.error(error);
   }
 };
 
-export const verifyOTP = async (email: string, otpCode: string) => {
+export const verifyOTP = async (
+  personid: number | null,
+  email: string | null,
+  otpCode: string
+) => {
   try {
+    let payload = {};
+    if (personid && !email) {
+      payload = {
+        person_id: personid,
+        otpCode: otpCode,
+      };
+    }
+    if (!personid && email) {
+      payload = {
+        email: email,
+        otpCode: otpCode,
+      };
+    }
+
     const response = await secureFetch(
       `${apiEndpoints.otp.verify}`,
       {
@@ -30,7 +63,7 @@ export const verifyOTP = async (email: string, otpCode: string) => {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ email: email, otpCode: otpCode }),
+        body: JSON.stringify(payload),
       },
       { allowUnauthenticated: true }
     );
