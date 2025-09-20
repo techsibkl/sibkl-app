@@ -49,3 +49,12 @@ export type Person = {
   // uid?: string;
   [key: string]: any;
 };
+
+export type MaskedPerson = {
+  id: number;
+  first_name: string;
+  last_name: string;
+  full_name: string;
+  email: string;
+  phone: string;
+}

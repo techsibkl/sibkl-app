@@ -3,7 +3,7 @@ import { FormField } from "@/components/shared/FormField";
 import { FormSelect } from "@/components/shared/FormSelect";
 import { useAuthStore } from "@/stores/authStore";
 import { useClaimStore } from "@/stores/claimStore";
-import { signUpStore } from "@/stores/signUpStore";
+import { useSignUpStore } from "@/stores/signUpStore";
 import { AgeGroup } from "@/utils/types/utils.types";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
@@ -31,7 +31,7 @@ export type ProfileFormData = {
   emergency_contact_relationship: string;
 };
 const Page = () => {
-  const { step1Data } = signUpStore();
+  const { pendingSignUp } = useSignUpStore();
   const { selectedProfile } = useClaimStore();
   const { signUp } = useAuthStore();
   const router = useRouter();
@@ -44,9 +44,9 @@ const Page = () => {
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormData>({
     defaultValues: {
-      first_name: step1Data.first_name,
-      last_name: step1Data.last_name,
-      email: step1Data.email,
+      first_name: "",
+      last_name: "",
+      email: pendingSignUp?.email ?? "",
       phone: "",
       gender: "male",
       marital_status: "",
@@ -64,7 +64,7 @@ const Page = () => {
     },
   });
 
-    // ✅ When selectedProfile changes, update the form values
+  // ✅ When selectedProfile changes, update the form values
   useEffect(() => {
     if (selectedProfile) {
       // reset({
@@ -87,13 +87,13 @@ const Page = () => {
       //   emergency_contact_relationship:
       //     selectedProfile.emergency_contact_relationship ?? "",
       // });
-      console.log("filling in form with selected profile data!")
+      console.log("filling in form with selected profile data!");
     }
   }, [selectedProfile, reset]);
 
   const onSubmit = async (data: ProfileFormData) => {
     console.log("Form submitted:", data);
-    const user = await signUp(data.email, step1Data.password!, data);
+    const user = await signUp(data.email, pendingSignUp?.password!, data);
     if (!user) {
       console.error("Something went wrong signing up ");
       return;

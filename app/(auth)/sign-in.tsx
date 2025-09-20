@@ -21,7 +21,7 @@ interface LoginFormData {
 }
 
 const Page = () => {
-  const { signIn, user } = useAuthStore();
+  const { signIn } = useAuthStore();
 
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
