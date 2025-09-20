@@ -67,14 +67,17 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error(`No Firebase User Found`);
       }
 
-      // 1. Create profile in backend
-      const response = await secureFetch(`${apiEndpoints.createAccount}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(profileData),
-      });
+      // 2. Create profile in backend
+      const response = await secureFetch(
+        `${apiEndpoints.users.createAccount}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(profileData),
+        }
+      );
 
       if (!response.ok) {
         throw new Error(`Backend account creation failed: ${response.status}`);
@@ -86,9 +89,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         throw new Error(data.message || "Account creation failed on backend");
       }
 
-      const personResponse = await secureFetch(apiEndpoints.getPersonOfUid, {
-        method: "GET",
-      });
+      const personResponse = await secureFetch(
+        apiEndpoints.users.getPersonOfUid,
+        {
+          method: "GET",
+        }
+      );
 
       if (!personResponse.ok) {
         throw new Error(`Failed to fetch person: ${personResponse.status}`);
@@ -164,7 +170,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
       }
 
       try {
-        const response = await secureFetch(apiEndpoints.getPersonOfUid, {
+        const response = await secureFetch(apiEndpoints.users.getPersonOfUid, {
           method: "GET",
         });
 
