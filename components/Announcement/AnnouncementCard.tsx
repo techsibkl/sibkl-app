@@ -1,10 +1,11 @@
 import { Announcement } from "@/services/Announcement/announcement.types";
 import { displayDateAsStr } from "@/utils/helper";
-import { Calendar1Icon, MapPinIcon } from "lucide-react-native";
+import { Calendar1Icon, LinkIcon, MapPinIcon } from "lucide-react-native";
 import React, { useEffect, useMemo, useState } from "react";
 import {
     Dimensions,
     Image,
+    Linking,
     Image as RNImage,
     Text,
     TouchableOpacity,
@@ -19,9 +20,17 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 	const [imageHeight, setImageHeight] = useState(200); // fallback height
 	const screenWidth = Dimensions.get("window").width;
 
+	const handleItemPress = async (url: string) => {
+		try {
+			await Linking.openURL(url);
+		} catch (error) {
+			console.error("Error opening URL:", error);
+		}
+	};
+
 	useEffect(() => {
 		if (!announcement.drive_file_id) return;
-		const imageUri = `https://drive.google.com/thumbnail?id=${announcement.drive_file_id}`;
+		const imageUri = `https://drive.google.com/thumbnail?id=${announcement.drive_file_id}&sz=s1080`;
 
 		RNImage.getSize(
 			imageUri,
@@ -31,7 +40,7 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 
 				// Optional: Set min/max constraints like WhatsApp
 				const minHeight = 150;
-				const maxHeight = 400;
+				const maxHeight = 1080;
 
 				const finalHeight = Math.min(
 					Math.max(calculatedHeight, minHeight),
@@ -53,7 +62,7 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 		}
 
 		if (announcement.date_start && announcement.date_end) {
-			return `${displayDateAsStr(announcement.date_start)} - ${displayDateAsStr(announcement.date_start)}`;
+			return `${displayDateAsStr(announcement.date_start)} - ${displayDateAsStr(announcement.date_end)}`;
 		}
 
 		if (announcement.date_start) {
@@ -65,13 +74,12 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 		}
 	}, [announcement.date_start, announcement.date_end]);
 	return (
-		<TouchableOpacity
+		<View
 			className="flex-row bg-white rounded-lg p-1 items-center justify-between"
 			style={{
 				shadowRadius: 5, // Override the default blur
 				shadowOpacity: 0.05,
 			}}
-			onPress={() => {}}
 		>
 			<View className="flex-1">
 				{announcement.drive_file_id && (
@@ -118,10 +126,35 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 								</Text>
 							</View>
 						)}
+
+						{announcement.cta_link && (
+							<View className="flex-row items-center">
+								<LinkIcon size={14} color="#6B7280" />
+								<Text
+									onPress={() =>
+										handleItemPress(announcement.cta_link!)
+									}
+									className="text-blue-500 text-sm ml-2
+										hover:underline"
+								>
+									{announcement.cta_link}
+								</Text>
+							</View>
+						)}
 					</View>
 				</View>
+				{announcement.cta_link && (
+					<TouchableOpacity
+						className="border-t mt-4 py-4 items-center justify-center w-full border-border"
+						onPress={() => handleItemPress(announcement.cta_link!)}
+					>
+						<Text className="text-gray-500 font-semibold">
+							View More
+						</Text>
+					</TouchableOpacity>
+				)}
 			</View>
-		</TouchableOpacity>
+		</View>
 	);
 };
 
