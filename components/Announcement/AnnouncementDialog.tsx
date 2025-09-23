@@ -1,25 +1,14 @@
 import { Announcement } from "@/services/Announcement/announcement.types";
 import { displayDateAsStr } from "@/utils/helper";
 import { Calendar1Icon, LinkIcon, MapPinIcon } from "lucide-react-native";
-import React, { useEffect, useMemo, useState } from "react";
-import {
-	Dimensions,
-	Image,
-	Linking,
-	Image as RNImage,
-	Text,
-	TouchableOpacity,
-	View,
-} from "react-native";
+import React, { useMemo } from "react";
+import { Image, Linking, Text, TouchableOpacity, View } from "react-native";
 
-type AnnouncementCardProps = {
+type AnnouncementDialogProps = {
 	announcement: Announcement;
 };
 
-const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
-	const [imageHeight, setImageHeight] = useState(200); // fallback height
-	const screenWidth = Dimensions.get("window").width;
-
+const AnnouncementDialog = ({ announcement }: AnnouncementDialogProps) => {
 	const handleItemPress = async (url: string) => {
 		try {
 			await Linking.openURL(url);
@@ -27,33 +16,6 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 			console.error("Error opening URL:", error);
 		}
 	};
-
-	useEffect(() => {
-		if (!announcement.drive_file_id) return;
-		const imageUri = `https://drive.google.com/thumbnail?id=${announcement.drive_file_id}`;
-
-		RNImage.getSize(
-			imageUri,
-			(width, height) => {
-				// Calculate height based on screen width maintaining aspect ratio
-				const calculatedHeight = (height * screenWidth) / width;
-
-				// Optional: Set min/max constraints like WhatsApp
-				const minHeight = 150;
-				const maxHeight = 1080;
-
-				const finalHeight = Math.min(
-					Math.max(calculatedHeight, minHeight),
-					maxHeight
-				);
-				setImageHeight(finalHeight);
-			},
-			(error) => {
-				console.log("Error getting image size:", error);
-				setImageHeight(200); // fallback
-			}
-		);
-	}, [announcement.drive_file_id]);
 
 	// Computed property for date display
 	const dateDisplay = useMemo(() => {
@@ -73,9 +35,10 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 			return `Ends: ${displayDateAsStr(announcement.date_end)}`;
 		}
 	}, [announcement.date_start, announcement.date_end]);
+
 	return (
 		<View
-			className="flex-row bg-white rounded-lg p-1 items-center justify-between"
+			className="flex-row bg-white rounded-[15px] overflow-hidden items-center justify-between"
 			style={{
 				shadowRadius: 5, // Override the default blur
 				shadowOpacity: 0.05,
@@ -87,12 +50,12 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 						source={{
 							uri: `https://drive.google.com/thumbnail?id=${announcement.drive_file_id}&sz=s1080`,
 						}}
-						className="w-full rounded-lg mb-3"
-						style={{ height: imageHeight }}
+						className="w-full  mb-3"
+						style={{ aspectRatio: 16 / 9 }}
 						resizeMode="cover"
 					/>
 				)}
-				<View className="p-2">
+				<View className="py-2 px-4">
 					<Text
 						className="text-text text-xl font-bold mb-1"
 						numberOfLines={2}
@@ -145,7 +108,7 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 				</View>
 				{announcement.cta_link && (
 					<TouchableOpacity
-						className="border-t mt-4 py-4 items-center justify-center w-full border-border"
+						className="border-t mt-2 py-6 items-center justify-center w-full border-border"
 						onPress={() => handleItemPress(announcement.cta_link!)}
 					>
 						<Text className="text-gray-500 font-semibold">
@@ -158,4 +121,4 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 	);
 };
 
-export default AnnouncementCard;
+export default AnnouncementDialog;
