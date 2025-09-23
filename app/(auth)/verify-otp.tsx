@@ -116,62 +116,50 @@ const Page = () => {
 
 				authStore.setFirebaseUser(user);
 
-				// get full person if selectedProfile is true
-				console.log("selected profile", claimStore.selectedProfile);
-				if (claimStore.selectedProfile) {
-					console.log(
-						"Linking user:",
-						user.uid,
-						" with person id of",
-						claimStore.selectedProfile.id
-					);
-					try {
-						const response = await secureFetch(
-							apiEndpoints.users.createUserWithExistingPerson,
-							{
-								method: "POST",
-								body: JSON.stringify({
-									people_id: claimStore.selectedProfile.id,
-								}),
-							}
-						);
-						const json = await response.json();
-						if (json.success) {
-							// Call react query here
-							await qc.prefetchQuery({
-								queryKey: [
-									"person",
-									claimStore.selectedProfile.id,
-								],
-								queryFn: () =>
-									fetchPeople(
-										claimStore.selectedProfile!.id!
-									),
-							});
-							router.push("/(auth)/complete-profile");
-							return;
-						}
-					} catch (error) {
-						console.error(error);
-					}
-				}
-				router.push("/(auth)/complete-profile");
-				// onVerificationSuccess?.()
-			} else {
-				Alert.alert(
-					"Invalid OTP",
-					"The code you entered is incorrect. Please try again."
-				);
-				setOtp(["", "", "", "", "", ""]);
-				inputRefs.current[0]?.focus();
-			}
-		} catch (error) {
-			console.error("[v0] OTP verification error:", error);
-			Alert.alert("Error", "Failed to verify OTP. Please try again.");
-		} finally {
-			setIsLoading(false);
-		}
-	};
+        // get full person if selectedProfile is true
+        console.log("selected profile", claimStore.selectedProfile);
+        if (claimStore.selectedProfile) {
+          try {
+            const response = await secureFetch(
+              apiEndpoints.users.createUserWithExistingPerson,
+              {
+                method: "POST",
+                body: JSON.stringify({
+                  people_id: claimStore.selectedProfile.id,
+                }),
+              }
+            );
+            const json = await response.json();
+            if (json.success) {
+              // Call react query here
+              await qc.prefetchQuery({
+                queryKey: ["person", claimStore.selectedProfile.id],
+                queryFn: () => fetchPeople(claimStore.selectedProfile!.id!),
+              });
+              router.push("/(auth)/complete-profile");
+              return;
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        }
+        router.push("/(auth)/complete-profile");
+        // onVerificationSuccess?.()
+      } else {
+        Alert.alert(
+          "Invalid OTP",
+          "The code you entered is incorrect. Please try again."
+        );
+        setOtp(["", "", "", "", "", ""]);
+        inputRefs.current[0]?.focus();
+      }
+    } catch (error) {
+      console.error("[v0] OTP verification error:", error);
+      Alert.alert("Error", "Failed to verify OTP. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
 	const handleResendOTP = async () => {
 		if (!canResend) return;

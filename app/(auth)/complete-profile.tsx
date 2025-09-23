@@ -46,7 +46,7 @@ const Page = () => {
   const { data: person, isPending } = useSinglePersonQuery(
     Number(selectedProfile?.id)
   );
-  const { signUp } = useAuthStore();
+  const { signUp, setUser, firebaseUser } = useAuthStore();
   const router = useRouter();
   // console.log("selected profile:", selectedProfile);
   const {
@@ -116,6 +116,16 @@ const Page = () => {
       try {
         const response = await updatePeople(formPerson);
         if (response.success) {
+          console.log(
+            "successfully updated the profile, moving you to the home, you should be able to access"
+          );
+          const appUser = {
+            uid: firebaseUser?.uid!,
+            email: firebaseUser?.email || person?.email || "",
+            people_id: person?.id!,
+            person: person!,
+          };
+          setUser(appUser);
           router.push("/(app)/home");
         }
       } catch (error) {
