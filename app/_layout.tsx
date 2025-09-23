@@ -23,26 +23,23 @@ function RootLayoutNav() {
 
   useEffect(() => {
     init();
-  }, []);
+  }, [init]);
 
   useEffect(() => {
     if (isLoading) return;
-
     const inAuthGroup = segments[0] === "(auth)";
 
     if (!firebaseUser && !inAuthGroup) {
       router.replace("/(auth)/sign-in");
-    }else if (firebaseUser && !firebaseUser.emailVerified && !inAuthGroup) {
-      router.replace("/(auth)/verify-email");
-    }else if (!user && !inAuthGroup) {
+    } else if (!user && !inAuthGroup) {
       router.replace("/(auth)/sign-in");
-    }else if (user && !user.person) {
+    } else if (user && !user.person) {
       router.replace("/(auth)/complete-profile");
-    }else if (user && inAuthGroup) {
+    } else if (user && inAuthGroup) {
       // Already logged in → go to app
       router.replace("/(app)/home");
     }
-  }, [user, isLoading, segments, router]);
+  }, [user, isLoading, segments, router, firebaseUser]);
 
   return (
     <Stack screenOptions={{ headerShown: false }}>
