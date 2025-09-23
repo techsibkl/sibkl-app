@@ -10,7 +10,7 @@ const AnnouncementBanner = ({ announcement }: AnnouncementBannerProps) => {
 		<View className="rounded-xl shadow-sm w-96 aspect-video">
 			<Image
 				source={{
-					uri: `https://drive.google.com/thumbnail?id=${announcement.drive_file_id}`,
+					uri: `https://drive.google.com/thumbnail?id=${announcement.drive_file_id}&sz=s1080`,
 				}}
 				className="w-full h-full rounded-lg mb-3"
 				resizeMode="cover"
