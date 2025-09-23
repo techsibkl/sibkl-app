@@ -1,41 +1,51 @@
 import { Announcement } from "@/services/Announcement/announcement.types";
-import React from "react";
-import { Image, View } from "react-native";
+import React, { useState } from "react";
+import { Image, Modal, Text, TouchableOpacity, View } from "react-native";
+import AnnouncementDialog from "../Announcement/AnnouncementDialog";
 
 type AnnouncementBannerProps = {
 	announcement: Announcement;
 };
 const AnnouncementBanner = ({ announcement }: AnnouncementBannerProps) => {
-	return (
-		<View className="rounded-xl shadow-sm w-96 aspect-video">
-			<Image
-				source={{
-					uri: `https://drive.google.com/thumbnail?id=${announcement.drive_file_id}&sz=s1080`,
-				}}
-				className="w-full h-full rounded-lg mb-3"
-				resizeMode="cover"
-			/>
-			{/* <Text className="font-bold mb-1 text-xl color-white">
-				Application Design
-			</Text>
-			<Text className="opacity-80 mb-5 text-sm color-white">
-				UI Design Kit
-			</Text>
+	const [modalVisible, setModalVisible] = useState(false);
 
-			<View className="flex-row justify-between items-center">
-				<View className="flex-row">
-					<View className="w-8 h-8 rounded-full border-2 bg-primary-300 border-white" />
-					<View className="w-8 h-8 rounded-full border-2 -ml-2 bg-secondary-500 border-white" />
-					<View className="w-8 h-8 rounded-full border-2 -ml-2 bg-secondary-300 border-white" />
+	const openModal = () => setModalVisible(true);
+	const closeModal = () => setModalVisible(false);
+
+	return (
+		<>
+			<TouchableOpacity onPress={openModal}>
+				<View className="rounded-xl shadow-sm w-96 aspect-video">
+					<Image
+						source={{
+							uri: `https://drive.google.com/thumbnail?id=${announcement.drive_file_id}&sz=s1080`,
+						}}
+						className="w-full h-full rounded-lg mb-3"
+						resizeMode="cover"
+					/>
 				</View>
-				<View className="items-end">
-					<Text className="opacity-80 text-xs color-white">
-						Progress
-					</Text>
-					<Text className="font-bold text-white">50/80</Text>
+			</TouchableOpacity>
+			<Modal
+				animationType="fade"
+				transparent={true}
+				visible={modalVisible}
+				onRequestClose={closeModal}
+			>
+				<View className="flex-1 justify-center items-center bg-black/50">
+					<View className="relative m-4 max-w-sm w-full max-h-4/5 ">
+						{/* Hovering close button */}
+						<TouchableOpacity
+							onPress={closeModal}
+							className="absolute top-2 right-2 z-10 bg-white/80 rounded-full w-8 h-8 justify-center items-center"
+						>
+							<Text className="text-gray-700 text-lg">✕</Text>
+						</TouchableOpacity>
+
+						<AnnouncementDialog announcement={announcement} />
+					</View>
 				</View>
-			</View> */}
-		</View>
+			</Modal>
+		</>
 	);
 };
 
