@@ -159,16 +159,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
         person: null,
       };
 
-      if (!firebaseUser.emailVerified) {
-        // here you might show toast / navigate to sign-up
-        set({
-          firebaseUser: firebaseUser,
-          user: appUser,
-          isAuthenticated: false,
-        });
-        return;
-      }
-
       try {
         const response = await secureFetch(apiEndpoints.users.getPersonOfUid, {
           method: "GET",
