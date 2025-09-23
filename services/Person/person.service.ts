@@ -1,12 +1,12 @@
 import { apiEndpoints } from "@/utils/endpoints";
-import { formatObjStrToDate } from "@/utils/helper";
+import { dateReplacer, formatObjStrToDate } from "@/utils/helper";
 import { secureFetch } from "@/utils/secureFetch";
 import { ReturnVal } from "@/utils/types/returnVal.types";
 import { Cell } from "../Cell/cell.types";
 import { District } from "../District/district.types";
-import { Person, MaskedPerson } from "./person.type";
+import { MaskedPerson, Person } from "./person.type";
 
-export async function fetchPeople(id: number | void): Promise<Person[]> {
+export const fetchPeople = async (id: number | void): Promise<Person[]> => {
   // Fetch data from the server
   let url = id
     ? `${apiEndpoints.people.getById(id)}`
@@ -27,9 +27,11 @@ export async function fetchPeople(id: number | void): Promise<Person[]> {
     ),
   }));
   return result;
-}
+};
 
-export async function fetchPeopleWithNoUid(): Promise<MaskedPerson[] | null> {
+export const fetchPeopleWithNoUid = async (): Promise<
+  MaskedPerson[] | null
+> => {
   // Fetch data from the server
   try {
     let response = await secureFetch(
@@ -50,4 +52,22 @@ export async function fetchPeopleWithNoUid(): Promise<MaskedPerson[] | null> {
     console.error(error);
     return null;
   }
-}
+};
+
+export const updatePeople = async (
+  person: Partial<Person>
+): Promise<ReturnVal> => {
+  let response = await secureFetch(
+    `${apiEndpoints.people.update(person.id!)}`,
+    {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(person, dateReplacer),
+    }
+  );
+
+  let data = await response.json();
+  return data;
+};

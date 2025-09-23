@@ -13,8 +13,6 @@ export async function secureFetch(
   // New modular API: call getIdToken() as a function
   const token = await user?.getIdToken(); // still a method call
 
-  // console.log("token", token)
-
   const headers = {
     ...init.headers,
     ...(token ? { Authorization: `Bearer ${token}` } : {}),

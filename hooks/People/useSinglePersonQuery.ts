@@ -6,6 +6,7 @@ export const useSinglePersonQuery = (personId: number) => {
   return useQuery<Person>({
     queryKey: ["people", personId],
     queryFn: async () => {
+      console.log("id", personId)
       const res = await fetchPeople(personId);
       return res![0];
     },

@@ -23,7 +23,7 @@ export const FormField = ({
         rules={rules}
         render={({ field: { onChange, onBlur, value } }) => (
           <TextInput
-            className={`pl-12 pr-12 h-12 ${rest.editable === false ? `text-text` : `text-gray-800`} bg-white border border-border rounded-lg `}
+            className={`pl-12 pr-12 h-12 ${rest.editable === false ? `text-gray-200` : `text-text`} bg-white border border-border rounded-lg `}
             placeholder={placeholder}
             placeholderTextColor="#9ca3af"
             onBlur={onBlur}

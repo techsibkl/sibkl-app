@@ -1,6 +1,9 @@
 import { FormDateInput } from "@/components/shared/FormDateInput";
 import { FormField } from "@/components/shared/FormField";
 import { FormSelect } from "@/components/shared/FormSelect";
+import { useSinglePersonQuery } from "@/hooks/People/useSinglePersonQuery";
+import { updatePeople } from "@/services/Person/person.service";
+import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
 import { useClaimStore } from "@/stores/claimStore";
 import { useSignUpStore } from "@/stores/signUpStore";
@@ -8,38 +11,47 @@ import { AgeGroup } from "@/utils/types/utils.types";
 import { useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { useForm, useWatch } from "react-hook-form";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import {
+  ActivityIndicator,
+  Image,
+  Text,
+  TouchableOpacity,
+  View,
+} from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { SafeAreaView } from "react-native-safe-area-context";
-export type ProfileFormData = {
-  first_name: string;
-  last_name: string;
-  email: string;
-  phone: string;
-  gender: "male" | "female";
-  marital_status: string;
-  birth_date: string;
-  occupation: string;
-  age: string;
-  age_group?: AgeGroup;
-  address_line1: string;
-  city: string;
-  state: string;
-  postcode: string;
-  emergency_contact_name: string;
-  emergency_contact_phone: string;
-  emergency_contact_relationship: string;
-};
+export type ProfileFormData = Pick<
+  Person,
+  | "first_name"
+  | "last_name"
+  | "email"
+  | "phone"
+  | "gender"
+  | "marital_status"
+  | "birth_date"
+  | "occupation"
+  | "age"
+  | "age_group"
+  | "address_line1"
+  | "city"
+  | "state"
+  | "postcode"
+  | "emergency_contact_name"
+  | "emergency_contact_phone"
+  | "emergency_contact_relationship"
+>;
 const Page = () => {
   const { pendingSignUp } = useSignUpStore();
   const { selectedProfile } = useClaimStore();
+  const { data: person, isPending } = useSinglePersonQuery(
+    Number(selectedProfile?.id)
+  );
   const { signUp } = useAuthStore();
   const router = useRouter();
-  console.log("selected profile:", selectedProfile);
+  // console.log("selected profile:", selectedProfile);
   const {
     control,
     handleSubmit,
-    setValue,
     reset,
     formState: { errors, isSubmitting },
   } = useForm<ProfileFormData>({
@@ -50,9 +62,9 @@ const Page = () => {
       phone: "",
       gender: "male",
       marital_status: "",
-      birth_date: "",
+      birth_date: null,
       occupation: "",
-      age: "",
+      age: undefined,
       age_group: AgeGroup.Age13_17,
       address_line1: "",
       city: "",
@@ -65,39 +77,60 @@ const Page = () => {
   });
 
   // ✅ When selectedProfile changes, update the form values
+  // when person data comes from React Query, preset the form
   useEffect(() => {
-    if (selectedProfile) {
-      // reset({
-      //   first_name: selectedProfile.first_name ?? "",
-      //   last_name: selectedProfile.last_name ?? "",
-      //   email: selectedProfile.email ?? "",
-      //   phone: selectedProfile.phone ?? "",
-      //   gender: selectedProfile.gender ?? "male",
-      //   marital_status: selectedProfile.marital_status ?? "",
-      //   birth_date: selectedProfile.birth_date ?? "",
-      //   occupation: selectedProfile.occupation ?? "",
-      //   age: selectedProfile.age?.toString() ?? "",
-      //   age_group: selectedProfile.age_group ?? AgeGroup.Age13_17,
-      //   address_line1: selectedProfile.address_line1 ?? "",
-      //   city: selectedProfile.city ?? "",
-      //   state: selectedProfile.state ?? "",
-      //   postcode: selectedProfile.postcode ?? "",
-      //   emergency_contact_name: selectedProfile.emergency_contact_name ?? "",
-      //   emergency_contact_phone: selectedProfile.emergency_contact_phone ?? "",
-      //   emergency_contact_relationship:
-      //     selectedProfile.emergency_contact_relationship ?? "",
-      // });
-      console.log("filling in form with selected profile data!");
+    if (person) {
+      reset({
+        first_name: person.first_name ?? "",
+        last_name: person.last_name ?? "",
+        email: person.email ?? "",
+        phone: person.phone ?? "",
+        gender: person.gender === "female" ? "female" : "male",
+        marital_status: person.marital_status ?? "",
+        birth_date: person.birth_date,
+        occupation: person.occupation ?? "",
+        age: person.age ?? 0,
+        age_group: person.age_group ?? AgeGroup.Age13_17,
+        address_line1: person.address_line1 ?? "",
+        city: person.city ?? "",
+        state: person.state ?? "",
+        postcode: person.postcode ?? "",
+        emergency_contact_name: person.emergency_contact_name ?? "",
+        emergency_contact_phone: person.emergency_contact_phone ?? "",
+        emergency_contact_relationship:
+          person.emergency_contact_relationship ?? "",
+      });
+
+      console.log("✅ Filled form with person data");
     }
-  }, [selectedProfile, reset]);
+  }, [person, reset]);
 
   const onSubmit = async (data: ProfileFormData) => {
     console.log("Form submitted:", data);
-    const user = await signUp(data);
-    if (!user) {
-      console.error("Something went wrong signing up ");
-      return;
+    if (selectedProfile) {
+      const formPerson: Partial<Person> = {
+        id: selectedProfile.id,
+        ...data,
+      };
+
+      try {
+        const response = await updatePeople(formPerson);
+        if (response.success) {
+          router.push("/(app)/home");
+        }
+      } catch (error) {
+        console.error("Error updating person profile:", error);
+        return;
+      }
     }
+    if (!selectedProfile) {
+      const user = await signUp(data);
+      if (!user) {
+        console.error("Something went wrong signing up ");
+        return;
+      }
+    }
+
     router.push("/(app)/home");
   };
 
@@ -123,6 +156,13 @@ const Page = () => {
   //     setValue("age_group", group);
   //   }
   // }, [birthDate, setValue]);
+
+  if (isPending)
+    return (
+      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
+        <ActivityIndicator />
+      </SafeAreaView>
+    );
 
   return (
     <KeyboardAwareScrollView

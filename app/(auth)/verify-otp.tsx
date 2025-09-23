@@ -1,14 +1,19 @@
+import { useSinglePersonQuery } from "@/hooks/People/useSinglePersonQuery";
 import { sendOTP, verifyOTP } from "@/services/OTP/otp.service";
+import { fetchPeople } from "@/services/Person/person.service";
 import { useAuthStore } from "@/stores/authStore";
 import { useClaimStore } from "@/stores/claimStore";
 import { useSignUpStore } from "@/stores/signUpStore";
+import { apiEndpoints } from "@/utils/endpoints";
+import { secureFetch } from "@/utils/secureFetch";
 import {
   createUserWithEmailAndPassword,
   getAuth,
 } from "@react-native-firebase/auth";
+import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Mail, RefreshCw } from "lucide-react-native";
-import React, { useEffect, useRef, useState } from "react";
+import React, { use, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Alert,
@@ -28,6 +33,7 @@ const Page = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [resendTimer, setResendTimer] = useState(30);
   const [canResend, setCanResend] = useState(false);
+  const qc = useQueryClient();
 
   const inputRefs = useRef<(TextInput | null)[]>([]);
 
@@ -102,6 +108,7 @@ const Page = () => {
         authStore.setFirebaseUser(user);
 
         // get full person if selectedProfile is true
+        console.log("selected profile", claimStore.selectedProfile);
         if (claimStore.selectedProfile) {
           console.log(
             "Linking user:",
@@ -109,6 +116,29 @@ const Page = () => {
             " with person id of",
             claimStore.selectedProfile.id
           );
+          try {
+            const response = await secureFetch(
+              apiEndpoints.users.createUserWithExistingPerson,
+              {
+                method: "POST",
+                body: JSON.stringify({
+                  people_id: claimStore.selectedProfile.id,
+                }),
+              }
+            );
+            const json = await response.json();
+            if (json.success) {
+              // Call react query here
+              await qc.prefetchQuery({
+                queryKey: ["person", claimStore.selectedProfile.id],
+                queryFn: () => fetchPeople(claimStore.selectedProfile!.id!),
+              });
+              router.push("/(auth)/complete-profile");
+              return;
+            }
+          } catch (error) {
+            console.error(error);
+          }
         }
         router.push("/(auth)/complete-profile");
         // onVerificationSuccess?.()

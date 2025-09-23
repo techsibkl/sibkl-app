@@ -6,6 +6,7 @@ type PendingSignUp = {
 };
 type SignUpState = {
   pendingSignUp: PendingSignUp | null;
+  // claimedPerson:
   setPendingSignUp: (data: PendingSignUp | null) => void;
 };
 
