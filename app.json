@@ -31,11 +31,14 @@
       "expo-router",
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
-      ["expo-build-properties", {
-        "ios": {
-          "useFrameworks": "static"
+      [
+        "expo-build-properties",
+        {
+          "ios": {
+            "useFrameworks": "static"
+          }
         }
-      }],
+      ],
       [
         "expo-splash-screen",
         {
@@ -49,6 +52,12 @@
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "dc1379b3-8fa8-4f9b-a2f5-87f7b8a4eb8b"
+      }
     }
   }
 }
