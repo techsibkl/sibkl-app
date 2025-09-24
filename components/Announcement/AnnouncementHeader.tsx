@@ -14,7 +14,7 @@ const AnnouncementHeader = () => {
 			<TouchableOpacity onPress={() => router.back()}>
 				<ChevronLeft size={28} />
 			</TouchableOpacity>
-			<Text className="text-xl font-bold">Announcements</Text>
+			<Text className="text-xl font-bold">All Announcements</Text>
 		</SafeAreaView>
 	);
 };

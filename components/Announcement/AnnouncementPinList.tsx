@@ -1,7 +1,6 @@
 import { Announcement } from "@/services/Announcement/announcement.types";
 import { FlashList } from "@shopify/flash-list";
 import { View } from "react-native";
-import EmptyList from "../Cells/EmptyList";
 import AnnouncementBanner from "../Home/AnnouncementBanner";
 
 type AnnouncementProps = {
@@ -18,9 +17,12 @@ const AnnouncementPinList = ({ announcements }: AnnouncementProps) => {
 			renderItem={({ item: announcement }) => (
 				<AnnouncementBanner announcement={announcement} />
 			)}
-			ListEmptyComponent={<EmptyList />}
+			ListEmptyComponent={<View className="w-96 aspect-video"></View>}
 			estimatedItemSize={100}
 			className="mb-5"
+			snapToInterval={350} // width of item + separator
+			snapToAlignment="center"
+			decelerationRate="fast"
 		/>
 	);
 };
