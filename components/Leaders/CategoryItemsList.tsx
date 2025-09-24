@@ -22,12 +22,11 @@ const CategoryItemsList = ({ items }: CategoryItemsListProps) => {
 			data={items}
 			keyExtractor={(_, index) => index.toString()}
 			estimatedItemSize={70}
-			contentContainerStyle={{ paddingHorizontal: 16 }}
 			showsHorizontalScrollIndicator={false}
 			ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
 			renderItem={({ item }) => (
 				<TouchableOpacity
-					className="w-48 bg-background border-border border rounded-lg p-4 flex-row items-center justify-between mb-3"
+					className="w-48 bg-white border-border border rounded-lg flex-row items-center justify-between mb-3"
 					onPress={() => handleItemPress(item.drive_view_link)}
 				>
 					<View className="flex-1">
@@ -37,25 +36,27 @@ const CategoryItemsList = ({ items }: CategoryItemsListProps) => {
 									? `https://drive.google.com/thumbnail?id=${item.thumbnail_id}`
 									: `https://drive.google.com/thumbnail?id=${item.drive_file_id}`,
 							}}
-							className="w-full h-28 rounded-lg mb-3"
+							className="w-full h-28 rounded-t-lg"
 							resizeMode="cover"
 						/>
-						<Text
-							className="text-text text-base font-medium mb-1"
-							numberOfLines={2}
-							ellipsizeMode="tail"
-						>
-							{item.title}
-						</Text>
-						<Text
-							className="text-text-secondary text-sm capitalize"
-							numberOfLines={2}
-							ellipsizeMode="tail"
-						>
-							{item.file_type === "PDF"
-								? "PDF Document"
-								: "Video"}
-						</Text>
+						<View className="p-4">
+							<Text
+								className="text-text text-base font-medium"
+								numberOfLines={2}
+								ellipsizeMode="tail"
+							>
+								{item.title}
+							</Text>
+							<Text
+								className="text-text-secondary text-sm capitalize"
+								numberOfLines={2}
+								ellipsizeMode="tail"
+							>
+								{item.file_type === "PDF"
+									? "PDF Document"
+									: "Video"}
+							</Text>
+						</View>
 					</View>
 				</TouchableOpacity>
 			)}

@@ -1,24 +1,22 @@
-import { View, Text, TouchableOpacity } from "react-native";
+import { displayDateAsStr } from "@/utils/helper";
+import { UserIcon } from "lucide-react-native";
 import React from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 
 const Header = () => {
-  return (
-    <View className="flex-row justify-between items-center px-5 pb-5 pt-8">
-      <TouchableOpacity className="w-8 h-8 rounded-full justify-center items-center bg-gray-300 shadow-sm">
-        <View className="w-5 h-5 rounded-full bg-gray-600" />
-      </TouchableOpacity>
+	return (
+		<View className="flex-row justify-start items-center px-5 pb-5 pt-4 gap-3">
+			<TouchableOpacity className="">
+				<View className="rounded-full p-1 bg-gray-600">
+					<UserIcon size={20} color="white" />
+				</View>
+			</TouchableOpacity>
 
-      <Text className="font-semibold dark:text-text-dark-primary text-xl">
-        Friday, 20
-      </Text>
-
-      <TouchableOpacity className="w-8 h-8 justify-center items-center">
-        <Text className="text-text-secondary dark:text-text-dark-secondary text-xl">
-          ⏰
-        </Text>
-      </TouchableOpacity>
-    </View>
-  );
+			<Text className="font-semibold dark:text-text-dark-primary text-xl">
+				{displayDateAsStr(new Date(Date.now()))}
+			</Text>
+		</View>
+	);
 };
 
 export default Header;

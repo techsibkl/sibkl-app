@@ -6,13 +6,14 @@ import NotificationList from "@/components/Home/NotificationList";
 import { useAnnouncementsQuery } from "@/hooks/Announcement/useAnnouncementsQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { useRouter } from "expo-router";
+import { ChevronRightIcon } from "lucide-react-native";
 import { useMemo } from "react";
 import {
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
+	ScrollView,
+	StatusBar,
+	Text,
+	TouchableOpacity,
+	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -98,14 +99,18 @@ const DashboardScreen = () => {
 				<Greeting />
 
 				{/* Featured Pinned Announcements */}
-				<View className="">
-					<TouchableOpacity
-						onPress={() => router.push("/(app)/announcements")}
-					>
-						<Text>View All</Text>
-					</TouchableOpacity>
-				</View>
-
+				<TouchableOpacity
+					onPress={() => router.push("/(app)/announcements")}
+				>
+					<View className="flex-row justify-between items-center mb-5">
+						<Text className="font-bold text-text text-xl">
+							Announcements
+						</Text>
+						<View className="flex-grow"></View>
+						<Text className="text-sm mr-1">See All</Text>
+						<ChevronRightIcon size={16} />
+					</View>
+				</TouchableOpacity>
 				<AnnouncementPinList
 					announcements={pinnedAnnouncements || []}
 				/>

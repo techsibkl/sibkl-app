@@ -38,7 +38,7 @@ const AnnouncementBanner = ({ announcement }: AnnouncementBannerProps) => {
 							onPress={closeModal}
 							className="absolute top-2 right-2 z-10 bg-white/80 rounded-full w-8 h-8 justify-center items-center"
 						>
-							<Text className="text-gray-700 text-lg">✕</Text>
+							<Text className="text-gray-700 text-md">✕</Text>
 						</TouchableOpacity>
 
 						<AnnouncementDialog announcement={announcement} />
