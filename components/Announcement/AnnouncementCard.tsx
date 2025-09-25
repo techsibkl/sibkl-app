@@ -75,7 +75,7 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 	}, [announcement.date_start, announcement.date_end]);
 	return (
 		<View
-			className="flex-row bg-white rounded-lg p-1 items-center justify-between"
+			className="flex-row bg-white rounded-[15px] p-1 items-center justify-between"
 			style={{
 				shadowRadius: 5, // Override the default blur
 				shadowOpacity: 0.05,
@@ -87,7 +87,7 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 						source={{
 							uri: `https://drive.google.com/thumbnail?id=${announcement.drive_file_id}&sz=s1080`,
 						}}
-						className="w-full rounded-lg mb-3"
+						className="w-full rounded-t-[15px] mb-3"
 						style={{ height: imageHeight }}
 						resizeMode="cover"
 					/>

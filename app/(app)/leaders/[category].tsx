@@ -1,19 +1,18 @@
+import SharedBody from "@/components/shared/SharedBody";
+import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { useCategorResourceQuery } from "@/hooks/Resource/useCategoryResroucesQuery";
 import { MediaResource } from "@/services/Resource/resource.type";
 import { FlashList } from "@shopify/flash-list";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { ChevronLeft, Search } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  Linking,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+	ActivityIndicator,
+	Image,
+	Linking,
+	Text,
+	TouchableOpacity,
+	View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const CategoryResources = () => {
 	const { category } = useLocalSearchParams<{ category: string }>();
@@ -59,29 +58,13 @@ const CategoryResources = () => {
 	}
 
 	return (
-		<SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-			{/* Header */}
-			<View className="flex-row items-center px-4 py-3 ">
-				<TouchableOpacity onPress={() => router.back()}>
-					<ChevronLeft size={24} color="#333" />
-				</TouchableOpacity>
-				<Text className="ml-4 text-lg font-semibold text-text flex-1">
-					{category} Resources
-				</Text>
-			</View>
-
+		<SharedBody>
 			{/* Search */}
-			<View className="px-5 pb-2">
-				<View className="flex-row items-center rounded-xl px-4 py-3 bg-white border border-border">
-					<Search size={20} color="#999" />
-					<TextInput
-						className="flex-1 text-text-secondary text-base ml-3"
-						placeholder={`Search ${category}...`}
-						value={searchQuery}
-						onChangeText={setSearchQuery}
-					/>
-				</View>
-			</View>
+			<SharedSearchBar
+				searchQuery={searchQuery}
+				onSearchChange={setSearchQuery}
+				placeholder={`Search keywords...`}
+			/>
 
 			{/* List */}
 			<FlashList
@@ -90,33 +73,40 @@ const CategoryResources = () => {
 				estimatedItemSize={80}
 				contentContainerStyle={{
 					paddingHorizontal: 16,
-					paddingBottom: 24,
+					paddingVertical: 16,
 				}}
 				renderItem={({ item }) => (
 					<TouchableOpacity
-						className="bg-white rounded-lg p-4 mb-3 flex-row items-center justify-between"
+						className="bg-white rounded-[15px] p-4 mb-3 flex-row items-center justify-between"
 						style={{
 							shadowRadius: 5, // Override the default blur
 							shadowOpacity: 0.05,
 						}}
 						onPress={() => handleItemPress(item.drive_view_link)}
 					>
-						<View className="flex-1">
+						<View className="flex-1 gap-y-1">
 							<Image
 								source={{
 									uri: item.thumbnail_id
 										? `https://drive.google.com/thumbnail?id=${item.thumbnail_id}`
 										: `https://drive.google.com/thumbnail?id=${item.drive_file_id}`,
 								}}
-								className="w-full h-56 rounded-lg mb-3"
+								className="w-full h-56 rounded-[15px] mb-3"
 								resizeMode="contain"
 							/>
 							<Text
-								className="text-base font-medium text-text mb-1"
+								className="font-bold text-xl"
 								numberOfLines={2}
 								ellipsizeMode="tail"
 							>
 								{item.title}
+							</Text>
+							<Text
+								className="text-sm text-gray-500"
+								numberOfLines={2}
+								ellipsizeMode="tail"
+							>
+								{item.description || "No description"}
 							</Text>
 							<Text
 								className="text-xs text-gray-500"
@@ -126,13 +116,6 @@ const CategoryResources = () => {
 								{item.file_type === "PDF"
 									? "PDF Document"
 									: "Video"}
-							</Text>
-							<Text
-								className="text-sm text-gray-500"
-								numberOfLines={2}
-								ellipsizeMode="tail"
-							>
-								{item.description || "No description"}
 							</Text>
 						</View>
 					</TouchableOpacity>
@@ -153,7 +136,7 @@ const CategoryResources = () => {
 					) : null
 				}
 			/>
-		</SafeAreaView>
+		</SharedBody>
 	);
 };
 

@@ -23,10 +23,13 @@ const CategoryItemsList = ({ items }: CategoryItemsListProps) => {
 			keyExtractor={(_, index) => index.toString()}
 			estimatedItemSize={70}
 			showsHorizontalScrollIndicator={false}
+			contentContainerStyle={{
+				paddingHorizontal: 12,
+			}}
 			ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
 			renderItem={({ item }) => (
 				<TouchableOpacity
-					className="w-48 bg-white border-border border rounded-lg flex-row items-center justify-between mb-3"
+					className="w-48 bg-white border-border border rounded-[15px] flex-row items-center justify-between mb-3"
 					onPress={() => handleItemPress(item.drive_view_link)}
 				>
 					<View className="flex-1">

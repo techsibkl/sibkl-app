@@ -1,15 +1,15 @@
 import AnnouncementAllList from "@/components/Announcement/AnnouncementAllList";
+import SharedBody from "@/components/shared/SharedBody";
 import { useAnnouncementsQuery } from "@/hooks/Announcement/useAnnouncementsQuery";
 import React from "react";
-import { View } from "react-native";
 
 const AnnouncementsPage = () => {
 	const { data: announcements, isPending } = useAnnouncementsQuery();
 
 	return (
-		<View className="flex-1 bg-background dark:bg-background-dark">
+		<SharedBody>
 			<AnnouncementAllList announcements={announcements || []} />
-		</View>
+		</SharedBody>
 	);
 };
 

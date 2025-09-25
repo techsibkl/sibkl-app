@@ -5,7 +5,7 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 const Header = () => {
 	return (
-		<View className="flex-row justify-start items-center px-5 pb-5 pt-4 gap-3">
+		<View className="flex-row justify-start items-center px-5 pb-5 pt-4 gap-3 shadow-sm">
 			<TouchableOpacity className="">
 				<View className="rounded-full p-1 bg-gray-600">
 					<UserIcon size={20} color="white" />

@@ -33,7 +33,7 @@ export default function ProfileItem({ item }: { item: any }) {
 
   return (
     <TouchableOpacity
-      className="bg-card rounded-lg p-4 mb-3 border border-border"
+      className="bg-card rounded-[15px] p-4 mb-3 border border-border"
       onPress={handlePress}
     >
       <Text className="font-semibold text-lg text-text">{item.full_name}</Text>

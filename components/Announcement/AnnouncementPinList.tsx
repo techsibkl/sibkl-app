@@ -12,6 +12,9 @@ const AnnouncementPinList = ({ announcements }: AnnouncementProps) => {
 		<FlashList
 			horizontal
 			data={announcements}
+			contentContainerStyle={{
+				paddingHorizontal: 12,
+			}}
 			ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
 			showsHorizontalScrollIndicator={false}
 			renderItem={({ item: announcement }) => (

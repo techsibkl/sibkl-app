@@ -33,7 +33,7 @@ export const FormDateInput = ({
             {/* Input-like touch area */}
             <TouchableOpacity
               disabled={disabled}
-              className={`border border-gray-200 rounded-lg p-3 bg-gray-50 ${
+              className={`border border-gray-200 rounded-[15px] p-3 bg-gray-50 ${
                 disabled ? "opacity-50" : ""
               }`}
               onPress={() => setShow(true)}

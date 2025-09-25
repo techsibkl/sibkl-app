@@ -1,3 +1,4 @@
+import SharedBody from "@/components/shared/SharedBody";
 import { sendOTP, verifyOTP } from "@/services/OTP/otp.service";
 import { fetchPeople } from "@/services/Person/person.service";
 import { useAuthStore } from "@/stores/authStore";
@@ -6,21 +7,20 @@ import { useSignUpStore } from "@/stores/signUpStore";
 import { apiEndpoints } from "@/utils/endpoints";
 import { secureFetch } from "@/utils/secureFetch";
 import {
-  createUserWithEmailAndPassword,
-  getAuth,
+	createUserWithEmailAndPassword,
+	getAuth,
 } from "@react-native-firebase/auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Mail, RefreshCw } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  SafeAreaView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+	ActivityIndicator,
+	Alert,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View
 } from "react-native";
 
 const Page = () => {
@@ -116,50 +116,56 @@ const Page = () => {
 
 				authStore.setFirebaseUser(user);
 
-        // get full person if selectedProfile is true
-        console.log("selected profile", claimStore.selectedProfile);
-        if (claimStore.selectedProfile) {
-          try {
-            const response = await secureFetch(
-              apiEndpoints.users.createUserWithExistingPerson,
-              {
-                method: "POST",
-                body: JSON.stringify({
-                  people_id: claimStore.selectedProfile.id,
-                }),
-              }
-            );
-            const json = await response.json();
-            if (json.success) {
-              // Call react query here
-              await qc.prefetchQuery({
-                queryKey: ["person", claimStore.selectedProfile.id],
-                queryFn: () => fetchPeople(claimStore.selectedProfile!.id!),
-              });
-              router.push("/(auth)/complete-profile");
-              return;
-            }
-          } catch (error) {
-            console.error(error);
-          }
-        }
-        router.push("/(auth)/complete-profile");
-        // onVerificationSuccess?.()
-      } else {
-        Alert.alert(
-          "Invalid OTP",
-          "The code you entered is incorrect. Please try again."
-        );
-        setOtp(["", "", "", "", "", ""]);
-        inputRefs.current[0]?.focus();
-      }
-    } catch (error) {
-      console.error("[v0] OTP verification error:", error);
-      Alert.alert("Error", "Failed to verify OTP. Please try again.");
-    } finally {
-      setIsLoading(false);
-    }
-  };
+				// get full person if selectedProfile is true
+				console.log("selected profile", claimStore.selectedProfile);
+				if (claimStore.selectedProfile) {
+					try {
+						const response = await secureFetch(
+							apiEndpoints.users.createUserWithExistingPerson,
+							{
+								method: "POST",
+								body: JSON.stringify({
+									people_id: claimStore.selectedProfile.id,
+								}),
+							}
+						);
+						const json = await response.json();
+						if (json.success) {
+							// Call react query here
+							await qc.prefetchQuery({
+								queryKey: [
+									"person",
+									claimStore.selectedProfile.id,
+								],
+								queryFn: () =>
+									fetchPeople(
+										claimStore.selectedProfile!.id!
+									),
+							});
+							router.push("/(auth)/complete-profile");
+							return;
+						}
+					} catch (error) {
+						console.error(error);
+					}
+				}
+				router.push("/(auth)/complete-profile");
+				// onVerificationSuccess?.()
+			} else {
+				Alert.alert(
+					"Invalid OTP",
+					"The code you entered is incorrect. Please try again."
+				);
+				setOtp(["", "", "", "", "", ""]);
+				inputRefs.current[0]?.focus();
+			}
+		} catch (error) {
+			console.error("[v0] OTP verification error:", error);
+			Alert.alert("Error", "Failed to verify OTP. Please try again.");
+		} finally {
+			setIsLoading(false);
+		}
+	};
 
 	const handleResendOTP = async () => {
 		if (!canResend) return;
@@ -197,7 +203,7 @@ const Page = () => {
 	const otpString = otp.join("");
 
 	return (
-		<SafeAreaView className="flex-1 bg-background">
+		<SharedBody>
 			<View className="flex-1 px-6 py-8">
 				{/* Header with back button */}
 				<View className="flex-row items-center ">
@@ -235,7 +241,7 @@ const Page = () => {
 							<TextInput
 								key={index}
 								ref={(ref) => (inputRefs.current[index] = ref)}
-								className="w-12 h-12 border border-border bg-card rounded-lg text-center text-lg font-semibold text-text"
+								className="w-12 h-12 border border-border bg-card rounded-[15px] text-center text-lg font-semibold text-text"
 								value={digit}
 								onChangeText={(value) =>
 									handleOtpChange(value.slice(-1), index)
@@ -255,7 +261,7 @@ const Page = () => {
 					<TouchableOpacity
 						onPress={handleVerifyOTP}
 						disabled={otpString.length !== 6 || isLoading}
-						className={`w-full h-12 rounded-lg items-center justify-center mb-6 ${
+						className={`w-full h-12 rounded-[15px] items-center justify-center mb-6 ${
 							otpString.length !== 6 || isLoading
 								? "bg-muted"
 								: "bg-primary-600"
@@ -296,7 +302,7 @@ const Page = () => {
 					</View>
 				</View>
 			</View>
-		</SafeAreaView>
+		</SharedBody>
 	);
 };
 

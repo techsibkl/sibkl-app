@@ -1,7 +1,7 @@
+import { Picker } from "@react-native-picker/picker";
 import React from "react";
 import { Controller } from "react-hook-form";
 import { Text, View } from "react-native";
-  import { Picker } from "@react-native-picker/picker";
 
 type Option = { label: string; value: string };
 
@@ -30,7 +30,7 @@ export const FormSelect = ({
         name={name}
         rules={rules}
         render={({ field: { onChange, value } }) => (
-          <View className={`border border-border rounded-lg h-12 flex-1 bg-white justify-center`}>
+          <View className={`border border-border rounded-[15px] h-12 flex-1 bg-white justify-center`}>
             <Picker
               enabled={!disabled} // 👈 disables select
               selectedValue={value}

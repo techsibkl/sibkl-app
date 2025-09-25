@@ -1,21 +1,12 @@
 import AnnouncementPinList from "@/components/Announcement/AnnouncementPinList";
-import Greeting from "@/components/Home/Greeting";
-import Header from "@/components/Home/Header";
-import Notification from "@/components/Home/Notification";
 import NotificationList from "@/components/Home/NotificationList";
+import SharedBody from "@/components/shared/SharedBody";
+import SharedSectionHeader from "@/components/shared/SharedSectionHeader";
 import { useAnnouncementsQuery } from "@/hooks/Announcement/useAnnouncementsQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { useRouter } from "expo-router";
-import { ChevronRightIcon } from "lucide-react-native";
 import { useMemo } from "react";
-import {
-	ScrollView,
-	StatusBar,
-	Text,
-	TouchableOpacity,
-	View,
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar } from "react-native";
 
 const DashboardScreen = () => {
 	const { isDark } = useThemeColors();
@@ -31,7 +22,7 @@ const DashboardScreen = () => {
 			id: 1,
 			people_id: 101,
 			name: "Sarah Chen",
-			title: "Flow Update",
+			title: "New Guest",
 			body: "Your workflow has been updated successfully",
 			type: "flow" as const,
 			ref_id: 2301,
@@ -82,44 +73,23 @@ const DashboardScreen = () => {
 	];
 
 	return (
-		<SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
+		<SharedBody>
 			<StatusBar
 				className="bg-background dark:bg-background-dark"
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
 
-			{/* Header */}
-			<Header />
+			{/* Featured Pinned Announcements */}
+			<SharedSectionHeader
+				title="Announcements"
+				onPress={() => router.push("/(app)/announcements")}
+			/>
+			<AnnouncementPinList announcements={pinnedAnnouncements || []} />
 
-			<ScrollView
-				className="flex-1 px-5"
-				showsVerticalScrollIndicator={false}
-			>
-				{/* Greeting */}
-				<Greeting />
-
-				{/* Featured Pinned Announcements */}
-				<TouchableOpacity
-					onPress={() => router.push("/(app)/announcements")}
-				>
-					<View className="flex-row justify-between items-center mb-5">
-						<Text className="font-bold text-text text-xl">
-							Announcements
-						</Text>
-						<View className="flex-grow"></View>
-						<Text className="text-sm mr-1">See All</Text>
-						<ChevronRightIcon size={16} />
-					</View>
-				</TouchableOpacity>
-				<AnnouncementPinList
-					announcements={pinnedAnnouncements || []}
-				/>
-
-				{/* Notification Section */}
-				<Notification />
-				<NotificationList notifications={notifications} />
-			</ScrollView>
-		</SafeAreaView>
+			{/* Notification Section */}
+			<SharedSectionHeader title="Notifications" onPress={() => {}} />
+			<NotificationList notifications={notifications} />
+		</SharedBody>
 	);
 };
 

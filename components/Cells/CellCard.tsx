@@ -13,7 +13,11 @@ const CellCard = ({ cell }: CellCardProps) => {
 
 	return (
 		<TouchableOpacity
-			className="rounded-2xl p-5 mb-4 bg-white shadow-sm"
+			className="rounded-2xl p-5 mb-4 bg-white"
+			style={{
+				shadowRadius: 5, // Override the default blur
+				shadowOpacity: 0.05,
+			}}
 			onPress={() => router.push(`/cells/profile/${cell.id}`)}
 			activeOpacity={0.8}
 		>

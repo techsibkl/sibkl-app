@@ -9,7 +9,6 @@ type AnnouncementAllListProps = {
 };
 
 const AnnouncementAllList = ({ announcements }: AnnouncementAllListProps) => {
-	
 	return (
 		<FlashList
 			data={announcements}

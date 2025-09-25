@@ -1,69 +1,52 @@
 "use client";
 
 import CellList from "@/components/Cells/CellList";
-import SharedHeader from "@/components/shared/SharedHeader";
+import SharedBody from "@/components/shared/SharedBody";
+import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Cell } from "@/services/Cell/cell.types";
 import { useAuthStore } from "@/stores/authStore";
-import { Search } from "lucide-react-native";
 import { useState } from "react";
-import {
-  StatusBar,
-  Text,
-  TextInput,
-  View
-} from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { StatusBar, Text, View } from "react-native";
 
 const CellsScreen = () => {
-  const { isDark } = useThemeColors();
-  const { user } = useAuthStore();
+	const { isDark } = useThemeColors();
+	const { user } = useAuthStore();
 
-  const [searchQuery, setSearchQuery] = useState("");
+	const [searchQuery, setSearchQuery] = useState("");
 
-  // // derive filtered list
-  const filteredCells = (user?.person?.cells ?? []).filter((cell : Cell) =>
-    cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+	// // derive filtered list
+	const filteredCells = (user?.person?.cells ?? []).filter((cell: Cell) =>
+		cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase())
+	);
 
-  if (!user)
-    return (
-      <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-        <Text>Unauthenticated</Text>
-        <Text>Go Away!!!!</Text>
-      </SafeAreaView>
-    );
+	if (!user)
+		return (
+			<SharedBody>
+				<Text>Unauthenticated</Text>
+				<Text>Go Away!!!!</Text>
+			</SharedBody>
+		);
 
-  return (
-    <SafeAreaView className="flex-1 bg-background dark:bg-background-dark">
-      <StatusBar
-        className="bg-background dark:bg-background-dark"
-        barStyle={isDark ? "light-content" : "dark-content"}
-      />
+	return (
+		<SharedBody>
+			<StatusBar
+				className="bg-background dark:bg-background-dark"
+				barStyle={isDark ? "light-content" : "dark-content"}
+			/>
 
-      {/* Header with Search */}
-      <SharedHeader title="Cells">
-        <View className="flex-row items-center rounded-xl px-4 py-3 bg-white border border-border">
-          <Search size={20} color="#999" className="mr-2" />
-          <TextInput
-            className="flex-1 text-text-secondary text-base"
-            placeholder="Search cells..."
-            placeholderTextColor="#999"
-            value={searchQuery}
-            onChangeText={setSearchQuery}
-          />
-        </View>
-      </SharedHeader>
+			<SharedSearchBar
+				searchQuery={searchQuery}
+				onSearchChange={setSearchQuery}
+				placeholder="Search cells..."
+			/>
 
-      {/* Content */}
-      <View
-        className="flex-1 px-5 pt-5"
-      >
-        <CellList cells={filteredCells} />
-      
-      </View>
-    </SafeAreaView>
-  );
+			{/* Content */}
+			<View className="flex-1">
+				<CellList cells={filteredCells} />
+			</View>
+		</SharedBody>
+	);
 };
 
 export default CellsScreen;

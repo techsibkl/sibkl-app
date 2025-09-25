@@ -4,14 +4,14 @@ import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-  Alert,
-  Image,
-  SafeAreaView,
-  ScrollView,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+	Alert,
+	Image,
+	SafeAreaView,
+	ScrollView,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View,
 } from "react-native";
 import SibklLogo from "../../assets/images/sibkl-logo.png";
 
@@ -106,7 +106,7 @@ const Page = () => {
 										field: { onChange, onBlur, value },
 									}) => (
 										<TextInput
-											className="pl-12 h-12 bg-white border border-border rounded-lg text-text"
+											className="pl-12 h-12 bg-white border border-border rounded-[15px] text-text"
 											placeholder="Enter your email"
 											placeholderTextColor="#9ca3af"
 											onBlur={onBlur}
@@ -150,7 +150,7 @@ const Page = () => {
 										field: { onChange, onBlur, value },
 									}) => (
 										<TextInput
-											className="pl-12 pr-12 h-12 bg-white border border-border rounded-lg text-text"
+											className="pl-12 pr-12 h-12 bg-white border border-border rounded-[15px] text-text"
 											placeholder="Enter your password"
 											placeholderTextColor="#9ca3af"
 											onBlur={onBlur}
@@ -223,7 +223,7 @@ const Page = () => {
 
 						{/* Sign in button */}
 						<TouchableOpacity
-							className={`w-full h-12 rounded-lg items-center justify-center mb-6 ${"bg-primary-600"}`}
+							className={`w-full h-12 rounded-[15px] items-center justify-center mb-6 ${"bg-primary-600"}`}
 							onPress={handleSubmit(onSubmit)}
 							// disabled={isLoading}
 						>

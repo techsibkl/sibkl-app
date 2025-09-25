@@ -8,27 +8,39 @@ type NotificationListProps = {
 
 const NotificationList = ({ notifications }: NotificationListProps) => {
 	return (
-		<FlashList
-			data={notifications}
-			renderItem={({ item: notification }) => (
-				<View
-					key={notification.id}
-					className="flex-row justify-between notifications-center py-4 border-border dark:border-border-dark border-b"
-				>
-					<View className="flex-1">
-						<Text className="mb-0.5 text-text-tertiary text-xs">
-							{notification.type}
-						</Text>
-						<Text className="mb-1 text-text-tertiary text-xs">
-							{notification.timeAgo}
-						</Text>
-						<Text className="font-semibold text-text">
-							{notification.title}
-						</Text>
+		<View
+			className="flex-row h-full mx-4 bg-white rounded-[15px] items-center justify-between"
+			style={{
+				shadowRadius: 5, // Override the default blur
+				shadowOpacity: 0.05,
+			}}
+		>
+			<FlashList
+				data={notifications}
+				contentContainerStyle={{
+					paddingHorizontal: 16,
+					paddingVertical: 8,
+				}}
+				renderItem={({ item: notification }) => (
+					<View
+						key={notification.id}
+						className="flex-row justify-between notifications-center py-4 border-border dark:border-border-dark border-b"
+					>
+						<View className="flex-1 gap-y-1">
+							<Text className="text-text-tertiary text-xs">
+								{notification.timeAgo}
+							</Text>
+							<Text className="font-semibold text-text">
+								{notification.title}
+							</Text>
+							<Text className="text-text-tertiary text-xs">
+								{notification.type}
+							</Text>
+						</View>
 					</View>
-				</View>
-			)}
-		/>
+				)}
+			/>
+		</View>
 	);
 };
 

@@ -15,12 +15,12 @@ const AnnouncementBanner = ({ announcement }: AnnouncementBannerProps) => {
 	return (
 		<>
 			<TouchableOpacity onPress={openModal}>
-				<View className="rounded-xl shadow-sm w-96 aspect-video">
+				<View className="rounded-xl w-96 aspect-video shadow-sm">
 					<Image
 						source={{
 							uri: `https://drive.google.com/thumbnail?id=${announcement.drive_file_id}&sz=s1080`,
 						}}
-						className="w-full h-full rounded-lg mb-3"
+						className="w-full h-full rounded-[15px] mb-3"
 						resizeMode="cover"
 					/>
 				</View>
