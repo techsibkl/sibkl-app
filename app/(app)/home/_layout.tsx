@@ -1,3 +1,4 @@
+import Greeting from "@/components/Home/Greeting";
 import SharedHeader from "@/components/shared/SharedHeader";
 import { Stack } from "expo-router";
 
@@ -13,18 +14,9 @@ export default function Layout() {
 				options={{
 					headerShown: true,
 					header() {
-						return <SharedHeader title="Cells" />;
+						return <SharedHeader child={<Greeting />} />;
 					},
 				}}
-			/>
-			<Stack.Screen
-				name="profile/[id]"
-				options={({ route }) => ({
-					headerShown: true,
-					header() {
-						return <SharedHeader title="Cell Info" isPop />;
-					},
-				})}
 			/>
 		</Stack>
 	);

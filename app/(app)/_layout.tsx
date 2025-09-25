@@ -1,11 +1,10 @@
-import AnnouncementHeader from "@/components/Announcement/AnnouncementHeader";
 import { Tabs } from "expo-router";
 import {
-  Circle,
-  GraduationCap,
-  Home,
-  Settings,
-  Users,
+	Circle,
+	GraduationCap,
+	Home,
+	Settings,
+	Users,
 } from "lucide-react-native";
 
 export default function AppLayout() {
@@ -16,20 +15,18 @@ export default function AppLayout() {
 				tabBarInactiveTintColor: "#8E8E93",
 				tabBarStyle: {
 					height: 70,
-					paddingTop: 10,
-					backgroundColor: "#F2F2F7",
+					paddingTop: 2,
+					paddingHorizontal: 16,
+
 					borderTopWidth: 0.5,
 					borderTopColor: "#E5E5EA",
-				},
-				headerStyle: {
-					backgroundColor: "#F2F2F7",
 				},
 				headerTintColor: "#000",
 				headerShown: false,
 			}}
 		>
 			<Tabs.Screen
-				name="home/index"
+				name="home"
 				options={{
 					title: "Home",
 					tabBarIcon: ({ color, size, focused }) => (
@@ -43,7 +40,7 @@ export default function AppLayout() {
 				}}
 			/>
 			<Tabs.Screen
-				name="cells/index"
+				name="cells"
 				options={{
 					title: "Cells",
 					tabBarIcon: ({ color, size, focused }) => (
@@ -57,7 +54,7 @@ export default function AppLayout() {
 				}}
 			/>
 			<Tabs.Screen
-				name="people/index"
+				name="people"
 				options={{
 					title: "People",
 					tabBarIcon: ({ color, size, focused }) => (
@@ -71,7 +68,9 @@ export default function AppLayout() {
 				}}
 			/>
 			<Tabs.Screen
-				name="leaders/index"
+				// Note: with leaders/_layout, the name just needs to be (route) and not (route)/index
+				
+				name="leaders"
 				options={{
 					title: "Leaders",
 					tabBarIcon: ({ color, size, focused }) => (
@@ -85,7 +84,7 @@ export default function AppLayout() {
 				}}
 			/>
 			<Tabs.Screen
-				name="settings/index"
+				name="settings"
 				options={{
 					title: "Settings",
 					tabBarIcon: ({ color, size, focused }) => (
@@ -98,33 +97,11 @@ export default function AppLayout() {
 					),
 				}}
 			/>
+
 			<Tabs.Screen
-				name="people/profile/[id]"
-				options={{
-					href: null, // removes it from tab navigation
-				}}
-			/>
-			<Tabs.Screen
-				name="cells/profile/[id]"
-				options={{
-					href: null, // removes it from tab navigation
-				}}
-			/>
-			<Tabs.Screen
-				name="leaders/[category]"
-				options={{
-					href: null, // removes it from tab navigation
-				}}
-			/>
-			<Tabs.Screen
-				name="announcements/index"
+				name="announcements"
 				options={{
 					tabBarStyle: { display: "none" },
-					headerShown: true,
-					// custom header
-					header() {
-						return <AnnouncementHeader />;
-					},
 					href: null, // removes it from tab navigation
 				}}
 			/>

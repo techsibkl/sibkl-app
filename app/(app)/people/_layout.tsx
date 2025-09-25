@@ -13,16 +13,17 @@ export default function Layout() {
 				options={{
 					headerShown: true,
 					header() {
-						return <SharedHeader title="Cells" />;
+						return <SharedHeader title="People" />;
 					},
 				}}
 			/>
 			<Stack.Screen
 				name="profile/[id]"
 				options={({ route }) => ({
+					title: "Profile",
 					headerShown: true,
 					header() {
-						return <SharedHeader title="Cell Info" isPop />;
+						return <SharedHeader title="Profile" isPop />;
 					},
 				})}
 			/>

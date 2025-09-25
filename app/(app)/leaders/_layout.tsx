@@ -11,18 +11,25 @@ export default function Layout() {
 			<Stack.Screen
 				name="index"
 				options={{
+					title: "Leaders",
 					headerShown: true,
 					header() {
-						return <SharedHeader title="Cells" />;
+						return <SharedHeader title="Leader's Page" />;
 					},
 				}}
 			/>
 			<Stack.Screen
-				name="profile/[id]"
+				name="[category]"
 				options={({ route }) => ({
+					title: "Resource",
 					headerShown: true,
 					header() {
-						return <SharedHeader title="Cell Info" isPop />;
+						return (
+							<SharedHeader
+								title={(route.params as any).category}
+								isPop
+							/>
+						);
 					},
 				})}
 			/>

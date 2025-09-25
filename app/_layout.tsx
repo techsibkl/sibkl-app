@@ -17,56 +17,58 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 const queryClient = new QueryClient();
 
 function RootLayoutNav() {
-  const segments = useSegments();
-  const router = useRouter();
-  const { firebaseUser, user, isLoading, init } = useAuthStore();
+	const segments = useSegments();
+	const router = useRouter();
+	const { firebaseUser, user, isLoading, init } = useAuthStore();
 
-  useEffect(() => {
-    init();
-  }, [init]);
+	useEffect(() => {
+		init();
+	}, [init]);
 
-  useEffect(() => {
-    if (isLoading) return;
-    const inAuthGroup = segments[0] === "(auth)";
+	useEffect(() => {
+		if (isLoading) return;
+		const inAuthGroup = segments[0] === "(auth)";
 
-    if (!firebaseUser && !inAuthGroup) {
-      router.replace("/(auth)/sign-in");
-    } else if (!user && !inAuthGroup) {
-      router.replace("/(auth)/sign-in");
-    } else if (user && !user.person) {
-      router.replace("/(auth)/complete-profile");
-    } else if (user && inAuthGroup) {
-      // Already logged in → go to app
-      router.replace("/(app)/home");
-    }
-  }, [user, isLoading, segments, router, firebaseUser]);
+		if (!firebaseUser && !inAuthGroup) {
+			router.replace("/(auth)/sign-in");
+		} else if (!user && !inAuthGroup) {
+			router.replace("/(auth)/sign-in");
+		} else if (user && !user.person) {
+			router.replace("/(auth)/complete-profile");
+		} else if (user && inAuthGroup) {
+			// Already logged in → go to app
+			router.replace("/(app)/home");
+		}
+	}, [user, isLoading, segments, router, firebaseUser]);
 
-  return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-      <Stack.Screen name="(app)" options={{ headerShown: false }} />
-      <Stack.Screen name="+not-found" />
-    </Stack>
-  );
+	return (
+		<Stack screenOptions={{ headerShown: false }}>
+			<Stack.Screen name="(auth)" options={{ headerShown: false }} />
+			<Stack.Screen name="(app)" options={{ headerShown: false }} />
+			<Stack.Screen name="+not-found" />
+		</Stack>
+	);
 }
 
 export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-  });
+	const colorScheme = useColorScheme();
+	const [loaded] = useFonts({
+		SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+	});
 
-  if (!loaded) {
-    // Async font loading only occurs in development.
-    return null;
-  }
+	if (!loaded) {
+		// Async font loading only occurs in development.
+		return null;
+	}
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={colorScheme === "dark" ? DarkTheme : DefaultTheme}>
-        <RootLayoutNav />
-        <StatusBar style="auto" />
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
+	return (
+		<QueryClientProvider client={queryClient}>
+			<ThemeProvider
+				value={colorScheme === "dark" ? DarkTheme : DefaultTheme}
+			>
+				<RootLayoutNav />
+				<StatusBar style="auto" />
+			</ThemeProvider>
+		</QueryClientProvider>
+	);
 }

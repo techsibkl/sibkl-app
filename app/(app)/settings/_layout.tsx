@@ -13,18 +13,9 @@ export default function Layout() {
 				options={{
 					headerShown: true,
 					header() {
-						return <SharedHeader title="Cells" />;
+						return <SharedHeader title="Settings" />;
 					},
 				}}
-			/>
-			<Stack.Screen
-				name="profile/[id]"
-				options={({ route }) => ({
-					headerShown: true,
-					header() {
-						return <SharedHeader title="Cell Info" isPop />;
-					},
-				})}
 			/>
 		</Stack>
 	);
