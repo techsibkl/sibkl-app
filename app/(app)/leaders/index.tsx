@@ -17,27 +17,21 @@ import {
 } from "react-native";
 
 import FolderList from "@/components/Leaders/FolderList";
-import { MediaResource } from "@/services/Resource/resource.type";
-import { ArrowUp, Grid3x2Icon, ListIcon } from "lucide-react-native";
+import SortDropdown from "@/components/Leaders/SortDropdown";
+import { Grid3x2Icon, ListIcon } from "lucide-react-native";
 
 const LeadersPage = () => {
 	const { isDark } = useThemeColors();
 	const { data: resources, isPending, isError } = useResourcesQuery();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [viewMode, setViewMode] = useState<"gallery" | "list">("gallery");
-	const [selectedResource, setSelectedResource] =
-		useState<MediaResource | null>(null);
+	const [sortAsc, setSortAsc] = useState(true);
 
-	const groupedResources = useFilteredResources(resources, searchQuery);
-
-	// computed for FlashList section data
-	const sectionData = React.useMemo(() => {
-		if (!groupedResources) return [];
-		return groupedResources.map((group) => ({
-			title: group.category,
-			data: group.items,
-		}));
-	}, [groupedResources]);
+	const groupedResources = useFilteredResources(
+		resources,
+		searchQuery,
+		sortAsc
+	);
 
 	if (isPending)
 		return (
@@ -64,16 +58,12 @@ const LeadersPage = () => {
 			/>
 
 			{/* toggle buttons */}
-			<View className="flex-row justify-between px-4 py-2">
-				<View className="flex-row gap-2 items-center">
-					<Text>Name</Text>
-					<ArrowUp size={16} color="#99aaffff" />
-				</View>
+			<View className="flex-row justify-between items-center px-4 py-2">
+				<SortDropdown sortAsc={sortAsc} setSortAsc={setSortAsc} />
 				<TouchableOpacity
 					onPress={() =>
 						setViewMode(viewMode === "gallery" ? "list" : "gallery")
 					}
-					className="self-end mb-2"
 				>
 					{viewMode === "gallery" ? (
 						<ListIcon size={22} color="#999" />
@@ -88,10 +78,7 @@ const LeadersPage = () => {
 					<CategoryList groupedResources={groupedResources} />
 				</ScrollView>
 			) : (
-				<FolderList
-					groupedResources={groupedResources}
-					onResourcePress={setSelectedResource}
-				/>
+				<FolderList groupedResources={groupedResources} />
 			)}
 		</SharedBody>
 	);

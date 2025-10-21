@@ -1,7 +1,9 @@
 import { MediaResource } from "@/services/Resource/resource.type";
 import { FlashList } from "@shopify/flash-list";
-import React, { useMemo } from "react";
-import { Pressable, StyleSheet, Text, View } from "react-native";
+import { ChevronDown, ChevronRight, FolderIcon } from "lucide-react-native";
+import React, { useMemo, useState } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
+import SingleFileItem from "./SingleFileItem";
 
 interface GroupedResource {
 	category: string;
@@ -10,60 +12,24 @@ interface GroupedResource {
 
 interface FolderListProps {
 	groupedResources: GroupedResource[];
-	onResourcePress?: (resource: MediaResource) => void;
 }
 
-import { displayDateAsStr } from "@/utils/helper";
-import {
-    FileIcon,
-    FolderIcon,
-    ImageIcon,
-    PlayCircleIcon,
-} from "lucide-react-native";
+const FolderList: React.FC<FolderListProps> = ({ groupedResources }) => {
+	const [expandedCategories, setExpandedCategories] = useState<
+		Record<string, boolean>
+	>({});
 
-const getIcon = (type?: string, color: string = "#9CA3AF") => {
-	switch (type) {
-		case "Video":
-			return <PlayCircleIcon size={22} color={color} />;
-		case "PDF":
-			return <FileIcon size={22} color={color} />;
-		case "Image":
-			return <ImageIcon size={22} color={color} />;
-		case "Folder":
-			return <FolderIcon size={22} color={color} />;
-		default:
-			return <FileIcon size={22} color={color} />;
-	}
-};
-
-const getColor = (type?: string) => {
-	switch (type) {
-		case "Video":
-			return "#3B82F6"; // blue-500
-		case "PDF":
-			return "#EF4444"; // red-500
-		case "Image":
-			return "#6B7280"; // gray-500
-		case "Folder":
-			return "#111827"; // gray-900
-		default:
-			return "#9CA3AF"; // gray-400
-	}
-};
-
-const FolderList: React.FC<FolderListProps> = ({
-	groupedResources,
-	onResourcePress,
-}) => {
 	// Flatten the grouped data into [category, item, item, category, item...]
 	const flatData = useMemo(() => {
 		const arr: (string | MediaResource)[] = [];
 		groupedResources.forEach((group) => {
-			arr.push(group.category); // header
-			arr.push(...group.items); // items
+			arr.push(group.category);
+			if (expandedCategories[group.category]) {
+				arr.push(...group.items);
+			}
 		});
 		return arr;
-	}, [groupedResources]);
+	}, [groupedResources, expandedCategories]);
 
 	// Compute which indices are headers
 	const stickyHeaderIndices = useMemo(() => {
@@ -88,46 +54,43 @@ const FolderList: React.FC<FolderListProps> = ({
 				typeof item === "string" ? "sectionHeader" : "row"
 			}
 			renderItem={({ item }) => {
+				// CATEGORY HEADER
 				if (typeof item === "string") {
+					const isExpanded = expandedCategories[item];
+
 					return (
-						<View className="flex-row items-center gap-2 px-4 py-2 bg-background">
-							<FolderIcon fill="#CCC" size={22} color="#CCC" />
-							<Text className="font-bold text-xl">
-								{item.toUpperCase()}
-							</Text>
-						</View>
+						<TouchableOpacity
+							onPress={() =>
+								setExpandedCategories((prev) => ({
+									...prev,
+									[item]: !prev[item],
+								}))
+							}
+						>
+							<View className="flex-row items-center gap-2 px-4 py-2 bg-background">
+								<FolderIcon
+									fill="#CCC"
+									size={22}
+									color="#CCC"
+								/>
+								<Text className="font-bold text-xl">
+									{item.toUpperCase()}
+								</Text>
+								<View className="flex-grow" />
+								{isExpanded ? (
+									<ChevronDown size={18} color="#333" />
+								) : (
+									<ChevronRight size={18} color="#333" />
+								)}
+							</View>
+						</TouchableOpacity>
 					);
 				}
-
-				return (
-					<Pressable
-						style={styles.itemContainer}
-						onPress={() => onResourcePress?.(item)}
-					>
-						<View className="flex-row items-center gap-2 px-4">
-							{getIcon(item.file_type, getColor(item.file_type))}
-							<View>
-								<Text>{item.title}</Text>
-								<Text className="text-sm text-gray-500">
-									{item.file_type} • {item.file_size} •{" "}
-									{displayDateAsStr(item.upload_date)}
-								</Text>
-							</View>
-						</View>
-					</Pressable>
-				);
+				// RESOURCE ITEM
+				return <SingleFileItem item={item} />;
 			}}
 		/>
 	);
 };
-
-const styles = StyleSheet.create({
-	itemContainer: {
-		paddingVertical: 10,
-		paddingHorizontal: 16,
-		borderBottomWidth: StyleSheet.hairlineWidth,
-		borderBottomColor: "#ddd",
-	},
-});
 
 export default FolderList;

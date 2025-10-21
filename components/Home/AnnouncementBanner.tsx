@@ -1,7 +1,8 @@
 import { Announcement } from "@/services/Announcement/announcement.types";
 import React, { useState } from "react";
-import { Image, Modal, Text, TouchableOpacity, View } from "react-native";
+import { Image, TouchableOpacity, View } from "react-native";
 import AnnouncementDialog from "../Announcement/AnnouncementDialog";
+import SharedModal from "../shared/SharedModal";
 
 type AnnouncementBannerProps = {
 	announcement: Announcement;
@@ -9,12 +10,9 @@ type AnnouncementBannerProps = {
 const AnnouncementBanner = ({ announcement }: AnnouncementBannerProps) => {
 	const [modalVisible, setModalVisible] = useState(false);
 
-	const openModal = () => setModalVisible(true);
-	const closeModal = () => setModalVisible(false);
-
 	return (
 		<>
-			<TouchableOpacity onPress={openModal}>
+			<TouchableOpacity onPress={() => setModalVisible(true)}>
 				<View className="rounded-xl w-96 aspect-video shadow-sm">
 					<Image
 						source={{
@@ -25,26 +23,12 @@ const AnnouncementBanner = ({ announcement }: AnnouncementBannerProps) => {
 					/>
 				</View>
 			</TouchableOpacity>
-			<Modal
-				animationType="fade"
-				transparent={true}
+			<SharedModal
 				visible={modalVisible}
-				onRequestClose={closeModal}
+				onClose={() => setModalVisible(false)}
 			>
-				<View className="flex-1 justify-center items-center bg-black/50">
-					<View className="relative m-4 max-w-sm w-full max-h-4/5 ">
-						{/* Hovering close button */}
-						<TouchableOpacity
-							onPress={closeModal}
-							className="absolute top-2 right-2 z-10 bg-white/80 rounded-full w-8 h-8 justify-center items-center"
-						>
-							<Text className="text-gray-700 text-md">✕</Text>
-						</TouchableOpacity>
-
-						<AnnouncementDialog announcement={announcement} />
-					</View>
-				</View>
-			</Modal>
+				<AnnouncementDialog announcement={announcement} />
+			</SharedModal>
 		</>
 	);
 };

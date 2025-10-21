@@ -1,5 +1,6 @@
 import { Announcement } from "@/services/Announcement/announcement.types";
 import { FlashList } from "@shopify/flash-list";
+import React from "react";
 import { View } from "react-native";
 import AnnouncementBanner from "../Home/AnnouncementBanner";
 

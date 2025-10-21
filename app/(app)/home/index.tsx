@@ -5,7 +5,7 @@ import SharedSectionHeader from "@/components/shared/SharedSectionHeader";
 import { useAnnouncementsQuery } from "@/hooks/Announcement/useAnnouncementsQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { useRouter } from "expo-router";
-import { useMemo } from "react";
+import React, { useMemo } from "react";
 import { StatusBar } from "react-native";
 
 const DashboardScreen = () => {
