@@ -38,7 +38,7 @@ const PeopleRowComponent = ({ person }: PeopleRowProps) => {
 			<View className="flex-1">
 				<Text
 					// style={styles.name}
-					className="text-text dark:text-text-dark-primary text-base font-medium mb-1"
+					className="text-text dark:text-text-dark-primary font-semibold mb-1"
 				>
 					{person.full_name}
 				</Text>

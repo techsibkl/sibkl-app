@@ -26,14 +26,14 @@ const CategoryList = ({ groupedResources }: CategoryListProps) => {
 			keyExtractor={(_, index) => index.toString()}
 			ItemSeparatorComponent={() => <View className="h-6" />}
 			contentContainerStyle={{
-				paddingVertical: 16,
+				paddingVertical: 8,
 			}}
 			estimatedItemSize={200} // tune this for better perf
 			renderItem={({ item: group }) => (
 				<View>
 					{/* Category Header */}
 					<SharedSectionHeader
-						title={group.category}
+						title={group.category.toUpperCase()}
 						onPress={() => goToAll(group.category)}
 					/>
 
