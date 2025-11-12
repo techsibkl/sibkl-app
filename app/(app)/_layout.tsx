@@ -1,6 +1,7 @@
 import { Tabs } from "expo-router";
 import {
 	Circle,
+	FunnelIcon,
 	GraduationCap,
 	Home,
 	Settings,
@@ -68,8 +69,22 @@ export default function AppLayout() {
 				}}
 			/>
 			<Tabs.Screen
+				name="flows"
+				options={{
+					title: "Flows",
+					tabBarIcon: ({ color, size, focused }) => (
+						<FunnelIcon
+							size={size}
+							color={color}
+							strokeWidth={1}
+							fill={focused ? color : "none"}
+						/>
+					),
+				}}
+			/>
+			<Tabs.Screen
 				// Note: with leaders/_layout, the name just needs to be (route) and not (route)/index
-				
+
 				name="leaders"
 				options={{
 					title: "Leaders",
