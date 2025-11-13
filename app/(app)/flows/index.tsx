@@ -3,20 +3,34 @@
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { useThemeColors } from "@/hooks/useThemeColor";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { StatusBar, Text, TouchableOpacity, View } from "react-native";
 
 import PeopleFlowList from "@/components/Flows/PeopleFlowList";
-import { usePeopleQuery } from "@/hooks/People/usePeopleQuery";
+import { usePeopleFlowQuery } from "@/hooks/Flows/useFlowsQuery";
 import { Grid3x2Icon, ListIcon } from "lucide-react-native";
 
 const FlowsPage = () => {
 	const { isDark } = useThemeColors();
-	const { data: people, isPending, error, isError } = usePeopleQuery();
+	const {
+		data: peopleFlow,
+		isPending,
+		error,
+		isError,
+	} = usePeopleFlowQuery(2);
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const [viewMode, setViewMode] = useState<"gallery" | "list">("gallery");
-	const [sortAsc, setSortAsc] = useState(true);
+
+	const filteredPeopleFlow = useMemo(() => {
+		return (peopleFlow ?? []).filter(
+			(person) =>
+				person?.p__full_name
+					?.toLowerCase()
+					.includes(searchQuery.toLowerCase()) ||
+				person?.p__phone?.includes(searchQuery)
+		);
+	}, [peopleFlow, searchQuery]);
 
 	return (
 		<SharedBody>
@@ -48,7 +62,7 @@ const FlowsPage = () => {
 					)}
 				</TouchableOpacity>
 			</View>
-			<PeopleFlowList peopleFlow={people ?? []} />
+			<PeopleFlowList peopleFlow={filteredPeopleFlow ?? []} />
 			{/* 
             
 			{viewMode === "gallery" ? (

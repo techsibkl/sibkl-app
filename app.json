@@ -48,8 +48,7 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-build-properties",
-      "expo-notifications"
+      "expo-build-properties"
     ],
     "experiments": {
       "typedRoutes": true

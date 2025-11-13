@@ -5,7 +5,7 @@ import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { usePeopleQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
-import { useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { ActivityIndicator, StatusBar, Text, View } from "react-native";
 
 const PeopleScreen = () => {
