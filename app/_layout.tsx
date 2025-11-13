@@ -203,6 +203,7 @@ import { useColorScheme } from "@/hooks/useColorScheme";
 import { useAuthStore } from "@/stores/authStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
+import { PaperProvider } from "react-native-paper";
 
 const queryClient = new QueryClient();
 
@@ -234,11 +235,13 @@ function RootLayoutNav() {
 	// Register token once per user
 
 	return (
-		<Stack screenOptions={{ headerShown: false }}>
-			<Stack.Screen name="(auth)" options={{ headerShown: false }} />
-			<Stack.Screen name="(app)" options={{ headerShown: false }} />
-			<Stack.Screen name="+not-found" />
-		</Stack>
+		<PaperProvider>
+			<Stack screenOptions={{ headerShown: false }}>
+				<Stack.Screen name="(auth)" options={{ headerShown: false }} />
+				<Stack.Screen name="(app)" options={{ headerShown: false }} />
+				<Stack.Screen name="+not-found" />
+			</Stack>
+		</PaperProvider>
 	);
 }
 

@@ -1,3 +1,4 @@
+import { Flow } from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { FlashList } from "@shopify/flash-list";
 import React from "react";
@@ -6,11 +7,12 @@ import PeopleFlowRow from "./PeopleFlowRow";
 
 type PeopleFlowListProps = {
 	peopleFlow: PeopleFlow[];
+	flow: Flow;
 };
 
-const PeopleFlowList = ({ peopleFlow }: PeopleFlowListProps) => {
+const PeopleFlowList = ({ peopleFlow, flow }: PeopleFlowListProps) => {
 	const renderItem = ({ item }: { item: PeopleFlow }) => (
-		<PeopleFlowRow personFlow={item} />
+		<PeopleFlowRow personFlow={item} steps={flow.steps} />
 	);
 	return (
 		<View

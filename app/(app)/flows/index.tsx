@@ -4,10 +4,19 @@ import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import React, { useMemo, useState } from "react";
-import { StatusBar, Text, TouchableOpacity, View } from "react-native";
+import {
+    ActivityIndicator,
+    StatusBar,
+    Text,
+    TouchableOpacity,
+    View,
+} from "react-native";
 
 import PeopleFlowList from "@/components/Flows/PeopleFlowList";
-import { usePeopleFlowQuery } from "@/hooks/Flows/useFlowsQuery";
+import {
+    usePeopleFlowQuery,
+    useSingleFlowQuery,
+} from "@/hooks/Flows/useFlowsQuery";
 import { Grid3x2Icon, ListIcon } from "lucide-react-native";
 
 const FlowsPage = () => {
@@ -18,6 +27,7 @@ const FlowsPage = () => {
 		error,
 		isError,
 	} = usePeopleFlowQuery(2);
+	const { data: flow } = useSingleFlowQuery(2);
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const [viewMode, setViewMode] = useState<"gallery" | "list">("gallery");
@@ -62,7 +72,14 @@ const FlowsPage = () => {
 					)}
 				</TouchableOpacity>
 			</View>
-			<PeopleFlowList peopleFlow={filteredPeopleFlow ?? []} />
+			{flow != undefined ? (
+				<PeopleFlowList
+					peopleFlow={filteredPeopleFlow ?? []}
+					flow={flow}
+				/>
+			) : (
+				<ActivityIndicator />
+			)}
 			{/* 
             
 			{viewMode === "gallery" ? (

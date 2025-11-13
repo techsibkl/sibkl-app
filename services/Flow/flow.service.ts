@@ -1,9 +1,29 @@
 import { apiEndpoints } from "@/utils/endpoints";
 import { formatObjStrToDate } from "@/utils/helper";
 import { secureFetch } from "@/utils/secureFetch";
+import { ReturnVal } from "@/utils/types/returnVal.types";
 import { Cell } from "../Cell/cell.types";
 import { District } from "../District/district.types";
+import { Flow } from "./flow.types";
 import { PeopleFlow } from "./peopleFlow.type";
+
+export async function fetchFlows(
+	flowId?: number,
+	owned?: boolean
+): Promise<Flow[]> {
+	const url = flowId
+		? `${apiEndpoints.flows.getById(flowId)}`
+		: `${apiEndpoints.flows.getAll}?owned=${owned ?? false}`;
+	const response = await secureFetch(url, {
+		method: "GET",
+	});
+	const json: ReturnVal = await response.json();
+	const result = json.data?.map((flow: Flow) => ({
+		...flow,
+		// view_configs: flow.view_configs ?? defaultViewConfigs,
+	}));
+	return result;
+}
 
 export async function fetchPeopleByFlowId(
 	flowId: number,
