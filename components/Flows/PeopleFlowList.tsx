@@ -1,16 +1,18 @@
-import { Person } from "@/services/Person/person.type";
+import { Flow } from "@/services/Flow/flow.types";
+import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { FlashList } from "@shopify/flash-list";
 import React from "react";
 import { View } from "react-native";
-import PeopleRow from "../People/PeopleRow";
+import PeopleFlowRow from "./PeopleFlowRow";
 
 type PeopleFlowListProps = {
-	peopleFlow: Person[];
+	peopleFlow: PeopleFlow[];
+	flow: Flow;
 };
 
-const PeopleFlowList = ({ peopleFlow: notifications }: PeopleFlowListProps) => {
-	const renderItem = ({ item }: { item: Person }) => (
-		<PeopleRow person={item} />
+const PeopleFlowList = ({ peopleFlow, flow }: PeopleFlowListProps) => {
+	const renderItem = ({ item }: { item: PeopleFlow }) => (
+		<PeopleFlowRow personFlow={item} steps={flow.steps} />
 	);
 	return (
 		<View
@@ -21,7 +23,7 @@ const PeopleFlowList = ({ peopleFlow: notifications }: PeopleFlowListProps) => {
 			}}
 		>
 			<FlashList
-				data={notifications}
+				data={peopleFlow}
 				contentContainerStyle={{
 					paddingHorizontal: 16,
 					paddingVertical: 8,

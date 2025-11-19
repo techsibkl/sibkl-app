@@ -14,6 +14,30 @@ export const apiEndpoints = {
 		geteWithNoUid: _endpoint(`people/with-no-uid`),
 		update: (id: number | string) => _endpoint(`people/update/${id}`),
 	},
+	peopleFlows: {
+		getAll: _endpoint("peopleFlows"),
+		add: _endpoint("peopleFlows/add"),
+		complete: _endpoint("peopleFlows/complete"),
+		updateCustomAttr: _endpoint("peopleFlows/updateCustomAttr"),
+		updateLastContacted: _endpoint("peopleFlows/updateLastContacted"),
+		updateStatus: _endpoint("peopleFlows/updateStatus"),
+		updateStep: _endpoint("peopleFlows/updateStep"),
+	},
+	flows: {
+		create: _endpoint("flows/create"),
+		getAll: _endpoint("flows"),
+		getById: (id: number | string) => _endpoint(`flows/${id}`),
+		update: (id: number | string) => _endpoint(`flows/update/${id}`),
+	},
+	notes: {
+		create: _endpoint("notes/create"),
+		createBulk: _endpoint("notes/createBulk"),
+		getByPeopleId: (peopleId: number | string) =>
+			_endpoint(`notes/${peopleId}`),
+		update: (id: number | string) => _endpoint(`notes/update/${id}`),
+		delete: (id: number | string) => _endpoint(`notes/delete/${id}`),
+	},
+
 	cells: {
 		getAll: _endpoint("cells"),
 		getById: (id: number | string) => _endpoint(`cells/${id}`),
