@@ -17,6 +17,7 @@ const DashboardScreen = () => {
 		return announcements?.filter((a) => a.pinned) || [];
 	}, [announcements]);
 
+
 	const notifications = [
 		{
 			id: 1,

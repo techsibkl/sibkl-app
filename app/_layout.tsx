@@ -4,7 +4,7 @@ import {
 	ThemeProvider,
 } from "@react-navigation/native";
 import { useFonts } from "expo-font";
-import { Stack, useRouter, useSegments } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect, useState } from "react";
 import "react-native-reanimated";
@@ -82,9 +82,9 @@ async function registerForPushNotificationsAsync() {
 }
 
 function RootLayoutNav() {
-	const segments = useSegments();
+	// const segments = useSegments();
 	const router = useRouter();
-	const { firebaseUser, user, isLoading, init } = useAuthStore();
+	const { firebaseUser, user, authLoaded, init, ability } = useAuthStore();
 	const [expoPushToken, setExpoPushToken] = useState("");
 	const [notification, setNotification] = useState<
 		Notifications.Notification | undefined
@@ -95,20 +95,22 @@ function RootLayoutNav() {
 	}, [init]);
 
 	useEffect(() => {
-		if (isLoading) return;
-		const inAuthGroup = segments[0] === "(auth)";
+		// const inAuthGroup = segments[0] === "(auth)";
 
-		if (!firebaseUser && !inAuthGroup) {
+		if (!authLoaded) {
+			// Auth not loaded yet → go to splash
+			router.replace("/(auth)/splash");
+		} else if (authLoaded && !firebaseUser) {
+			// Unauthenticated → go to sign-in
 			router.replace("/(auth)/sign-in");
-		} else if (!user && !inAuthGroup) {
-			router.replace("/(auth)/sign-in");
-		} else if (user && !user.person) {
+		} else if (authLoaded && !user?.people_id) {
+			// Incomplete profile → go to complete profile
 			router.replace("/(auth)/complete-profile");
-		} else if (user && inAuthGroup) {
+		} else if (authLoaded && user?.people_id) {
 			// Already logged in → go to app
 			router.replace("/(app)/home");
 		}
-	}, [user, isLoading, segments, router, firebaseUser]);
+	}, [user, authLoaded, router, firebaseUser]);
 
 	// Register token once per user
 	useEffect(() => {
