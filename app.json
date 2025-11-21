@@ -57,8 +57,9 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "dc1379b3-8fa8-4f9b-a2f5-87f7b8a4eb8b"
+        "projectId": "c415449d-f4d9-408f-854f-e26f86e8e7ad"
       }
-    }
+    },
+    "owner": "sibkl"
   }
 }
