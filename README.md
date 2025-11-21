@@ -15,3 +15,8 @@
 - `cd android`
 - `./gradlew bundleRelease` for .aab
 - `./gradlew assembleRelease` for .apk
+
+3. Managed services by EAS (paid)
+- https://docs.expo.dev/build/setup/
+- Just configure signing certificates online EAS
+- `eas build --platform android`
