@@ -6,7 +6,7 @@ import { useRouter } from "expo-router";
 import { Eye, EyeOff } from "lucide-react-native";
 import React, { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Alert, ScrollView, Text, TouchableOpacity } from "react-native";
+import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
 const Page = () => {
 	type signUpFormData = {
 		email: string;
@@ -24,22 +24,18 @@ const Page = () => {
 		defaultValues: { email: "", password: "" },
 	});
 
-	const signUp = async (email: string, password: string) => {
-		console.log("sending verification email for:", email);
-
-		// 1. Send OTP
-		const result = await sendOTP(null, email);
-		console.log("result of sending OTP:", result);
-
-		// 2. Save pending signup to store
-		signUpStore.setPendingSignUp({ email, password });
-
-		return result;
-	};
-
+	// Create Account clicked -> send OTP and navigate to OTP verification page
 	const onSubmit = async (data: signUpFormData) => {
 		try {
-			await signUp(data.email.trim(), data.password.trim());
+			const email = data.email.trim();
+			const password = data.password.trim();
+
+			if (!email || !password) {
+				Alert.alert("Error", "Email and password are required.");
+				return;
+			}
+			await sendOTP(null, email);
+			signUpStore.setPendingSignUp({ email, password });
 
 			// Navigate to OTP verification page
 			router.push("/(auth)/verify-otp");
@@ -50,6 +46,7 @@ const Page = () => {
 			);
 		}
 	};
+
 	return (
 		<SharedBody>
 			<ScrollView
@@ -63,35 +60,39 @@ const Page = () => {
 				{/* <Text className="text-2xl font-bold mb-6">
           {JSON.stringify(selectedProfile)}
         </Text> */}
+				<View className="gap-y-4">
+					{/* Email */}
+					<FormField
+						name="email"
+						label="Email"
+						control={control}
+						errors={errors}
+					/>
 
-				{/* Email */}
-				<FormField
-					name="email"
-					label="Email"
-					control={control}
-					errors={errors}
-				/>
-
-				{/* Password */}
-				<FormField
-					control={control}
-					label="Password"
-					name="password"
-					rules={{ required: "Password is required", minLength: 6 }}
-					errors={errors}
-					secureTextEntry={!showPassword}
-					rightIcon={
-						<TouchableOpacity
-							onPress={() => setShowPassword(!showPassword)}
-						>
-							{showPassword ? (
-								<EyeOff size={20} color="#9ca3af" />
-							) : (
-								<Eye size={20} color="#9ca3af" />
-							)}
-						</TouchableOpacity>
-					}
-				/>
+					{/* Password */}
+					<FormField
+						control={control}
+						label="Password"
+						name="password"
+						rules={{
+							required: "Password is required",
+							minLength: 6,
+						}}
+						errors={errors}
+						secureTextEntry={!showPassword}
+						rightIcon={
+							<TouchableOpacity
+								onPress={() => setShowPassword(!showPassword)}
+							>
+								{showPassword ? (
+									<Eye size={20} color="#9ca3af" />
+								) : (
+									<EyeOff size={20} color="#9ca3af" />
+								)}
+							</TouchableOpacity>
+						}
+					/>
+				</View>
 
 				{/* Submit */}
 				<TouchableOpacity

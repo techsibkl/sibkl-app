@@ -20,8 +20,9 @@ import {
 	Text,
 	TextInput,
 	TouchableOpacity,
-	View
+	View,
 } from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
 const Page = () => {
 	const router = useRouter();
@@ -36,6 +37,7 @@ const Page = () => {
 
 	const inputRefs = useRef<(TextInput | null)[]>([]);
 
+	// Resend timer countdown
 	useEffect(() => {
 		if (resendTimer > 0) {
 			const timer = setTimeout(
@@ -48,6 +50,7 @@ const Page = () => {
 		}
 	}, [resendTimer]);
 
+	// Auto-submit when all 6 digits are entered
 	useEffect(() => {
 		if (otp.length === 6 && otp.every((digit) => digit !== "")) {
 			handleVerifyOTP();
@@ -72,85 +75,61 @@ const Page = () => {
 		}
 	};
 
+	const fetchClaimedPerson = async (personId: number) => {
+		const res = await secureFetch(
+			apiEndpoints.users.createUserWithExistingPerson,
+			{
+				method: "POST",
+				body: JSON.stringify({
+					people_id: personId,
+				}),
+			}
+		);
+		const json = await res.json();
+		if (json.success) {
+			// Call react query here
+			await qc.prefetchQuery({
+				queryKey: ["person", personId],
+				queryFn: () => fetchPeople(claimStore.selectedProfile?.id),
+			});
+			router.push("/(auth)/complete-profile");
+			return;
+		}
+	};
+
 	const handleVerifyOTP = async () => {
 		const otpString = otp.join("");
 		if (otpString.length !== 6) {
 			Alert.alert("Invalid OTP", "Please enter a 6-digit code");
 			return;
 		}
-
+		console.log("Verifying OTP:", otpString);
 		setIsLoading(true);
 
 		try {
-			// TODO: Implement OTP verification API call
-			console.log("[v0] Verifying OTP:", otpString);
+			// If claimed selectedProfile, use its ID
+			const personId = claimStore.selectedProfile?.id || null;
+			const email = pendingSignUp?.email || null;
+			const result = await verifyOTP(personId, email, otpString);
 
-			let result;
-			// Simulate API call
-			// await new Promise((resolve) => setTimeout(resolve, 2000));
-			if (claimStore.selectedProfile) {
-				result = await verifyOTP(
-					claimStore.selectedProfile.id,
-					null,
-					otpString
-				);
-			} else {
-				if (!pendingSignUp || !pendingSignUp.email) {
-					Alert.alert("No Email found", "Please try again later");
-					return;
-				}
-				result = await verifyOTP(null, pendingSignUp.email, otpString);
-			}
-
-			console.log("result:", result);
-			// success/failure
 			if (result.success) {
 				// create firebase account
-				const email = result.data.email.trim();
+				const resEmail = result.data?.email.trim();
 
 				const { user } = await createUserWithEmailAndPassword(
 					getAuth(),
-					email,
+					resEmail,
 					pendingSignUp?.password!
 				);
 
-				authStore.setFirebaseUser(user);
-
 				// get full person if selectedProfile is true
-				console.log("selected profile", claimStore.selectedProfile);
+				console.log("Selected profile", claimStore.selectedProfile);
 				if (claimStore.selectedProfile) {
-					try {
-						const response = await secureFetch(
-							apiEndpoints.users.createUserWithExistingPerson,
-							{
-								method: "POST",
-								body: JSON.stringify({
-									people_id: claimStore.selectedProfile.id,
-								}),
-							}
-						);
-						const json = await response.json();
-						if (json.success) {
-							// Call react query here
-							await qc.prefetchQuery({
-								queryKey: [
-									"person",
-									claimStore.selectedProfile.id,
-								],
-								queryFn: () =>
-									fetchPeople(
-										claimStore.selectedProfile!.id!
-									),
-							});
-							router.push("/(auth)/complete-profile");
-							return;
-						}
-					} catch (error) {
-						console.error(error);
-					}
+					await fetchClaimedPerson(claimStore.selectedProfile.id);
+					return;
+				} else {
+					router.push("/(auth)/complete-profile");
 				}
-				router.push("/(auth)/complete-profile");
-				// onVerificationSuccess?.()
 			} else {
 				Alert.alert(
 					"Invalid OTP",
@@ -160,7 +139,7 @@ const Page = () => {
 				inputRefs.current[0]?.focus();
 			}
 		} catch (error) {
-			console.error("[v0] OTP verification error:", error);
+			console.error("OTP verification error:", error);
 			Alert.alert("Error", "Failed to verify OTP. Please try again.");
 		} finally {
 			setIsLoading(false);
@@ -203,106 +182,116 @@ const Page = () => {
 	const otpString = otp.join("");
 
 	return (
-		<SharedBody>
-			<View className="flex-1 px-6 py-8">
-				{/* Header with back button */}
-				<View className="flex-row items-center ">
-					{/* <TouchableOpacity onPress={onBack} className="mr-4">
+		<KeyboardAwareScrollView
+			enableOnAndroid={true}
+			extraScrollHeight={10} // 👈 pushes inputs above keyboard
+			keyboardShouldPersistTaps="handled"
+			contentContainerStyle={{ flexGrow: 1 }}
+		>
+			<SharedBody>
+				<View className="flex-1 px-6 py-8">
+					{/* Header with back button */}
+					<View className="flex-row items-center ">
+						{/* <TouchableOpacity onPress={onBack} className="mr-4">
             <ArrowLeft size={24} color="#374151" />
           </TouchableOpacity> */}
-					<Text className="text-lg font-semibold text-text">
-						Verify Email
-					</Text>
-				</View>
-
-				{/* Content */}
-				<View className="flex-1 justify-center items-center px-4">
-					{/* Email icon */}
-					<View className="w-20 h-20 bg-primary-50 rounded-full items-center justify-center mb-6">
-						<Mail size={40} color="#AC2212" />
-					</View>
-
-					{/* Title */}
-					<Text className="text-2xl font-bold text-text text-center mb-4">
-						Enter Verification Code
-					</Text>
-
-					{/* Description */}
-					<Text className="text-muted-foreground text-center mb-8 leading-relaxed">
-						We sent a 6-digit verification code to{"\n"}
-						<Text className="font-semibold text-text">
-							{pendingSignUp?.email}
+						<Text className="text-lg font-semibold text-text">
+							Verify Email
 						</Text>
-						{"\n"}Please enter the code below
-					</Text>
-
-					<View className="flex-row justify-center items-center gap-3 mb-8">
-						{otp.map((digit, index) => (
-							<TextInput
-								key={index}
-								ref={(ref) => (inputRefs.current[index] = ref)}
-								className="w-12 h-12 border border-border bg-card rounded-[15px] text-center text-lg font-semibold text-text"
-								value={digit}
-								onChangeText={(value) =>
-									handleOtpChange(value.slice(-1), index)
-								}
-								onKeyPress={({ nativeEvent }) =>
-									handleKeyPress(nativeEvent.key, index)
-								}
-								keyboardType="numeric"
-								maxLength={1}
-								selectTextOnFocus
-								autoFocus={index === 0}
-							/>
-						))}
 					</View>
 
-					{/* Verify Button */}
-					<TouchableOpacity
-						onPress={handleVerifyOTP}
-						disabled={otpString.length !== 6 || isLoading}
-						className={`w-full h-12 rounded-[15px] items-center justify-center mb-6 ${
-							otpString.length !== 6 || isLoading
-								? "bg-muted"
-								: "bg-primary-600"
-						}`}
-					>
-						{isLoading ? (
-							<ActivityIndicator color="white" />
-						) : (
-							<Text
-								className={`font-semibold ${otpString.length !== 6 ? "text-muted-foreground" : "text-white"}`}
-							>
-								Verify Code
+					{/* Content */}
+					<View className="flex-1 justify-center items-center px-4">
+						{/* Email icon */}
+						<View className="w-20 h-20 bg-primary-50 rounded-full items-center justify-center mb-6">
+							<Mail size={40} color="#AC2212" />
+						</View>
+
+						{/* Title */}
+						<Text className="text-2xl font-bold text-text text-center mb-4">
+							Enter Verification Code
+						</Text>
+
+						{/* Description */}
+						<Text className="text-muted-foreground text-center mb-8 leading-relaxed">
+							We sent a 6-digit verification code to{"\n"}
+							<Text className="font-semibold text-text">
+								{claimStore.selectedProfile?.email ||
+									pendingSignUp?.email}
 							</Text>
-						)}
-					</TouchableOpacity>
-
-					{/* Resend Section */}
-					<View className="items-center">
-						<Text className="text-muted-foreground text-sm mb-2">
-							Didn`&apos;t receive the code?
+							{"\n"}Please enter the code below
 						</Text>
 
-						{canResend ? (
-							<TouchableOpacity
-								onPress={handleResendOTP}
-								className="flex-row items-center"
-							>
-								<RefreshCw size={16} color="#AC2212" />
-								<Text className="text-primary-600 font-semibold ml-2">
-									Send Again
+						<View className="flex-row justify-center items-center gap-2 mb-8">
+							{otp.map((digit, index) => (
+								<TextInput
+									key={index}
+									ref={(ref) =>
+										(inputRefs.current[index] = ref)
+									}
+									className="px-5 py-2 border border-border bg-card rounded-[15px] text-center text-lg font-semibold text-text"
+									value={digit}
+									onChangeText={(value) =>
+										handleOtpChange(value.slice(-1), index)
+									}
+									onKeyPress={({ nativeEvent }) =>
+										handleKeyPress(nativeEvent.key, index)
+									}
+									keyboardType="numeric"
+									maxLength={1}
+									selectTextOnFocus
+									autoFocus={index === 0}
+								/>
+							))}
+						</View>
+
+						{/* Verify Button */}
+						<TouchableOpacity
+							onPress={handleVerifyOTP}
+							disabled={otpString.length !== 6 || isLoading}
+							className={`w-full h-12 rounded-[15px] items-center justify-center mb-6 ${
+								otpString.length !== 6 || isLoading
+									? "bg-muted"
+									: "bg-primary-600"
+							}`}
+						>
+							{isLoading ? (
+								<ActivityIndicator color="white" />
+							) : (
+								<Text
+									className={`font-semibold ${otpString.length !== 6 ? "text-muted-foreground" : "text-white"}`}
+								>
+									Verify Code
 								</Text>
-							</TouchableOpacity>
-						) : (
-							<Text className="text-muted-foreground text-sm">
-								Resend in {resendTimer}s
+							)}
+						</TouchableOpacity>
+
+						{/* Resend Section */}
+						<View className="items-center">
+							<Text className="text-muted-foreground text-sm mb-2">
+								Didn`&apos;t receive the code?
 							</Text>
-						)}
+
+							{canResend ? (
+								<TouchableOpacity
+									onPress={handleResendOTP}
+									className="flex-row items-center"
+								>
+									<RefreshCw size={16} color="#AC2212" />
+									<Text className="text-primary-600 font-semibold ml-2">
+										Send Again
+									</Text>
+								</TouchableOpacity>
+							) : (
+								<Text className="text-muted-foreground text-sm">
+									Resend in {resendTimer}s
+								</Text>
+							)}
+						</View>
 					</View>
 				</View>
-			</View>
-		</SharedBody>
+			</SharedBody>
+		</KeyboardAwareScrollView>
 	);
 };
 
