@@ -20,6 +20,7 @@ export async function fetchFlows(
 	const json: ReturnVal = await response.json();
 	const result = json.data?.map((flow: Flow) => ({
 		...flow,
+		steps: flow.steps ?? {},
 		// view_configs: flow.view_configs ?? defaultViewConfigs,
 	}));
 	return result;
