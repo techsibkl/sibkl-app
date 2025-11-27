@@ -170,9 +170,9 @@ const Page = () => {
 									}
 								>
 									{showPassword ? (
-										<EyeOff size={20} color="#9ca3af" />
-									) : (
 										<Eye size={20} color="#9ca3af" />
+									) : (
+										<EyeOff size={20} color="#9ca3af" />
 									)}
 								</TouchableOpacity>
 								{errors.password && (

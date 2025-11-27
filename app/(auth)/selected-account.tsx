@@ -62,51 +62,57 @@ const Page = () => {
           {JSON.stringify(selectedProfile)}
         </Text> */}
 
-				{/* Email */}
-				<FormField
-					name="email"
-					label="Email"
-					control={control}
-					errors={errors}
-					editable={selectedProfile ? false : true}
-				/>
+				<View className="gap-y-4">
+					{selectedProfile && (
+						<View>
+							<Text className="text-sm italic text-text-secondary">
+								*Is this you? You may change personal
+								information later
+							</Text>
 
-				{/* Password */}
-				<FormField
-					control={control}
-					label="Password"
-					name="password"
-					rules={{ required: "Password is required", minLength: 6 }}
-					errors={errors}
-					secureTextEntry={!showPassword}
-					rightIcon={
-						<TouchableOpacity
-							onPress={() => setShowPassword(!showPassword)}
-						>
-							{showPassword ? (
-								<EyeOff size={20} color="#9ca3af" />
-							) : (
-								<Eye size={20} color="#9ca3af" />
-							)}
-						</TouchableOpacity>
-					}
-				/>
+							<Text className="font-semibold text-lg text-text">
+								Full Name: {selectedProfile?.full_name}
+							</Text>
 
-				{selectedProfile && (
-					<View>
-						<Text className="text-sm text-text-secondary">
-							*You can change the information below later
-						</Text>
+							<Text className="text-sm text-text-secondary">
+								Phone: {selectedProfile?.phone}
+							</Text>
+						</View>
+					)}
 
-						<Text className="font-semibold text-lg text-text">
-							Full Name: {selectedProfile?.full_name}
-						</Text>
+					{/* Email */}
+					<FormField
+						name="email"
+						label="Email"
+						control={control}
+						errors={errors}
+						readonly={selectedProfile ? true : false}
+					/>
 
-						<Text className="text-sm text-text-secondary">
-							Phone: {selectedProfile?.phone}
-						</Text>
-					</View>
-				)}
+					{/* Password */}
+					<FormField
+						control={control}
+						label="Password"
+						name="password"
+						rules={{
+							required: "Password is required",
+							minLength: 6,
+						}}
+						errors={errors}
+						secureTextEntry={!showPassword}
+						rightIcon={
+							<TouchableOpacity
+								onPress={() => setShowPassword(!showPassword)}
+							>
+								{showPassword ? (
+									<EyeOff size={20} color="#9ca3af" />
+								) : (
+									<Eye size={20} color="#9ca3af" />
+								)}
+							</TouchableOpacity>
+						}
+					/>
+				</View>
 
 				{/* Submit */}
 				<TouchableOpacity

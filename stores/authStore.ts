@@ -1,17 +1,16 @@
 import { ProfileFormData } from "@/app/(auth)/complete-profile";
 import { handleAuthStateChange } from "@/hooks/Auth/useAuthHandler";
+import { createAccount, getPersonOfUid } from "@/services/Auth/auth.service";
 import { Person } from "@/services/Person/person.type";
 import { AppUser } from "@/services/User/user.types";
 import { defineAbilityFor, Role } from "@/utils/casl/defineAbilityFor";
-import { apiEndpoints } from "@/utils/endpoints";
-import { secureFetch } from "@/utils/secureFetch";
 import { AnyAbility } from "@casl/ability";
 import {
-  FirebaseAuthTypes,
-  getAuth,
-  onAuthStateChanged,
-  signInWithEmailAndPassword,
-  signOut,
+	FirebaseAuthTypes,
+	getAuth,
+	onAuthStateChanged,
+	signInWithEmailAndPassword,
+	signOut,
 } from "@react-native-firebase/auth";
 import { create } from "zustand";
 
@@ -56,6 +55,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 	// Sign in with email + password
 	signIn: async (email: string, password: string) => {
+		set({ authLoaded: false });
 		try {
 			const { user } = await signInWithEmailAndPassword(
 				getAuth(),
@@ -72,7 +72,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 	},
 
 	// Register new account
-	signUp: async (profileData: ProfileFormData) => {
+	signUp: async (profileData: Partial<Person>) => {
+		set({ authLoaded: false });
 		try {
 			const { firebaseUser } = get();
 
@@ -81,77 +82,41 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 			}
 
 			// 2. Create profile in backend
-			const response = await secureFetch(
-				`${apiEndpoints.users.createAccount}`,
-				{
-					method: "POST",
-					headers: {
-						"Content-Type": "application/json",
-					},
-					body: JSON.stringify(profileData),
-				}
-			);
+			const resCreate = await createAccount(profileData);
 
-			if (!response.ok) {
+			if (!resCreate.success) {
 				throw new Error(
-					`Backend account creation failed: ${response.status}`
+					resCreate.message || "Account creation failed on backend"
 				);
 			}
 
-			const data = await response.json();
+			const resPerson = await getPersonOfUid();
 
-			if (!data.success) {
-				throw new Error(
-					data.message || "Account creation failed on backend"
-				);
-			}
-
-			const personResponse = await secureFetch(
-				apiEndpoints.users.getPersonOfUid,
-				{
-					method: "GET",
-				}
-			);
-
-			if (!personResponse.ok) {
-				throw new Error(
-					`Failed to fetch person: ${personResponse.status}`
-				);
-			}
-
-			const personJson = await personResponse.json().catch(() => {
-				throw new Error(
-					"Failed to parse JSON from getPersonOfUid response"
-				);
-			});
-
-			if (!personJson.success || !personJson.data) {
+			if (!resPerson.success || !resPerson.data) {
 				throw new Error(
 					"Could not find a person matching your credentials"
 				);
 			}
 
 			// 4. Build appUser object
-			const appUser = {
+			const appUser: AppUser = {
 				uid: firebaseUser.uid,
 				email: firebaseUser.email ?? "",
-				people_id: personJson.data.people_id,
-				person: personJson.data,
+				people_id: resPerson.data.people_id,
+				person: resPerson.data as Person,
 			};
 
 			set({
 				isAuthenticated: true,
-				isLoading: false,
 				user: appUser,
+				authLoaded: true,
 			});
 
 			return firebaseUser;
 		} catch (error) {
 			console.error("SignUp error:", error);
-
 			// Reset auth state if something failed mid-way
-			set({ isAuthenticated: false, isLoading: false, user: null });
-
+			set({ isAuthenticated: false, user: null, authLoaded: true });
 			return null;
 		}
 	},

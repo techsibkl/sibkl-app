@@ -1,16 +1,17 @@
 import ProfileItem from "@/components/Auth/ProfileItem";
 import SharedBody from "@/components/shared/SharedBody";
 import { usePeopleWithNouidQuery } from "@/hooks/People/usePeopleWithNoUid";
+import { useClaimStore } from "@/stores/claimStore";
 import { FlashList } from "@shopify/flash-list";
 import { Link, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
-  ActivityIndicator,
-  Image,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+	ActivityIndicator,
+	Image,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
@@ -18,6 +19,7 @@ const PAGE_SIZE = 20;
 
 const Page = () => {
 	const router = useRouter();
+	const claimStore = useClaimStore();
 	const {
 		isPending,
 		isError,
@@ -142,9 +144,10 @@ const Page = () => {
 
 							<TouchableOpacity
 								className="mt-3 w-full h-12 rounded-[15px] items-center justify-center mb-6 bg-primary-600"
-								onPress={() =>
-									router.push("/(auth)/new-account")
-								}
+								onPress={() => {
+									claimStore.setSelectedProfile(null);
+									router.push("/(auth)/new-account");
+								}}
 							>
 								<Text className="text-white font-semibold text-base">
 									Create Account Instead?
