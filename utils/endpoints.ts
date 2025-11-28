@@ -57,4 +57,11 @@ export const apiEndpoints = {
 		getPersonOfUid: _endpoint("users/get-person-of-uid"),
 		updateDeviceToken: _endpoint("users/update-device-token"),
 	},
+	templates: {
+		create: _endpoint("templates/create"),
+		getAll: _endpoint("templates"),
+		getById: (id: number | string) => _endpoint(`templates/${id}`),
+		update: (id: number | string) =>
+			_endpoint(`announcements/update/${id}`),
+	},
 };
