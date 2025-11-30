@@ -2,9 +2,9 @@ import { getAuth, getIdToken } from "@react-native-firebase/auth";
 import { useAuthStore } from "@/stores/authStore";
 
 export async function secureFetch(
-	input: RequestInfo,
-	init: RequestInit = {},
-	options: { allowUnauthenticated?: boolean } = {}
+  input: RequestInfo,
+  init: RequestInit = {},
+  options: { allowUnauthenticated?: boolean } = {}
 ) {
 	const auth = getAuth();
 	const user = auth.currentUser;
@@ -18,16 +18,16 @@ export async function secureFetch(
 	let token: string | undefined = undefined;
 	if (user && !isGuest) token = await getIdToken(user);
 
-	const headers = {
-		...init.headers,
-		...(token ? { Authorization: `Bearer ${token}` } : {}),
-		"Content-Type": "application/json",
-	};
+  const headers = {
+    ...init.headers,
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+    "Content-Type": "application/json",
+  };
 
-	const res = await fetch(input, {
-		...init,
-		headers,
-	});
+  const res = await fetch(input, {
+    ...init,
+    headers,
+  });
 
-	return res;
+  return res;
 }
