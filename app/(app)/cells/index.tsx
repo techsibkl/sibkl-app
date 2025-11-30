@@ -11,6 +11,7 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
+import { useRouter } from "expo-router";
 import { useRef, useState } from "react";
 import { StatusBar, Text, View } from "react-native";
 import { FAB, Portal, Provider } from "react-native-paper";
@@ -20,7 +21,7 @@ const CellsScreen = () => {
   const { user } = useAuthStore();
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-
+  const router = useRouter();
   // ref
   const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
 
@@ -83,17 +84,14 @@ const CellsScreen = () => {
                 {
                   icon: "camera",
                   label: "Mark Attendance",
-                  onPress: () => console.log("Opening Scanner"),
+                  onPress: () => router.push("/(app)/cells/scanner"),
                   color: "white",
                   style: { backgroundColor: "#d6361e" },
                 },
               ]}
               onStateChange={({ open }) => setOpen(open)}
             />
-            <CreateSessionSheet
-              ref={createSessionSheetModalRef}
-              
-            />
+            <CreateSessionSheet ref={createSessionSheetModalRef} />
           </Portal>
         </Provider>
       </BottomSheetModalProvider>
