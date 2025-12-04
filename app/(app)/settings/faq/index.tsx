@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import {
-  LayoutAnimation,
-  Platform,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  UIManager,
-  View,
+    LayoutAnimation,
+    Platform,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    UIManager,
+    View,
 } from "react-native";
 
 // Enable LayoutAnimation on Android
@@ -40,7 +40,7 @@ export default function FAQScreen() {
 
   const toggleItem = (index: number) => {
     LayoutAnimation.configureNext(LayoutAnimation.Presets.easeInEaseOut);
-    setActiveIndex((prev) => (prev === index ? null : index));
+    setActiveIndex(prev => (prev === index ? null : index));
   };
 
   return (
