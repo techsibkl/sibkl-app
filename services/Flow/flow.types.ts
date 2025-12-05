@@ -9,7 +9,7 @@ export type StepAction =
 	| { type: "CHANGE_FIELD"; source: string; value?: any; defaultValue?: any }
 	| { type: "SEND_MESSAGE"; source: string; value?: any }
 	| { type: "MOVE_TO_STEP"; source: string; value?: any }
-	| { type: "MOVE_TO_FLOW"; source: number; value?: any };
+	| { type: "MOVE_TO_FLOW"; source: string; value?: any };
 
 export type Flow = {
 	id: number;

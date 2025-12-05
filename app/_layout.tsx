@@ -199,11 +199,13 @@ import { useEffect } from "react";
 import "react-native-reanimated";
 import "../global.css";
 
+import toastConfig from "@/config/toastConfig";
 import { useColorScheme } from "@/hooks/useColorScheme";
 import { useAuthStore } from "@/stores/authStore";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import React from "react";
 import { PaperProvider } from "react-native-paper";
+import Toast from "react-native-toast-message";
 
 const queryClient = new QueryClient();
 
@@ -241,6 +243,7 @@ function RootLayoutNav() {
 				<Stack.Screen name="(app)" options={{ headerShown: false }} />
 				<Stack.Screen name="+not-found" />
 			</Stack>
+			<Toast config={toastConfig} />
 		</PaperProvider>
 	);
 }

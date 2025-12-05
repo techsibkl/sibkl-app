@@ -1,38 +1,37 @@
-import { defaultPersonFields } from "@/constants/const_person";
-import { StepAction } from "@/services/Flow/flow.types";
-import { displayDateAsStr } from "@/utils/helper";
+import { updatePeopleFlowSingleCustomAttr } from "@/services/Flow/flow.service";
+import { SingleCustomAttr, StepAction } from "@/services/Flow/flow.types";
+import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
+import { displayDateAsStr, myToast } from "@/utils/helper";
 import { PencilIcon, User2Icon } from "lucide-react-native";
-import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import { Text, View } from "react-native";
+import Toast from "react-native-toast-message";
 
 type Props = {
 	action: StepAction;
+	personFlow: PeopleFlow;
+	custom_attr?: { [key: string]: SingleCustomAttr };
 };
-const ChangeFieldAction = ({ action }: Props) => {
-	const fieldMeta = defaultPersonFields?.find((f) => f.key === action.source);
+const ChangeFieldAction = ({ action, personFlow, custom_attr }: Props) => {
+	const [menuVisible, setMenuVisible] = useState(false);
 
-	const fieldLabel = fieldMeta?.header ?? "Unknown Field";
+	const field = custom_attr?.[action.source];
+	let changeValue = action.value ? String(action.value) : null;
 
-	let displayValue = "-";
-
-	if (
-		action.value !== undefined &&
-		action.value !== null &&
-		action.value !== ""
-	) {
-		// Convert values safely (string, boolean, array, number)
-		if (Array.isArray(action.value)) {
-			displayValue = action.value.join(", ");
-		} else if (typeof action.value === "boolean") {
-			displayValue = action.value ? "Yes" : "No";
-		} else {
-			displayValue = String(action.value);
-		}
-	}
+	const updateField = async () => {
+		const res = await updatePeopleFlowSingleCustomAttr(
+			personFlow.flow_id ?? 1,
+			personFlow,
+			action.source,
+			action.value,
+			field?.label ?? ""
+		);
+		Toast.show(myToast(res));
+	};
 
 	return (
-		<TouchableOpacity
-			onPress={() => {}}
+		<View
+			// onPress={() => }
 			className="flex-row items-center gap-3 bg-white p-4 rounded-xl shadow"
 		>
 			<View className="p-2 rounded-full bg-blue-100">
@@ -45,15 +44,15 @@ const ChangeFieldAction = ({ action }: Props) => {
 				</Text>
 
 				<Text className="text-gray-500 text-sm mt-1">
-					{fieldLabel} {"> "}
+					{field?.label ?? "-"} {"> "}
 					<Text className="font-medium text-gray-700">
-						{displayDateAsStr(displayValue)}
+						{displayDateAsStr(changeValue ?? "Edit")}
 					</Text>
 				</Text>
 			</View>
-
-			<PencilIcon size={16} />
-		</TouchableOpacity>
+			{changeValue && <PencilIcon onPress={updateField} size={16} />}
+			{/* If not changeVal, need to open dynamic dialog to handle input (text, date, options) */}
+		</View>
 	);
 };
 

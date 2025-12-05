@@ -1,5 +1,5 @@
 import { ActionComponents } from "@/constants/const_flows";
-import { FlowStep } from "@/services/Flow/flow.types";
+import { FlowStep, SingleCustomAttr } from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { CircleDashedIcon } from "lucide-react-native";
 import React from "react";
@@ -9,6 +9,7 @@ type PeopleFlowDialogProps = {
 	onDismiss: () => void;
 	personFlow: PeopleFlow;
 	step?: FlowStep | null;
+	custom_attr?: { [key: string]: SingleCustomAttr };
 	colors: { bg: string; text: string };
 };
 
@@ -16,6 +17,7 @@ const PeopleFlowDialog = ({
 	onDismiss,
 	personFlow,
 	step,
+	custom_attr,
 	colors,
 }: PeopleFlowDialogProps) => {
 	return (
@@ -88,6 +90,7 @@ const PeopleFlowDialog = ({
 								key={i}
 								action={action}
 								personFlow={personFlow}
+								custom_attr={custom_attr}
 							/>
 						);
 					})}

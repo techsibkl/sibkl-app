@@ -1,4 +1,4 @@
-import { FlowStep } from "@/services/Flow/flow.types";
+import { FlowStep, SingleCustomAttr } from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { daysAgo } from "@/utils/helper";
 import {
@@ -17,9 +17,14 @@ import PeopleFlowDialog from "./PeopleFlowDialog";
 type PeopleFlowRowProps = {
 	personFlow: PeopleFlow;
 	steps: { [key: string]: FlowStep };
+	custom_attr: { [key: string]: SingleCustomAttr };
 };
 
-const PeopleFlowRowComponent = ({ personFlow, steps }: PeopleFlowRowProps) => {
+const PeopleFlowRowComponent = ({
+	personFlow,
+	steps,
+	custom_attr,
+}: PeopleFlowRowProps) => {
 	const router = useRouter();
 	const [modalVisible, setModalVisible] = useState(false);
 	const [noteDialogVisible, setNoteDialogVisible] = useState(false);
@@ -135,6 +140,7 @@ const PeopleFlowRowComponent = ({ personFlow, steps }: PeopleFlowRowProps) => {
 					onDismiss={() => setModalVisible(false)}
 					personFlow={personFlow}
 					step={_step}
+					custom_attr={custom_attr}
 					colors={colors}
 				/>
 			</SharedModal>

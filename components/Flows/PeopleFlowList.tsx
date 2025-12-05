@@ -12,7 +12,11 @@ type PeopleFlowListProps = {
 
 const PeopleFlowList = ({ peopleFlow, flow }: PeopleFlowListProps) => {
 	const renderItem = ({ item }: { item: PeopleFlow }) => (
-		<PeopleFlowRow personFlow={item} steps={flow.steps} />
+		<PeopleFlowRow
+			personFlow={item}
+			steps={flow.steps}
+			custom_attr={flow.custom_attr}
+		/>
 	);
 	return (
 		<View

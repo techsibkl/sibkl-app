@@ -1,5 +1,5 @@
 import { apiEndpoints } from "@/utils/endpoints";
-import { formatObjStrToDate } from "@/utils/helper";
+import { dateReplacer, formatObjStrToDate } from "@/utils/helper";
 import { secureFetch } from "@/utils/secureFetch";
 import { ReturnVal } from "@/utils/types/returnVal.types";
 import { Cell } from "../Cell/cell.types";
@@ -58,3 +58,34 @@ export async function fetchPeopleByFlowId(
 	}));
 	return result;
 }
+
+export const updatePeopleFlowSingleCustomAttr = async (
+	flowId: number,
+	person: PeopleFlow,
+	key: string,
+	value: string | number | Date,
+	label: string
+): Promise<ReturnVal> => {
+	const payload = {
+		flowId: flowId,
+		personId: person.p__id,
+		personName: person.p__full_name ?? person.p__first_name,
+		key: key,
+		value: value,
+		label: label,
+	};
+
+	const response = await secureFetch(
+		`${apiEndpoints.peopleFlows.updateCustomAttr}`,
+		{
+			method: "PUT",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(payload, dateReplacer),
+		}
+	);
+
+	const data = await response.json();
+	return data;
+};
