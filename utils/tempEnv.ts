@@ -3,7 +3,7 @@
 
 // ZX's local
 export const LOCAL_API_URL =
-  "http://192.168.1.107:5001/leafy-loader-444703-d0/us-central1";
+  "http://192.168.1.103:5001/leafy-loader-444703-d0/us-central1";
 export const CLOUD_API_URL =
   "https://us-central1-leafy-loader-444703-d0.cloudfunctions.net";
 // export const CLOUD_API_URL =
