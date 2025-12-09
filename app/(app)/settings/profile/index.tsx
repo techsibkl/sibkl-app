@@ -1,20 +1,24 @@
 import SharedBody from "@/components/shared/SharedBody";
 import { groupedPersonFields } from "@/constants/const_person";
 import { useSinglePersonQuery } from "@/hooks/People/useSinglePersonQuery";
-import { useClaimStore } from "@/stores/claimStore";
+import { useAuthStore } from "@/stores/authStore";
 import { SectionEnum } from "@/types/TableField.type";
+import { displayDateAsStr } from "@/utils/helper";
+import { useRouter } from "expo-router";
 import React from "react";
 import {
   ActivityIndicator,
   Image,
-  Text,
-  View,
   ScrollView,
+  Text,
+  TouchableOpacity,
+  View,
 } from "react-native";
 
 const ProfileViewPage = () => {
-  const { selectedProfile } = useClaimStore();
-  const { data: person, isPending } = useSinglePersonQuery(selectedProfile?.id);
+  const { user } = useAuthStore();
+  const { data: person, isPending } = useSinglePersonQuery(user?.people_id);
+  const router = useRouter();
 
   if (isPending || !person)
     return (
@@ -22,6 +26,19 @@ const ProfileViewPage = () => {
         <ActivityIndicator />
       </SharedBody>
     );
+
+  const formatValue = (value: any) => {
+    if (value instanceof Date || typeof value === "string") {
+      return displayDateAsStr(value);
+    }
+
+    // Handle nested objects (JSON fields)
+    if (typeof value === "object" && value !== null) {
+      return JSON.stringify(value, null, 2);
+    }
+
+    return value ?? "—";
+  };
 
   return (
     <ScrollView
@@ -31,6 +48,14 @@ const ProfileViewPage = () => {
       <SharedBody>
         {/* Header */}
         <View className="items-center mt-16 mb-6">
+          <TouchableOpacity
+            onPress={() => router.push("/(app)/settings/profile/updateProfile")}
+          >
+            <Text>
+
+            Edit Profile
+            </Text>
+          </TouchableOpacity>
           <Image
             source={require("../../../../assets/images/person.png")}
             className="w-20 h-20 rounded-xl"
@@ -56,7 +81,8 @@ const ProfileViewPage = () => {
                   {fields
                     .filter((f) => f.editable !== false)
                     .map((field) => {
-                      const value = person[field.key] ?? "";
+                      const rawValue = person[field.key] ?? "";
+                      const formattedValue = formatValue(rawValue);
 
                       return (
                         <View
@@ -64,10 +90,10 @@ const ProfileViewPage = () => {
                           className="bg-gray-50 p-4 rounded-xl border border-gray-200"
                         >
                           <Text className="text-gray-500 text-xs mb-1">
-                            {field.label}
+                            {field.header}
                           </Text>
                           <Text className="text-black font-medium">
-                            {value || "—"}
+                            {formattedValue || "—"}
                           </Text>
                         </View>
                       );

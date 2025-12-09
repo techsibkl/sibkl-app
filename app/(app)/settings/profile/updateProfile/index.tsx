@@ -32,7 +32,7 @@ const UpdateProfilePage = () => {
   const { user: appUser } = authStore;
 
   // Fetch the logged-in user's profile
-  const { data: currentPerson, isPending } = useSinglePersonQuery(appUser?.id);
+  const { data: currentPerson, isPending } = useSinglePersonQuery(appUser?.people_id);
 
   const [submitAttempted, setSubmitAttempted] = useState(false);
 
@@ -100,6 +100,7 @@ const UpdateProfilePage = () => {
 
     try {
       const response = await updatePeople(formPerson);
+      console.log("response:", JSON.stringify(response))
       if (response.success) {
         console.log("Profile updated successfully");
         authStore.init(); // Refresh user session
