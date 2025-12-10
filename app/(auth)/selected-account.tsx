@@ -68,7 +68,7 @@ const Page = () => {
 					label="Email"
 					control={control}
 					errors={errors}
-					editable={selectedProfile ? false : true}
+					disabled={selectedProfile ? false : true}
 				/>
 
 				{/* Password */}

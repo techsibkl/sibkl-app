@@ -229,7 +229,7 @@ const Page = () => {
 						control={control}
 						errors={errors}
 						placeholder="Email from store"
-						editable={false}
+						disabled={true}
 					/>
 
 					<FormField
@@ -282,7 +282,7 @@ const Page = () => {
 						label="Age (optional)"
 						control={control}
 						errors={errors}
-						editable={false}
+						disabled={true}
 					/>
 
 					<FormField
@@ -290,7 +290,7 @@ const Page = () => {
 						label="Age Group"
 						control={control}
 						errors={errors}
-						editable={false}
+						disabled={true}
 					/>
 
 					<FormField
