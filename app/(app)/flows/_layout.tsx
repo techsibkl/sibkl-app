@@ -12,14 +12,14 @@ export default function Layout() {
 			<Stack.Screen
 				name="index"
 				options={{
-					title: "Leaders",
+					title: "Flows",
 					headerShown: true,
 					header() {
-						return <SharedHeader title="Leader's Page" />;
+						return <SharedHeader title="Flows" />;
 					},
 				}}
 			/>
-			<Stack.Screen
+			{/* <Stack.Screen
 				name="[category]"
 				options={({ route }) => ({
 					title: "Resource",
@@ -33,7 +33,7 @@ export default function Layout() {
 						);
 					},
 				})}
-			/>
+			/> */}
 		</Stack>
 	);
 }
