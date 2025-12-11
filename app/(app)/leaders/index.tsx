@@ -8,7 +8,6 @@ import { useResourcesQuery } from "@/hooks/Resource/useResourceQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import React, { useState } from "react";
 import {
-	ActivityIndicator,
 	ScrollView,
 	StatusBar,
 	Text,
@@ -18,6 +17,7 @@ import {
 
 import FolderList from "@/components/Leaders/FolderList";
 import SortDropdown from "@/components/Leaders/SortDropdown";
+import SkeletonGallery from "@/components/shared/Skeleton/SkeletonGallery";
 import { Grid3x2Icon, ListIcon } from "lucide-react-native";
 
 const LeadersPage = () => {
@@ -33,14 +33,7 @@ const LeadersPage = () => {
 		sortAsc
 	);
 
-	if (isPending)
-		return (
-			<SharedBody>
-				<ActivityIndicator />
-			</SharedBody>
-		);
-
-	if (isError || !resources) {
+	if (isError) {
 		return <Text>Error loading resources</Text>;
 	}
 
@@ -73,7 +66,9 @@ const LeadersPage = () => {
 				</TouchableOpacity>
 			</View>
 
-			{viewMode === "gallery" ? (
+			{isPending ? (
+				<SkeletonGallery />
+			) : viewMode === "gallery" ? (
 				<ScrollView showsVerticalScrollIndicator={false}>
 					<CategoryList groupedResources={groupedResources} />
 				</ScrollView>

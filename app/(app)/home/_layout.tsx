@@ -1,6 +1,7 @@
 import Greeting from "@/components/Home/Greeting";
 import SharedHeader from "@/components/shared/SharedHeader";
 import { Stack } from "expo-router";
+import React from "react";
 
 export const unstable_settings = {
 	initialRouteName: "index",

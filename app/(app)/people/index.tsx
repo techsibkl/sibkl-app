@@ -6,7 +6,7 @@ import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { usePeopleQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import React, { useMemo, useState } from "react";
-import { ActivityIndicator, StatusBar, Text, View } from "react-native";
+import { StatusBar, Text, View } from "react-native";
 
 const PeopleScreen = () => {
 	const { isDark } = useThemeColors();
@@ -29,12 +29,6 @@ const PeopleScreen = () => {
 	//   console.log("Opening profile for:", person.fullName);
 	// };
 
-	if (isPending)
-		return (
-			<SharedBody>
-				<ActivityIndicator />
-			</SharedBody>
-		);
 	if (isError)
 		return (
 			<SharedBody>
