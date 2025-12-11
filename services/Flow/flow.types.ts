@@ -4,6 +4,13 @@ export enum FlowStatus {
 	COMPLETED_SUCCESS = "COMPLETED SUCCESS",
 	COMPLETED_FAIL = "COMPLETED FAIL",
 }
+
+export type StepAction =
+	| { type: "CHANGE_FIELD"; source: string; value?: any; defaultValue?: any }
+	| { type: "SEND_MESSAGE"; source: string; value?: any }
+	| { type: "MOVE_TO_STEP"; source: string; value?: any }
+	| { type: "MOVE_TO_FLOW"; source: string; value?: any };
+
 export type Flow = {
 	id: number;
 	title: string;
@@ -40,6 +47,7 @@ export type FlowStep = {
 	}[];
 	status?: FlowStatus; // default when criteria met
 	sort_order: number; // display order
+	actions?: StepAction[]; // optional actions to perform
 };
 
 export type SingleCustomAttr = {

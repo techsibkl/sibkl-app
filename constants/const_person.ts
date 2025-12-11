@@ -2,9 +2,9 @@ import { FormDateInput } from "@/components/shared/FormDateInput";
 import { FormField } from "@/components/shared/FormField";
 import { FormSelect } from "@/components/shared/FormSelect";
 import {
-    FieldTypeEnum,
-    SectionEnum,
-    TableField,
+	FieldTypeEnum,
+	SectionEnum,
+	TableField,
 } from "@/types/TableField.type";
 import { Role } from "@/utils/casl/defineAbilityFor";
 import { AgeGroup } from "@/utils/types/utils.types";

@@ -1,5 +1,5 @@
 import { apiEndpoints } from "@/utils/endpoints";
-import { formatObjStrToDate } from "@/utils/helper";
+import { dateReplacer, formatObjStrToDate } from "@/utils/helper";
 import { secureFetch } from "@/utils/secureFetch";
 import { ReturnVal } from "@/utils/types/returnVal.types";
 import { Cell } from "../Cell/cell.types";
@@ -8,34 +8,40 @@ import { Flow } from "./flow.types";
 import { PeopleFlow } from "./peopleFlow.type";
 
 export async function fetchFlows(
-	flowId?: number,
+	flowIds?: number[],
 	owned?: boolean
 ): Promise<Flow[]> {
-	const url = flowId
-		? `${apiEndpoints.flows.getById(flowId)}`
-		: `${apiEndpoints.flows.getAll}?owned=${owned ?? false}`;
-	const response = await secureFetch(url, {
-		method: "GET",
-	});
+	const params = new URLSearchParams();
+
+	if (owned !== undefined) params.append("owned", owned ? "true" : "false");
+	if (flowIds && flowIds.length > 0) params.append("ids", flowIds.join(","));
+
+	const response = await secureFetch(
+		`${apiEndpoints.flows.getAll}?${params.toString()}`,
+		{
+			method: "GET",
+		}
+	);
 	const json: ReturnVal = await response.json();
 	const result = json.data?.map((flow: Flow) => ({
 		...flow,
-		// view_configs: flow.view_configs ?? defaultViewConfigs,
+		steps: flow.steps ?? {},
 	}));
 	return result;
 }
 
-export async function fetchPeopleByFlowId(
-	flowId: number,
+export async function fetchPeopleFlow(
+	flowId?: number,
+	assigneeId?: number,
 	districtId?: number,
 	status?: string
 ): Promise<PeopleFlow[]> {
 	// Fetch data from the server
 	const payload = {
-		flowId,
-		districtId,
-		status,
-		assigneeId: null,
+		flowId: flowId,
+		districtId: districtId,
+		status: status,
+		assigneeId: assigneeId,
 	};
 
 	const response = await secureFetch(`${apiEndpoints.peopleFlows.getAll}`, {
@@ -57,3 +63,34 @@ export async function fetchPeopleByFlowId(
 	}));
 	return result;
 }
+
+export const updatePeopleFlowSingleCustomAttr = async (
+	flowId: number,
+	person: PeopleFlow,
+	key: string,
+	value: string | number | Date,
+	label: string
+): Promise<ReturnVal> => {
+	const payload = {
+		flowId: flowId,
+		personId: person.p__id,
+		personName: person.p__full_name ?? person.p__first_name,
+		key: key,
+		value: value,
+		label: label,
+	};
+
+	const response = await secureFetch(
+		`${apiEndpoints.peopleFlows.updateCustomAttr}`,
+		{
+			method: "PUT",
+			headers: {
+				"Content-Type": "application/json",
+			},
+			body: JSON.stringify(payload, dateReplacer),
+		}
+	);
+
+	const data = await response.json();
+	return data;
+};

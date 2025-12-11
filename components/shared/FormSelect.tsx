@@ -8,24 +8,24 @@ export const FormSelect = ({
 	name,
 	label,
 	control,
-	errors,
+	errors = {},
 	placeholder = "Select an option...",
-	rules,
+	rules = {},
 	options = [],
-	readonly = false,
+	disabled = false,
 	onBlur: onBlurCallback,
 	onChangeText: onChangeTextCallback,
 }: {
 	name: string;
 	label: string;
 	control: any;
-	errors: any;
+	errors?: any;
 	placeholder?: string;
 	rules?: any;
 	options?: (string | number | null)[];
-	readonly?: boolean;
-	onBlur: Function;
-	onChangeText: Function;
+	disabled?: boolean;
+	onBlur?: Function;
+	onChangeText?: Function;
 }) => {
 	return (
 		<View>
@@ -36,10 +36,10 @@ export const FormSelect = ({
 				rules={rules}
 				render={({ field: { onChange, value } }) => (
 					<View
-						className={`${formStyles.inputSelect} ${readonly ? "bg-gray-100" : ""}`}
+						className={`${formStyles.inputSelect} ${disabled ? "bg-gray-100" : ""}`}
 					>
 						<Picker
-							enabled={!readonly}
+							enabled={!disabled}
 							selectedValue={value}
 							onValueChange={(val) => {
 								onChange(val);

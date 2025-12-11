@@ -1,17 +1,17 @@
 import { formStyles } from "@/constants/const_styles";
-import { DateTimePicker } from "@expo/ui/jetpack-compose";
+import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useState } from "react";
 import { Controller } from "react-hook-form";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Platform, Text, TouchableOpacity, View } from "react-native";
 
 export const FormDateInput = ({
 	name,
 	label,
 	control,
 	placeholder,
-	rules,
-	errors,
-	readonly = false,
+	rules = {},
+	errors = {},
+	disabled = false,
 	onBlur: onBlurCallback,
 	onChangeText: onChangeTextCallback,
 }: {
@@ -20,10 +20,10 @@ export const FormDateInput = ({
 	control: any;
 	placeholder?: string;
 	rules?: any;
-	errors: any;
-	readonly?: boolean;
-	onBlur: Function;
-	onChangeText: Function;
+	errors?: any;
+	disabled?: boolean;
+	onBlur?: Function;
+	onChangeText?: Function;
 }) => {
 	const [show, setShow] = useState(false);
 
@@ -41,9 +41,9 @@ export const FormDateInput = ({
 					<>
 						{/* Input-like touch area */}
 						<TouchableOpacity
-							disabled={readonly}
+							disabled={disabled}
 							className={`${formStyles.inputDate} ${
-								readonly ? "opacity-50" : ""
+								disabled ? "opacity-50" : ""
 							}`}
 							onPress={() => setShow(true)}
 						>
@@ -60,13 +60,26 @@ export const FormDateInput = ({
 
 						{show && (
 							<DateTimePicker
-								onDateSelected={(date) => {
-									onChange(date); // update react-hook-form value
-									onChangeTextCallback?.(date);
-									setShow(false); // close after picking
+								value={value ? new Date(value) : new Date()}
+								mode="date"
+								dateFormat="day month year"
+								display={
+									Platform.OS === "ios"
+										? "spinner"
+										: "default"
+								}
+								onChange={(event, selectedDate) => {
+									setShow(Platform.OS === "ios"); // Keep open on iOS
+									if (selectedDate) {
+										onChange(selectedDate.toISOString());
+										onChangeTextCallback?.(
+											selectedDate.toISOString()
+										);
+									}
+									if (Platform.OS === "android") {
+										setShow(false);
+									}
 								}}
-								displayedComponents="date"
-								variant="picker"
 							/>
 						)}
 					</>

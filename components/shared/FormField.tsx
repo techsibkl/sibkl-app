@@ -1,24 +1,41 @@
 import { formStyles } from "@/constants/const_styles";
 import React from "react";
 import { Controller } from "react-hook-form";
-import { Text, TextInput, View } from "react-native";
+import { KeyboardTypeOptions, Text, TextInput, View } from "react-native";
+
+type Props = {
+	name: string;
+	label: string;
+	control: any;
+	rules?: any;
+	errors?: any;
+	placeholder?: string;
+	icon?: any;
+	rightIcon?: any;
+	initial?: string;
+	disabled?: boolean;
+	keyboardType?: KeyboardTypeOptions;
+	onBlur?: Function;
+	onChangeText?: Function;
+};
 
 export const FormField = ({
 	name,
 	label,
 	control,
-	rules,
-	errors,
+	rules = {},
+	errors = {},
 	placeholder,
 	icon,
 	rightIcon,
-	readonly = false,
+	initial,
+	disabled = false,
+	keyboardType,
 	onBlur: onBlurCallback,
 	onChangeText: onChangeTextCallback,
-	...rest
 }: any) => (
-	<View className="gap-y-2">
-		<Text className="ml-1 text-sm font-medium text-text">{label}</Text>
+	<View>
+		<Text className="text-sm font-medium text-text mb-2">{label}</Text>
 		<View className="relative">
 			{icon && <View className="absolute left-3 top-3 z-10">{icon}</View>}
 			<Controller
@@ -27,32 +44,24 @@ export const FormField = ({
 				rules={rules}
 				render={({ field: { onChange, onBlur, value } }) => (
 					<TextInput
-						className={`${formStyles.inputText} ${readonly ? `text-gray-400` : `text-text`}`}
+						className={`${formStyles.inputText} ${disabled ? `text-gray-400` : `text-text`}`}
 						placeholder={placeholder}
 						placeholderTextColor="#9ca3af"
-						submitBehavior="blurAndSubmit"
-						readOnly={readonly}
-						onBlur={() => {
-							onBlur();
-							onBlurCallback?.(value);
-						}}
-						onChangeText={(val) => {
-							onChange(val);
-							onChangeTextCallback?.(val);
-						}}
+						onBlur={onBlur}
+						onChangeText={onChange}
 						value={value}
-						{...rest}
+						readOnly={disabled}
 					/>
 				)}
 			/>
 			{rightIcon && (
 				<View className="absolute right-3 top-3">{rightIcon}</View>
 			)}
+			{errors[name] && (
+				<Text className="text-primary-500 text-sm mt-1">
+					{errors[name]?.message}
+				</Text>
+			)}
 		</View>
-		{errors[name] && (
-			<Text className="ml-1 text-red-600 text-sm">
-				{errors[name]?.message}
-			</Text>
-		)}
 	</View>
 );

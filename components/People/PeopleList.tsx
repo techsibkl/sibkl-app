@@ -1,7 +1,7 @@
 import { Person } from "@/services/Person/person.type";
 import { FlashList } from "@shopify/flash-list";
 import React from "react";
-import EmptyList from "../Cells/EmptyList";
+import SkeletonPeopleRow from "../shared/Skeleton/SkeletonPeopleRow";
 import PeopleRow from "./PeopleRow";
 
 type PeopleListProps = {
@@ -21,7 +21,7 @@ const PeopleList = ({ people }: PeopleListProps) => {
 				paddingVertical: 8,
 			}}
 			keyExtractor={(item) => item.id.toString()}
-			ListEmptyComponent={<EmptyList />}
+			ListEmptyComponent={SkeletonPeopleRow}
 			estimatedItemSize={100}
 			removeClippedSubviews
 			renderItem={renderItem}

@@ -4,43 +4,59 @@ import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import React, { useMemo, useState } from "react";
-import {
-    ActivityIndicator,
-    StatusBar,
-    Text,
-    TouchableOpacity,
-    View,
-} from "react-native";
+import { StatusBar, Text, TouchableOpacity, View } from "react-native";
 
-import PeopleFlowList from "@/components/Flows/PeopleFlowList";
-import {
-    usePeopleFlowQuery,
-    useSingleFlowQuery,
-} from "@/hooks/Flows/useFlowsQuery";
-import { Grid3x2Icon, ListIcon } from "lucide-react-native";
+import FlowSelector from "@/components/Flows/FlowSelect";
+import PeopleFlowList from "@/components/Flows/PeopleFlowAssignedList";
+import { useFlowsQuery, usePeopleFlowQuery } from "@/hooks/Flows/useFlowsQuery";
+import { useAuthStore } from "@/stores/authStore";
+import { CheckIcon } from "lucide-react-native";
 
 const FlowsPage = () => {
 	const { isDark } = useThemeColors();
-	const {
-		data: peopleFlow,
-		isPending,
-		error,
-		isError,
-	} = usePeopleFlowQuery(2);
-	const { data: flow } = useSingleFlowQuery(2);
+	const { user } = useAuthStore();
 	const [searchQuery, setSearchQuery] = useState("");
+	const [isMeMode, setIsMeMode] = useState(false);
+	// This is for single selected flow list
+	const [selectedFlowId, setSelectedFlowId] = useState<number>(0);
 
-	const [viewMode, setViewMode] = useState<"gallery" | "list">("gallery");
+	// Getting people assigned to me from ALL flows
+	const { data: singleFlowPeople } = usePeopleFlowQuery(selectedFlowId);
+	const { data: peopleFlow } = usePeopleFlowQuery(
+		undefined,
+		user?.person?.id
+	);
+	const flowIds = [...new Set(peopleFlow?.map((p) => p.flow_id) || [])];
+	const { data: flows } = useFlowsQuery(flowIds as number[]);
 
-	const filteredPeopleFlow = useMemo(() => {
-		return (peopleFlow ?? []).filter(
+	const effectivePeopleFlow = useMemo(() => {
+		let list =
+			selectedFlowId === 0
+				? (peopleFlow ?? []) // ALL flows
+				: (singleFlowPeople ?? []); // Single flow
+
+		// Apply search filter
+		list = list.filter(
 			(person) =>
 				person?.p__full_name
 					?.toLowerCase()
 					.includes(searchQuery.toLowerCase()) ||
 				person?.p__phone?.includes(searchQuery)
 		);
-	}, [peopleFlow, searchQuery]);
+
+		// Apply assigned-to-me filter only if viewMode is "assigned"
+		if (isMeMode) {
+			list = list.filter((p) => p.assignee_id === user?.person?.id);
+		}
+		return list;
+	}, [
+		selectedFlowId,
+		peopleFlow,
+		singleFlowPeople,
+		searchQuery,
+		isMeMode,
+		user?.person?.id,
+	]);
 
 	return (
 		<SharedBody>
@@ -55,40 +71,42 @@ const FlowsPage = () => {
 				placeholder="Search keywords..."
 			/>
 
-			{/* toggle buttons */}
-			<View className="flex-row justify-between items-center px-4 py-2">
-				<Text className="text-sm text-gray-800 font-semibold">
-					Assigned to Me
-				</Text>
-				<TouchableOpacity
-					onPress={() =>
-						setViewMode(viewMode === "gallery" ? "list" : "gallery")
-					}
-				>
-					{viewMode === "gallery" ? (
-						<ListIcon size={22} color="#999" />
-					) : (
-						<Grid3x2Icon size={22} color="#999" />
-					)}
-				</TouchableOpacity>
-			</View>
-			{flow != undefined ? (
-				<PeopleFlowList
-					peopleFlow={filteredPeopleFlow ?? []}
-					flow={flow}
+			<View className="flex-row w-full justify-between gap-2 items-center px-4 py-2">
+				{/* Flow Selector always visible */}
+				<FlowSelector
+					flows={flows ?? []}
+					selectedFlowId={selectedFlowId}
+					onSelect={setSelectedFlowId}
 				/>
-			) : (
-				<ActivityIndicator />
-			)}
-			{/* 
-            
-			{viewMode === "gallery" ? (
-				<ScrollView showsVerticalScrollIndicator={false}>
-					<CategoryList groupedResources={groupedResources} />
-				</ScrollView>
-			) : (
-				<FolderList groupedResources={groupedResources} />
-			)} */}
+
+				{/* Toggle button only shows if not ALL */}
+				{selectedFlowId && (
+					<TouchableOpacity
+						onPress={() => setIsMeMode((prev) => !prev)}
+						className={`flex flex-row items-center justify-center gap-2 px-4 py-3 rounded-[15px] border   ${isMeMode ? "bg-blue-500 border-blue-500" : "bg-transparent border-blue-300"}`}
+						activeOpacity={0.7}
+					>
+						{/* Label */}
+						<View>
+							<Text
+								className={`text-sm font-semibold ${isMeMode ? "text-white" : "text-blue-300"}`}
+							>
+								Assigned
+							</Text>
+						</View>
+
+						{/* Trailing icon */}
+						{isMeMode && <CheckIcon color={"#fff"} size={16} />}
+					</TouchableOpacity>
+				)}
+			</View>
+
+			<PeopleFlowList
+				key={flows?.map((f) => f.id).toString()}
+				peopleFlow={effectivePeopleFlow}
+				flows={flows}
+				selectedFlowId={selectedFlowId}
+			/>
 		</SharedBody>
 	);
 };

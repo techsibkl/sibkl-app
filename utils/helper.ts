@@ -1,3 +1,6 @@
+import { ToastShowParams } from "react-native-toast-message";
+import { ReturnVal } from "./types/returnVal.types";
+
 export const displayDateAsStr = (
 	value: string | Date | null | undefined,
 	showYear: boolean = true
@@ -183,4 +186,12 @@ export const formatDate = (dateString: string): string | null => {
 	}
 
 	return null;
+};
+
+export const myToast = (res: ReturnVal): ToastShowParams => {
+	return {
+		type: res.success ? "success" : "error",
+		text1: res.success ? "Success" : "Failed",
+		text2: res.message,
+	};
 };

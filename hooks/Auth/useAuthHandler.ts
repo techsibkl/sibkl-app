@@ -47,7 +47,6 @@ export const handleAuthStateChange = async (
 		});
 
 		const json = await response.json();
-		console.log("Fetched person data:", json.data);
 		if (json.success && json.data) {
 			appUser = {
 				...appUser,
