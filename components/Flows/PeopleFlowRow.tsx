@@ -113,13 +113,13 @@ const PeopleFlowRowComponent = ({
 								}}
 								title="View profile"
 							/>
-							<Menu.Item
+							{/* <Menu.Item
 								onPress={() => {
 									setMenuVisible(false);
 									// Handle assign
 								}}
 								title="Assign"
-							/>
+							/> */}
 							<Menu.Item
 								onPress={() => {
 									setMenuVisible(false);

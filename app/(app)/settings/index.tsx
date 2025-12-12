@@ -2,12 +2,11 @@ import SharedBody from "@/components/shared/SharedBody";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "expo-router";
 import {
-  CircleQuestionMark,
-  FileText,
-  LockKeyhole,
-  Mail,
-  Moon,
-  SquareArrowRight,
+	CircleQuestionMark,
+	FileText,
+	LockKeyhole,
+	Moon,
+	SquareArrowRight
 } from "lucide-react-native";
 import React, { useState } from "react";
 import { Alert, Switch, Text, TouchableOpacity, View } from "react-native";
@@ -38,13 +37,13 @@ export default function SettingsScreen() {
 			toggleValue: darkTheme,
 			onToggle: setDarkTheme,
 		},
-		{
-			id: "changeEmail",
-			icon: <Mail className="w-6 h-6 text-gray-400" />,
-			title: "Change email",
-			subtitle: "Update your email address",
-			onPress: () => router.push("/(app)/settings/changeEmail"),
-		},
+		// {
+		// 	id: "changeEmail",
+		// 	icon: <Mail className="w-6 h-6 text-gray-400" />,
+		// 	title: "Change email",
+		// 	subtitle: "Update your email address",
+		// 	onPress: () => router.push("/(app)/settings/changeEmail"),
+		// },
 		{
 			id: "changePassword",
 			icon: <LockKeyhole className="w-6 h-6 text-gray-400" />,

@@ -23,7 +23,7 @@ export default function Layout() {
 				options={({ route }) => ({
 					headerShown: true,
 					header() {
-						return <SharedHeader title="Settings" isPop />;
+						return <SharedHeader title="Change Email" isPop />;
 					},
 				})}
 			/>
@@ -32,7 +32,7 @@ export default function Layout() {
 				options={({ route }) => ({
 					headerShown: true,
 					header() {
-						return <SharedHeader title="Settings" isPop />;
+						return <SharedHeader title="Change Password" isPop />;
 					},
 				})}
 			/>
@@ -42,6 +42,24 @@ export default function Layout() {
 					headerShown: true,
 					header() {
 						return <SharedHeader title="FAQs" isPop />;
+					},
+				})}
+			/>
+			<Stack.Screen
+				name="profile/index"
+				options={({ route }) => ({
+					headerShown: true,
+					header() {
+						return <SharedHeader title="My Profile" isPop />;
+					},
+				})}
+			/>
+			<Stack.Screen
+				name="profile/updateProfile/index"
+				options={({ route }) => ({
+					headerShown: true,
+					header() {
+						return <SharedHeader title="My Profile" isPop />;
 					},
 				})}
 			/>

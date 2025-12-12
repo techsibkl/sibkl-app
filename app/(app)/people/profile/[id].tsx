@@ -2,21 +2,20 @@
 
 import CellList from "@/components/Cells/CellList";
 import SharedBody from "@/components/shared/SharedBody";
+import SkeletonPeopleRow from "@/components/shared/Skeleton/SkeletonPeopleRow";
 import { useSinglePersonQuery } from "@/hooks/People/useSinglePersonQuery";
 import { displayDateAsStr } from "@/utils/helper";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Calendar, Mail, MapPin, Phone, User } from "lucide-react-native";
-import type React from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
-	ActivityIndicator,
 	Image,
 	ScrollView,
 	StatusBar,
 	Text,
 	TouchableOpacity,
-	View,
+	View
 } from "react-native";
 
 const ProfileScreen = () => {
@@ -130,7 +129,7 @@ const ProfileScreen = () => {
 	if (isPending)
 		return (
 			<SharedBody>
-				<ActivityIndicator />
+				<SkeletonPeopleRow />
 			</SharedBody>
 		);
 	if (isError)

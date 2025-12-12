@@ -4,12 +4,12 @@ import { formStyles } from "@/constants/const_styles";
 import auth from "@react-native-firebase/auth";
 import React, { useState } from "react";
 import {
-  Alert,
-  Modal,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+	Alert,
+	Modal,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View,
 } from "react-native";
 
 export default function ReauthModal({ onClose, onSuccess }: any) {
@@ -29,6 +29,8 @@ export default function ReauthModal({ onClose, onSuccess }: any) {
 			onSuccess();
 		} catch (err: any) {
 			Alert.alert("Re-authentication Failed", err.message);
+		} finally {
+			onClose();
 		}
 	};
 

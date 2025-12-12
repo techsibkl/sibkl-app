@@ -1,12 +1,12 @@
 import auth from "@react-native-firebase/auth";
 import React, { useState } from "react";
 import {
-  ActivityIndicator,
-  Alert,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  View,
+	ActivityIndicator,
+	Alert,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View,
 } from "react-native";
 import ReauthModal from "./components/ReauthModel";
 
@@ -25,6 +25,7 @@ export default function ChangePasswordScreen() {
 
 		// Basic validation
 		if (newPassword !== confirmPassword) {
+			setLoading(false);
 			return Alert.alert("Error", "New passwords do not match.");
 		}
 
@@ -33,18 +34,25 @@ export default function ChangePasswordScreen() {
 			await user.updatePassword(newPassword);
 
 			Alert.alert("Success", "Password updated successfully!");
-			setLoading(false);
 		} catch (err: any) {
 			if (err.code === "auth/requires-recent-login") {
 				setShowReauth(true); // show re-auth modal
 			} else {
 				Alert.alert("Error", err.message);
 			}
+		} finally {
+			setLoading(false);
 		}
 	};
 
+	const reset = () => {
+		setCurrentPassword("");
+		setNewPassword("");
+		setConfirmPassword("");
+	};
+
 	return (
-		<View className="flex-1 bg-background px-6">
+		<View className="flex-1 bg-background px-6 gap-1">
 			<Text>Current Password</Text>
 			<TextInput
 				secureTextEntry
@@ -99,6 +107,8 @@ export default function ChangePasswordScreen() {
 								"Success",
 								"Password updated successfully!"
 							);
+
+							reset();
 						} catch (e: any) {
 							Alert.alert("Error", e.message);
 						} finally {
