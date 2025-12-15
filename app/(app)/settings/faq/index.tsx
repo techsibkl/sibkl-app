@@ -1,12 +1,12 @@
 import React, { useState } from "react";
 import {
-  LayoutAnimation,
-  Platform,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  UIManager,
-  View,
+	LayoutAnimation,
+	Platform,
+	ScrollView,
+	Text,
+	TouchableOpacity,
+	UIManager,
+	View,
 } from "react-native";
 
 // Enable LayoutAnimation on Android
@@ -19,16 +19,20 @@ if (
 
 const faqData = [
 	{
+		question: "Who is this app for?",
+		answer: "This app is for members, leaders, pastors of SIBKL church. (Guests can sign up but will have limited access to features)",
+	},
+	{
+		question: "What does UAT include?",
+		answer: "UAT (User Acceptance Testing) includes core features such as profile management, guest follow-up, leader's page, and announcements. Some advanced features may still be under development.",
+	},
+	{
+		question: "When will the full version be released?",
+		answer: "The full version is expected to be released in Q2 2026, after thorough testing and feedback collection during the UAT phase.",
+	},
+	{
 		question: "How do I reset my password?",
 		answer: "Go to Settings → Change Password. Enter your current password and your new password.",
-	},
-	{
-		question: "How do I change my email address?",
-		answer: "You can change your email in Settings → Change Email. You will need to re-login for verification.",
-	},
-	{
-		question: "Is my data secure?",
-		answer: "Yes. We use industry-standard security practices to protect your account and personal information.",
 	},
 ];
 

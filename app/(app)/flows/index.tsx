@@ -21,13 +21,34 @@ const FlowsPage = () => {
 	const [selectedFlowId, setSelectedFlowId] = useState<number>(0);
 
 	// Getting people assigned to me from ALL flows
-	const { data: singleFlowPeople } = usePeopleFlowQuery(selectedFlowId);
-	const { data: peopleFlow } = usePeopleFlowQuery(
+	const { data: singleFlowPeople, refetch: singleFlowRefetch } =
+		usePeopleFlowQuery(selectedFlowId);
+	const { data: peopleFlow, refetch } = usePeopleFlowQuery(
 		undefined,
 		user?.person?.id
 	);
-	const flowIds = [...new Set(peopleFlow?.map((p) => p.flow_id) || [])];
-	const { data: flows } = useFlowsQuery(flowIds as number[]);
+	const flowIds = useMemo(
+		() => [...new Set(peopleFlow?.map((p) => p.flow_id) || [])],
+		[peopleFlow]
+	);
+
+	const { data: flows, refetch: flowRefetch } = useFlowsQuery(
+		flowIds as number[]
+	);
+
+	// const flowQueries = useQueries({
+	// 	queries: flowIds.map((flowId) => ({
+	// 		queryKey: ["flows", flowId],
+	// 		queryFn: async () => {
+	// 			const res = await fetchFlows([flowId!]);
+	// 			return res[0];
+	// 		},
+	// 		enabled: !!flowId,
+	// 		placeholderData: {} as Flow,
+	// 	})),
+	// });
+
+	// const flows = flowQueries.map((q) => q.data).filter(Boolean) as Flow[];
 
 	const effectivePeopleFlow = useMemo(() => {
 		let list =
@@ -57,6 +78,15 @@ const FlowsPage = () => {
 		isMeMode,
 		user?.person?.id,
 	]);
+
+	const refresh = async () => {
+		selectedFlowId === 0 ? await refetch() : await singleFlowRefetch();
+		flowRefetch();
+		console.log(
+			"flows",
+			flows?.map((f) => f.id)
+		);
+	};
 
 	return (
 		<SharedBody>
@@ -106,6 +136,7 @@ const FlowsPage = () => {
 				peopleFlow={effectivePeopleFlow}
 				flows={flows}
 				selectedFlowId={selectedFlowId}
+				onRefresh={refresh}
 			/>
 		</SharedBody>
 	);

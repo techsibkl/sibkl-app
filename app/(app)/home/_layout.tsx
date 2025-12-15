@@ -19,6 +19,24 @@ export default function Layout() {
 					},
 				}}
 			/>
+			<Stack.Screen
+				name="profile/index"
+				options={({ route }) => ({
+					headerShown: true,
+					header() {
+						return <SharedHeader title="My Profile" isPop />;
+					},
+				})}
+			/>
+			<Stack.Screen
+				name="profile/updateProfile/index"
+				options={({ route }) => ({
+					headerShown: true,
+					header() {
+						return <SharedHeader title="My Profile" isPop />;
+					},
+				})}
+			/>
 		</Stack>
 	);
 }

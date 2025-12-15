@@ -20,7 +20,7 @@ const Greeting = () => {
 				</Text>
 			</View>
 			<TouchableOpacity
-				onPress={() => router.push("/(app)/settings/profile")}
+				onPress={() => router.push("/(app)/home/profile")}
 			>
 				<Image
 					source={require("../../assets/images/person.png")}

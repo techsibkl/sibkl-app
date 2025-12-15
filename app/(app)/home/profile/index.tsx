@@ -7,13 +7,7 @@ import { SectionEnum } from "@/types/TableField.type";
 import { displayDateAsStr } from "@/utils/helper";
 import { useRouter } from "expo-router";
 import React from "react";
-import {
-  Image,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View
-} from "react-native";
+import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 const ProfileViewPage = () => {
 	const { user } = useAuthStore();
@@ -61,7 +55,7 @@ const ProfileViewPage = () => {
 					</Text>
 					<TouchableOpacity
 						onPress={() =>
-							router.push("/(app)/settings/profile/updateProfile")
+							router.push("/(app)/home/profile/updateProfile")
 						}
 					>
 						<Text className="text-sm text-blue-500">

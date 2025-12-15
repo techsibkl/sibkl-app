@@ -3,13 +3,19 @@ import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "expo-router";
 import {
 	CircleQuestionMark,
-	FileText,
 	LockKeyhole,
-	Moon,
-	SquareArrowRight
+	SquareArrowRight,
+	ThumbsUpIcon,
 } from "lucide-react-native";
 import React, { useState } from "react";
-import { Alert, Switch, Text, TouchableOpacity, View } from "react-native";
+import {
+	Alert,
+	Linking,
+	Switch,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
 
 export default function SettingsScreen() {
 	const { signOut } = useAuthStore();
@@ -28,15 +34,15 @@ export default function SettingsScreen() {
 	};
 
 	const settingsOptions = [
-		{
-			id: "darkTheme",
-			icon: <Moon className="w-6 h-6 text-gray-400" />,
-			title: "Dark Theme Toggle",
-			subtitle: "Switch between dark and light mode",
-			hasToggle: true,
-			toggleValue: darkTheme,
-			onToggle: setDarkTheme,
-		},
+		// {
+		// 	id: "darkTheme",
+		// 	icon: <Moon className="w-6 h-6 text-gray-400" />,
+		// 	title: "Dark Theme Toggle",
+		// 	subtitle: "Switch between dark and light mode",
+		// 	hasToggle: true,
+		// 	toggleValue: darkTheme,
+		// 	onToggle: setDarkTheme,
+		// },
 		// {
 		// 	id: "changeEmail",
 		// 	icon: <Mail className="w-6 h-6 text-gray-400" />,
@@ -45,20 +51,6 @@ export default function SettingsScreen() {
 		// 	onPress: () => router.push("/(app)/settings/changeEmail"),
 		// },
 		{
-			id: "changePassword",
-			icon: <LockKeyhole className="w-6 h-6 text-gray-400" />,
-			title: "Change password",
-			subtitle: "••••••••",
-			onPress: () => router.push("/(app)/settings/changePassword"),
-		},
-		{
-			id: "privacyPolicy",
-			icon: <FileText className="w-6 h-6 text-gray-400" />,
-			title: "Privacy Policy",
-			subtitle: "View our privacy policy",
-			onPress: () => console.log("Privacy Policy pressed"),
-		},
-		{
 			id: "faqs",
 			icon: <CircleQuestionMark className="w-6 h-6 text-gray-400" />,
 			title: "FAQs",
@@ -66,8 +58,31 @@ export default function SettingsScreen() {
 			onPress: () => router.push("/(app)/settings/faq/"),
 		},
 		{
+			id: "changePassword",
+			icon: <LockKeyhole className="w-6 h-6 text-gray-400" />,
+			title: "Change password",
+			subtitle: "••••••••",
+			onPress: () => router.push("/(app)/settings/changePassword"),
+		},
+		{
+			id: "feedback",
+			icon: <ThumbsUpIcon className="w-6 h-6 text-gray-400" />,
+			title: "Feedback Form",
+			subtitle: "Submit your feedback here",
+			onPress: () =>
+				Linking.openURL("https://forms.gle/PWixJJ5dYgSVuqXv6"),
+		},
+		// {
+		// 	id: "privacyPolicy",
+		// 	icon: <FileText className="w-6 h-6 text-gray-400" />,
+		// 	title: "Privacy Policy",
+		// 	subtitle: "View our privacy policy",
+		// 	onPress: () => console.log("Privacy Policy pressed"),
+		// },
+
+		{
 			id: "logout",
-			icon: <SquareArrowRight className="w-6 h-6 text-red-500" />,
+			icon: <SquareArrowRight className="w-6 h-6 text-red-700" />,
 			title: "Logout",
 			subtitle: "Sign out of your account",
 			isDestructive: true,

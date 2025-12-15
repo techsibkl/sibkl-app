@@ -236,6 +236,10 @@ const Page = () => {
 												onFieldComplete={
 													handleFieldComplete
 												}
+												disabled={
+													field.key === "email" &&
+													!!selectedProfile
+												}
 											/>
 										))}
 								</View>

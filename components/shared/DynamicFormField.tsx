@@ -9,6 +9,7 @@ type DynamicFormFieldProps = {
 	errors: FieldErrors;
 	onFieldUpdate?: (key: string, value: any) => void;
 	onFieldComplete?: (key: string, value: any) => void;
+	disabled?: boolean;
 };
 
 // components/DynamicFormField.tsx
@@ -18,6 +19,7 @@ const DynamicFormField = ({
 	errors,
 	onFieldUpdate,
 	onFieldComplete,
+	disabled,
 }: DynamicFormFieldProps) => {
 	const InputComponent = resolveInputComponent(field);
 	const fieldKey = field.ori_key || field.key;
@@ -30,7 +32,7 @@ const DynamicFormField = ({
 			errors={errors}
 			placeholder={`${field.header}`}
 			options={field.options} // Will be used by FormSelect
-			readonly={field.editable === false || field.key === "email"}
+			disabled={field.editable === false || disabled}
 			onChangeText={(value: any) => onFieldUpdate?.(fieldKey, value)}
 			onBlur={(value: any) => onFieldComplete?.(fieldKey, value)} // Pass it through
 		/>

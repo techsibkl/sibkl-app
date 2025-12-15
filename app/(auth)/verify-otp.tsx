@@ -256,7 +256,7 @@ const Page = () => {
 							}`}
 						>
 							{isLoading ? (
-								<ActivityIndicator color="white" />
+								<ActivityIndicator color="red" />
 							) : (
 								<Text
 									className={`font-semibold ${otpString.length !== 6 ? "text-muted-foreground" : "text-white"}`}

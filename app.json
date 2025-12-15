@@ -31,6 +31,8 @@
       "expo-router",
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
+      "expo-notifications",
+      "expo-navigation-bar",
       [
         "expo-build-properties",
         {
