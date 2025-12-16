@@ -1,8 +1,8 @@
 import { Person } from "@/services/Person/person.type";
 import {
-  AbilityBuilder,
-  type AnyAbility,
-  createMongoAbility,
+	AbilityBuilder,
+	type AnyAbility,
+	createMongoAbility,
 } from "@casl/ability";
 
 export enum Role {
@@ -33,6 +33,7 @@ export function defineAbilityFor(person: Person): AnyAbility {
 		)
 	) {
 		// No person, no roles, or invalid roles
+		can("read", "Flow", { district_id: null, get_public: true });
 		can(["update", "read"], "PeopleProfile", { id: person?.id }); // Can update self
 		can("read", "PeopleProfile", {
 			assignee_ids: { $in: [person.id] },

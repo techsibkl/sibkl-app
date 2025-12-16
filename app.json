@@ -1,6 +1,6 @@
 {
   "expo": {
-    "name": "sibkl-app",
+    "name": "SIBKL App",
     "slug": "sibkl-app",
     "version": "1.0.0",
     "orientation": "portrait",
@@ -15,7 +15,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/icon.png",
         "backgroundColor": "#ffffff"
       },
       "googleServicesFile": "./google-services.json",

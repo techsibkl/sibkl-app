@@ -34,8 +34,8 @@ const Page = () => {
 		watch,
 	} = useForm<LoginFormData>({
 		defaultValues: {
-			email: "rayeschoo777@gmail.com",
-			password: "123456",
+			email: "",
+			password: "",
 			rememberMe: false,
 		},
 	});
