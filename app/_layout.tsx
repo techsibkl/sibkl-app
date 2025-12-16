@@ -12,7 +12,6 @@ import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
-import * as NavigationBar from "expo-navigation-bar";
 import * as Notifications from "expo-notifications";
 import React from "react";
 import { Platform, StatusBar, useColorScheme } from "react-native";
@@ -137,8 +136,8 @@ function RootLayoutNav() {
 
 	// Set up notification listeners separately (only once)
 	useEffect(() => {
-		NavigationBar.setVisibilityAsync("hidden");
-		NavigationBar.setBehaviorAsync("overlay-swipe");
+		// NavigationBar.setVisibilityAsync("hidden");
+		// NavigationBar.setBehaviorAsync("overlay-swipe");
 
 		const notificationListener =
 			Notifications.addNotificationReceivedListener((notification) => {
