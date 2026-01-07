@@ -1,9 +1,6 @@
 import toastConfig from "@/config/toastConfig";
 import { Stack, useRouter, useSegments } from "expo-router";
 import { useEffect, useState } from "react";
-
-import { useFonts } from "expo-font";
-import "react-native-reanimated";
 import "../global.css";
 
 import { updateDeviceToken } from "@/services/User/user.service";
@@ -12,12 +9,12 @@ import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import Constants from "expo-constants";
 import * as Device from "expo-device";
+import { useFonts } from "expo-font";
 import * as Notifications from "expo-notifications";
 import React from "react";
 import { Platform, StatusBar, useColorScheme } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import Toast from "react-native-toast-message";
-
 const queryClient = new QueryClient();
 
 Notifications.setNotificationHandler({
