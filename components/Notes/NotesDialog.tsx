@@ -1,10 +1,10 @@
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { createNote } from "@/services/Note/notes.service";
-import { myToast } from "@/utils/helper";
 import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
 import Toast from "react-native-toast-message";
 import SharedButton from "../shared/SharedButton";
+import { myToast } from "@/utils/helper";
 
 type AddNoteDialogProps = {
 	visible?: boolean;

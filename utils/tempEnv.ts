@@ -1,6 +1,6 @@
 // ZX's local
 export const LOCAL_API_URL =
-	"http://10.10.7.127:5001/leafy-loader-444703-d0/us-central1";
+	"http://10.10.7.91:5001/leafy-loader-444703-d0/us-central1";
 
 // export const LOCAL_API_URL =
 // 	"http://192.168.0.143:5001/leafy-loader-444703-d0/us-central1";

@@ -31,8 +31,6 @@
       "expo-router",
       "@react-native-firebase/app",
       "@react-native-firebase/auth",
-      "expo-notifications",
-      "expo-navigation-bar",
       [
         "expo-build-properties",
         {
@@ -50,7 +48,8 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-build-properties"
+      "expo-build-properties",
+      "expo-notifications"
     ],
     "experiments": {
       "typedRoutes": true
@@ -58,9 +57,8 @@
     "extra": {
       "router": {},
       "eas": {
-        "projectId": "c415449d-f4d9-408f-854f-e26f86e8e7ad"
+        "projectId": "dc1379b3-8fa8-4f9b-a2f5-87f7b8a4eb8b"
       }
-    },
-    "owner": "sibkl"
+    }
   }
 }

@@ -42,6 +42,7 @@ const Page = () => {
 
 	const onSubmit = async (data: LoginFormData): Promise<void> => {
 		try {
+			console.log("Signing in with", data.email);
 			await signIn(data.email, data.password);
 			// navigate to your home screen if needed
 		} catch (error: any) {
