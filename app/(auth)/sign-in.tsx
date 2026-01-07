@@ -4,7 +4,7 @@ import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
 import React, { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-	Alert,
+	ActivityIndicator,
 	Image,
 	SafeAreaView,
 	ScrollView,
@@ -25,12 +25,14 @@ const Page = () => {
 	const { signIn } = useAuthStore();
 
 	const [showPassword, setShowPassword] = useState<boolean>(false);
+	const [isLoading, setIsLoading] = useState<boolean>(false);
 
 	const {
 		control,
 		handleSubmit,
 		formState: { errors },
 		setValue,
+		setError,
 		watch,
 	} = useForm<LoginFormData>({
 		defaultValues: {
@@ -42,14 +44,13 @@ const Page = () => {
 
 	const onSubmit = async (data: LoginFormData): Promise<void> => {
 		try {
-			console.log("Signing in with", data.email);
+			setIsLoading(true);
 			await signIn(data.email, data.password);
+			setIsLoading(false);
 			// navigate to your home screen if needed
 		} catch (error: any) {
-			Alert.alert(
-				"Error",
-				error.message || "Failed to sign in. Please try again."
-			);
+			setError("password", { type: "manual", message: error });
+			setIsLoading(false);
 		}
 	};
 
@@ -215,7 +216,7 @@ const Page = () => {
 							/>
 							<Link href="/forgot-password" asChild>
 								<TouchableOpacity>
-									<Text className="text-sm text-primary-600 font-medium">
+									<Text className="text-sm text-blue-500 font-medium">
 										Forgot Password?
 									</Text>
 								</TouchableOpacity>
@@ -224,13 +225,17 @@ const Page = () => {
 
 						{/* Sign in button */}
 						<TouchableOpacity
-							className={`w-full h-12 rounded-[15px] items-center justify-center mb-6 ${"bg-primary-600"}`}
+							className={`w-full py-4 rounded-[15px] items-center justify-center mb-4 bg-primary-600`}
 							onPress={handleSubmit(onSubmit)}
-							// disabled={isLoading}
+							disabled={isLoading}
 						>
-							<Text className="text-white font-semibold text-base">
-								{"Sign In"}
-							</Text>
+							{isLoading ? (
+								<ActivityIndicator color="white" />
+							) : (
+								<Text className="text-white font-semibold">
+									Sign In
+								</Text>
+							)}
 						</TouchableOpacity>
 
 						{/* Sign up link */}
@@ -239,7 +244,7 @@ const Page = () => {
 								Dont have an account?{" "}
 								<Link href="/sign-up" asChild>
 									<Text className="text-primary-600 font-semibold">
-										Sign Up
+										Create Account
 									</Text>
 								</Link>
 							</Text>

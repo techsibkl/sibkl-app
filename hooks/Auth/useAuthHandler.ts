@@ -30,6 +30,7 @@ export const handleAuthStateChange = async (
 			isLoading: false,
 			authLoaded: true,
 		});
+		console.log("No firebase user");
 		return;
 	}
 
@@ -42,6 +43,7 @@ export const handleAuthStateChange = async (
 	};
 
 	try {
+		console.log("Fetching person for uid:", firebaseUser.uid);
 		const response = await secureFetch(apiEndpoints.users.getPersonOfUid, {
 			method: "GET",
 		});

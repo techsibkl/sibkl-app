@@ -1,5 +1,6 @@
 import ProfileItem from "@/components/Auth/ProfileItem";
 import SharedBody from "@/components/shared/SharedBody";
+import { formStyles } from "@/constants/const_styles";
 import { usePeopleWithNouidQuery } from "@/hooks/People/usePeopleWithNoUid";
 import { useClaimStore } from "@/stores/claimStore";
 import { FlashList } from "@shopify/flash-list";
@@ -26,27 +27,20 @@ const Page = () => {
 		error,
 		data: maskedPeople,
 	} = usePeopleWithNouidQuery();
-	const [firstNameQuery, setFirstNameQuery] = useState("");
-	const [lastNameQuery, setLastNameQuery] = useState("");
+	const [nameQuery, setNameQuery] = useState("");
 	const [page, setPage] = useState(1);
 	const [loadingMore, setLoadingMore] = useState(false);
 
 	// Filter logic
 	const filteredProfiles = useMemo(() => {
-		return (maskedPeople ?? []).filter((person) => {
-			const matchFirst =
-				firstNameQuery === "" ||
-				person?.first_name
-					?.toLowerCase()
-					.includes(firstNameQuery.toLowerCase());
-			const matchLast =
-				lastNameQuery === "" ||
-				person?.last_name
-					?.toLowerCase()
-					.includes(lastNameQuery.toLowerCase());
-			return matchFirst && matchLast;
-		});
-	}, [firstNameQuery, lastNameQuery, maskedPeople]);
+		return nameQuery
+			? (maskedPeople ?? []).filter((person) => {
+					return person?.full_name
+						?.toLowerCase()
+						.includes(nameQuery.trim().toLowerCase());
+				})
+			: [];
+	}, [nameQuery, maskedPeople]);
 
 	// Paginate results
 	const visibleProfiles = useMemo(
@@ -112,18 +106,12 @@ const Page = () => {
 				</View>
 
 				{/* Inputs */}
-				<View className="mb-4">
+				<View>
 					<TextInput
-						placeholder="First name"
-						value={firstNameQuery}
-						onChangeText={setFirstNameQuery}
-						className="bg-white border border-gray-300 rounded-[15px] px-4 py-3 mb-3"
-					/>
-					<TextInput
-						placeholder="Last name"
-						value={lastNameQuery}
-						onChangeText={setLastNameQuery}
-						className="bg-white border border-gray-300 rounded-[15px] px-4 py-3"
+						placeholder="Search by name"
+						value={nameQuery}
+						onChangeText={setNameQuery}
+						className={formStyles.inputText}
 					/>
 				</View>
 
@@ -133,26 +121,19 @@ const Page = () => {
 					keyExtractor={(item) => item.id.toString()}
 					estimatedItemSize={81}
 					ListEmptyComponent={
-						<View>
-							<Text className="text-gray-500 text-center">
-								We Could Not find a profile matching
-							</Text>
-							<Text className="text-gray-500 text-center">
-								&ldquo;{firstNameQuery + " " + lastNameQuery}
-								&ldquo;{" "}
-							</Text>
-
-							<TouchableOpacity
-								className="mt-3 w-full h-12 rounded-[15px] items-center justify-center mb-6 bg-primary-600"
-								onPress={() => {
-									claimStore.setSelectedProfile(null);
-									router.push("/(auth)/new-account");
-								}}
-							>
-								<Text className="text-white font-semibold text-base">
-									Create Account Instead?
-								</Text>
-							</TouchableOpacity>
+						<View className="my-4">
+							{nameQuery.length > 0 && (
+								<>
+									<Text className="text-gray-500 text-center italic">
+										{"Cannot find profile for " +
+											`"${nameQuery}"`}
+										{" ?"}
+									</Text>
+									<Text className="text-gray-500 text-center italic">
+										Please create a new account.
+									</Text>
+								</>
+							)}
 						</View>
 					}
 					renderItem={({ item }) => <ProfileItem item={item} />}
@@ -165,7 +146,19 @@ const Page = () => {
 								color="#007AFF"
 								className="my-4"
 							/>
-						) : null
+						) : (
+							<TouchableOpacity
+								className="w-full py-4 rounded-[15px] items-center justify-center my-4 bg-primary-600"
+								onPress={() => {
+									claimStore.setSelectedProfile(null);
+									router.push("/(auth)/new-account");
+								}}
+							>
+								<Text className="text-white font-semibold">
+									Create New Account
+								</Text>
+							</TouchableOpacity>
+						)
 					}
 				/>
 

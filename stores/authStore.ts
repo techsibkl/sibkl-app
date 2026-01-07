@@ -27,10 +27,10 @@ export type AuthState = {
 	signIn: (
 		email: string,
 		password: string
-	) => Promise<FirebaseAuthTypes.User | null>;
+	) => Promise<FirebaseAuthTypes.User | null | undefined>;
 	signUp: (
 		profileData: ProfileFormData
-	) => Promise<FirebaseAuthTypes.User | null>;
+	) => Promise<FirebaseAuthTypes.User | null | undefined>;
 	signOut: () => Promise<void>;
 	init: () => void;
 };
@@ -55,19 +55,22 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 	// Sign in with email + password
 	signIn: async (email: string, password: string) => {
-		set({ authLoaded: false });
 		try {
-			const { user } = await signInWithEmailAndPassword(
+			const res = await signInWithEmailAndPassword(
 				getAuth(),
 				email,
 				password
 			);
-			set({ firebaseUser: user });
-			await handleAuthStateChange(user, set);
-			return user;
-		} catch (error) {
-			// Toast error based on codes
-			return null;
+			set({ firebaseUser: res?.user });
+			set({ authLoaded: false });
+			await handleAuthStateChange(res?.user ?? null, set);
+			return res?.user;
+		} catch (error: FirebaseAuthTypes.NativeFirebaseAuthError | any) {
+			if (error.code === "auth/invalid-credential") {
+				throw "Email or password is incorrect. Please try again.";
+			} else {
+				throw "Failed to sign in. Please try again.";
+			}
 		}
 	},
 
