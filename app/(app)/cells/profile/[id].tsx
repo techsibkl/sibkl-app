@@ -7,7 +7,7 @@ import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Person } from "@/services/Person/person.type";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
 	ActivityIndicator,
 	ScrollView,
@@ -76,7 +76,7 @@ const CellProfileScreen = () => {
 	return (
 		<SharedBody>
 			<StatusBar
-				className="bg-background dark:bg-background-dark"
+				className="bg-background"
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
 

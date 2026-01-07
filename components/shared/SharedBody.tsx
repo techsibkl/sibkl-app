@@ -1,16 +1,14 @@
 import React, { ReactElement } from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 
 type Props = {
-	children: ReactElement | ReactElement[];
+	children: ReactElement | ReactElement[] | string;
 };
 
-const SharedBody = ({ children }: Props) => {
-	return (
-		<View className="flex-1 bg-background dark:bg-background-dark">
-			{children}
-		</View>
-	);
-};
+const SharedBody = ({ children }: Props) => (
+	<View className="flex-1 bg-background">
+		{typeof children === "string" ? <Text>{children}</Text> : children}
+	</View>
+);
 
 export default SharedBody;

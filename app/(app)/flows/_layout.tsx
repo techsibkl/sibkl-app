@@ -12,28 +12,12 @@ export default function Layout() {
 			<Stack.Screen
 				name="index"
 				options={{
-					title: "Flows",
 					headerShown: true,
 					header() {
 						return <SharedHeader title="Flows" />;
 					},
 				}}
 			/>
-			{/* <Stack.Screen
-				name="[category]"
-				options={({ route }) => ({
-					title: "Resource",
-					headerShown: true,
-					header() {
-						return (
-							<SharedHeader
-								title={(route.params as any).category}
-								isPop
-							/>
-						);
-					},
-				})}
-			/> */}
 		</Stack>
 	);
 }

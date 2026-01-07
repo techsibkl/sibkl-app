@@ -17,7 +17,6 @@ const DashboardScreen = () => {
 		return announcements?.filter((a) => a.pinned) || [];
 	}, [announcements]);
 
-
 	const notifications = [
 		{
 			id: 1,
@@ -76,7 +75,7 @@ const DashboardScreen = () => {
 	return (
 		<SharedBody>
 			<StatusBar
-				className="bg-background dark:bg-background-dark"
+				className="bg-white"
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
 

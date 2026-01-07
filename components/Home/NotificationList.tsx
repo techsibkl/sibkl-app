@@ -24,7 +24,7 @@ const NotificationList = ({ notifications }: NotificationListProps) => {
 				renderItem={({ item: notification }) => (
 					<View
 						key={notification.id}
-						className="flex-row justify-between notifications-center py-4 border-border dark:border-border-dark border-b"
+						className="flex-row justify-between py-4"
 					>
 						<View className="flex-1 gap-y-1">
 							<Text className="text-text-tertiary text-xs">

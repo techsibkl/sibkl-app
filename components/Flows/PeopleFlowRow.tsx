@@ -85,7 +85,7 @@ const PeopleFlowRowComponent = ({
 
 						{/* Person Info */}
 						<View className="flex-1 gap-y-1">
-							<Text className="text-text dark:text-text-dark-primary font-semibold">
+							<Text className="text-text font-semibold">
 								{personFlow.p__full_name}
 							</Text>
 							<Text className="text-text-secondary text-sm">

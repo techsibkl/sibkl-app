@@ -1,19 +1,16 @@
-"use client";
-
-import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
-import { useThemeColors } from "@/hooks/useThemeColor";
 import React, { useMemo, useState } from "react";
-import { StatusBar, Text, TouchableOpacity, View } from "react-native";
+import { StatusBar, TouchableOpacity, View } from "react-native";
 
 import FlowSelector from "@/components/Flows/FlowSelect";
 import PeopleFlowList from "@/components/Flows/PeopleFlowAssignedList";
+import SharedBody from "@/components/shared/SharedBody";
 import { useFlowsQuery, usePeopleFlowQuery } from "@/hooks/Flows/useFlowsQuery";
 import { useAuthStore } from "@/stores/authStore";
 import { CheckIcon } from "lucide-react-native";
+import { Text } from "react-native";
 
 const FlowsPage = () => {
-	const { isDark } = useThemeColors();
 	const { user } = useAuthStore();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isMeMode, setIsMeMode] = useState(false);
@@ -90,10 +87,7 @@ const FlowsPage = () => {
 
 	return (
 		<SharedBody>
-			<StatusBar
-				className="bg-background dark:bg-background-dark"
-				barStyle={isDark ? "light-content" : "dark-content"}
-			/>
+			<StatusBar className="bg-background" />
 
 			<SharedSearchBar
 				searchQuery={searchQuery}
@@ -102,33 +96,30 @@ const FlowsPage = () => {
 			/>
 
 			<View className="flex-row w-full justify-between gap-2 items-center px-4 py-2">
-				{/* Flow Selector always visible */}
 				<FlowSelector
 					flows={flows ?? []}
 					selectedFlowId={selectedFlowId}
 					onSelect={setSelectedFlowId}
 				/>
+				<>
+					{selectedFlowId !== 0 && (
+						<TouchableOpacity
+							onPress={() => setIsMeMode((prev) => !prev)}
+							className={`flex flex-row items-center justify-center gap-2 px-4 py-3 rounded-[15px] border ${isMeMode ? "bg-blue-500 border-blue-500" : "bg-transparent border-blue-300"}`}
+							activeOpacity={0.7}
+						>
+							<View>
+								<Text
+									className={`text-sm font-semibold ${isMeMode ? "text-white" : "text-blue-300"}`}
+								>
+									{"Assigned"}
+								</Text>
+							</View>
 
-				{/* Toggle button only shows if not ALL */}
-				{selectedFlowId && (
-					<TouchableOpacity
-						onPress={() => setIsMeMode((prev) => !prev)}
-						className={`flex flex-row items-center justify-center gap-2 px-4 py-3 rounded-[15px] border   ${isMeMode ? "bg-blue-500 border-blue-500" : "bg-transparent border-blue-300"}`}
-						activeOpacity={0.7}
-					>
-						{/* Label */}
-						<View>
-							<Text
-								className={`text-sm font-semibold ${isMeMode ? "text-white" : "text-blue-300"}`}
-							>
-								Assigned
-							</Text>
-						</View>
-
-						{/* Trailing icon */}
-						{isMeMode && <CheckIcon color={"#fff"} size={16} />}
-					</TouchableOpacity>
-				)}
+							{isMeMode && <CheckIcon color={"#fff"} size={16} />}
+						</TouchableOpacity>
+					)}
+				</>
 			</View>
 
 			<PeopleFlowList
@@ -141,4 +132,5 @@ const FlowsPage = () => {
 		</SharedBody>
 	);
 };
+
 export default FlowsPage;

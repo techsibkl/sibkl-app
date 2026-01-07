@@ -41,7 +41,7 @@ const PeopleScreen = () => {
 	return (
 		<SharedBody>
 			<StatusBar
-				className="bg-background dark:bg-background-dark"
+				className="bg-background "
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
 			{/* Search Bar */}

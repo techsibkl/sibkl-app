@@ -6,7 +6,7 @@ import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Cell } from "@/services/Cell/cell.types";
 import { useAuthStore } from "@/stores/authStore";
-import { useState } from "react";
+import React, { useState } from "react";
 import { StatusBar, Text, View } from "react-native";
 
 const CellsScreen = () => {
@@ -31,7 +31,7 @@ const CellsScreen = () => {
 	return (
 		<SharedBody>
 			<StatusBar
-				className="bg-background dark:bg-background-dark"
+				className="bg-background"
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
 
