@@ -7,7 +7,7 @@ const EmptyList = () => {
 		<View className="flex-1 justify-center items-center py-24">
 			<Users size={80} color="#666" />
 			<Text className="text-2xl font-semibold  mt-5 mb-2">
-				Noone assigned to you
+				No one assigned to you
 			</Text>
 			<Text className="text-base text-gray-400 text-center px-10 leading-6">
 				You will be notified when someone is assigned to you

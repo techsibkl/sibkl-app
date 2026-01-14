@@ -14,7 +14,7 @@ export default function Layout() {
 				options={{
 					headerShown: true,
 					header() {
-						return <SharedHeader title="All Announcements" isPop />;
+						return <SharedHeader title="All Notifications" isPop />;
 					},
 				}}
 			/>

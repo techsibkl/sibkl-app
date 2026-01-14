@@ -13,7 +13,7 @@ const AddToFlowAction = ({ action }: Props) => {
 		<TouchableOpacity
 			activeOpacity={0.7}
 			onPress={() => {}}
-			className="flex-row items-center gap-3 bg-white p-4 rounded-xl shadow"
+			className="flex-row items-center gap-3 bg-white p-4 rounded-xl border border-border"
 		>
 			<View className="p-2 rounded-full bg-purple-100">
 				<FunnelPlusIcon size={18} color={"#512da8"} />

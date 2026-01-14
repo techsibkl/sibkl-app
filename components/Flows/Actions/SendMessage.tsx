@@ -35,7 +35,7 @@ const SendMessageAction = ({ action, personFlow }: Props) => {
 
 	return (
 		<TouchableOpacity
-			className="flex-row items-center gap-3 bg-white p-4 rounded-xl shadow"
+			className="flex-row items-center gap-3 bg-white p-4 rounded-xl border border-border"
 			activeOpacity={0.7}
 			onPress={() => sendWhatsApp(personFlow)}
 		>

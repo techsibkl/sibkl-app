@@ -121,6 +121,13 @@ export default function AppLayout() {
 					href: null, // removes it from tab navigation
 				}}
 			/>
+			<Tabs.Screen
+				name="notifications"
+				options={{
+					tabBarStyle: { display: "none" },
+					href: null, // removes it from tab navigation
+				}}
+			/>
 		</Tabs>
 	);
 }
