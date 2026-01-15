@@ -6,6 +6,7 @@ import { Controller, useForm } from "react-hook-form";
 import {
 	ActivityIndicator,
 	Image,
+	ImageSourcePropType,
 	SafeAreaView,
 	ScrollView,
 	Text,
@@ -71,7 +72,7 @@ const Page = () => {
 						<View className="w-24 h-24 bg-gray-200 rounded-2xl items-center justify-center mb-4">
 							{/* Placeholder for your logo image */}
 							<Image
-								source={SibklLogo}
+								source={SibklLogo as ImageSourcePropType}
 								className="w-full h-full rounded-xl"
 								resizeMode="contain"
 							/>
