@@ -20,7 +20,8 @@
 			},
 			"googleServicesFile": "./google-services.json",
 			"edgeToEdgeEnabled": true,
-			"package": "com.sibkl.app"
+			"package": "com.sibkl.app",
+			"softwareKeyboardLayoutMode": "resize"
 		},
 		"web": {
 			"bundler": "metro",

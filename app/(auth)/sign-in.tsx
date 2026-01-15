@@ -1,20 +1,22 @@
 import { useAuthStore } from "@/stores/authStore";
 import { Link } from "expo-router";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
 	ActivityIndicator,
-	Image,
 	ImageSourcePropType,
-	SafeAreaView,
+	KeyboardAvoidingView,
+	Platform,
 	ScrollView,
 	Text,
 	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
-import SibklLogo from "../../assets/images/sibkl-logo.png";
+
+import PulsingLogo from "@/components/shared/PulsingLogo";
+import SibklText from "../../assets/images/sibkl-text-white.png";
 
 interface LoginFormData {
 	email: string;
@@ -27,6 +29,7 @@ const Page = () => {
 
 	const [showPassword, setShowPassword] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
+	const passwordRef = useRef<TextInput>(null);
 
 	const {
 		control,
@@ -61,41 +64,38 @@ const Page = () => {
 	};
 
 	return (
-		<SafeAreaView className="flex-1 bg-background">
+		<KeyboardAvoidingView
+			className="flex-1 bg-transparent"
+			behavior={Platform.OS === "ios" ? "padding" : "height"}
+		>
 			<ScrollView
-				className="flex-1 px-6 py-8"
-				showsVerticalScrollIndicator={false}
+				className="bg-red-700"
+				contentContainerStyle={{
+					flexGrow: 1,
+				}}
+				keyboardShouldPersistTaps="handled"
 			>
-				<View className="max-w-sm mx-auto w-full">
-					{/* Logo - Replace with your app logo */}
-					<View className="items-center mb-12 mt-8">
-						<View className="w-24 h-24 bg-gray-200 rounded-2xl items-center justify-center mb-4">
-							{/* Placeholder for your logo image */}
-							<Image
-								source={SibklLogo as ImageSourcePropType}
-								className="w-full h-full rounded-xl"
-								resizeMode="contain"
-							/>
-						</View>
-						<Text className="text-2xl font-bold text-gray-800">
-							Welcome Back
-						</Text>
-						<Text className="text-gray-500 mt-2 text-center">
-							Sign in to your account
-						</Text>
-					</View>
-
+				<View className="items-center justify-center mt-16 py-[7rem]">
+					<PulsingLogo
+						source={SibklText as ImageSourcePropType}
+						className="h-18"
+					/>
+				</View>
+				<View className="bg-background py-10 px-6 rounded-t-[30px] h-full">
+					<Text className="text-3xl font-bold text-gray-700 mb-2">
+						Sign In
+					</Text>
+					<Text className="text-gray-700 mb-8">
+						Welcome back! It's great to see you.
+					</Text>
 					{/* Sign in form */}
-					<View className="space-y-6">
+					<View className="gap-y-6">
 						{/* Email input */}
-						<View className="mb-6">
-							<Text className="text-sm font-medium text-text mb-2">
+						<View className="ml-[-2px]">
+							<Text className="font-semibold text-gray-700 ml-1 mb-2">
 								Email
 							</Text>
-							<View className="relative">
-								<View className="absolute left-3 top-3 z-10">
-									<Mail size={20} color="#6b7280" />
-								</View>
+							<View className="">
 								<Controller
 									control={control}
 									rules={{
@@ -108,22 +108,29 @@ const Page = () => {
 									render={({
 										field: { onChange, onBlur, value },
 									}) => (
-										<TextInput
-											className="pl-12 h-12 bg-white border border-border rounded-[15px] text-text"
-											placeholder="Enter your email"
-											placeholderTextColor="#9ca3af"
-											onBlur={onBlur}
-											onChangeText={onChange}
-											value={value}
-											keyboardType="email-address"
-											autoCapitalize="none"
-											autoComplete="email"
-										/>
+										<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
+											<Mail size={20} color="#6b7280" />
+											<TextInput
+												className="flex-1 ml-3 py-5"
+												placeholder="Enter your email"
+												placeholderTextColor="#9ca3af"
+												onBlur={onBlur}
+												onChangeText={onChange}
+												value={value}
+												keyboardType="email-address"
+												autoCapitalize="none"
+												autoComplete="email"
+												returnKeyType="next"
+												onSubmitEditing={() =>
+													passwordRef.current?.focus()
+												}
+											/>
+										</View>
 									)}
 									name="email"
 								/>
 								{errors.email && (
-									<Text className="text-primary-500 text-sm mt-1">
+									<Text className="text-primary-500 text-sm ml-1 mt-2">
 										{errors.email.message}
 									</Text>
 								)}
@@ -131,29 +138,28 @@ const Page = () => {
 						</View>
 
 						{/* Password input */}
-						<View className="mb-6">
-							<Text className="text-sm font-medium text-text mb-2">
+						<View className="ml-[-2px]">
+							<Text className="font-semibold text-gray-700 ml-1 mb-2">
 								Password
 							</Text>
-							<View className="relative">
-								<View className="absolute left-3 top-3 z-10">
-									<Lock size={20} color="#6b7280" />
-								</View>
-								<Controller
-									control={control}
-									rules={{
-										required: "Password is required",
-										minLength: {
-											value: 6,
-											message:
-												"Password must be at least 6 characters",
-										},
-									}}
-									render={({
-										field: { onChange, onBlur, value },
-									}) => (
+							<Controller
+								control={control}
+								rules={{
+									required: "Password is required",
+									minLength: {
+										value: 6,
+										message:
+											"Password must be at least 6 characters",
+									},
+								}}
+								render={({
+									field: { onChange, onBlur, value },
+								}) => (
+									<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
+										<Lock size={20} color="#6b7280" />
 										<TextInput
-											className="pl-12 pr-12 h-12 bg-white border border-border rounded-[15px] text-text"
+											ref={passwordRef}
+											className="flex-1 ml-3 py-5"
 											placeholder="Enter your password"
 											placeholderTextColor="#9ca3af"
 											onBlur={onBlur}
@@ -162,38 +168,47 @@ const Page = () => {
 											secureTextEntry={!showPassword}
 											autoCapitalize="none"
 											autoComplete="password"
+											returnKeyType="done"
 										/>
-									)}
-									name="password"
-								/>
-								<TouchableOpacity
-									className="absolute right-3 top-3"
-									onPress={() =>
-										setShowPassword(!showPassword)
-									}
-								>
-									{showPassword ? (
-										<Eye size={20} color="#9ca3af" />
-									) : (
-										<EyeOff size={20} color="#9ca3af" />
-									)}
-								</TouchableOpacity>
-								{errors.password && (
-									<Text className="text-primary-500 text-sm mt-1">
-										{errors.password.message}
-									</Text>
+										<TouchableOpacity
+											onPress={() =>
+												setShowPassword(!showPassword)
+											}
+											activeOpacity={1}
+										>
+											{showPassword ? (
+												<Eye
+													size={20}
+													color="#9ca3af"
+												/>
+											) : (
+												<EyeOff
+													size={20}
+													color="#9ca3af"
+												/>
+											)}
+										</TouchableOpacity>
+									</View>
 								)}
-							</View>
+								name="password"
+							/>
+
+							{errors.password && (
+								<Text className="text-primary-500 text-sm ml-1 mt-2">
+									{errors.password.message}
+								</Text>
+							)}
 						</View>
 
 						{/* Remember me and forgot password */}
-						<View className="flex-row items-center justify-between mb-8">
+						<View className="flex-row items-center justify-between ">
 							<Controller
 								control={control}
 								render={({ field: { value } }) => (
 									<TouchableOpacity
 										className="flex-row items-center"
 										onPress={toggleRememberMe}
+										activeOpacity={1}
 									>
 										<View
 											className={`w-5 h-5 border-2 rounded mr-3 items-center justify-center ${
@@ -226,14 +241,14 @@ const Page = () => {
 
 						{/* Sign in button */}
 						<TouchableOpacity
-							className={`w-full py-4 rounded-[15px] items-center justify-center mb-4 bg-primary-600`}
+							className={`w-full py-4 rounded-[15px] items-center justify-center mt-6 bg-primary-600`}
 							onPress={handleSubmit(onSubmit)}
 							disabled={isLoading}
 						>
 							{isLoading ? (
 								<ActivityIndicator color="white" />
 							) : (
-								<Text className="text-white font-semibold">
+								<Text className="text-lg text-white font-semibold">
 									Sign In
 								</Text>
 							)}
@@ -253,7 +268,7 @@ const Page = () => {
 					</View>
 				</View>
 			</ScrollView>
-		</SafeAreaView>
+		</KeyboardAvoidingView>
 	);
 };
 
