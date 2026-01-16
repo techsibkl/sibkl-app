@@ -19,7 +19,6 @@ export default function AppLayout() {
 					height: 70,
 					paddingTop: 2,
 					paddingHorizontal: 16,
-
 					borderTopWidth: 0.5,
 					borderTopColor: "#E5E5EA",
 				},

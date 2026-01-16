@@ -85,7 +85,7 @@ const Page = () => {
 					<Text className="text-3xl font-bold text-gray-700 mb-2">
 						Sign In
 					</Text>
-					<Text className="text-gray-700 mb-8">
+					<Text className="font-regular text-gray-700 mb-8">
 						Welcome back! It's great to see you.
 					</Text>
 					{/* Sign in form */}
@@ -111,7 +111,7 @@ const Page = () => {
 										<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
 											<Mail size={20} color="#6b7280" />
 											<TextInput
-												className="flex-1 ml-3 py-5"
+												className="font-regular flex-1 ml-3 py-5"
 												placeholder="Enter your email"
 												placeholderTextColor="#9ca3af"
 												onBlur={onBlur}
@@ -159,7 +159,7 @@ const Page = () => {
 										<Lock size={20} color="#6b7280" />
 										<TextInput
 											ref={passwordRef}
-											className="flex-1 ml-3 py-5"
+											className="font-regular flex-1 ml-3 py-5"
 											placeholder="Enter your password"
 											placeholderTextColor="#9ca3af"
 											onBlur={onBlur}
@@ -211,7 +211,7 @@ const Page = () => {
 										activeOpacity={1}
 									>
 										<View
-											className={`w-5 h-5 border-2 rounded mr-3 items-center justify-center ${
+											className={`w-5 h-5 border-2 rounded mr-2 items-center justify-center ${
 												value
 													? "bg-blue-600 border-blue-600"
 													: "border-gray-300"
@@ -223,7 +223,7 @@ const Page = () => {
 												</Text>
 											)}
 										</View>
-										<Text className="text-sm text-gray-600">
+										<Text className="font-regular text-sm text-gray-600">
 											Remember me
 										</Text>
 									</TouchableOpacity>
@@ -232,7 +232,7 @@ const Page = () => {
 							/>
 							<Link href="/forgot-password" asChild>
 								<TouchableOpacity>
-									<Text className="text-sm text-blue-500 font-medium">
+									<Text className="text-sm text-blue-500 font-semibold">
 										Forgot Password?
 									</Text>
 								</TouchableOpacity>
@@ -248,7 +248,7 @@ const Page = () => {
 							{isLoading ? (
 								<ActivityIndicator color="white" />
 							) : (
-								<Text className="text-lg text-white font-semibold">
+								<Text className="text-lg text-white font-bold">
 									Sign In
 								</Text>
 							)}
@@ -256,7 +256,7 @@ const Page = () => {
 
 						{/* Sign up link */}
 						<View className="items-center">
-							<Text className="text-gray-600 text-sm">
+							<Text className="font-regular text-gray-600 text-sm">
 								Dont have an account?{" "}
 								<Link href="/sign-up" asChild>
 									<Text className="text-primary-600 font-semibold">

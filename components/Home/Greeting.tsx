@@ -15,7 +15,7 @@ const Greeting = () => {
 				>
 					Hi, {user?.person?.full_name}!
 				</Text>
-				<Text className="text-text-secondary text-lg">
+				<Text className="text-text-secondary text-lg font-regular">
 					Welcome back to SIBKL App 🙌
 				</Text>
 			</View>

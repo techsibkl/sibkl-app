@@ -256,7 +256,13 @@ function RootLayoutNav() {
 export default function RootLayout() {
 	const colorScheme = useColorScheme();
 	const [loaded] = useFonts({
-		SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+		"FunnelSans-Light": require("../assets/fonts/FunnelSans/static/FunnelSans-Light.ttf"),
+		"FunnelSans-Medium": require("../assets/fonts/FunnelSans/static/FunnelSans-Medium.ttf"),
+		"FunnelSans-Regular": require("../assets/fonts/FunnelSans/static/FunnelSans-Regular.ttf"),
+		"FunnelSans-SemiBold": require("../assets/fonts/FunnelSans/static/FunnelSans-SemiBold.ttf"),
+		"FunnelSans-Bold": require("../assets/fonts/FunnelSans/static/FunnelSans-Bold.ttf"),
+		"FunnelSans-ExtraBold": require("../assets/fonts/FunnelSans/static/FunnelSans-ExtraBold.ttf"),
+		"FunnelSans-Italic": require("../assets/fonts/FunnelSans/static/FunnelSans-Italic.ttf"),
 	});
 
 	if (!loaded) {

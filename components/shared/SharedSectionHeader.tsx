@@ -22,7 +22,7 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
 					onPress={onPress}
 					activeOpacity={0.7}
 				>
-					<Text className="text-sm mr-1">See All</Text>
+					<Text className="font-regular text-sm mr-1">See All</Text>
 					<ChevronRightIcon size={16} />
 				</TouchableOpacity>
 			)}

@@ -104,7 +104,7 @@ const NotificationList = ({ limited }: NotificationListProps) => {
 				}
 				ListEmptyComponent={
 					<View className="h-full w-full items-center justify-center py-6">
-						<Text className="text-gray-500 italic">
+						<Text className="text-gray-500 font-italic">
 							No notifications yet. Pull to refresh...
 						</Text>
 					</View>

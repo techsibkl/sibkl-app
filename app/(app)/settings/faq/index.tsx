@@ -68,8 +68,8 @@ export default function FAQScreen() {
 						</TouchableOpacity>
 
 						{isOpen && (
-							<View className="mt-2 pr-8">
-								<Text className="text-sm text-neutral-600 leading-5">
+							<View className="pb-2 pr-8">
+								<Text className="font-regular text-sm text-neutral-600 leading-5">
 									{item.answer}
 								</Text>
 							</View>
