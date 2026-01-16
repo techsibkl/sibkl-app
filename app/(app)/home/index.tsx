@@ -13,7 +13,7 @@ const DashboardScreen = () => {
 	const router = useRouter();
 	const { isDark } = useThemeColors();
 	const { data: announcements } = useAnnouncementsQuery();
-	const { data, refetch } = useNotificationQuery();
+	const { data, isPending, refetch } = useNotificationQuery();
 
 	const pinnedAnnouncements = useMemo(() => {
 		return announcements?.filter((a) => a.pinned) || [];
@@ -47,6 +47,7 @@ const DashboardScreen = () => {
 			<NotificationList
 				notifications={notifications.slice(0, 5)}
 				onRefresh={refresh}
+				isPending={isPending}
 				limited
 			/>
 		</SharedBody>

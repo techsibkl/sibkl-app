@@ -3,6 +3,7 @@ import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { FlashList } from "@shopify/flash-list";
 import React, { useState } from "react";
 import { RefreshControl, View } from "react-native";
+import SkeletonList from "../shared/Skeleton/SkeletonList";
 import SkeletonPeopleRow from "../shared/Skeleton/SkeletonPeopleRow";
 import EmptyList from "./EmptyList";
 import PeopleFlowRow from "./PeopleFlowRow";
@@ -12,6 +13,7 @@ type PeopleFlowAssignedListProps = {
 	flows?: Flow[];
 	selectedFlowId: number | null;
 	onRefresh?: () => Promise<void>; // Add this prop
+	isPending?: boolean;
 };
 
 const PeopleFlowList = ({
@@ -19,6 +21,7 @@ const PeopleFlowList = ({
 	flows,
 	selectedFlowId,
 	onRefresh,
+	isPending,
 }: PeopleFlowAssignedListProps) => {
 	// If selectedFlowId exists, meaning single flow
 	const selectedFlow = flows?.find((f) => f.id == selectedFlowId);
@@ -62,7 +65,9 @@ const PeopleFlowList = ({
 					paddingVertical: 16,
 				}}
 				renderItem={renderItem}
-				ListEmptyComponent={EmptyList}
+				ListEmptyComponent={
+					(isPending && <SkeletonList length={20} />) || <EmptyList />
+				}
 				refreshControl={
 					<RefreshControl
 						refreshing={refreshing}

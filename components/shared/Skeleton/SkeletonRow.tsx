@@ -1,17 +1,17 @@
 import React, { useEffect, useRef } from "react";
 import {
-    Animated,
-    Dimensions,
-    StyleSheet,
-    View,
-    ViewStyle,
+	Animated,
+	Dimensions,
+	StyleSheet,
+	View,
+	ViewStyle,
 } from "react-native";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 
 interface SkeletonRowProps {
 	width?: number | string;
-	height?: number;
+	height?: number | string;
 	borderRadius?: number;
 }
 

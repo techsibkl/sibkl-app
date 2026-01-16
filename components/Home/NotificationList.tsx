@@ -3,17 +3,20 @@ import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import React, { useState } from "react";
 import { RefreshControl, Text, TouchableOpacity, View } from "react-native";
+import SkeletonList from "../shared/Skeleton/SkeletonList";
 import NotificationItem from "./NotificationItem";
 
 type NotificationListProps = {
 	notifications: Notification[];
 	onRefresh?: () => Promise<void>;
+	isPending?: boolean;
 	limited?: boolean;
 };
 
 const NotificationList = ({
 	notifications,
 	onRefresh,
+	isPending,
 	limited,
 }: NotificationListProps) => {
 	const router = useRouter();
@@ -63,11 +66,13 @@ const NotificationList = ({
 					</>
 				}
 				ListEmptyComponent={
-					<View className="h-full w-full items-center justify-center py-6">
-						<Text className="text-gray-500 font-italic">
-							No notifications yet. Pull to refresh...
-						</Text>
-					</View>
+					(isPending && <SkeletonList length={5} />) || (
+						<View className="h-full w-full items-center justify-center py-6">
+							<Text className="text-gray-500 font-italic">
+								No notifications yet. Pull to refresh...
+							</Text>
+						</View>
+					)
 				}
 				refreshControl={
 					<RefreshControl

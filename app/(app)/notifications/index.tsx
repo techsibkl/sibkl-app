@@ -5,7 +5,7 @@ import React, { useMemo, useState } from "react";
 import { View } from "react-native";
 
 const NotificationsPage = () => {
-	const { data, refetch } = useNotificationQuery();
+	const { data, isPending, refetch } = useNotificationQuery();
 	const notifications = useMemo(() => data || [], [data]);
 
 	const refresh = async () => {
@@ -60,6 +60,7 @@ const NotificationsPage = () => {
 				<NotificationList
 					notifications={filteredNotifications}
 					onRefresh={refresh}
+					isPending={isPending}
 				/>
 			</View>
 		</SharedBody>

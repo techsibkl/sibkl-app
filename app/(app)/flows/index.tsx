@@ -31,20 +31,30 @@ const FlowsPage = () => {
 	}, [flow_id, isMeModeParam]);
 
 	// Getting people assigned to me from ALL flows
-	const { data: singleFlowPeople, refetch: singleFlowRefetch } =
-		usePeopleFlowQuery(selectedFlowId);
-	const { data: peopleFlow, refetch } = usePeopleFlowQuery(
-		undefined,
-		user?.person?.id
-	);
+	const {
+		data: singleFlowPeople,
+		isPending: singleFlowPending,
+		refetch: singleFlowRefetch,
+	} = usePeopleFlowQuery(selectedFlowId);
+	const {
+		data: peopleFlow,
+		isPending: allPeoplePending,
+		refetch,
+	} = usePeopleFlowQuery(undefined, user?.person?.id);
 	const flowIds = useMemo(
 		() => [...new Set(peopleFlow?.map((p) => p.flow_id) || [])],
 		[peopleFlow]
 	);
 
-	const { data: flows, refetch: flowRefetch } = useFlowsQuery(
-		flowIds as number[]
-	);
+	const {
+		data: flows,
+		isPending: flowsPending,
+		refetch: flowRefetch,
+	} = useFlowsQuery(flowIds as number[]);
+
+	const allPending = useMemo(() => {
+		return singleFlowPending || allPeoplePending || flowsPending;
+	}, [singleFlowPending, allPeoplePending, flowsPending]);
 
 	const effectivePeopleFlow = useMemo(() => {
 		let list =
@@ -123,6 +133,7 @@ const FlowsPage = () => {
 				flows={flows}
 				selectedFlowId={selectedFlowId}
 				onRefresh={refresh}
+				isPending={allPending}
 			/>
 		</SharedBody>
 	);

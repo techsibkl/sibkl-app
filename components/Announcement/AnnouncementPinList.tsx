@@ -3,6 +3,7 @@ import { FlashList } from "@shopify/flash-list";
 import React from "react";
 import { View } from "react-native";
 import AnnouncementBanner from "../Home/AnnouncementBanner";
+import SkeletonCarousel from "../shared/Skeleton/SkeletonCarousel";
 
 type AnnouncementProps = {
 	announcements: Announcement[];
@@ -21,7 +22,7 @@ const AnnouncementPinList = ({ announcements }: AnnouncementProps) => {
 			renderItem={({ item: announcement }) => (
 				<AnnouncementBanner announcement={announcement} />
 			)}
-			ListEmptyComponent={<View className="w-96 aspect-video"></View>}
+			ListEmptyComponent={SkeletonCarousel}
 			estimatedItemSize={100}
 			className="mb-5"
 			snapToInterval={350} // width of item + separator
