@@ -229,7 +229,7 @@ function RootLayoutNav() {
 			router.replace("/(auth)/splash");
 		} else if (authLoaded && !firebaseUser) {
 			// Unauthenticated → go to sign-in
-			router.replace("/(auth)/sign-in");
+			router.replace("/(auth)/sign-up");
 		} else if (authLoaded && !user?.people_id) {
 			// Incomplete profile → go to complete profile
 			router.replace("/(auth)/complete-profile");

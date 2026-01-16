@@ -1,20 +1,21 @@
 import ProfileItem from "@/components/Auth/ProfileItem";
-import SharedBody from "@/components/shared/SharedBody";
-import { formStyles } from "@/constants/const_styles";
+import PulsingLogo from "@/components/shared/PulsingLogo";
 import { usePeopleWithNouidQuery } from "@/hooks/People/usePeopleWithNoUid";
 import { useClaimStore } from "@/stores/claimStore";
 import { FlashList } from "@shopify/flash-list";
 import { Link, useRouter } from "expo-router";
+import { User2Icon, XIcon } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
 import {
 	ActivityIndicator,
-	Image,
+	ImageSourcePropType,
 	Text,
 	TextInput,
 	TouchableOpacity,
 	View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import SibklText from "../../assets/images/sibkl-text-white.png";
 
 const PAGE_SIZE = 20;
 
@@ -58,83 +59,77 @@ const Page = () => {
 		}
 	};
 
-	if (isPending)
-		return (
-			<SharedBody>
-				<ActivityIndicator />
-			</SharedBody>
-		);
-	if (isError)
-		return (
-			<SharedBody>
-				{/* <Text>{JSON.stringify(error)}</Text> */}
-				<Text>{error.message}</Text>
-				<Text>{error.name}</Text>
-			</SharedBody>
-		);
-
 	return (
 		<KeyboardAwareScrollView
-			className="flex-1 px-6 py-8 bg-background"
+			className="flex-1 bg-red-700"
 			enableOnAndroid={true}
-			extraScrollHeight={60} // 👈 pushes inputs above keyboard
+			extraScrollHeight={5}
 			keyboardShouldPersistTaps="handled"
 			contentContainerStyle={{ flexGrow: 1 }}
 		>
-			<View className="max-w-sm mx-auto w-full">
-				{/* Logo */}
-				<View className="items-center mb-12 mt-8">
-					<View className="w-24 h-24 bg-gray-200 rounded-2xl items-center justify-center mb-4">
-						<Image
-							source={{
-								uri: "https://via.placeholder.com/96x96/e5e7eb/6b7280?text=LOGO",
-							}}
-							className="w-20 h-20 rounded-xl"
-							resizeMode="contain"
+			<View className="items-center justify-center mt-16 py-[7rem]">
+				<PulsingLogo
+					source={SibklText as ImageSourcePropType}
+					className="h-18"
+				/>
+			</View>
+			<View className="bg-background py-10 px-6 rounded-t-[30px] h-full">
+				<Text className="text-3xl font-bold text-gray-700 mb-2">
+					New Here?
+				</Text>
+				<Text className="font-regular text-gray-700 mb-8">
+					Welcome! Enter your name, email, or phone to find an
+					existing profile. Or create a new one.
+				</Text>
+
+				{/* Email input */}
+				<View className="ml-[-2px]">
+					<Text className="font-semibold text-gray-700 ml-1 mb-2">
+						Search for an existing profile
+					</Text>
+
+					<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
+						<User2Icon size={20} color="#6b7280" />
+						<TextInput
+							className="font-regular flex-1 ml-3 py-5"
+							placeholder="Search by name, email, or phone"
+							value={nameQuery}
+							onChangeText={setNameQuery}
+							placeholderTextColor="#9ca3af"
+							keyboardType="email-address"
+							autoCapitalize="none"
+							autoComplete="email"
 						/>
+						<TouchableOpacity onPress={() => setNameQuery("")}>
+							<XIcon size={20} color="#6b7280" />
+						</TouchableOpacity>
 					</View>
-					<Text className="text-2xl font-bold text-text">
-						New Here?
-					</Text>
-					<Text className="text-text-secondary mt-2 text-center">
-						SIBKL has an extensive database of our members your info
-						might already be with us
-					</Text>
-					<Text className="text-text-secondary mt-2 text-center">
-						Enter your first and last name to help you find out
-					</Text>
 				</View>
 
-				{/* Inputs */}
-				<View>
-					<TextInput
-						placeholder="Search by name"
-						value={nameQuery}
-						onChangeText={setNameQuery}
-						className={formStyles.inputText}
-					/>
-				</View>
+				{visibleProfiles.length > 0 && nameQuery && (
+					<Text className="font-semibold text-gray-700 ml-1 mb-2 mt-8">
+						Then, select a profile that matches:
+					</Text>
+				)}
 
 				{/* List */}
 				<FlashList
 					data={visibleProfiles}
 					keyExtractor={(item) => item.id.toString()}
-					estimatedItemSize={81}
+					estimatedItemSize={80}
 					ListEmptyComponent={
-						<View className="my-4">
-							{nameQuery.length > 0 && (
-								<>
-									<Text className="text-gray-500 text-center italic">
-										{"Cannot find profile for " +
-											`"${nameQuery}"`}
-										{" ?"}
-									</Text>
-									<Text className="text-gray-500 text-center italic">
-										Please create a new account.
-									</Text>
-								</>
-							)}
-						</View>
+						nameQuery.length > 0 ? (
+							<View className="mt-4">
+								<Text className="text-gray-500 text-center italic">
+									{"Cannot find profile for " +
+										`"${nameQuery}"`}
+									{" ?"}
+								</Text>
+								<Text className="text-gray-500 text-center italic">
+									Please create a new account.
+								</Text>
+							</View>
+						) : null
 					}
 					renderItem={({ item }) => <ProfileItem item={item} />}
 					onEndReached={handleLoadMore}
@@ -147,34 +142,41 @@ const Page = () => {
 								className="my-4"
 							/>
 						) : (
-							<TouchableOpacity
-								className="w-full py-4 rounded-[15px] items-center justify-center my-4 bg-primary-600"
-								onPress={() => {
-									claimStore.setSelectedProfile(null);
-									router.push("/(auth)/new-account");
-								}}
-							>
-								<Text className="text-white font-semibold">
-									Create New Account
-								</Text>
-							</TouchableOpacity>
+							<>
+								<View className="flex-row items-center mt-4">
+									<View className="flex-1 h-[1px] bg-gray-300" />
+									<Text className="mx-4 text-gray-500 font-semibold">
+										or
+									</Text>
+									<View className="flex-1 h-[1px] bg-gray-300" />
+								</View>
+								<TouchableOpacity
+									className={`w-full py-4 rounded-[15px] items-center justify-center mt-6 bg-primary-600`}
+									onPress={() => {
+										claimStore.setSelectedProfile(null);
+										router.push("/(auth)/new-account");
+									}}
+								>
+									<Text className="text-lg text-white font-bold">
+										Create New Account
+									</Text>
+								</TouchableOpacity>
+
+								{/* Sign in link */}
+								<View className="mt-6 items-center">
+									<Text className="font-regular text-gray-600 text-sm">
+										Already have an account?{" "}
+										<Link href="/sign-in" asChild>
+											<Text className="text-primary-600 font-semibold">
+												Sign In
+											</Text>
+										</Link>
+									</Text>
+								</View>
+							</>
 						)
 					}
 				/>
-
-				<View className="space-y-6">
-					{/* Sign in link */}
-					<View className="items-center">
-						<Text className="text-text text-sm">
-							Already have an account?{" "}
-							<Link href="/sign-in" asChild>
-								<Text className="text-primary-600 font-semibold">
-									Sign In
-								</Text>
-							</Link>
-						</Text>
-					</View>
-				</View>
 			</View>
 		</KeyboardAwareScrollView>
 	);

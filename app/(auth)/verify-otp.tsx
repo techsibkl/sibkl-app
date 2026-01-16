@@ -1,4 +1,5 @@
 import SharedBody from "@/components/shared/SharedBody";
+import { Colors } from "@/constants/Colors";
 import { sendOTP, verifyOTP } from "@/services/OTP/otp.service";
 import { fetchPeople } from "@/services/Person/person.service";
 import { useAuthStore } from "@/stores/authStore";
@@ -184,52 +185,43 @@ const Page = () => {
 	return (
 		<KeyboardAwareScrollView
 			enableOnAndroid={true}
-			extraScrollHeight={10} // 👈 pushes inputs above keyboard
+			extraScrollHeight={5}
 			keyboardShouldPersistTaps="handled"
 			contentContainerStyle={{ flexGrow: 1 }}
 		>
 			<SharedBody>
 				<View className="flex-1 px-6 py-8">
-					{/* Header with back button */}
-					<View className="flex-row items-center ">
-						{/* <TouchableOpacity onPress={onBack} className="mr-4">
-            <ArrowLeft size={24} color="#374151" />
-          </TouchableOpacity> */}
-						<Text className="text-lg font-semibold text-text">
-							Verify Email
-						</Text>
-					</View>
-
 					{/* Content */}
 					<View className="flex-1 justify-center items-center px-4">
 						{/* Email icon */}
-						<View className="w-20 h-20 bg-primary-50 rounded-full items-center justify-center mb-6">
-							<Mail size={40} color="#AC2212" />
+						<View className="w-20 h-20 bg-primary-100 rounded-full items-center justify-center mb-4">
+							<Mail size={40} color={Colors.primary[700]} />
 						</View>
-
 						{/* Title */}
-						<Text className="text-2xl font-bold text-text text-center mb-4">
+						<Text className="text-2xl font-bold text-text text-center mb-2">
 							Enter Verification Code
 						</Text>
 
 						{/* Description */}
-						<Text className="text-muted-foreground text-center mb-8 leading-relaxed">
-							We sent a 6-digit verification code to{"\n"}
-							<Text className="font-semibold text-text">
-								{claimStore.selectedProfile?.email ||
-									pendingSignUp?.email}
-							</Text>
-							{"\n"}Please enter the code below
+						<Text className="font-regular text-center mb-1">
+							We sent a 6-digit verification code to
+						</Text>
+						<Text className="font-semibold text-text mb-8">
+							{claimStore.selectedProfile?.email ||
+								pendingSignUp?.email}
+						</Text>
+						<Text className="font-regular text-center mb-4">
+							Please enter the code below:
 						</Text>
 
-						<View className="flex-row justify-center items-center gap-2 mb-8">
+						<View className="w-full flex flex-row justify-between items-center self-center gap-1 mb-8">
 							{otp.map((digit, index) => (
 								<TextInput
 									key={index}
 									ref={(ref) =>
 										(inputRefs.current[index] = ref)
 									}
-									className="px-5 py-2 border border-border bg-card rounded-[15px] text-center text-lg font-semibold text-text"
+									className="px-6 py-5 border border-border bg-card rounded-[15px] text-center text-md font-semibold text-text"
 									value={digit}
 									onChangeText={(value) =>
 										handleOtpChange(value.slice(-1), index)
@@ -247,29 +239,23 @@ const Page = () => {
 
 						{/* Verify Button */}
 						<TouchableOpacity
+							className={`w-full py-4 rounded-[15px] items-center justify-center  bg-primary-600`}
 							onPress={handleVerifyOTP}
 							disabled={otpString.length !== 6 || isLoading}
-							className={`w-full h-12 rounded-[15px] items-center justify-center mb-6 ${
-								otpString.length !== 6 || isLoading
-									? "bg-muted"
-									: "bg-primary-600"
-							}`}
 						>
 							{isLoading ? (
-								<ActivityIndicator color="red" />
+								<ActivityIndicator color="white" />
 							) : (
-								<Text
-									className={`font-semibold ${otpString.length !== 6 ? "text-muted-foreground" : "text-white"}`}
-								>
+								<Text className="text-lg text-white font-bold">
 									Verify Code
 								</Text>
 							)}
 						</TouchableOpacity>
 
 						{/* Resend Section */}
-						<View className="items-center">
-							<Text className="text-muted-foreground text-sm mb-2">
-								Didn`&apos;t receive the code?
+						<View className="items-center mt-6">
+							<Text className="font-regular text-sm mb-2">
+								Didn&apos;t receive the code?
 							</Text>
 
 							{canResend ? (
