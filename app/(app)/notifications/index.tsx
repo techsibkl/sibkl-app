@@ -2,10 +2,15 @@ import NotificationList from "@/components/Home/NotificationList";
 import SharedBody from "@/components/shared/SharedBody";
 import { useNotificationQuery } from "@/hooks/Notifications/useNotificationsQuery";
 import React, { useMemo, useState } from "react";
+import { View } from "react-native";
 
 const NotificationsPage = () => {
-	const { data } = useNotificationQuery();
-	const notifications = data || [];
+	const { data, refetch } = useNotificationQuery();
+	const notifications = useMemo(() => data || [], [data]);
+
+	const refresh = async () => {
+		await refetch();
+	};
 
 	const [filter, setFilter] = useState<"all" | "unread" | "closed">("all");
 
@@ -51,7 +56,12 @@ const NotificationsPage = () => {
 
 	return (
 		<SharedBody>
-			<NotificationList />
+			<View className="flex-1 mt-4 ">
+				<NotificationList
+					notifications={filteredNotifications}
+					onRefresh={refresh}
+				/>
+			</View>
 		</SharedBody>
 	);
 };

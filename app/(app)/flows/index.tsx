@@ -1,5 +1,5 @@
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { StatusBar, TouchableOpacity, View } from "react-native";
 
 import FlowSelector from "@/components/Flows/FlowSelect";
@@ -7,6 +7,7 @@ import PeopleFlowList from "@/components/Flows/PeopleFlowAssignedList";
 import SharedBody from "@/components/shared/SharedBody";
 import { useFlowsQuery, usePeopleFlowQuery } from "@/hooks/Flows/useFlowsQuery";
 import { useAuthStore } from "@/stores/authStore";
+import { useLocalSearchParams } from "expo-router";
 import { CheckIcon } from "lucide-react-native";
 import { Text } from "react-native";
 
@@ -14,8 +15,20 @@ const FlowsPage = () => {
 	const { user } = useAuthStore();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isMeMode, setIsMeMode] = useState(false);
+
 	// This is for single selected flow list
 	const [selectedFlowId, setSelectedFlowId] = useState<number>(0);
+	const { flow_id, isMeMode: isMeModeParam } = useLocalSearchParams<{
+		flow_id?: string;
+		isMeMode?: string;
+	}>();
+
+	useEffect(() => {
+		if (flow_id) {
+			setSelectedFlowId(Number(flow_id));
+			setIsMeMode(isMeModeParam === "true");
+		}
+	}, [flow_id, isMeModeParam]);
 
 	// Getting people assigned to me from ALL flows
 	const { data: singleFlowPeople, refetch: singleFlowRefetch } =
@@ -32,20 +45,6 @@ const FlowsPage = () => {
 	const { data: flows, refetch: flowRefetch } = useFlowsQuery(
 		flowIds as number[]
 	);
-
-	// const flowQueries = useQueries({
-	// 	queries: flowIds.map((flowId) => ({
-	// 		queryKey: ["flows", flowId],
-	// 		queryFn: async () => {
-	// 			const res = await fetchFlows([flowId!]);
-	// 			return res[0];
-	// 		},
-	// 		enabled: !!flowId,
-	// 		placeholderData: {} as Flow,
-	// 	})),
-	// });
-
-	// const flows = flowQueries.map((q) => q.data).filter(Boolean) as Flow[];
 
 	const effectivePeopleFlow = useMemo(() => {
 		let list =
@@ -79,10 +78,6 @@ const FlowsPage = () => {
 	const refresh = async () => {
 		selectedFlowId === 0 ? await refetch() : await singleFlowRefetch();
 		flowRefetch();
-		console.log(
-			"flows",
-			flows?.map((f) => f.id)
-		);
 	};
 
 	return (

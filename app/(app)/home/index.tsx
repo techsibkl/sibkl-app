@@ -3,19 +3,27 @@ import NotificationList from "@/components/Home/NotificationList";
 import SharedBody from "@/components/shared/SharedBody";
 import SharedSectionHeader from "@/components/shared/SharedSectionHeader";
 import { useAnnouncementsQuery } from "@/hooks/Announcement/useAnnouncementsQuery";
+import { useNotificationQuery } from "@/hooks/Notifications/useNotificationsQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import { StatusBar } from "react-native";
 
 const DashboardScreen = () => {
+	const router = useRouter();
 	const { isDark } = useThemeColors();
 	const { data: announcements } = useAnnouncementsQuery();
-	const router = useRouter();
+	const { data, refetch } = useNotificationQuery();
 
 	const pinnedAnnouncements = useMemo(() => {
 		return announcements?.filter((a) => a.pinned) || [];
 	}, [announcements]);
+
+	const notifications = useMemo(() => data || [], [data]);
+
+	const refresh = async () => {
+		await refetch();
+	};
 
 	return (
 		<SharedBody>
@@ -36,7 +44,11 @@ const DashboardScreen = () => {
 				title="Notifications"
 				onPress={() => router.push("/(app)/notifications")}
 			/>
-			<NotificationList limited={true} />
+			<NotificationList
+				notifications={notifications.slice(0, 5)}
+				onRefresh={refresh}
+				limited
+			/>
 		</SharedBody>
 	);
 };

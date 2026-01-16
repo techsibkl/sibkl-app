@@ -23,6 +23,7 @@ const ChangeFieldAction = ({ action, personFlow, custom_attr }: Props) => {
 			<TouchableOpacity
 				onPress={() => setModalVisible(true)}
 				className="flex-row items-center gap-3 bg-white p-4 rounded-xl border border-border "
+				activeOpacity={0.7}
 			>
 				<View className="p-2 rounded-full bg-blue-100">
 					<User2Icon size={18} color={"#383e8eff"} />

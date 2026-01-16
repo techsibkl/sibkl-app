@@ -1,8 +1,9 @@
 import { Colors } from "@/constants/Colors";
 import { Notification } from "@/types/Notification.type";
+import { useRouter } from "expo-router";
 import { BellIcon, ClockIcon, UserIcon } from "lucide-react-native";
 import React from "react";
-import { Text, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 type Props = {
 	notification: Notification;
@@ -27,11 +28,22 @@ const formatTimeAgo = (dateString: string) => {
 };
 
 const NotificationItem = ({ notification }: Props) => {
+	const router = useRouter();
+	const onClick = (notification: Notification) => {
+		if (notification.type === "flow") {
+			router.push(
+				`/(app)/flows?flow_id=${notification.ref_id}&isMeMode=true`
+			);
+		}
+	};
 	return (
-		<View
+		<TouchableOpacity
 			key={notification.id}
-			className="flex-row justify-between py-4 gap-4 border-b border-border"
+			className="flex-row justify-between pr-4 py-4 gap-4 border-b border-border"
+			activeOpacity={0.7}
+			onPress={() => onClick(notification)}
 		>
+			{/* Notification Icon */}
 			<View
 				className="flex items-center justify-center mt-0.5 w-10 h-10 rounded-full flex-shrink-0"
 				style={{
@@ -48,8 +60,8 @@ const NotificationItem = ({ notification }: Props) => {
 				)}
 			</View>
 			<View className="flex-1 gap-y-1">
-				<Text className="font-semibold">{notification.title}</Text>
-				<Text className="font-light text-sm">{notification.body}</Text>
+				<Text className="font-light text-sm">{notification.title}</Text>
+				<Text className="font-medium">{notification.body}</Text>
 				<View className="flex flex-row mt-2 w-full gap-3 items-center justify-between">
 					<View className="px-2 py-1 rounded-full flex-row items-center gap-1 self-start bg-gray-100">
 						<Text className="font-semibold text-xs">
@@ -64,7 +76,7 @@ const NotificationItem = ({ notification }: Props) => {
 					</View>
 				</View>
 			</View>
-		</View>
+		</TouchableOpacity>
 	);
 };
 

@@ -43,8 +43,8 @@ const PeopleFlowRowComponent = ({
 	return (
 		<>
 			<TouchableOpacity
-				className=""
 				onPress={() => setModalVisible(true)}
+				activeOpacity={0.7}
 			>
 				<View className="flex-col items-center py-4 border-b border-border-secondary">
 					<View className="flex-row w-full mb-2 pr-2 justify-between items-center">
