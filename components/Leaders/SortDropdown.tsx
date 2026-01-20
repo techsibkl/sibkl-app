@@ -18,7 +18,7 @@ const SortDropdown = ({
 	const [open, setOpen] = useState(false);
 
 	return (
-		<View className="relative mt-2">
+		<View className="relative mt-2 z-50">
 			{/* Sort trigger */}
 			<TouchableOpacity
 				onPress={() => setOpen((prev) => !prev)}
@@ -52,7 +52,9 @@ const SortDropdown = ({
 						}}
 					>
 						<ArrowDown size={14} color="#007AFF" />
-						<Text className="text-sm text-gray-800">New to Old</Text>
+						<Text className="text-sm text-gray-800">
+							New to Old
+						</Text>
 					</TouchableOpacity>
 
 					<TouchableOpacity
@@ -63,7 +65,9 @@ const SortDropdown = ({
 						}}
 					>
 						<ArrowUp size={14} color="#007AFF" />
-						<Text className="text-sm text-gray-800">Old to New</Text>
+						<Text className="text-sm text-gray-800">
+							Old to New
+						</Text>
 					</TouchableOpacity>
 				</View>
 			)}

@@ -6,7 +6,7 @@ import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { useFilteredResources } from "@/hooks/Resource/useFilteredResources";
 import { useResourcesQuery } from "@/hooks/Resource/useResourceQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
 	ScrollView,
 	StatusBar,
@@ -18,6 +18,7 @@ import {
 import FolderList from "@/components/Leaders/FolderList";
 import SortDropdown from "@/components/Leaders/SortDropdown";
 import SkeletonGallery from "@/components/shared/Skeleton/SkeletonGallery";
+import { useLocalSearchParams } from "expo-router";
 import { Grid3x2Icon, ListIcon } from "lucide-react-native";
 
 const LeadersPage = () => {
@@ -25,13 +26,20 @@ const LeadersPage = () => {
 	const { data: resources, isPending, isError } = useResourcesQuery();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [viewMode, setViewMode] = useState<"gallery" | "list">("gallery");
-	const [sortAsc, setSortAsc] = useState(true);
+	const [sortAsc, setSortAsc] = useState(false);
+	const { resource_id } = useLocalSearchParams();
 
 	const groupedResources = useFilteredResources(
 		resources,
 		searchQuery,
-		sortAsc
+		sortAsc,
 	);
+
+	useEffect(() => {
+		if (resource_id) {
+			setViewMode("gallery");
+		}
+	}, [resource_id]);
 
 	if (isError) {
 		return <Text>Error loading resources</Text>;
@@ -51,7 +59,7 @@ const LeadersPage = () => {
 			/>
 
 			{/* toggle buttons */}
-			<View className="flex-row justify-between items-center px-4 py-2">
+			<View className="flex-row justify-between items-center px-4 py-2 z-50">
 				<SortDropdown sortAsc={sortAsc} setSortAsc={setSortAsc} />
 				<TouchableOpacity
 					onPress={() =>

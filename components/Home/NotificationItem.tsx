@@ -1,7 +1,7 @@
 import { Colors } from "@/constants/Colors";
 import { Notification } from "@/types/Notification.type";
 import { useRouter } from "expo-router";
-import { BellIcon, ClockIcon, UserIcon } from "lucide-react-native";
+import { BellIcon, BookIcon, ClockIcon, UserIcon } from "lucide-react-native";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
@@ -14,7 +14,7 @@ const formatTimeAgo = (dateString: string) => {
 	const date = new Date(dateString);
 	const now = new Date();
 	const diffInMinutes = Math.floor(
-		(now.getTime() - date.getTime()) / (1000 * 60)
+		(now.getTime() - date.getTime()) / (1000 * 60),
 	);
 
 	if (diffInMinutes < 1) return "Just now";
@@ -32,7 +32,13 @@ const NotificationItem = ({ notification }: Props) => {
 	const onClick = (notification: Notification) => {
 		if (notification.type === "flow") {
 			router.push(
-				`/(app)/flows?flow_id=${notification.ref_id}&isMeMode=true`
+				`/(app)/flows?flow_id=${notification.ref_id}&isMeMode=true`,
+			);
+		} else if (notification.type === "resources") {
+			router.push(`/(app)/leaders?resource_id=${notification.ref_id}`);
+		} else if (notification.type === "announcements") {
+			router.push(
+				`/(app)/announcements?announcement_id=${notification.ref_id}`,
 			);
 		}
 	};
@@ -50,11 +56,15 @@ const NotificationItem = ({ notification }: Props) => {
 					backgroundColor:
 						notification.type === "flow"
 							? Colors.secondary[100]
-							: "#fff0db",
+							: notification.type === "resources"
+								? "#dbffe8"
+								: "#fff0db",
 				}}
 			>
 				{notification.type === "flow" ? (
 					<UserIcon size={18} color={Colors.secondary[500]} />
+				) : notification.type === "resources" ? (
+					<BookIcon size={18} color="#03d058" />
 				) : (
 					<BellIcon size={18} color="#fb9c0f" />
 				)}

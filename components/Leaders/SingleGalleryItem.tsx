@@ -1,5 +1,6 @@
 import { MediaResource } from "@/services/Resource/resource.type";
-import React, { useState } from "react";
+import { router, useLocalSearchParams } from "expo-router";
+import React, { useEffect, useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 import SharedModal from "../shared/SharedModal";
 import ViewResourceDialog from "./ViewResourceDialog";
@@ -10,7 +11,20 @@ type SingleGalleryItemProps = {
 
 export default function SingleGalleryItem({ item }: SingleGalleryItemProps) {
 	const [modalVisible, setModalVisible] = useState(false);
+	const { resource_id } = useLocalSearchParams();
+	useEffect(() => {
+		if (resource_id && resource_id == item.id) {
+			setModalVisible(true);
+		}
+	}, [resource_id]);
 
+	const closeModal = () => {
+		setModalVisible(false);
+		if (resource_id) {
+			// clear params AFTER consuming
+			router.replace("/(app)/leaders");
+		}
+	};
 	return (
 		<>
 			<TouchableOpacity
@@ -47,10 +61,7 @@ export default function SingleGalleryItem({ item }: SingleGalleryItemProps) {
 					</View>
 				</View>
 			</TouchableOpacity>
-			<SharedModal
-				visible={modalVisible}
-				onClose={() => setModalVisible(false)}
-			>
+			<SharedModal visible={modalVisible} onClose={closeModal}>
 				<ViewResourceDialog resource={item} />
 			</SharedModal>
 		</>

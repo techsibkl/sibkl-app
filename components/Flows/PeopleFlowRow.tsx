@@ -1,3 +1,4 @@
+import { Colors } from "@/constants/Colors";
 import { FlowStep, SingleCustomAttr } from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { daysAgo } from "@/utils/helper";
@@ -66,7 +67,7 @@ const PeopleFlowRowComponent = ({
 							className="text-xs font-medium italic"
 							style={{
 								color: daysAgoTextColorNative(
-									personFlow.last_contacted
+									personFlow.last_contacted,
 								),
 							}}
 						>
@@ -111,6 +112,7 @@ const PeopleFlowRowComponent = ({
 									goToProfile();
 									// Handle view profile
 								}}
+								titleStyle={{ color: Colors.gray[700] }}
 								title="View profile"
 							/>
 							{/* <Menu.Item
@@ -126,6 +128,7 @@ const PeopleFlowRowComponent = ({
 									setNoteDialogVisible(true);
 									// Handle add note
 								}}
+								titleStyle={{ color: Colors.gray[700] }}
 								title="Add note"
 							/>
 						</Menu>
