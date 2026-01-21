@@ -23,7 +23,6 @@ const DynamicFormField = ({
 }: DynamicFormFieldProps) => {
 	const InputComponent = resolveInputComponent(field);
 	const fieldKey = field.ori_key || field.key;
-
 	return (
 		<InputComponent
 			name={fieldKey}

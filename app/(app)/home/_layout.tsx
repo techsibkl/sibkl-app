@@ -33,7 +33,7 @@ export default function Layout() {
 				options={({ route }) => ({
 					headerShown: true,
 					header() {
-						return <SharedHeader title="My Profile" isPop />;
+						return <SharedHeader title="Update Profile" isPop />;
 					},
 				})}
 			/>

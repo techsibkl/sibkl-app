@@ -1,12 +1,9 @@
 import SharedBody from "@/components/shared/SharedBody";
 import { Colors } from "@/constants/Colors";
 import { sendOTP, verifyOTP } from "@/services/OTP/otp.service";
-import { fetchPeople } from "@/services/Person/person.service";
 import { useAuthStore } from "@/stores/authStore";
 import { useClaimStore } from "@/stores/claimStore";
 import { useSignUpStore } from "@/stores/signUpStore";
-import { apiEndpoints } from "@/utils/endpoints";
-import { secureFetch } from "@/utils/secureFetch";
 import {
 	createUserWithEmailAndPassword,
 	getAuth,
@@ -43,7 +40,7 @@ const Page = () => {
 		if (resendTimer > 0) {
 			const timer = setTimeout(
 				() => setResendTimer(resendTimer - 1),
-				1000
+				1000,
 			);
 			return () => clearTimeout(timer);
 		} else {
@@ -76,28 +73,6 @@ const Page = () => {
 		}
 	};
 
-	const fetchClaimedPerson = async (personId: number) => {
-		const res = await secureFetch(
-			apiEndpoints.users.createUserWithExistingPerson,
-			{
-				method: "POST",
-				body: JSON.stringify({
-					people_id: personId,
-				}),
-			}
-		);
-		const json = await res.json();
-		if (json.success) {
-			// Call react query here
-			await qc.prefetchQuery({
-				queryKey: ["person", personId],
-				queryFn: () => fetchPeople(claimStore.selectedProfile?.id),
-			});
-			router.push("/(auth)/complete-profile");
-			return;
-		}
-	};
-
 	const handleVerifyOTP = async () => {
 		const otpString = otp.join("");
 		if (otpString.length !== 6) {
@@ -113,35 +88,44 @@ const Page = () => {
 			const email = pendingSignUp?.email || null;
 			const result = await verifyOTP(personId, email, otpString);
 
-			if (result.success) {
-				// create firebase account
-				const resEmail = result.data?.email.trim();
-
-				const { user } = await createUserWithEmailAndPassword(
-					getAuth(),
-					resEmail,
-					pendingSignUp?.password!
-				);
-
-				// get full person if selectedProfile is true
-				console.log("Selected profile", claimStore.selectedProfile);
-				if (claimStore.selectedProfile) {
-					await fetchClaimedPerson(claimStore.selectedProfile.id);
-					return;
-				} else {
-					router.push("/(auth)/complete-profile");
-				}
-			} else {
+			if (!result.success) {
 				Alert.alert(
 					"Invalid OTP",
-					"The code you entered is incorrect. Please try again."
+					"The code you entered is incorrect. Please try again.",
 				);
 				setOtp(["", "", "", "", "", ""]);
 				inputRefs.current[0]?.focus();
+				return;
 			}
-		} catch (error) {
-			console.error("OTP verification error:", error);
-			Alert.alert("Error", "Failed to verify OTP. Please try again.");
+
+			// create firebase account
+			const resEmail = result.data?.email.trim();
+
+			// get full person if selectedProfile is true
+			console.log("Selected profile", claimStore.selectedProfile);
+			if (claimStore.selectedProfile) {
+				// await fetchClaimedPerson(claimStore.selectedProfile.id);
+				router.push(
+					`/(auth)/claim-set-password?full_email=${resEmail}&id=${claimStore.selectedProfile.id}`,
+				);
+			} else {
+				// No claimed profile, proceed to complete profile
+				await createUserWithEmailAndPassword(
+					getAuth(),
+					resEmail,
+					pendingSignUp?.password!,
+				);
+				router.push("/(auth)/complete-profile");
+			}
+		} catch (error: any) {
+			if (error.code == "auth/email-already-in-use") {
+				Alert.alert(
+					"Email Already In Use",
+					"The email is already in use by another account. Try logging in instead.",
+				);
+			} else {
+				Alert.alert("Error", "Failed to verify OTP. Please try again.");
+			}
 		} finally {
 			setIsLoading(false);
 		}
@@ -164,7 +148,7 @@ const Page = () => {
 				if (!pendingSignUp || !pendingSignUp.email) {
 					console.error(
 						"[v0] OTP verification error:",
-						"no email found"
+						"no email found",
 					);
 					return;
 				}
@@ -172,7 +156,7 @@ const Page = () => {
 			}
 			Alert.alert(
 				"OTP Sent",
-				"A new verification code has been sent to your email."
+				"A new verification code has been sent to your email.",
 			);
 		} catch (error) {
 			console.error("[v0] Resend OTP error:", error);
@@ -218,9 +202,9 @@ const Page = () => {
 							{otp.map((digit, index) => (
 								<TextInput
 									key={index}
-									ref={(ref) =>
-										(inputRefs.current[index] = ref)
-									}
+									ref={(ref) => {
+										inputRefs.current[index] = ref;
+									}}
 									className="px-6 py-5 border border-border bg-card rounded-[15px] text-center text-md font-semibold text-text"
 									value={digit}
 									onChangeText={(value) =>

@@ -6,23 +6,26 @@ import { updatePeople } from "@/services/Person/person.service";
 import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
 import { SectionEnum } from "@/types/TableField.type";
-import { formatPhone } from "@/utils/helper";
+import { formatPhone, myToast } from "@/utils/helper";
 import {
-  getAgeGroup,
-  pickFieldsBySection,
-  validatePerson,
+	getAgeGroup,
+	pickFieldsBySection,
+	validatePerson,
 } from "@/utils/helper_profile";
+import { useQueryClient } from "@tanstack/react-query";
+import { router } from "expo-router";
 
-import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import React, { useEffect, useMemo, useState } from "react";
+import { useForm, useWatch } from "react-hook-form";
 import {
-  ActivityIndicator,
-  Image,
-  Text,
-  TouchableOpacity,
-  View,
+	ActivityIndicator,
+	Image,
+	Text,
+	TouchableOpacity,
+	View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import Toast from "react-native-toast-message";
 
 // Create a type using those keys
 export type ProfileFormData = Partial<Person>;
@@ -30,10 +33,11 @@ export type ProfileFormData = Partial<Person>;
 const UpdateProfilePage = () => {
 	const authStore = useAuthStore();
 	const { user: appUser } = authStore;
+	const qc = useQueryClient();
 
 	// Fetch the logged-in user's profile
 	const { data: currentPerson, isPending } = useSinglePersonQuery(
-		appUser?.people_id
+		appUser?.people_id,
 	);
 
 	const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -74,11 +78,10 @@ const UpdateProfilePage = () => {
 		if (currentPerson) {
 			const personalInfoData = pickFieldsBySection(
 				currentPerson,
-				SectionEnum.PERSONAL_INFORMATION
+				SectionEnum.PERSONAL_INFORMATION,
 			);
 
 			reset(personalInfoData as ProfileFormData);
-			console.log("🔄 Prefilled form with current profile");
 		}
 	}, [currentPerson, reset]);
 
@@ -102,10 +105,11 @@ const UpdateProfilePage = () => {
 
 		try {
 			const response = await updatePeople(formPerson);
-			console.log("response:", JSON.stringify(response));
+			qc.invalidateQueries({ queryKey: ["people", currentPerson?.id] });
+			Toast.show(myToast(response));
 			if (response.success) {
 				console.log("Profile updated successfully");
-				authStore.init(); // Refresh user session
+				router.back();
 			}
 		} catch (err) {
 			console.error("Failed to update profile:", err);
@@ -162,6 +166,12 @@ const UpdateProfilePage = () => {
 		}
 	};
 
+	// To disable save changes button when invalid
+	const { first_name, last_name, full_name, email } = useWatch({ control });
+	const changeValid = useMemo(() => {
+		return !!(first_name && last_name && email);
+	}, [first_name, last_name, email]);
+
 	if (isPending)
 		return (
 			<SharedBody>
@@ -170,74 +180,87 @@ const UpdateProfilePage = () => {
 		);
 
 	return (
-		<KeyboardAwareScrollView
-			enableOnAndroid={true}
-			extraScrollHeight={60}
-			keyboardShouldPersistTaps="handled"
-			contentContainerStyle={{ flexGrow: 1 }}
-		>
-			<SharedBody>
-				{/* Header / logo */}
-				<View className="items-center mb-6">
-					<Image
-						source={require("../../../../../assets/images/person.png")}
-						className="w-20 h-20 rounded-xl"
-						resizeMode="contain"
-					/>
-					<Text className="text-2xl font-bold text-text">
-						Update Profile
-					</Text>
-					<Text className="text-text-secondary mt-1 text-center">
-						Keep your information up to date
-					</Text>
-				</View>
+		<>
+			<KeyboardAwareScrollView
+				className="flex-1 bg-background relative"
+				enableOnAndroid={true}
+				extraScrollHeight={60}
+				keyboardShouldPersistTaps="handled"
+				contentContainerStyle={{ flexGrow: 1 }}
+			>
+				<View className="py-10 px-5">
+					{/* Header / logo */}
+					<View className="items-center mb-6 gap-1">
+						<Image
+							source={require("../../../../../assets/images/person.png")}
+							className="w-20 h-20 rounded-xl"
+							resizeMode="contain"
+						/>
+						<Text className="text-2xl font-bold">
+							{first_name} {last_name}
+						</Text>
+						<Text className="font-regular text-text-secondary text-center">
+							Keep your information up to date
+						</Text>
+					</View>
 
-				<View className="px-5 pt-4">
-					{Object.entries(groupedPersonFields)
-						.filter(
-							([section]) =>
-								section === SectionEnum.PERSONAL_INFORMATION
-						)
-						.map(([section, fields]) => (
-							<View key={section} className="mb-12">
-								<Text className="ml-1 mb-4 pb-2 text-black font-semibold border-b border-gray-300">
-									{section}
-								</Text>
+					<View>
+						{Object.entries(groupedPersonFields)
+							.filter(
+								([section]) =>
+									section ===
+									SectionEnum.PERSONAL_INFORMATION,
+							)
+							.map(([section, fields]) => (
+								<View key={section} className="mb-12">
+									<Text className="ml-1 pb-2 text-lg font-semibold">
+										{section}
+									</Text>
 
-								<View className="gap-y-6">
-									{fields
-										.filter((f) => f.editable !== false)
-										.map((field) => (
-											<DynamicFormField
-												key={field.key}
-												field={field}
-												control={control}
-												errors={errors}
-												onFieldUpdate={
-													handleFieldUpdate
-												}
-												onFieldComplete={
-													handleFieldComplete
-												}
-											/>
-										))}
+									<View className="ml-1 pt-2 gap-y-4 border-t border-border">
+										{fields
+											.filter((f) => f.editable !== false)
+											.map((field) => {
+												return (
+													<DynamicFormField
+														key={field.key}
+														field={field}
+														control={control}
+														disabled={
+															field.key == "email"
+														}
+														errors={errors}
+														onFieldUpdate={
+															handleFieldUpdate
+														}
+														onFieldComplete={
+															handleFieldComplete
+														}
+													/>
+												);
+											})}
+									</View>
 								</View>
-							</View>
-						))}
+							))}
+					</View>
 				</View>
+			</KeyboardAwareScrollView>
 
-				{/* Save button */}
-				<TouchableOpacity
-					className="bg-primary-600 p-4 rounded-[15px] mx-5 mb-20"
-					onPress={handleSubmit(onSubmit)}
-					disabled={isSubmitting}
-				>
-					<Text className="text-white text-center font-semibold">
-						{isSubmitting ? "Saving..." : "Save Changes"}
+			{/* Sticky button */}
+			<TouchableOpacity
+				className={`absolute bottom-0 w-full py-4 items-center justify-center mt-6 ${changeValid ? " bg-primary-600" : "bg-primary-100"}`}
+				onPress={handleSubmit(onSubmit)}
+				disabled={isSubmitting || !changeValid}
+			>
+				{isSubmitting ? (
+					<ActivityIndicator color="white" />
+				) : (
+					<Text className="text-lg text-white font-bold">
+						Save Changes
 					</Text>
-				</TouchableOpacity>
-			</SharedBody>
-		</KeyboardAwareScrollView>
+				)}
+			</TouchableOpacity>
+		</>
 	);
 };
 

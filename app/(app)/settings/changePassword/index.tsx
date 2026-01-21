@@ -53,6 +53,16 @@ export default function ChangePasswordScreen() {
 
 	return (
 		<View className="flex-1 bg-background px-6 gap-1">
+			{/* NEXT: Use react forms */}
+			{/* <FormField
+				name="current_password"
+				label="Current Password"
+				control={null}
+				errors={null}
+				icon={<Lock size={20} color="#6b7280" />}
+				secureTextEntry
+				onChangeText={setCurrentPassword}
+			/> */}
 			<Text>Current Password</Text>
 			<TextInput
 				secureTextEntry
@@ -105,7 +115,7 @@ export default function ChangePasswordScreen() {
 							await user?.updatePassword(newPassword);
 							Alert.alert(
 								"Success",
-								"Password updated successfully!"
+								"Password updated successfully!",
 							);
 
 							reset();

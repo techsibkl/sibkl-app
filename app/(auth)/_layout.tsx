@@ -11,6 +11,16 @@ export default function AuthLayout() {
 			<Stack.Screen name="complete-profile" />
 			<Stack.Screen name="forgot-password" />
 			<Stack.Screen name="new-account" />
+			<Stack.Screen name="claim-set-password" />
+			<Stack.Screen
+				name="selected-account"
+				options={{
+					headerShown: true,
+					header() {
+						return <SharedHeader title="Verify Ownership" isPop />;
+					},
+				}}
+			/>
 			<Stack.Screen
 				name="verify-otp"
 				options={{
