@@ -9,35 +9,35 @@ import {
 import { Role } from "@/utils/casl/defineAbilityFor";
 import { AgeGroup } from "@/utils/types/utils.types";
 
-export const defaultPersonFields: TableField[] = [
+export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 	// { key: "id", header: "ID", class: "pl-8 min-w-[6rem]", visible: false, section: SectionEnum.NONE },
 	{
-		key: "full_name",
-		header: "Full Name",
+		key: "full_legal_name",
+		header: "Full Legal Name",
 		class: "min-w-[12rem]",
 		visible: true,
 		type: FieldTypeEnum.TEXT,
 		section: SectionEnum.PERSONAL_INFORMATION,
 		editable: false,
 	},
-	{
-		key: "first_name",
-		header: "First Name",
-		class: "min-w-[12rem]",
-		visible: true,
-		type: FieldTypeEnum.TEXT,
-		section: SectionEnum.PERSONAL_INFORMATION,
-		editable: true,
-	},
-	{
-		key: "last_name",
-		header: "Last Name",
-		class: "min-w-[12rem]",
-		visible: true,
-		type: FieldTypeEnum.TEXT,
-		section: SectionEnum.PERSONAL_INFORMATION,
-		editable: true,
-	},
+	// {
+	// 	key: "first_name",
+	// 	header: "First Name",
+	// 	class: "min-w-[12rem]",
+	// 	visible: true,
+	// 	type: FieldTypeEnum.TEXT,
+	// 	section: SectionEnum.PERSONAL_INFORMATION,
+	// 	editable: true,
+	// },
+	// {
+	// 	key: "last_name",
+	// 	header: "Last Name",
+	// 	class: "min-w-[12rem]",
+	// 	visible: true,
+	// 	type: FieldTypeEnum.TEXT,
+	// 	section: SectionEnum.PERSONAL_INFORMATION,
+	// 	editable: true,
+	// },
 	{
 		key: "email",
 		header: "Email Address",
@@ -263,7 +263,7 @@ export const defaultPersonFields: TableField[] = [
 		editable: true,
 		options: Array.from(
 			{ length: 100 },
-			(_, i) => new Date().getFullYear() - i
+			(_, i) => new Date().getFullYear() - i,
 		),
 	},
 	{
@@ -337,7 +337,7 @@ export const defaultPersonFields: TableField[] = [
 ];
 
 // Grouped by sections
-export const groupedPersonFields = defaultPersonFields.reduce(
+export const groupedPersonFields = DEFAULT_PERSON_COLUMNS.reduce(
 	(acc, field) => {
 		if (!field.section || field.section == SectionEnum.NONE) return acc;
 		const section = field.section;
@@ -345,7 +345,7 @@ export const groupedPersonFields = defaultPersonFields.reduce(
 		acc[section].push(field);
 		return acc;
 	},
-	{} as Record<string, TableField[]>
+	{} as Record<string, TableField[]>,
 );
 
 export const inputComponentMap = {

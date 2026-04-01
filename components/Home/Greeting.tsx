@@ -1,4 +1,4 @@
-import { useSinglePersonQuery } from "@/hooks/People/useSinglePersonQuery";
+import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "expo-router";
 import React from "react";
@@ -8,7 +8,7 @@ const Greeting = () => {
 	const router = useRouter();
 	const { user } = useAuthStore();
 	const { data: currentPerson, isPending } = useSinglePersonQuery(
-		user?.people_id,
+		user?.person?.id ?? -1,
 	);
 
 	return (
@@ -18,7 +18,7 @@ const Greeting = () => {
 					className="font-bold mb-1 text-text text-3xl pr-4"
 					numberOfLines={2}
 				>
-					Hi, {currentPerson?.full_name}!
+					Hi, {currentPerson?.full_legal_name}!
 				</Text>
 				<Text className="text-text-secondary text-lg font-regular">
 					Welcome back to SIBKL App 🙌

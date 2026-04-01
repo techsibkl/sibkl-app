@@ -1,4 +1,4 @@
-import { defaultPersonFields } from "@/constants/const_person";
+import { DEFAULT_PERSON_COLUMNS } from "@/constants/const_person";
 import { Person } from "@/services/Person/person.type";
 import { SectionEnum } from "@/types/TableField.type";
 import { AgeGroup } from "./types/utils.types";
@@ -7,13 +7,29 @@ export const validatePerson = (person: Partial<Person>) => {
 	const errors: { [key: string]: string } = {};
 
 	// Validate only if the field exists in the Person type (some forms may not have all fields)
-	if ("first_name" in person) {
-		if (!person.first_name) {
-			errors.first_name = "First Name cannot be empty.";
-		} else if (!/^[A-Za-z\s]+$/.test(person.first_name)) {
-			errors.first_name = "First Name can only contain alphabets.";
+	if ("full_legal_name" in person) {
+		if (!person.full_legal_name) {
+			errors.full_legal_name = "Full Legal Name cannot be empty.";
+		} else if (!/^[A-Za-z\s@\-]+$/.test(person.full_legal_name)) {
+			errors.full_legal_name = "Full Legal Name has invalid characters.";
+		} else if (person.full_legal_name.replace(/[\s@\-]+/g, "").length < 5) {
+			errors.full_legal_name =
+				"Full Legal Name must contain at least 5 alphabets.";
+		} else if (
+			/(.)\1{3,}/.test(person.full_legal_name.replace(/[\s@\-]/g, ""))
+		) {
+			errors.full_legal_name =
+				"Full Legal Name cannot contain more than 4 consecutive identical letters.";
 		}
 	}
+
+	// if ("first_name" in person) {
+	// 	if (!person.first_name) {
+	// 		errors.first_name = "First Name cannot be empty.";
+	// 	} else if (!/^[A-Za-z\s]+$/.test(person.first_name)) {
+	// 		errors.first_name = "First Name can only contain alphabets.";
+	// 	}
+	// }
 
 	// if (!person.last_name) {
 	//   errors.last_name = "Last Name cannot be empty.";
@@ -106,11 +122,11 @@ export const getAgeGroup = (age: number): AgeGroup | null => {
 
 export const pickFieldsBySection = (
 	person: Person,
-	section: SectionEnum
+	section: SectionEnum,
 ): Partial<Person> => {
-	const sectionFields = defaultPersonFields
-		.filter((f) => f.section === section)
-		.map((f) => f.key);
+	const sectionFields = DEFAULT_PERSON_COLUMNS.filter(
+		(f) => f.section === section,
+	).map((f) => f.key);
 
 	return sectionFields.reduce((acc, key) => {
 		if (key in person) {

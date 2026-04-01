@@ -3,8 +3,8 @@ import { FlowStep, SingleCustomAttr } from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { daysAgo } from "@/utils/helper";
 import {
-	daysAgoTextColorNative,
-	getStepStatusStyleNative,
+    daysAgoTextColorNative,
+    getStepStatusStyleNative,
 } from "@/utils/helper_flows";
 import { useRouter } from "expo-router";
 import { CircleDashedIcon, MoreVerticalIcon } from "lucide-react-native";
@@ -87,7 +87,7 @@ const PeopleFlowRowComponent = ({
 						{/* Person Info */}
 						<View className="flex-1 gap-y-1">
 							<Text className="text-text font-semibold">
-								{personFlow.p__full_name}
+								{personFlow.p__full_legal_name}
 							</Text>
 							<Text className="text-text-secondary text-sm">
 								{personFlow.p__phone ?? "-"}

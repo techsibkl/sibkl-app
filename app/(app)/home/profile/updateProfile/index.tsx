@@ -1,7 +1,7 @@
 import DynamicFormField from "@/components/shared/DynamicFormField";
 import SharedBody from "@/components/shared/SharedBody";
 import { groupedPersonFields } from "@/constants/const_person";
-import { useSinglePersonQuery } from "@/hooks/People/useSinglePersonQuery";
+import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { updatePeople } from "@/services/Person/person.service";
 import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
@@ -37,7 +37,7 @@ const UpdateProfilePage = () => {
 
 	// Fetch the logged-in user's profile
 	const { data: currentPerson, isPending } = useSinglePersonQuery(
-		appUser?.people_id,
+		appUser?.person?.id ?? -1,
 	);
 
 	const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -53,8 +53,7 @@ const UpdateProfilePage = () => {
 		formState: { errors, isSubmitting },
 	} = useForm<ProfileFormData>({
 		defaultValues: {
-			first_name: "",
-			last_name: "",
+			full_legal_name: "",
 			email: appUser?.email ?? "",
 			phone: "",
 			gender: "male",
@@ -167,10 +166,12 @@ const UpdateProfilePage = () => {
 	};
 
 	// To disable save changes button when invalid
-	const { first_name, last_name, full_name, email } = useWatch({ control });
+	const { full_legal_name, email } = useWatch({
+		control,
+	});
 	const changeValid = useMemo(() => {
-		return !!(first_name && last_name && email);
-	}, [first_name, last_name, email]);
+		return !!(full_legal_name && email);
+	}, [full_legal_name, email]);
 
 	if (isPending)
 		return (
@@ -197,7 +198,7 @@ const UpdateProfilePage = () => {
 							resizeMode="contain"
 						/>
 						<Text className="text-2xl font-bold">
-							{first_name} {last_name}
+							{full_legal_name}
 						</Text>
 						<Text className="font-regular text-text-secondary text-center">
 							Keep your information up to date

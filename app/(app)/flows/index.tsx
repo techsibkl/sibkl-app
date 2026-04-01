@@ -43,7 +43,7 @@ const FlowsPage = () => {
 	} = usePeopleFlowQuery(undefined, user?.person?.id);
 	const flowIds = useMemo(
 		() => [...new Set(peopleFlow?.map((p) => p.flow_id) || [])],
-		[peopleFlow]
+		[peopleFlow],
 	);
 
 	const {
@@ -65,10 +65,10 @@ const FlowsPage = () => {
 		// Apply search filter
 		list = list.filter(
 			(person) =>
-				person?.p__full_name
+				person?.p__full_legal_name
 					?.toLowerCase()
 					.includes(searchQuery.toLowerCase()) ||
-				person?.p__phone?.includes(searchQuery)
+				person?.p__phone?.includes(searchQuery),
 		);
 
 		// Apply assigned-to-me filter only if viewMode is "assigned"
