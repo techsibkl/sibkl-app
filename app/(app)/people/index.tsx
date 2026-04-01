@@ -10,7 +10,13 @@ import { StatusBar, Text, View } from "react-native";
 
 const PeopleScreen = () => {
 	const { isDark } = useThemeColors();
-	const { data: people, isPending, error, isError } = usePeopleQuery();
+	const {
+		data: people,
+		isPending,
+		error,
+		isError,
+		refetch,
+	} = usePeopleQuery();
 
 	const [searchQuery, setSearchQuery] = useState("");
 
@@ -24,10 +30,9 @@ const PeopleScreen = () => {
 		);
 	}, [people, searchQuery]);
 
-	// const handlePersonPress = (person: Person) => {
-	//   // Navigate to profile or handle person selection
-	//   console.log("Opening profile for:", person.fullName);
-	// };
+	const refresh = async () => {
+		await refetch();
+	};
 
 	if (isError)
 		return (
@@ -52,7 +57,11 @@ const PeopleScreen = () => {
 			/>
 			{/* People List */}
 			<View className="flex-1">
-				<PeopleList people={filteredPeople} />
+				<PeopleList
+					people={filteredPeople}
+					onRefresh={refresh}
+					isPending={isPending}
+				/>
 			</View>
 		</SharedBody>
 	);

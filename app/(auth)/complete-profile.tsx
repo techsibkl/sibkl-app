@@ -32,7 +32,7 @@ const Page = () => {
 	const authStore = useAuthStore();
 	const { selectedProfile } = useClaimStore();
 	const { data: selectedPerson, isPending } = useSinglePersonQuery(
-		selectedProfile?.id
+		selectedProfile?.id,
 	);
 	const { signUp, user: appUser } = useAuthStore();
 	const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -74,7 +74,7 @@ const Page = () => {
 		if (selectedPerson) {
 			const personalInfoData = pickFieldsBySection(
 				selectedPerson,
-				SectionEnum.PERSONAL_INFORMATION
+				SectionEnum.PERSONAL_INFORMATION,
 			);
 			reset(personalInfoData as ProfileFormData);
 
@@ -213,7 +213,7 @@ const Page = () => {
 					{Object.entries(groupedPersonFields)
 						.filter(
 							([section]) =>
-								section === SectionEnum.PERSONAL_INFORMATION
+								section === SectionEnum.PERSONAL_INFORMATION,
 						)
 						.map(([section, fields]) => (
 							<View key={section} className="mb-12">

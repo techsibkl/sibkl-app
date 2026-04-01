@@ -1,7 +1,13 @@
-import { formStyles } from "@/constants/const_styles";
-import React from "react";
+import React, { ReactElement } from "react";
 import { Controller } from "react-hook-form";
-import { KeyboardTypeOptions, Text, TextInput, View } from "react-native";
+import {
+	KeyboardTypeOptions,
+	NativeSyntheticEvent,
+	Text,
+	TextInput,
+	TextInputSubmitEditingEventData,
+	View,
+} from "react-native";
 
 type Props = {
 	name: string;
@@ -10,13 +16,18 @@ type Props = {
 	rules?: any;
 	errors?: any;
 	placeholder?: string;
-	icon?: any;
+	icon?: ReactElement;
 	rightIcon?: any;
 	initial?: string;
 	disabled?: boolean;
 	keyboardType?: KeyboardTypeOptions;
 	onBlur?: Function;
 	onChangeText?: Function;
+	onSubmitEditing?:
+		| ((e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => void)
+		| undefined;
+	secureTextEntry?: boolean;
+	ref?: React.RefObject<TextInput | null>;
 };
 
 export const FormField = ({
@@ -33,30 +44,37 @@ export const FormField = ({
 	keyboardType,
 	onBlur: onBlurCallback,
 	onChangeText: onChangeTextCallback,
-}: any) => (
+	onSubmitEditing: onSubmitEditingCallBack,
+	secureTextEntry = false,
+	ref,
+}: Props) => (
 	<View>
 		<Text className="text-sm font-medium text-text mb-2">{label}</Text>
-		<View className="relative">
-			{icon && <View className="absolute left-3 top-3 z-10">{icon}</View>}
+		<View>
 			<Controller
 				control={control}
 				name={name}
 				rules={rules}
 				render={({ field: { onChange, onBlur, value } }) => (
-					<TextInput
-						className={`${formStyles.inputText} ${disabled ? `text-gray-400` : `text-text`}`}
-						placeholder={placeholder}
-						placeholderTextColor="#9ca3af"
-						onBlur={onBlur}
-						onChangeText={onChange}
-						value={value}
-						readOnly={disabled}
-					/>
+					<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
+						{icon && <View className="mr-3">{icon}</View>}
+						<TextInput
+							ref={ref}
+							className={`font-regular flex-1 py-4 ${disabled ? `text-gray-400` : `text-text`}`}
+							placeholder={placeholder}
+							placeholderTextColor="#9ca3af"
+							onBlur={onBlur}
+							onChangeText={onChange}
+							value={value}
+							readOnly={disabled}
+							keyboardType={keyboardType}
+							secureTextEntry={secureTextEntry}
+							onSubmitEditing={onSubmitEditingCallBack}
+						/>
+						{rightIcon && <View>{rightIcon}</View>}
+					</View>
 				)}
 			/>
-			{rightIcon && (
-				<View className="absolute right-3 top-3">{rightIcon}</View>
-			)}
 			{errors[name] && (
 				<Text className="text-primary-500 text-sm mt-1">
 					{errors[name]?.message}

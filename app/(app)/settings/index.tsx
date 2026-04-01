@@ -110,11 +110,11 @@ export default function SettingsScreen() {
 						{/* Content */}
 						<View className="flex-1">
 							<Text
-								className={`text-lg font-medium ${option.isDestructive ? "text-red-500" : "text-text"}`}
+								className={`text-lg font-semibold ${option.isDestructive ? "text-red-500" : "text-text"}`}
 							>
 								{option.title}
 							</Text>
-							<Text className="text-gray-400 text-sm mt-1">
+							<Text className="font-regular text-gray-500 text-sm mt-1">
 								{option.subtitle}
 							</Text>
 						</View>
@@ -130,7 +130,7 @@ export default function SettingsScreen() {
 									true: "#10B981",
 								}}
 								thumbColor={
-									option.toggleValue ? "#ffffff" : "#9CA3AF"
+									option.toggleValue ? "#ffffff" : "#6b7280"
 								}
 							/>
 						) : (

@@ -1,0 +1,93 @@
+import { Colors } from "@/constants/Colors";
+import { Notification } from "@/types/Notification.type";
+import { useRouter } from "expo-router";
+import { BellIcon, BookIcon, ClockIcon, UserIcon } from "lucide-react-native";
+import React from "react";
+import { Text, TouchableOpacity, View } from "react-native";
+
+type Props = {
+	notification: Notification;
+};
+
+// Format the time
+const formatTimeAgo = (dateString: string) => {
+	const date = new Date(dateString);
+	const now = new Date();
+	const diffInMinutes = Math.floor(
+		(now.getTime() - date.getTime()) / (1000 * 60),
+	);
+
+	if (diffInMinutes < 1) return "Just now";
+	if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+
+	const diffInHours = Math.floor(diffInMinutes / 60);
+	if (diffInHours < 24) return `${diffInHours}h ago`;
+
+	const diffInDays = Math.floor(diffInHours / 24);
+	return `${diffInDays}d ago`;
+};
+
+const NotificationItem = ({ notification }: Props) => {
+	const router = useRouter();
+	const onClick = (notification: Notification) => {
+		if (notification.type === "flow") {
+			router.push(
+				`/(app)/flows?flow_id=${notification.ref_id}&isMeMode=true`,
+			);
+		} else if (notification.type === "resources") {
+			router.push(`/(app)/leaders?resource_id=${notification.ref_id}`);
+		} else if (notification.type === "announcements") {
+			router.push(
+				`/(app)/announcements?announcement_id=${notification.ref_id}`,
+			);
+		}
+	};
+	return (
+		<TouchableOpacity
+			key={notification.id}
+			className="flex-row justify-between pr-4 py-4 gap-4 border-b border-border"
+			activeOpacity={0.7}
+			onPress={() => onClick(notification)}
+		>
+			{/* Notification Icon */}
+			<View
+				className="flex items-center justify-center mt-0.5 w-10 h-10 rounded-full flex-shrink-0"
+				style={{
+					backgroundColor:
+						notification.type === "flow"
+							? Colors.secondary[100]
+							: notification.type === "resources"
+								? "#dbffe8"
+								: "#fff0db",
+				}}
+			>
+				{notification.type === "flow" ? (
+					<UserIcon size={18} color={Colors.secondary[500]} />
+				) : notification.type === "resources" ? (
+					<BookIcon size={18} color="#03d058" />
+				) : (
+					<BellIcon size={18} color="#fb9c0f" />
+				)}
+			</View>
+			<View className="flex-1 gap-y-1">
+				<Text className="font-light text-sm">{notification.title}</Text>
+				<Text className="font-medium">{notification.body}</Text>
+				<View className="flex flex-row mt-2 w-full gap-3 items-center justify-between">
+					<View className="px-2 py-1 rounded-full flex-row items-center gap-1 self-start bg-gray-100">
+						<Text className="font-semibold text-xs">
+							{notification.type}
+						</Text>
+					</View>
+					<View className="flex flex-row items-center gap-1">
+						<ClockIcon size={12} color={Colors.gray[400]} />
+						<Text className="font-light text-gray-400 text-xs">
+							{formatTimeAgo(notification.created_at)}
+						</Text>
+					</View>
+				</View>
+			</View>
+		</TouchableOpacity>
+	);
+};
+
+export default NotificationItem;

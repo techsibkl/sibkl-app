@@ -11,15 +11,15 @@ export default function ProfileItem({ item }: { item: any }) {
 
 	const handlePress = () => {
 		Alert.alert(
-			"Confirm Account Claim",
-			`Do you want to claim "${item.full_name}"?`,
+			"Check Ownership",
+			`Continue to claim this profile "${item.full_name}"?`,
 			[
 				{
 					text: "Cancel",
 					style: "cancel",
 				},
 				{
-					text: "Confirm",
+					text: "Continue",
 					onPress: () => {
 						// Optionally store the selected profile in a Zustand store
 						// useClaimStore.getState().setSelectedProfile(item);
@@ -27,7 +27,7 @@ export default function ProfileItem({ item }: { item: any }) {
 						router.push("/(auth)/selected-account");
 					},
 				},
-			]
+			],
 		);
 	};
 

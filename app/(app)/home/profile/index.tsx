@@ -50,7 +50,7 @@ const ProfileViewPage = () => {
 					<Text className="text-2xl font-bold">
 						{`${person.full_name}`}
 					</Text>
-					<Text className="text-text-secondary text-center">
+					<Text className="font-regular text-text-secondary text-center">
 						View your account details
 					</Text>
 					<TouchableOpacity
@@ -58,7 +58,7 @@ const ProfileViewPage = () => {
 							router.push("/(app)/home/profile/updateProfile")
 						}
 					>
-						<Text className="text-sm text-blue-500">
+						<Text className="font-semibold text-sm text-blue-500">
 							Edit Profile
 						</Text>
 					</TouchableOpacity>
@@ -72,7 +72,7 @@ const ProfileViewPage = () => {
 						)
 						.map(([section, fields]) => (
 							<View key={section} className="mb-12">
-								<Text className="ml-1 mb-4 pb-2 text-black font-semibold border-b border-gray-300">
+								<Text className="ml-1 pb-2 text-lg font-semibold border-b border-gray-300">
 									{section}
 								</Text>
 
@@ -91,10 +91,10 @@ const ProfileViewPage = () => {
 													key={field.key}
 													className="bg-gray-50 p-4 rounded-xl border border-gray-200"
 												>
-													<Text className="text-gray-500 text-xs mb-1">
+													<Text className="font-regular text-gray-500 text-xs mb-1">
 														{field.header}
 													</Text>
-													<Text className="text-black font-medium">
+													<Text className="font-medium">
 														{formattedValue || "—"}
 													</Text>
 												</View>

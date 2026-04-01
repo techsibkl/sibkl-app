@@ -1,7 +1,7 @@
 import { Flow } from "@/services/Flow/flow.types";
-import { Picker } from "@react-native-picker/picker";
 import React from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
+import { AppPicker } from "../shared/AppPicker";
 
 type Props = {
 	flows: Flow[];
@@ -16,19 +16,22 @@ const FlowSelector = ({ flows, selectedFlowId, onSelect }: Props) => {
 			<View
 				className={`pl-4 h-12 flex border border-border rounded-[15px] bg-white justify-center`}
 			>
-				<Picker
-					placeholder="Select a flow"
-					onValueChange={(v) => onSelect(v)}
-					selectedValue={selectedFlowId}
-					className="font-bold"
-					style={{ fontSize: 12, borderRadius: 40, fontWeight: 900 }}
-				>
-					<Picker.Item label="ALL (assigned to me)" value={0} />
-
-					{flows.map((f) => (
-						<Picker.Item key={f.id} label={f.title} value={f.id} />
-					))}
-				</Picker>
+				<AppPicker
+					value={selectedFlowId}
+					onChange={(v) => onSelect(v)}
+					options={[
+						{ label: "ALL (assigned to me)", value: 0 },
+						...flows.map((f) => ({
+							label: f.title,
+							value: f.id,
+						})),
+					]}
+					renderTrigger={(label) => (
+						<Text className="font-medium text-md">
+							{label || "Select flow"}
+						</Text>
+					)}
+				/>
 			</View>
 		</View>
 	);

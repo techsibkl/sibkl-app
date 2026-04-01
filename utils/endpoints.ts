@@ -64,4 +64,11 @@ export const apiEndpoints = {
 		update: (id: number | string) =>
 			_endpoint(`announcements/update/${id}`),
 	},
+	notifications: {
+		getAll: _endpoint("notifications"),
+		updateAsRead: _endpoint("notifications/mark-read"),
+		updateAsUnread: _endpoint("notifications/mark-unread"),
+		updateAsClosed: _endpoint("notifications/mark-closed"),
+		updateAsReopen: _endpoint("notifications/mark-reopen"),
+	},
 };

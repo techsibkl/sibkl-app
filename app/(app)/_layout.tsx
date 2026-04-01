@@ -19,7 +19,6 @@ export default function AppLayout() {
 					height: 70,
 					paddingTop: 2,
 					paddingHorizontal: 16,
-
 					borderTopWidth: 0.5,
 					borderTopColor: "#E5E5EA",
 				},
@@ -116,6 +115,13 @@ export default function AppLayout() {
 
 			<Tabs.Screen
 				name="announcements"
+				options={{
+					tabBarStyle: { display: "none" },
+					href: null, // removes it from tab navigation
+				}}
+			/>
+			<Tabs.Screen
+				name="notifications"
 				options={{
 					tabBarStyle: { display: "none" },
 					href: null, // removes it from tab navigation

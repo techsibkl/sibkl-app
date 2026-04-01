@@ -1,11 +1,9 @@
 import SharedBody from "@/components/shared/SharedBody";
+import { Colors } from "@/constants/Colors";
 import { sendOTP, verifyOTP } from "@/services/OTP/otp.service";
-import { fetchPeople } from "@/services/Person/person.service";
 import { useAuthStore } from "@/stores/authStore";
 import { useClaimStore } from "@/stores/claimStore";
 import { useSignUpStore } from "@/stores/signUpStore";
-import { apiEndpoints } from "@/utils/endpoints";
-import { secureFetch } from "@/utils/secureFetch";
 import {
 	createUserWithEmailAndPassword,
 	getAuth,
@@ -42,7 +40,7 @@ const Page = () => {
 		if (resendTimer > 0) {
 			const timer = setTimeout(
 				() => setResendTimer(resendTimer - 1),
-				1000
+				1000,
 			);
 			return () => clearTimeout(timer);
 		} else {
@@ -75,28 +73,6 @@ const Page = () => {
 		}
 	};
 
-	const fetchClaimedPerson = async (personId: number) => {
-		const res = await secureFetch(
-			apiEndpoints.users.createUserWithExistingPerson,
-			{
-				method: "POST",
-				body: JSON.stringify({
-					people_id: personId,
-				}),
-			}
-		);
-		const json = await res.json();
-		if (json.success) {
-			// Call react query here
-			await qc.prefetchQuery({
-				queryKey: ["person", personId],
-				queryFn: () => fetchPeople(claimStore.selectedProfile?.id),
-			});
-			router.push("/(auth)/complete-profile");
-			return;
-		}
-	};
-
 	const handleVerifyOTP = async () => {
 		const otpString = otp.join("");
 		if (otpString.length !== 6) {
@@ -112,35 +88,44 @@ const Page = () => {
 			const email = pendingSignUp?.email || null;
 			const result = await verifyOTP(personId, email, otpString);
 
-			if (result.success) {
-				// create firebase account
-				const resEmail = result.data?.email.trim();
-
-				const { user } = await createUserWithEmailAndPassword(
-					getAuth(),
-					resEmail,
-					pendingSignUp?.password!
-				);
-
-				// get full person if selectedProfile is true
-				console.log("Selected profile", claimStore.selectedProfile);
-				if (claimStore.selectedProfile) {
-					await fetchClaimedPerson(claimStore.selectedProfile.id);
-					return;
-				} else {
-					router.push("/(auth)/complete-profile");
-				}
-			} else {
+			if (!result.success) {
 				Alert.alert(
 					"Invalid OTP",
-					"The code you entered is incorrect. Please try again."
+					"The code you entered is incorrect. Please try again.",
 				);
 				setOtp(["", "", "", "", "", ""]);
 				inputRefs.current[0]?.focus();
+				return;
 			}
-		} catch (error) {
-			console.error("OTP verification error:", error);
-			Alert.alert("Error", "Failed to verify OTP. Please try again.");
+
+			// create firebase account
+			const resEmail = result.data?.email.trim();
+
+			// get full person if selectedProfile is true
+			console.log("Selected profile", claimStore.selectedProfile);
+			if (claimStore.selectedProfile) {
+				// await fetchClaimedPerson(claimStore.selectedProfile.id);
+				router.push(
+					`/(auth)/claim-set-password?full_email=${resEmail}&id=${claimStore.selectedProfile.id}`,
+				);
+			} else {
+				// No claimed profile, proceed to complete profile
+				await createUserWithEmailAndPassword(
+					getAuth(),
+					resEmail,
+					pendingSignUp?.password!,
+				);
+				router.push("/(auth)/complete-profile");
+			}
+		} catch (error: any) {
+			if (error.code == "auth/email-already-in-use") {
+				Alert.alert(
+					"Email Already In Use",
+					"The email is already in use by another account. Try logging in instead.",
+				);
+			} else {
+				Alert.alert("Error", "Failed to verify OTP. Please try again.");
+			}
 		} finally {
 			setIsLoading(false);
 		}
@@ -163,7 +148,7 @@ const Page = () => {
 				if (!pendingSignUp || !pendingSignUp.email) {
 					console.error(
 						"[v0] OTP verification error:",
-						"no email found"
+						"no email found",
 					);
 					return;
 				}
@@ -171,7 +156,7 @@ const Page = () => {
 			}
 			Alert.alert(
 				"OTP Sent",
-				"A new verification code has been sent to your email."
+				"A new verification code has been sent to your email.",
 			);
 		} catch (error) {
 			console.error("[v0] Resend OTP error:", error);
@@ -184,52 +169,43 @@ const Page = () => {
 	return (
 		<KeyboardAwareScrollView
 			enableOnAndroid={true}
-			extraScrollHeight={10} // 👈 pushes inputs above keyboard
+			extraScrollHeight={5}
 			keyboardShouldPersistTaps="handled"
 			contentContainerStyle={{ flexGrow: 1 }}
 		>
 			<SharedBody>
 				<View className="flex-1 px-6 py-8">
-					{/* Header with back button */}
-					<View className="flex-row items-center ">
-						{/* <TouchableOpacity onPress={onBack} className="mr-4">
-            <ArrowLeft size={24} color="#374151" />
-          </TouchableOpacity> */}
-						<Text className="text-lg font-semibold text-text">
-							Verify Email
-						</Text>
-					</View>
-
 					{/* Content */}
 					<View className="flex-1 justify-center items-center px-4">
 						{/* Email icon */}
-						<View className="w-20 h-20 bg-primary-50 rounded-full items-center justify-center mb-6">
-							<Mail size={40} color="#AC2212" />
+						<View className="w-20 h-20 bg-primary-100 rounded-full items-center justify-center mb-4">
+							<Mail size={40} color={Colors.primary[700]} />
 						</View>
-
 						{/* Title */}
-						<Text className="text-2xl font-bold text-text text-center mb-4">
+						<Text className="text-2xl font-bold text-text text-center mb-2">
 							Enter Verification Code
 						</Text>
 
 						{/* Description */}
-						<Text className="text-muted-foreground text-center mb-8 leading-relaxed">
-							We sent a 6-digit verification code to{"\n"}
-							<Text className="font-semibold text-text">
-								{claimStore.selectedProfile?.email ||
-									pendingSignUp?.email}
-							</Text>
-							{"\n"}Please enter the code below
+						<Text className="font-regular text-center mb-1">
+							We sent a 6-digit verification code to
+						</Text>
+						<Text className="font-semibold text-text mb-8">
+							{claimStore.selectedProfile?.email ||
+								pendingSignUp?.email}
+						</Text>
+						<Text className="font-regular text-center mb-4">
+							Please enter the code below:
 						</Text>
 
-						<View className="flex-row justify-center items-center gap-2 mb-8">
+						<View className="w-full flex flex-row justify-between items-center self-center gap-1 mb-8">
 							{otp.map((digit, index) => (
 								<TextInput
 									key={index}
-									ref={(ref) =>
-										(inputRefs.current[index] = ref)
-									}
-									className="px-5 py-2 border border-border bg-card rounded-[15px] text-center text-lg font-semibold text-text"
+									ref={(ref) => {
+										inputRefs.current[index] = ref;
+									}}
+									className="px-6 py-5 border border-border bg-card rounded-[15px] text-center text-md font-semibold text-text"
 									value={digit}
 									onChangeText={(value) =>
 										handleOtpChange(value.slice(-1), index)
@@ -247,29 +223,23 @@ const Page = () => {
 
 						{/* Verify Button */}
 						<TouchableOpacity
+							className={`w-full py-4 rounded-[15px] items-center justify-center  bg-primary-600`}
 							onPress={handleVerifyOTP}
 							disabled={otpString.length !== 6 || isLoading}
-							className={`w-full h-12 rounded-[15px] items-center justify-center mb-6 ${
-								otpString.length !== 6 || isLoading
-									? "bg-muted"
-									: "bg-primary-600"
-							}`}
 						>
 							{isLoading ? (
-								<ActivityIndicator color="red" />
+								<ActivityIndicator color="white" />
 							) : (
-								<Text
-									className={`font-semibold ${otpString.length !== 6 ? "text-muted-foreground" : "text-white"}`}
-								>
+								<Text className="text-lg text-white font-bold">
 									Verify Code
 								</Text>
 							)}
 						</TouchableOpacity>
 
 						{/* Resend Section */}
-						<View className="items-center">
-							<Text className="text-muted-foreground text-sm mb-2">
-								Didn`&apos;t receive the code?
+						<View className="items-center mt-6">
+							<Text className="font-regular text-sm mb-2">
+								Didn&apos;t receive the code?
 							</Text>
 
 							{canResend ? (
