@@ -9,4 +9,4 @@ export const CLOUD_API_URL =
 // export const CLOUD_API_URL =
 //   "https://us-central1-sibklcms-prod.cloudfunctions.net";
 
-export const apiBaseUrl = LOCAL_API_URL;
+export const apiBaseUrl = CLOUD_API_URL;
