@@ -74,7 +74,7 @@ const Page = () => {
 							</Text>
 
 							<Text className="font-semibold text-lg text-text">
-								Full Name: {selectedProfile?.full_name}
+								Full Name: {selectedProfile?.full_legal_name}
 							</Text>
 
 							<Text className="text-sm text-text-secondary">

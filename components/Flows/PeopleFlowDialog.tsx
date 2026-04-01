@@ -68,7 +68,7 @@ const PeopleFlowDialog = ({
 						numberOfLines={1}
 						ellipsizeMode="tail"
 					>
-						{personFlow.p__full_name}
+						{personFlow.p__full_legal_name}
 					</Text>
 					<Text
 						className="text-text text-blue-600"

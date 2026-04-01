@@ -40,7 +40,7 @@ const PeopleRowComponent = ({ person }: PeopleRowProps) => {
 					// style={styles.name}
 					className="text-text font-semibold mb-1"
 				>
-					{person.full_name}
+					{person.full_legal_name}
 				</Text>
 				<Text
 					// style={styles.phone}

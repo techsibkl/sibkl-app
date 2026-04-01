@@ -1,7 +1,7 @@
 import SharedBody from "@/components/shared/SharedBody";
 import SkeletonPeopleRow from "@/components/shared/Skeleton/SkeletonPeopleRow";
 import { groupedPersonFields } from "@/constants/const_person";
-import { useSinglePersonQuery } from "@/hooks/People/useSinglePersonQuery";
+import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useAuthStore } from "@/stores/authStore";
 import { SectionEnum } from "@/types/TableField.type";
 import { displayDateAsStr } from "@/utils/helper";
@@ -11,7 +11,9 @@ import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 const ProfileViewPage = () => {
 	const { user } = useAuthStore();
-	const { data: person, isPending } = useSinglePersonQuery(user?.people_id);
+	const { data: person, isPending } = useSinglePersonQuery(
+		user?.person?.id ?? -1,
+	);
 	const router = useRouter();
 
 	if (isPending || !person)
@@ -48,7 +50,7 @@ const ProfileViewPage = () => {
 						resizeMode="contain"
 					/>
 					<Text className="text-2xl font-bold">
-						{`${person.full_name}`}
+						{`${person.full_legal_name}`}
 					</Text>
 					<Text className="font-regular text-text-secondary text-center">
 						View your account details
@@ -68,7 +70,7 @@ const ProfileViewPage = () => {
 					{Object.entries(groupedPersonFields)
 						.filter(
 							([section]) =>
-								section === SectionEnum.PERSONAL_INFORMATION
+								section === SectionEnum.PERSONAL_INFORMATION,
 						)
 						.map(([section, fields]) => (
 							<View key={section} className="mb-12">

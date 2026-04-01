@@ -3,7 +3,9 @@
 import PeopleList from "@/components/People/PeopleList";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
-import { usePeopleQuery } from "@/hooks/People/usePeopleQuery";
+import {
+	usePeopleScopedFieldsQuery
+} from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import React, { useMemo, useState } from "react";
 import { StatusBar, Text, View } from "react-native";
@@ -16,17 +18,17 @@ const PeopleScreen = () => {
 		error,
 		isError,
 		refetch,
-	} = usePeopleQuery();
+	} = usePeopleScopedFieldsQuery();
 
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const filteredPeople = useMemo(() => {
 		return (people ?? []).filter(
 			(person) =>
-				person?.full_name
+				person?.full_legal_name
 					?.toLowerCase()
 					.includes(searchQuery.toLowerCase()) ||
-				person?.phone?.includes(searchQuery)
+				person?.phone?.includes(searchQuery),
 		);
 	}, [people, searchQuery]);
 

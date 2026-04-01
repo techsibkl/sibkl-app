@@ -3,7 +3,7 @@
 import CellList from "@/components/Cells/CellList";
 import SharedBody from "@/components/shared/SharedBody";
 import SkeletonPeopleRow from "@/components/shared/Skeleton/SkeletonPeopleRow";
-import { useSinglePersonQuery } from "@/hooks/People/useSinglePersonQuery";
+import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { displayDateAsStr } from "@/utils/helper";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
@@ -15,7 +15,7 @@ import {
 	StatusBar,
 	Text,
 	TouchableOpacity,
-	View
+	View,
 } from "react-native";
 
 const ProfileScreen = () => {
@@ -180,7 +180,7 @@ const ProfileScreen = () => {
 						className="w-24 h-24 rounded-full mb-4 border-4 border-white"
 					/>
 					<Text className="text-2xl font-bold text-gray-800 mb-1">
-						{person?.full_name}
+						{person?.full_legal_name}
 					</Text>
 				</View>
 			</View>

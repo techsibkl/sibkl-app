@@ -5,6 +5,12 @@ import SendMessageAction from "@/components/Flows/Actions/SendMessage";
 import { FlowStatus } from "@/services/Flow/flow.types";
 
 export const defaultFlowStatusAttrs = {
+	[FlowStatus.IRRELEVANT]: {
+		label: "Irrelevant",
+		icon: "uil:minus-circle",
+		color: "gray",
+	},
+
 	[FlowStatus.NOT_STARTED]: {
 		label: "Not Started",
 		icon: "uil:circle",

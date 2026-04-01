@@ -10,6 +10,7 @@ export const apiEndpoints = {
 	},
 	people: {
 		getAll: _endpoint("people"),
+		getScoped: _endpoint("people/scoped"),
 		getById: (id: number | string) => _endpoint(`people/${id}`),
 		geteWithNoUid: _endpoint(`people/with-no-uid`),
 		update: (id: number | string) => _endpoint(`people/update/${id}`),
@@ -52,7 +53,7 @@ export const apiEndpoints = {
 	users: {
 		createAccount: _endpoint("users/create-account"),
 		createUserWithExistingPerson: _endpoint(
-			"users/create-user-with-existing-person"
+			"users/create-user-with-existing-person",
 		),
 		getPersonOfUid: _endpoint("users/get-person-of-uid"),
 		updateDeviceToken: _endpoint("users/update-device-token"),

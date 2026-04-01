@@ -1,10 +1,10 @@
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { createNote } from "@/services/Note/notes.service";
+import { myToast } from "@/utils/helper";
 import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
 import Toast from "react-native-toast-message";
 import SharedButton from "../shared/SharedButton";
-import { myToast } from "@/utils/helper";
 
 type AddNoteDialogProps = {
 	visible?: boolean;
@@ -25,7 +25,7 @@ const AddNoteDialog = ({
 		const res = await createNote(
 			personFlow.people_id!,
 			note,
-			personFlow.p__district_ids
+			personFlow.p__district_ids,
 		);
 		if (res.success) {
 			setIsLoading(false);
@@ -45,7 +45,7 @@ const AddNoteDialog = ({
 		>
 			<View className="bg-white rounded-lg p-6 w-full max-w-md">
 				<Text className="text-xl font-bold text-gray-800 mb-4">
-					{`Add note for '${personFlow.p__full_name}'`}
+					{`Add note for '${personFlow.p__full_legal_name}'`}
 				</Text>
 
 				<TextInput

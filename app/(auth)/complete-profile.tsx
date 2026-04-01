@@ -1,7 +1,7 @@
 import DynamicFormField from "@/components/shared/DynamicFormField";
 import SharedBody from "@/components/shared/SharedBody";
 import { groupedPersonFields } from "@/constants/const_person";
-import { useSinglePersonQuery } from "@/hooks/People/useSinglePersonQuery";
+import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { updatePeople } from "@/services/Person/person.service";
 import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
@@ -32,7 +32,7 @@ const Page = () => {
 	const authStore = useAuthStore();
 	const { selectedProfile } = useClaimStore();
 	const { data: selectedPerson, isPending } = useSinglePersonQuery(
-		selectedProfile?.id,
+		selectedProfile?.id ?? -1,
 	);
 	const { signUp, user: appUser } = useAuthStore();
 	const [submitAttempted, setSubmitAttempted] = useState(false);
@@ -48,8 +48,7 @@ const Page = () => {
 		formState: { errors, isSubmitting },
 	} = useForm<ProfileFormData>({
 		defaultValues: {
-			first_name: "",
-			last_name: "",
+			full_legal_name: "",
 			email: pendingSignUp?.email ?? appUser?.email ?? "",
 			phone: "",
 			gender: "male",

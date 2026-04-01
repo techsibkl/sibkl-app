@@ -36,7 +36,7 @@ const Page = () => {
 	const filteredProfiles = useMemo(() => {
 		return nameQuery
 			? (maskedPeople ?? []).filter((person) => {
-					return person?.full_name
+					return person?.full_legal_name
 						?.toLowerCase()
 						.includes(nameQuery.trim().toLowerCase());
 				})
@@ -46,7 +46,7 @@ const Page = () => {
 	// Paginate results
 	const visibleProfiles = useMemo(
 		() => filteredProfiles.slice(0, page * PAGE_SIZE),
-		[filteredProfiles, page]
+		[filteredProfiles, page],
 	);
 
 	const handleLoadMore = () => {

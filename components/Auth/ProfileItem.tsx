@@ -4,7 +4,7 @@ import { useRouter } from "expo-router";
 import React from "react";
 import { Alert, Text, TouchableOpacity } from "react-native";
 
-export default function ProfileItem({ item }: { item: any }) {
+export default function ProfileItem({ item }: { item: MaskedPerson }) {
 	const router = useRouter();
 	const claimStore = useClaimStore();
 	//   const [showConfirm, setShowConfirm] = useState(false);
@@ -12,7 +12,7 @@ export default function ProfileItem({ item }: { item: any }) {
 	const handlePress = () => {
 		Alert.alert(
 			"Check Ownership",
-			`Continue to claim this profile "${item.full_name}"?`,
+			`Continue to claim this profile "${item.full_legal_name}"?`,
 			[
 				{
 					text: "Cancel",
@@ -37,7 +37,7 @@ export default function ProfileItem({ item }: { item: any }) {
 			onPress={handlePress}
 		>
 			<Text className="font-semibold text-lg text-text">
-				{item.full_name}
+				{item.full_legal_name}
 			</Text>
 			<Text className="text-sm text-text-secondary">{item.email}</Text>
 			<Text className="text-sm text-text-secondary">{item.phone}</Text>

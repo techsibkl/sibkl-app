@@ -56,7 +56,7 @@ const StepActionDetailDialog = ({
 			personFlow,
 			action.source,
 			getValues("value") ?? action.value,
-			field?.label ?? ""
+			field?.label ?? "",
 		);
 		Toast.show(myToast(res));
 		if (res.success) {
@@ -81,7 +81,7 @@ const StepActionDetailDialog = ({
 						numberOfLines={1}
 						ellipsizeMode="tail"
 					>
-						{personFlow.p__full_name}
+						{personFlow.p__full_legal_name}
 					</Text>
 					<Text
 						className="text-text text-blue-600"

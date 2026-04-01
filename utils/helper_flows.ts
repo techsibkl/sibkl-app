@@ -17,7 +17,7 @@ export function daysAgo(dateInput?: string | Date | null): string {
 }
 
 export function daysAgoTextColorNative(
-	dateInput?: string | Date | null
+	dateInput?: string | Date | null,
 ): string {
 	if (!dateInput) return "#9CA3AF"; // gray-400
 
@@ -37,7 +37,7 @@ export function daysAgoTextColorNative(
 // New function for React Native
 export function getStepStatusStyleNative(
 	step_key?: string,
-	steps?: { [key: string]: FlowStep }
+	steps?: { [key: string]: FlowStep },
 ) {
 	const colorMap: { [key: string]: { bg: string; text: string } } = {
 		gray: { bg: "#e8e8e8ff", text: "#6B7280" },
@@ -53,7 +53,6 @@ export function getStepStatusStyleNative(
 	if (!step || step.status == FlowStatus.NOT_STARTED) {
 		return colorMap.gray;
 	}
-
 	const color =
 		defaultFlowStatusAttrs[step.status || FlowStatus.NOT_STARTED].color;
 	return colorMap[color] || colorMap.gray;
