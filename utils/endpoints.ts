@@ -1,4 +1,14 @@
-import { apiBaseUrl } from "./tempEnv";
+// import { apiBaseUrl } from "./tempEnv";
+
+import Constants from "expo-constants";
+
+const extra = Constants.expoConfig?.extra;
+
+export const ENV = extra?.ENV;
+export const apiBaseUrl = extra?.API_URL;
+
+console.log("ENV:", ENV);
+console.log("API:", apiBaseUrl);
 
 function _endpoint(name: string) {
 	return `${apiBaseUrl}/${name}`;

@@ -4,7 +4,7 @@ import { ReturnVal } from "@/utils/types/returnVal.types";
 
 export const updateDeviceToken = async (
 	uid: string,
-	deviceToken: string
+	deviceToken: string | undefined,
 ): Promise<ReturnVal> => {
 	const payload = {
 		uid,
@@ -15,7 +15,7 @@ export const updateDeviceToken = async (
 		{
 			method: "PUT",
 			body: JSON.stringify(payload),
-		}
+		},
 	);
 	const json: ReturnVal = await response.json();
 	return json;
