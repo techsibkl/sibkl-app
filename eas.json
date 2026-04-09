@@ -1,27 +1,52 @@
 {
-  "cli": {
-    "version": ">= 14.0.2",
-    "appVersionSource": "remote"
-  },
-  "build": {
-    "development": {
-      "developmentClient": true,
-      "distribution": "internal",
-      "ios": {
-        "simulator": true
-      }
-    },
-    "preview": {
-      "distribution": "internal",
-      "android": {
-        "buildType": "apk"
-      }
-    },
-    "production": {
-      "autoIncrement": true
-    }
-  },
-  "submit": {
-    "production": {}
-  }
+	"cli": {
+		"version": ">= 14.0.2",
+		"appVersionSource": "remote"
+	},
+	"build": {
+		"development": {
+			"developmentClient": true,
+			"distribution": "internal",
+			"ios": {
+				"simulator": true
+			}
+		},
+		"preview": {
+			"distribution": "internal",
+			"android": {
+				"buildType": "apk"
+			}
+		},
+		"staging": {
+			"distribution": "internal",
+			"ios": {
+				"simulator": false
+			},
+			"env": {
+				"APP_ENV": "staging",
+				"API_URL": "https://us-central1-leafy-loader-444703-d0.cloudfunctions.net"
+			}
+		},
+		"production": {
+			"distribution": "store",
+			"ios": {
+				"simulator": false
+			},
+			"autoIncrement": true,
+			"env": {
+				"APP_ENV": "production",
+				"API_URL": "https://us-central1-sibklcms-prod.cloudfunctions.net"
+			}
+		}
+	},
+	"submit": {
+		"staging": {
+			"ios": {
+				"appleId": "tech@sibkl.org.my",
+				"ascAppId": "6761758983",
+				"appleTeamId": "HR28GRB742"
+			}
+		},
+		"production": {}
+	}
 }

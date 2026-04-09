@@ -5,9 +5,15 @@ export default ({ config }: { config: any }) => ({
 	expo: {
 		...config.expo,
 
-		name: "SIBKL App",
-		slug: "sibkl-app",
-		version: "1.0.0",
+		name:
+			process.env.APP_ENV === "production"
+				? "SIBKL App"
+				: "SIBKL (Staging)",
+		slug:
+			process.env.APP_ENV === "production"
+				? "sibkl-app"
+				: "sibkl-app-staging",
+		version: "1.1.0",
 		orientation: "portrait",
 		icon: "./assets/images/sibkl-app-icon.png",
 		scheme: "sibklapp",
@@ -16,10 +22,17 @@ export default ({ config }: { config: any }) => ({
 
 		ios: {
 			supportsTablet: true,
-			bundleIdentifier: "com.sibkl.app",
-			googleServicesFile: "./GoogleService-Info.plist",
+			bundleIdentifier:
+				process.env.APP_ENV === "production"
+					? "com.sibkl.app"
+					: "com.sibkl.app.staging",
+			googleServicesFile:
+				process.env.APP_ENV === "production"
+					? "./GoogleService-Info.plist"
+					: "./GoogleService-Info.staging.plist",
 			infoPlist: {
 				UIBackgroundModes: ["remote-notification"], // ← allows background notifications
+				ITSAppUsesNonExemptEncryption: false, // required for Apple Store submission if you use any service that uses encryption (this app does not)
 			},
 		},
 
@@ -30,7 +43,10 @@ export default ({ config }: { config: any }) => ({
 			},
 			googleServicesFile: "./google-services.json",
 			edgeToEdgeEnabled: true,
-			package: "com.sibkl.app",
+			package:
+				process.env.APP_ENV === "production"
+					? "com.sibkl.app"
+					: "com.sibkl.app.staging",
 			softwareKeyboardLayoutMode: "resize",
 		},
 
@@ -74,9 +90,9 @@ export default ({ config }: { config: any }) => ({
 
 			ENV: process.env.APP_ENV,
 			API_URL: process.env.API_URL,
-
 			eas: {
-				projectId: "dc1379b3-8fa8-4f9b-a2f5-87f7b8a4eb8b",
+				// projectId: "dc1379b3-8fa8-4f9b-a2f5-87f7b8a4eb8b",
+				projectId: "383a6cf5-4697-493c-8d20-98564cc6daaf",
 			},
 		},
 	},
