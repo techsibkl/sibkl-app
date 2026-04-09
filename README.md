@@ -41,6 +41,7 @@
 - `npm install -g eas-cli`
 - `eas login`
 - Manually configure `app.config.ts` EAS project ID
+    - Note whether it's EAS `staging` or `prod` project (different IDs)
 
 ```ts
 export default {
@@ -92,6 +93,8 @@ export default {
     - App is built on Expo servers
     - Certificates & provisioning handled automatically
     - Outputs a .ipa file
+
+#### 4. Upload APN auth key to Firebase > Project Settings > Cloud Messaging (One-time only)
 
 #### 3. Submit to TestFlight
 
