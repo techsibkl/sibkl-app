@@ -71,3 +71,16 @@ export enum ManageViewActions {
 	UPDATE,
 	RENAME,
 }
+
+export type FlowSortKey = "last_contacted" | "last_assigned_at";
+export type FlowSortOrder = "asc" | "desc";
+
+// <SharedModal
+// 				visible={noteDialogVisible}
+// 				onClose={() => setNoteDialogVisible(false)}
+// 			>
+// 				<AddNoteDialog
+// 					onDismiss={() => setNoteDialogVisible(false)}
+// 					personFlow={personFlow}
+// 				/>
+// 			</SharedModal>

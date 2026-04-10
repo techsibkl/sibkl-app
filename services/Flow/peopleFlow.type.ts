@@ -10,6 +10,7 @@ export interface PeopleFlow extends PrefixedPerson {
 	people_id?: number; // Foreign key to people.id
 	flow_id?: number; // Foreign key to flows.id
 	assignee_id?: number; // Foreign key to people.id
+	assignee_name?: string; // Name of the assignee
 	district_id?: number; // Foreign key to district.id
 	assignee?: string; // Optional, person responsible for the flow
 	remarks?: string; // Optional notes

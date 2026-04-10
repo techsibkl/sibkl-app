@@ -9,6 +9,7 @@ interface SharedSearchBarProps {
 	className?: string;
 	iconColor?: string;
 	placeholderTextColor?: string;
+	unstyled?: boolean;
 }
 
 export const SharedSearchBar: React.FC<SharedSearchBarProps> = ({
@@ -18,9 +19,10 @@ export const SharedSearchBar: React.FC<SharedSearchBarProps> = ({
 	className = "flex-row items-center rounded-[15px] mx-4 px-4 py-3  bg-gray-200 border border-border overflow-hidden",
 	iconColor = "#777",
 	placeholderTextColor = "#777",
+	unstyled = false,
 }) => {
 	return (
-		<View className="pb-4 border-b border-border">
+		<View className={unstyled ? "" : "pb-4 border-b border-border"}>
 			<View className={className}>
 				<Search size={20} color={iconColor} />
 				<TextInput

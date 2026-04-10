@@ -1,54 +1,79 @@
-import { Colors } from "@/constants/Colors";
-import { FlowStep, SingleCustomAttr } from "@/services/Flow/flow.types";
+import { defaultFlowStatusAttrs } from "@/constants/const_flows";
+import {
+	FlowStatus,
+	FlowStep,
+	SingleCustomAttr,
+} from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { daysAgo } from "@/utils/helper";
 import {
-    daysAgoTextColorNative,
-    getStepStatusStyleNative,
+	daysAgoTextColorNative,
+	getStepStatusStyleNative,
 } from "@/utils/helper_flows";
-import { useRouter } from "expo-router";
-import { CircleDashedIcon, MoreVerticalIcon } from "lucide-react-native";
-import React, { useCallback, useMemo, useState } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
-import { Menu } from "react-native-paper";
+import { getInitials } from "@/utils/helper_profile";
+import {
+	ChevronRightIcon,
+	CircleDashedIcon,
+	FunnelIcon,
+	UserIcon,
+} from "lucide-react-native";
+import React, { useMemo, useState } from "react";
+import { Text, TouchableOpacity, View } from "react-native";
 import AddNoteDialog from "../Notes/NotesDialog";
 import SharedModal from "../shared/SharedModal";
 import PeopleFlowDialog from "./PeopleFlowDialog";
 
 type PeopleFlowRowProps = {
 	personFlow: PeopleFlow;
+	flow_title?: string;
+	assignee_name?: string;
 	steps: { [key: string]: FlowStep };
 	custom_attr: { [key: string]: SingleCustomAttr };
 };
 
+// Map defaultFlowStatusAttrs color strings → avatar bg/icon hex values
+const STATUS_AVATAR_COLORS: Record<string, { bg: string; icon: string }> = {
+	gray: { bg: "#f3f4f6", icon: "#9ca3af" },
+	purple: { bg: "#ede9fe", icon: "#7c3aed" },
+	green: { bg: "#dcfce7", icon: "#16a34a" },
+	red: { bg: "#fee2e2", icon: "#dc2626" },
+};
+
+const getAvatarColors = (status?: FlowStatus) => {
+	if (!status) return STATUS_AVATAR_COLORS.gray;
+	const color = defaultFlowStatusAttrs[status]?.color ?? "gray";
+	return STATUS_AVATAR_COLORS[color] ?? STATUS_AVATAR_COLORS.gray;
+};
+
 const PeopleFlowRowComponent = ({
 	personFlow,
+	flow_title,
+	assignee_name,
 	steps,
 	custom_attr,
 }: PeopleFlowRowProps) => {
-	const router = useRouter();
 	const [modalVisible, setModalVisible] = useState(false);
 	const [noteDialogVisible, setNoteDialogVisible] = useState(false);
-	const [menuVisible, setMenuVisible] = useState(false);
 
 	const _step = useMemo(() => {
 		return personFlow.step_key ? steps[personFlow.step_key] : null;
 	}, [personFlow.step_key, steps]);
 
-	const goToProfile = useCallback(() => {
-		router.push(`/people/profile/${personFlow.people_id}`);
-	}, [personFlow.people_id, router]);
-
 	const colors = getStepStatusStyleNative(personFlow.step_key, steps);
+	const avatarColors = getAvatarColors(personFlow.status);
+	const initials = getInitials(personFlow.p__full_legal_name);
+	const effectiveAssignee =
+		assignee_name ?? personFlow.last_contacted_by_name ?? null;
 
 	return (
 		<>
 			<TouchableOpacity
 				onPress={() => setModalVisible(true)}
-				activeOpacity={0.7}
+				activeOpacity={0.6}
 			>
-				<View className="flex-col items-center py-4 border-b border-border-secondary">
-					<View className="flex-row w-full mb-2 pr-2 justify-between items-center">
+				<View className="flex-col py-4 border-b border-border-secondary">
+					{/* Top row: status badge + last contacted */}
+					<View className="flex-row justify-between items-center mb-3">
 						<View
 							className="px-3 py-1.5 rounded-full flex-row items-center gap-1 self-start"
 							style={{ backgroundColor: colors.bg }}
@@ -61,80 +86,110 @@ const PeopleFlowRowComponent = ({
 								{_step?.label ?? "Not Started"}
 							</Text>
 						</View>
-						{/* Last Contacted */}
 
-						<Text
-							className="text-xs font-medium italic"
-							style={{
-								color: daysAgoTextColorNative(
-									personFlow.last_contacted,
-								),
-							}}
-						>
-							{daysAgo(personFlow.last_contacted)}
-						</Text>
+						{personFlow.last_contacted && (
+							<Text
+								className="text-xs font-medium italic"
+								style={{
+									color: daysAgoTextColorNative(
+										personFlow.last_contacted,
+									),
+								}}
+							>
+								{daysAgo(personFlow.last_contacted)}
+							</Text>
+						)}
 					</View>
-					<View className="flex-row items-center justify-center gap-x-2">
-						{/* Avatar */}
-						<View className="w-12 h-12 rounded-full bg-background overflow-hidden">
-							<Image
-								source={require("../../assets/images/person.png")}
-								className="w-full h-full"
-								resizeMode="cover"
-							/>
+
+					{/* Main row: avatar + info + chevron */}
+					<View className="flex-row items-center gap-x-3">
+						{/* Color-coded avatar with initials */}
+						<View
+							className="w-11 h-11 rounded-full items-center justify-center"
+							style={{ backgroundColor: avatarColors.bg }}
+						>
+							<Text
+								className="text-sm font-bold"
+								style={{ color: avatarColors.icon }}
+							>
+								{initials}
+							</Text>
 						</View>
 
-						{/* Person Info */}
-						<View className="flex-1 gap-y-1">
-							<Text className="text-text font-semibold">
+						{/* Name, phone, flow source, assignee */}
+						<View className="flex-1 gap-y-0.5">
+							<Text
+								className="text-text font-semibold"
+								numberOfLines={1}
+							>
 								{personFlow.p__full_legal_name}
 							</Text>
-							<Text className="text-text-secondary text-sm">
+							<Text
+								className="text-text-secondary text-sm"
+								numberOfLines={1}
+							>
 								{personFlow.p__phone ?? "-"}
 							</Text>
+
+							{/* Flow source */}
+							{flow_title && (
+								<View className="flex-row items-center gap-x-1 flex-wrap">
+									<FunnelIcon size={10} color="#9ca3af" />
+									<Text
+										className="text-xs text-gray-400 mt-0.5"
+										numberOfLines={1}
+									>
+										{flow_title}
+									</Text>
+								</View>
+							)}
+
+							{/* Assignee + last assigned */}
+							{(effectiveAssignee ||
+								personFlow.last_assigned_at) && (
+								<View className="flex-row items-center gap-x-1 flex-wrap">
+									{effectiveAssignee && (
+										<>
+											<UserIcon
+												size={10}
+												color="#9ca3af"
+											/>
+											<Text
+												className="text-xs text-gray-400"
+												numberOfLines={1}
+											>
+												{effectiveAssignee}
+											</Text>
+										</>
+									)}
+									{effectiveAssignee &&
+										personFlow.last_assigned_at && (
+											<Text className="text-xs text-gray-300">
+												·
+											</Text>
+										)}
+									{personFlow.last_assigned_at && (
+										<Text className="text-xs text-gray-400 italic">
+											assigned{" "}
+											{daysAgo(
+												personFlow.last_assigned_at,
+											)}
+										</Text>
+									)}
+								</View>
+							)}
 						</View>
 
-						<Menu
-							visible={menuVisible}
-							contentStyle={{ backgroundColor: "white" }}
-							onDismiss={() => setMenuVisible(false)}
-							anchor={
-								<TouchableOpacity
-									onPress={() => setMenuVisible(true)}
-								>
-									<MoreVerticalIcon size={20} color="#999" />
-								</TouchableOpacity>
-							}
-						>
-							<Menu.Item
-								onPress={() => {
-									setMenuVisible(false);
-									goToProfile();
-									// Handle view profile
-								}}
-								titleStyle={{ color: Colors.gray[700] }}
-								title="View profile"
-							/>
-							{/* <Menu.Item
-								onPress={() => {
-									setMenuVisible(false);
-									// Handle assign
-								}}
-								title="Assign"
-							/> */}
-							<Menu.Item
-								onPress={() => {
-									setMenuVisible(false);
-									setNoteDialogVisible(true);
-									// Handle add note
-								}}
-								titleStyle={{ color: Colors.gray[700] }}
-								title="Add note"
-							/>
-						</Menu>
+						{/* Chevron — signals tappability */}
+						<ChevronRightIcon
+							size={16}
+							color="#d1d5db"
+							strokeWidth={2}
+						/>
 					</View>
 				</View>
 			</TouchableOpacity>
+
 			<SharedModal
 				visible={modalVisible}
 				onClose={() => setModalVisible(false)}
@@ -147,6 +202,7 @@ const PeopleFlowRowComponent = ({
 					colors={colors}
 				/>
 			</SharedModal>
+
 			<SharedModal
 				visible={noteDialogVisible}
 				onClose={() => setNoteDialogVisible(false)}

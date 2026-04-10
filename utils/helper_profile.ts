@@ -135,3 +135,23 @@ export const pickFieldsBySection = (
 		return acc;
 	}, {} as Partial<Person>);
 };
+
+export function getInitials(
+	name?: string | null,
+	fallback: string = "-",
+): string {
+	if (!name?.trim()) return fallback;
+
+	// Remove non-alphanumeric characters, split by spaces, filter empty strings
+	const words = name
+		.split(/\s+/)
+		.map((word) => word.replace(/[^a-zA-Z0-9]/g, ""))
+		.filter(Boolean);
+
+	if (words.length === 0) return fallback;
+
+	const firstInitial = words[0]?.charAt(0) ?? "";
+	const secondInitial = words[1]?.charAt(0) ?? "";
+
+	return (firstInitial + secondInitial).toUpperCase() || fallback;
+}

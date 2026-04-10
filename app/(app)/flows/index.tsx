@@ -4,10 +4,15 @@ import { StatusBar, TouchableOpacity, View } from "react-native";
 
 import FlowSelector from "@/components/Flows/FlowSelect";
 import PeopleFlowList from "@/components/Flows/PeopleFlowAssignedList";
+import SortButton from "@/components/Flows/SortButton";
 import FlowStatusTabs from "@/components/Flows/StatusTabs";
 import SharedBody from "@/components/shared/SharedBody";
 import { useFlowsQuery, usePeopleFlowQuery } from "@/hooks/Flows/useFlowsQuery";
-import { FlowStatus } from "@/services/Flow/flow.types";
+import {
+	FlowSortKey,
+	FlowSortOrder,
+	FlowStatus,
+} from "@/services/Flow/flow.types";
 import { useAuthStore } from "@/stores/authStore";
 import { useLocalSearchParams } from "expo-router";
 import { CheckIcon } from "lucide-react-native";
@@ -20,6 +25,8 @@ const FlowsPage = () => {
 	const [selectedStatus, setSelectedStatus] = useState<FlowStatus | null>(
 		null,
 	);
+	const [sortKey, setSortKey] = useState<FlowSortKey | null>(null);
+	const [sortOrder, setSortOrder] = useState<FlowSortOrder>("desc");
 
 	// This is for single selected flow list
 	const [selectedFlowId, setSelectedFlowId] = useState<number>(0);
@@ -90,12 +97,35 @@ const FlowsPage = () => {
 		user?.person?.id,
 	]);
 
-	// Final list shown in the list — status tab applied on top
+	// Final list — status tab + sort applied on top
 	const effectivePeopleFlow = useMemo(() => {
-		if (selectedStatus === null) return preFilteredPeopleFlow;
-		return preFilteredPeopleFlow.filter((p) => p.status === selectedStatus);
-	}, [preFilteredPeopleFlow, selectedStatus]);
+		let list =
+			selectedStatus === null
+				? preFilteredPeopleFlow
+				: preFilteredPeopleFlow.filter(
+						(p) => p.status === selectedStatus,
+					);
 
+		if (sortKey) {
+			list = [...list].sort((a, b) => {
+				const aVal = a[sortKey] ? new Date(a[sortKey]).getTime() : 0;
+				const bVal = b[sortKey] ? new Date(b[sortKey]).getTime() : 0;
+				return sortOrder === "asc" ? aVal - bVal : bVal - aVal;
+			});
+		}
+
+		return list;
+	}, [preFilteredPeopleFlow, selectedStatus, sortKey, sortOrder]);
+
+	const handleSortChange = (key: FlowSortKey, order: FlowSortOrder) => {
+		setSortKey(key);
+		setSortOrder(order);
+	};
+
+	const handleSortClear = () => {
+		setSortKey(null);
+		setSortOrder("desc");
+	};
 	const refresh = async () => {
 		selectedFlowId === 0 ? await refetch() : await singleFlowRefetch();
 		flowRefetch();
@@ -104,14 +134,23 @@ const FlowsPage = () => {
 	return (
 		<SharedBody>
 			<StatusBar className="bg-background" />
-
-			<SharedSearchBar
-				searchQuery={searchQuery}
-				onSearchChange={setSearchQuery}
-				placeholder="Search keywords..."
-			/>
-
-			<View className="flex-row w-full justify-between gap-2 items-center px-4 mt-2">
+			<View className="flex-row items-center pr-4 pb-4 border-b border-border">
+				<View className="flex-1">
+					<SharedSearchBar
+						searchQuery={searchQuery}
+						onSearchChange={setSearchQuery}
+						placeholder="Search keywords..."
+						unstyled
+					/>
+				</View>
+				<SortButton
+					sortKey={sortKey}
+					sortOrder={sortOrder}
+					onChange={handleSortChange}
+					onClear={handleSortClear}
+				/>
+			</View>
+			<View className="flex-row w-full justify-between gap-2 items-center px-4 mt-4">
 				<FlowSelector
 					flows={flows ?? []}
 					selectedFlowId={selectedFlowId}
