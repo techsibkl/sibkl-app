@@ -4,8 +4,10 @@ import { StatusBar, TouchableOpacity, View } from "react-native";
 
 import FlowSelector from "@/components/Flows/FlowSelect";
 import PeopleFlowList from "@/components/Flows/PeopleFlowAssignedList";
+import FlowStatusTabs from "@/components/Flows/StatusTabs";
 import SharedBody from "@/components/shared/SharedBody";
 import { useFlowsQuery, usePeopleFlowQuery } from "@/hooks/Flows/useFlowsQuery";
+import { FlowStatus } from "@/services/Flow/flow.types";
 import { useAuthStore } from "@/stores/authStore";
 import { useLocalSearchParams } from "expo-router";
 import { CheckIcon } from "lucide-react-native";
@@ -15,6 +17,9 @@ const FlowsPage = () => {
 	const { user } = useAuthStore();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [isMeMode, setIsMeMode] = useState(false);
+	const [selectedStatus, setSelectedStatus] = useState<FlowStatus | null>(
+		null,
+	);
 
 	// This is for single selected flow list
 	const [selectedFlowId, setSelectedFlowId] = useState<number>(0);
@@ -56,13 +61,13 @@ const FlowsPage = () => {
 		return singleFlowPending || allPeoplePending || flowsPending;
 	}, [singleFlowPending, allPeoplePending, flowsPending]);
 
-	const effectivePeopleFlow = useMemo(() => {
+	// Pre-status-filter list (search + me mode applied) — fed into the tab counts
+	const preFilteredPeopleFlow = useMemo(() => {
 		let list =
 			selectedFlowId === 0
-				? (peopleFlow ?? []) // ALL flows
-				: (singleFlowPeople ?? []); // Single flow
+				? (peopleFlow ?? [])
+				: (singleFlowPeople ?? []);
 
-		// Apply search filter
 		list = list.filter(
 			(person) =>
 				person?.p__full_legal_name
@@ -71,10 +76,10 @@ const FlowsPage = () => {
 				person?.p__phone?.includes(searchQuery),
 		);
 
-		// Apply assigned-to-me filter only if viewMode is "assigned"
 		if (isMeMode) {
 			list = list.filter((p) => p.assignee_id === user?.person?.id);
 		}
+
 		return list;
 	}, [
 		selectedFlowId,
@@ -84,6 +89,12 @@ const FlowsPage = () => {
 		isMeMode,
 		user?.person?.id,
 	]);
+
+	// Final list shown in the list — status tab applied on top
+	const effectivePeopleFlow = useMemo(() => {
+		if (selectedStatus === null) return preFilteredPeopleFlow;
+		return preFilteredPeopleFlow.filter((p) => p.status === selectedStatus);
+	}, [preFilteredPeopleFlow, selectedStatus]);
 
 	const refresh = async () => {
 		selectedFlowId === 0 ? await refetch() : await singleFlowRefetch();
@@ -100,7 +111,7 @@ const FlowsPage = () => {
 				placeholder="Search keywords..."
 			/>
 
-			<View className="flex-row w-full justify-between gap-2 items-center px-4 py-2">
+			<View className="flex-row w-full justify-between gap-2 items-center px-4 mt-2">
 				<FlowSelector
 					flows={flows ?? []}
 					selectedFlowId={selectedFlowId}
@@ -117,7 +128,7 @@ const FlowsPage = () => {
 								<Text
 									className={`text-sm font-semibold ${isMeMode ? "text-white" : "text-blue-300"}`}
 								>
-									{"Assigned"}
+									{"Assigned to Me"}
 								</Text>
 							</View>
 
@@ -126,6 +137,13 @@ const FlowsPage = () => {
 					)}
 				</>
 			</View>
+
+			{/* Status tab bar — counts reflect search + me-mode filter */}
+			<FlowStatusTabs
+				peopleFlow={preFilteredPeopleFlow}
+				selectedStatus={selectedStatus}
+				onSelect={setSelectedStatus}
+			/>
 
 			<PeopleFlowList
 				key={flows?.map((f) => f.id).toString()}

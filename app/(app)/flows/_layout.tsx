@@ -14,7 +14,7 @@ export default function Layout() {
 				options={{
 					headerShown: true,
 					header() {
-						return <SharedHeader title="Flows" />;
+						return <SharedHeader title="Follow-Up" />;
 					},
 				}}
 			/>

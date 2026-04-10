@@ -1,4 +1,5 @@
 import { Person } from "../Person/person.type";
+import { FlowStatus } from "./flow.types";
 
 // Helper type to prefix all Person properties with 'p__'
 type PrefixedPerson = {
@@ -16,12 +17,7 @@ export interface PeopleFlow extends PrefixedPerson {
 	step_key?: string; // Current steps identifier (where the person is at)
 	step_curr_label?: string; // Current step group label
 	step_curr_key?: string; // Current step key
-	status?:
-		| "NEW"
-		| "PENDING"
-		| "IN PROGRESS"
-		| "COMPLETED SUCCESS"
-		| "COMPLETED FAIL"; // Current status of the person in the flow
+	status?: FlowStatus;
 	completed?: boolean; // Whether the person completed the flow
 	last_contacted_by?: number; // Foreign key to people.id
 	last_contacted_by_name?: string; // Name of the last contact person
