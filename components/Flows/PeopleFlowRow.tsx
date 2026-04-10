@@ -198,6 +198,8 @@ const PeopleFlowRowComponent = ({
 					onDismiss={() => setModalVisible(false)}
 					personFlow={personFlow}
 					step={_step}
+					steps={steps}
+					flow_id={personFlow.flow_id!}
 					custom_attr={custom_attr}
 					colors={colors}
 				/>

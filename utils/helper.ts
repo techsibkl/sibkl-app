@@ -3,7 +3,7 @@ import { ReturnVal } from "./types/returnVal.types";
 
 export const displayDateAsStr = (
 	value: string | Date | null | undefined,
-	showYear: boolean = true
+	showYear: boolean = true,
 ): string => {
 	if (!value) return "-";
 
@@ -115,7 +115,7 @@ export function toLocalDate(str: string | null): Date | null {
 export const dateReplacer = function (
 	this: Record<string, any>,
 	key: string,
-	value: any
+	value: any,
 ) {
 	if (this[key] instanceof Date) {
 		const date: Date = this[key];
@@ -158,14 +158,14 @@ export const featureNotReady = (toast: any) => {
 
 // Used to compare different data types
 export function powerEqual(a: any, b: any): boolean {
-	const isDateA = a instanceof Date;
-	const isDateB = b instanceof Date;
+	const normalize = (val: any): any => {
+		if (val === undefined || val === null || val === "") return null;
+		const asDate = new Date(val);
+		if (!isNaN(asDate.getTime())) return asDate.getTime();
+		return String(val).trim().toLowerCase();
+	};
 
-	if (isDateA && isDateB) {
-		return a.getTime() === b.getTime();
-	}
-
-	return a === b;
+	return normalize(a) === normalize(b);
 }
 
 export const formatDate = (dateString: string): string | null => {

@@ -26,4 +26,5 @@ export interface PeopleFlow extends PrefixedPerson {
 	last_assigned_at?: Date; // Timestamp of last assignment
 	created_at?: Date; // Timestamp of creation
 	updated_at?: Date; // Timestamp of last update
+	[key: string]: any; // Allow for additional properties
 }

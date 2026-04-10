@@ -2,7 +2,7 @@ import { apiEndpoints } from "@/utils/endpoints";
 import { dateReplacer, formatObjStrToDate } from "@/utils/helper";
 import { secureFetch } from "@/utils/secureFetch";
 import { ReturnVal } from "@/utils/types/returnVal.types";
-import { Flow } from "./flow.types";
+import { Flow, FlowStep } from "./flow.types";
 import { PeopleFlow } from "./peopleFlow.type";
 
 export async function fetchFlows(
@@ -93,5 +93,36 @@ export const updatePeopleFlowSingleCustomAttr = async (
 	);
 
 	const data = await response.json();
+	return data;
+};
+
+export const updateStep = async (
+	flowId: number,
+	peopleIds: number[],
+	step_key: string | null,
+	step: FlowStep,
+	districtId?: number,
+): Promise<ReturnVal> => {
+	let payload: any = {
+		flowId,
+		peopleIds,
+		step_key,
+		districtId,
+	};
+
+	if (step !== undefined) {
+		payload.step = JSON.stringify(step);
+	}
+
+	// Send the request to the server
+	let response = await secureFetch(`${apiEndpoints.peopleFlows.updateStep}`, {
+		method: "PUT",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(payload),
+	});
+
+	let data = await response.json();
 	return data;
 };
