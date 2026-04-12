@@ -3,38 +3,39 @@
 import PeopleList from "@/components/People/PeopleList";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
-import { usePeopleQuery } from "@/hooks/People/usePeopleQuery";
+import {
+	usePeopleScopedFieldsQuery
+} from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
-import { useMemo, useState } from "react";
-import { ActivityIndicator, StatusBar, Text, View } from "react-native";
+import React, { useMemo, useState } from "react";
+import { StatusBar, Text, View } from "react-native";
 
 const PeopleScreen = () => {
 	const { isDark } = useThemeColors();
-	const { data: people, isPending, error, isError } = usePeopleQuery();
+	const {
+		data: people,
+		isPending,
+		error,
+		isError,
+		refetch,
+	} = usePeopleScopedFieldsQuery();
 
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const filteredPeople = useMemo(() => {
 		return (people ?? []).filter(
 			(person) =>
-				person?.full_name
+				person?.full_legal_name
 					?.toLowerCase()
 					.includes(searchQuery.toLowerCase()) ||
-				person?.phone?.includes(searchQuery)
+				person?.phone?.includes(searchQuery),
 		);
 	}, [people, searchQuery]);
 
-	// const handlePersonPress = (person: Person) => {
-	//   // Navigate to profile or handle person selection
-	//   console.log("Opening profile for:", person.fullName);
-	// };
+	const refresh = async () => {
+		await refetch();
+	};
 
-	if (isPending)
-		return (
-			<SharedBody>
-				<ActivityIndicator />
-			</SharedBody>
-		);
 	if (isError)
 		return (
 			<SharedBody>
@@ -47,7 +48,7 @@ const PeopleScreen = () => {
 	return (
 		<SharedBody>
 			<StatusBar
-				className="bg-background dark:bg-background-dark"
+				className="bg-background "
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
 			{/* Search Bar */}
@@ -58,7 +59,11 @@ const PeopleScreen = () => {
 			/>
 			{/* People List */}
 			<View className="flex-1">
-				<PeopleList people={filteredPeople} />
+				<PeopleList
+					people={filteredPeople}
+					onRefresh={refresh}
+					isPending={isPending}
+				/>
 			</View>
 		</SharedBody>
 	);

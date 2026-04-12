@@ -1,18 +1,25 @@
 import SharedBody from "@/components/shared/SharedBody";
 import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "expo-router";
 import {
 	CircleQuestionMark,
-	FileText,
 	LockKeyhole,
-	Mail,
-	Moon,
 	SquareArrowRight,
+	ThumbsUpIcon,
 } from "lucide-react-native";
-import { useState } from "react";
-import { Alert, Switch, Text, TouchableOpacity, View } from "react-native";
+import React, { useState } from "react";
+import {
+	Alert,
+	Linking,
+	Switch,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
 
 export default function SettingsScreen() {
 	const { signOut } = useAuthStore();
+	const router = useRouter();
 	const [darkTheme, setDarkTheme] = useState(true);
 
 	const handleLogout = () => {
@@ -27,46 +34,55 @@ export default function SettingsScreen() {
 	};
 
 	const settingsOptions = [
+		// {
+		// 	id: "darkTheme",
+		// 	icon: <Moon className="w-6 h-6 text-gray-400" />,
+		// 	title: "Dark Theme Toggle",
+		// 	subtitle: "Switch between dark and light mode",
+		// 	hasToggle: true,
+		// 	toggleValue: darkTheme,
+		// 	onToggle: setDarkTheme,
+		// },
+		// {
+		// 	id: "changeEmail",
+		// 	icon: <Mail className="w-6 h-6 text-gray-400" />,
+		// 	title: "Change email",
+		// 	subtitle: "Update your email address",
+		// 	onPress: () => router.push("/(app)/settings/changeEmail"),
+		// },
 		{
-			id: "darkTheme",
-			icon: <Moon className="w-6 h-6 text-gray-400" />,
-			title: "Dark Theme Toggle",
-			subtitle: "Switch between dark and light mode",
-			hasToggle: true,
-			toggleValue: darkTheme,
-			onToggle: setDarkTheme,
-		},
-		{
-			id: "changeEmail",
-			icon: <Mail className="w-6 h-6 text-gray-400" />,
-			title: "Change email",
-			subtitle: "Update your email address",
-			onPress: () => console.log("Change email pressed"),
+			id: "faqs",
+			icon: <CircleQuestionMark className="w-6 h-6 text-gray-400" />,
+			title: "FAQs",
+			subtitle: "Frequently asked questions",
+			onPress: () => router.push("/(app)/settings/faq/"),
 		},
 		{
 			id: "changePassword",
 			icon: <LockKeyhole className="w-6 h-6 text-gray-400" />,
 			title: "Change password",
 			subtitle: "••••••••",
-			onPress: () => console.log("Change password pressed"),
+			onPress: () => router.push("/(app)/settings/changePassword"),
 		},
 		{
-			id: "privacyPolicy",
-			icon: <FileText className="w-6 h-6 text-gray-400" />,
-			title: "Privacy Policy",
-			subtitle: "View our privacy policy",
-			onPress: () => console.log("Privacy Policy pressed"),
+			id: "feedback",
+			icon: <ThumbsUpIcon className="w-6 h-6 text-gray-400" />,
+			title: "Feedback Form",
+			subtitle: "Submit your feedback here",
+			onPress: () =>
+				Linking.openURL("https://forms.gle/PWixJJ5dYgSVuqXv6"),
 		},
-		{
-			id: "faqs",
-			icon: <CircleQuestionMark className="w-6 h-6 text-gray-400" />,
-			title: "FAQs",
-			subtitle: "Frequently asked questions",
-			onPress: () => console.log("FAQs pressed"),
-		},
+		// {
+		// 	id: "privacyPolicy",
+		// 	icon: <FileText className="w-6 h-6 text-gray-400" />,
+		// 	title: "Privacy Policy",
+		// 	subtitle: "View our privacy policy",
+		// 	onPress: () => console.log("Privacy Policy pressed"),
+		// },
+
 		{
 			id: "logout",
-			icon: <SquareArrowRight className="w-6 h-6 text-red-500" />,
+			icon: <SquareArrowRight className="w-6 h-6 text-red-700" />,
 			title: "Logout",
 			subtitle: "Sign out of your account",
 			isDestructive: true,
@@ -94,11 +110,11 @@ export default function SettingsScreen() {
 						{/* Content */}
 						<View className="flex-1">
 							<Text
-								className={`text-lg font-medium ${option.isDestructive ? "text-red-500" : "text-text"}`}
+								className={`text-lg font-semibold ${option.isDestructive ? "text-red-500" : "text-text"}`}
 							>
 								{option.title}
 							</Text>
-							<Text className="text-gray-400 text-sm mt-1">
+							<Text className="font-regular text-gray-500 text-sm mt-1">
 								{option.subtitle}
 							</Text>
 						</View>
@@ -114,7 +130,7 @@ export default function SettingsScreen() {
 									true: "#10B981",
 								}}
 								thumbColor={
-									option.toggleValue ? "#ffffff" : "#9CA3AF"
+									option.toggleValue ? "#ffffff" : "#6b7280"
 								}
 							/>
 						) : (

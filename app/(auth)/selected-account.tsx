@@ -4,10 +4,17 @@ import { sendOTP } from "@/services/OTP/otp.service";
 import { useClaimStore } from "@/stores/claimStore";
 import { useSignUpStore } from "@/stores/signUpStore";
 import { useRouter } from "expo-router";
-import { Eye, EyeOff } from "lucide-react-native";
-import React, { useState } from "react";
+import { Mail } from "lucide-react-native";
+import React from "react";
 import { useForm } from "react-hook-form";
-import { Alert, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import {
+	ActivityIndicator,
+	Alert,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
+import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 const Page = () => {
 	type signUpFormData = {
 		email: string;
@@ -16,7 +23,6 @@ const Page = () => {
 	const router = useRouter();
 	const { selectedProfile } = useClaimStore();
 	const signUpStore = useSignUpStore();
-	const [showPassword, setShowPassword] = useState(false);
 	const {
 		control,
 		handleSubmit,
@@ -28,7 +34,7 @@ const Page = () => {
 	const signUp = async (password: string) => {
 		console.log(
 			"sneding verification email for this email:",
-			selectedProfile?.email
+			selectedProfile?.email,
 		);
 		// 1. Send OTP
 
@@ -50,75 +56,59 @@ const Page = () => {
 
 	return (
 		<SharedBody>
-			<ScrollView
-				className="flex-1 px-6 py-8"
-				showsVerticalScrollIndicator={false}
+			<KeyboardAwareScrollView
+				className="flex-1 bg-background p-6"
+				enableOnAndroid={true}
+				extraScrollHeight={5}
+				keyboardShouldPersistTaps="handled"
+				contentContainerStyle={{
+					flexGrow: 1,
+				}}
 			>
-				<Text className="text-2xl font-bold mb-6">
-					Create New Account
-				</Text>
+				<View className="gap-y-4">
+					{selectedProfile && (
+						<View>
+							<Text className="text-sm italic text-text-secondary">
+								*Is this you? You are attempting to claim this
+								profile
+							</Text>
 
-				{/* <Text className="text-2xl font-bold mb-6">
-          {JSON.stringify(selectedProfile)}
-        </Text> */}
+							<Text className="font-semibold text-lg text-text">
+								Full Name: {selectedProfile?.full_legal_name}
+							</Text>
 
-				{/* Email */}
-				<FormField
-					name="email"
-					label="Email"
-					control={control}
-					errors={errors}
-					editable={selectedProfile ? false : true}
-				/>
+							<Text className="text-sm text-text-secondary">
+								Phone: {selectedProfile?.phone}
+							</Text>
+						</View>
+					)}
 
-				{/* Password */}
-				<FormField
-					control={control}
-					label="Password"
-					name="password"
-					rules={{ required: "Password is required", minLength: 6 }}
-					errors={errors}
-					secureTextEntry={!showPassword}
-					rightIcon={
-						<TouchableOpacity
-							onPress={() => setShowPassword(!showPassword)}
-						>
-							{showPassword ? (
-								<EyeOff size={20} color="#9ca3af" />
-							) : (
-								<Eye size={20} color="#9ca3af" />
-							)}
-						</TouchableOpacity>
-					}
-				/>
-
-				{selectedProfile && (
-					<View>
-						<Text className="text-sm text-text-secondary">
-							*You can change the information below later
-						</Text>
-
-						<Text className="font-semibold text-lg text-text">
-							Full Name: {selectedProfile?.full_name}
-						</Text>
-
-						<Text className="text-sm text-text-secondary">
-							Phone: {selectedProfile?.phone}
-						</Text>
-					</View>
-				)}
+					{/* Email */}
+					<FormField
+						name="email"
+						label="Claim Email"
+						control={control}
+						errors={errors}
+						disabled={selectedProfile ? true : false}
+						icon={<Mail size={20} color="#6b7280" />}
+					/>
+				</View>
 
 				{/* Submit */}
 				<TouchableOpacity
 					disabled={isSubmitting}
 					onPress={handleSubmit(onSubmit)}
-					className="bg-primary-600 rounded-[15px] py-3 mt-4 items-center"
+					className={`w-full py-4 rounded-[15px] items-center justify-center mt-6 bg-primary-600`}
 				>
-					<Text className="text-white font-semibold text-base">
-						{isSubmitting ? "Creating..." : "Create Account"}
-					</Text>
+					{isSubmitting ? (
+						<ActivityIndicator color="white" />
+					) : (
+						<Text className="text-lg text-white font-bold">
+							Verify & Continue
+						</Text>
+					)}
 				</TouchableOpacity>
-			</ScrollView>
+			</KeyboardAwareScrollView>
 		</SharedBody>
 	);
 };

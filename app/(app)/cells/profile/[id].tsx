@@ -7,7 +7,7 @@ import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Person } from "@/services/Person/person.type";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import React, { useState } from "react";
 import {
 	ActivityIndicator,
 	ScrollView,
@@ -35,7 +35,9 @@ const CellProfileScreen = () => {
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const filteredMembers = (cell?.members ?? []).filter((member: Person) =>
-		member?.full_name?.toLowerCase().includes(searchQuery.toLowerCase())
+		member?.full_legal_name
+			?.toLowerCase()
+			.includes(searchQuery.toLowerCase()),
 	);
 
 	const renderTabContent = () => {
@@ -76,7 +78,7 @@ const CellProfileScreen = () => {
 	return (
 		<SharedBody>
 			<StatusBar
-				className="bg-background dark:bg-background-dark"
+				className="bg-background"
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
 

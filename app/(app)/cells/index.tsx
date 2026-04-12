@@ -4,6 +4,9 @@ import CellList from "@/components/Cells/CellList";
 import CreateSessionSheet from "@/components/Cells/CreateSessionSheet";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
+import {
+	useSinglePersonQuery
+} from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Cell } from "@/services/Cell/cell.types";
 import { useAuthStore } from "@/stores/authStore";
@@ -19,16 +22,19 @@ import { FAB, Portal, Provider } from "react-native-paper";
 const CellsScreen = () => {
   const { isDark } = useThemeColors();
   const { user } = useAuthStore();
-  const [open, setOpen] = useState(false);
+	const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);  const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
   // ref
   const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
 
-  // // derive filtered list
-  const filteredCells = (user?.person?.cells ?? []).filter((cell: Cell) =>
-    cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+	const filteredCells = (person?.cells ?? []).filter((cell: Cell) =>
+		cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase()),
+	);
+	// // derive filtered list
+	// const filteredCells = (user?.person?.cells ?? []).filter((cell: Cell) =>
+	// 	cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase())
+	// );
 
   if (!user)
     return (

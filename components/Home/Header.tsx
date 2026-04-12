@@ -12,7 +12,7 @@ const Header = () => {
 				</View>
 			</TouchableOpacity>
 
-			<Text className="font-semibold dark:text-text-dark-primary text-xl">
+			<Text className="font-semibold text-xl">
 				{displayDateAsStr(new Date(Date.now()))}
 			</Text>
 		</View>

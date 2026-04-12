@@ -10,11 +10,10 @@ export async function secureFetch(
   if (!user && !options.allowUnauthenticated)
     throw new Error("SecureFetch: User not signed in");
 
-  // New modular API: call getIdToken() as a function
-  const token = await user!.getIdToken();
-  // const token = await user?.getIdToken(); // still a method call
-
-  console.log("token:", token);
+	// New modular API: call getIdToken() as a function
+	let token: string | undefined = undefined;
+	if (user) token = await getIdToken(user);
+	// const token = await user?.getIdToken(); // still a method call
 
   const headers = {
     ...init.headers,

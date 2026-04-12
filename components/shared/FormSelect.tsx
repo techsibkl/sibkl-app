@@ -1,55 +1,70 @@
-import { Picker } from "@react-native-picker/picker";
-import React from "react";
+import { formStyles } from "@/constants/const_styles";
+import React, { useState } from "react";
 import { Controller } from "react-hook-form";
 import { Text, View } from "react-native";
-
-type Option = { label: string; value: string };
+import { AppPicker } from "./AppPicker";
 
 export const FormSelect = ({
-  name,
-  label,
-  control,
-  rules,
-  errors,
-  options,
-  disabled = false,
+	name,
+	label,
+	control,
+	errors = {},
+	placeholder = "Select an option...",
+	rules = {},
+	options = [],
+	disabled = false,
+	onBlur: onBlurCallback,
+	onChangeText: onChangeTextCallback,
 }: {
-  name: string;
-  label: string;
-  control: any;
-  rules?: any;
-  errors: any;
-  options: Option[];
-  disabled?: boolean;
+	name: string;
+	label: string;
+	control: any;
+	errors?: any;
+	placeholder?: string;
+	rules?: any;
+	options?: (string | number | null)[];
+	disabled?: boolean;
+	onBlur?: Function;
+	onChangeText?: Function;
 }) => {
-  return (
-    <View className="mb-6">
-      <Text className="text-sm font-medium text-text mb-2">{label}</Text>
-      <Controller
-        control={control}
-        name={name}
-        rules={rules}
-        render={({ field: { onChange, value } }) => (
-          <View className={`border border-border rounded-[15px] h-12 flex-1 bg-white justify-center`}>
-            <Picker
-              enabled={!disabled} // 👈 disables select
-              selectedValue={value}
-              onValueChange={(val) => onChange(val)}
-              style={{ fontSize: 12, borderRadius: 40}}
-            >
-              <Picker.Item label="Select an option..." value=""  />
-              {options.map((opt) => (
-                <Picker.Item key={opt.value} label={opt.label} value={opt.value} />
-              ))}
-            </Picker>
-          </View>
-        )}
-      />
-      {errors[name] && (
-        <Text className="text-primary-500 text-sm mt-1">
-          {errors[name]?.message}
-        </Text>
-      )}
-    </View>
-  );
+	const [open, setOpen] = useState(false);
+
+	return (
+		<View>
+			<Text className="text-sm font-medium text-text mb-2">{label}</Text>
+			<Controller
+				control={control}
+				name={name}
+				rules={rules}
+				render={({ field: { onChange, value } }) => {
+					return (
+						<View
+							className={`${formStyles.inputSelect} ${disabled ? "bg-gray-100" : ""}`}
+						>
+							<AppPicker
+								value={value}
+								onChange={onChange}
+								options={[
+									...options.map((o) => ({
+										label: String(o),
+										value: o,
+									})),
+								]}
+								renderTrigger={(label) => (
+									<Text className="font-regular text-sm">
+										{label || "Select flow"}
+									</Text>
+								)}
+							/>
+						</View>
+					);
+				}}
+			/>
+			{errors[name] && (
+				<Text className="text-primary-500 text-sm mt-1">
+					{errors[name]?.message}
+				</Text>
+			)}
+		</View>
+	);
 };

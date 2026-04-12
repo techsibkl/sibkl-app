@@ -1,50 +1,107 @@
-# Welcome to your Expo app 👋
+# Welcome to SIBKL Mobile App
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Setup
 
-## Get started
+- `npm install`
+- Ensure `tempEnv` is connected to backend server
+- `rm -rf android ios` (reset platform folders)
+- `npx expo run:android --device` (for development mode)
 
-1. Install dependencies
+## Resources
 
-   ```bash
-   npm install
-   ```
+#### 1. Android signing for Google Playstore
 
-2. Start the app
+- https://developer.android.com/studio/publish/app-signing
 
-   ```bash
-   npx expo start
-   ```
+#### 2. Android build .aab
 
-In the output, you'll find options to open the app in a
+- Run `npx expo prebuild`
+- `cd android`
+- `./gradlew bundleRelease` for .aab
+- `./gradlew assembleRelease` for .apk
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+#### 3. Managed services by EAS (paid)
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+- https://docs.expo.dev/build/setup/
+- Just configure signing certificates online EAS
+- `eas build --platform android`
 
-## Get a fresh project
+<br>
 
-When you're ready, run:
+## Android deployment
 
-```bash
-npm run reset-project
+1. Build
+
+<br>
+
+## IOS deployment
+
+#### 1. Login and initialize EAS project
+
+- `npm install -g eas-cli`
+- `eas login`
+- Manually configure `app.config.ts` EAS project ID
+    - Note whether it's EAS `staging` or `prod` project (different IDs)
+
+```ts
+export default {
+	expo: {
+		ios: {
+			bundleIdentifier: "your.bundle.id",
+			infoPlist: {
+				ITSAppUsesNonExemptEncryption: false,
+			},
+		},
+		extra: {
+			eas: {
+				projectId: "YOUR_PROJECT_ID",
+			},
+		},
+	},
+};
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+- Configure `eas.json` - get app id from App Store Connect > General > App Information
 
-## Learn more
+```json
+{
+	"build": {
+		"staging": {
+			"distribution": "internal"
+		},
+		"production": {
+			"distribution": "app-store"
+		}
+	},
+	"submit": {
+		"staging": {
+			"ios": {
+				"appleId": "your@email.com",
+				"ascAppId": "APP_STORE_CONNECT_APP_ID",
+				"appleTeamId": "TEAM_ID"
+			}
+		}
+	}
+}
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+#### 2. Build the app
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+- `eas build --platform ios --profile staging`
 
-## Join the community
+- What happens:
+    - App is built on Expo servers
+    - Certificates & provisioning handled automatically
+    - Outputs a .ipa file
 
-Join our community of developers creating universal apps.
+#### 4. Upload APN auth key to Firebase > Project Settings > Cloud Messaging (One-time only)
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+#### 3. Submit to TestFlight
+
+- Get build ID `eas build:list`
+- `eas submit --platform ios --id <BUILD_ID>`
+- What happens:
+    - Uploads .ipa to App Store Connect
+    - Uses API key (auto-created by Expo)
+
+### ✅ DONE: Apple will process 5-30mins to be approved in TestFlight

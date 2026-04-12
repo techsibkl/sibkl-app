@@ -1,11 +1,13 @@
 import { Tabs } from "expo-router";
 import {
 	Circle,
+	FunnelIcon,
 	GraduationCap,
 	Home,
 	Settings,
 	Users,
 } from "lucide-react-native";
+import React from "react";
 
 export default function AppLayout() {
 	return (
@@ -17,7 +19,6 @@ export default function AppLayout() {
 					height: 70,
 					paddingTop: 2,
 					paddingHorizontal: 16,
-
 					borderTopWidth: 0.5,
 					borderTopColor: "#E5E5EA",
 				},
@@ -68,8 +69,22 @@ export default function AppLayout() {
 				}}
 			/>
 			<Tabs.Screen
+				name="flows"
+				options={{
+					title: "Flows",
+					tabBarIcon: ({ color, size, focused }) => (
+						<FunnelIcon
+							size={size}
+							color={color}
+							strokeWidth={1}
+							fill={focused ? color : "none"}
+						/>
+					),
+				}}
+			/>
+			<Tabs.Screen
 				// Note: with leaders/_layout, the name just needs to be (route) and not (route)/index
-				
+
 				name="leaders"
 				options={{
 					title: "Leaders",
@@ -100,6 +115,13 @@ export default function AppLayout() {
 
 			<Tabs.Screen
 				name="announcements"
+				options={{
+					tabBarStyle: { display: "none" },
+					href: null, // removes it from tab navigation
+				}}
+			/>
+			<Tabs.Screen
+				name="notifications"
 				options={{
 					tabBarStyle: { display: "none" },
 					href: null, // removes it from tab navigation
