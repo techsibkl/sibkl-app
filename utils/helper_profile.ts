@@ -1,3 +1,4 @@
+import { defaultFlowStatusAttrs } from "@/constants/const_flows";
 import { DEFAULT_PERSON_COLUMNS } from "@/constants/const_person";
 import { Person } from "@/services/Person/person.type";
 import { SectionEnum } from "@/types/TableField.type";
@@ -155,3 +156,18 @@ export function getInitials(
 
 	return (firstInitial + secondInitial).toUpperCase() || fallback;
 }
+
+// Color-coded avatar with initials (same logic as row)
+export const getAvatarColors = (status?: string) => {
+	const COLOR_MAP: Record<string, { bg: string; text: string }> = {
+		gray: { bg: "#f3f4f6", text: "#9ca3af" },
+		purple: { bg: "#ede9fe", text: "#7c3aed" },
+		green: { bg: "#dcfce7", text: "#16a34a" },
+		red: { bg: "#fee2e2", text: "#dc2626" },
+	};
+	if (!status) return COLOR_MAP.gray;
+	const color =
+		defaultFlowStatusAttrs[status as keyof typeof defaultFlowStatusAttrs]
+			?.color ?? "gray";
+	return COLOR_MAP[color] ?? COLOR_MAP.gray;
+};

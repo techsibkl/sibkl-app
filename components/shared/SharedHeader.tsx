@@ -30,9 +30,19 @@ const SharedHeader = ({ title, isPop, backFunc, child }: SharedHeaderProps) => {
 					{/* If no pop & no back function given, won't display */}
 					{(isPop || backFunc) && (
 						<TouchableOpacity
-							onPress={() =>
-								backFunc ? backFunc() : router.back()
-							}
+							onPress={() => {
+								if (backFunc) {
+									console.log(
+										"Using custom back function",
+										backFunc,
+									);
+									backFunc();
+								} else {
+									console.log("Using router.back()");
+									router.back();
+								}
+								// backFunc ? backFunc() : router.back()
+							}}
 						>
 							<ChevronLeft size={30} />
 						</TouchableOpacity>

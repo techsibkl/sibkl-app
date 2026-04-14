@@ -18,7 +18,7 @@ export default function Layout() {
 					},
 				}}
 			/>
-			<Stack.Screen
+			{/* <Stack.Screen
 				name="profile/[id]"
 				options={({ route }) => ({
 					title: "Profile",
@@ -27,7 +27,7 @@ export default function Layout() {
 						return <SharedHeader title="Profile" isPop />;
 					},
 				})}
-			/>
+			/> */}
 		</Stack>
 	);
 }

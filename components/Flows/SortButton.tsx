@@ -1,8 +1,8 @@
 import { FlowSortKey, FlowSortOrder } from "@/services/Flow/flow.types";
 import {
-    ArrowDownIcon,
-    ArrowUpDownIcon,
-    ArrowUpIcon,
+	ArrowDownIcon,
+	ArrowUpDownIcon,
+	ArrowUpIcon,
 } from "lucide-react-native";
 import React, { useState } from "react";
 import { Modal, Pressable, Text, TouchableOpacity, View } from "react-native";
@@ -45,15 +45,16 @@ const SortButton = ({ sortKey, sortOrder, onChange, onClear }: Props) => {
 				activeOpacity={0.7}
 				className={`flex-row items-center gap-1 px-3 py-4 rounded-[15px] border ${
 					sortKey
-						? "bg-blue-500 border-blue-500"
+						? // ? "bg-blue-500 border-blue-500"
+							"bg-white border-gray-200"
 						: "bg-white border-gray-200"
 				}`}
 			>
 				{sortKey ? (
 					<>
-						<ArrowIcon size={12} color="#fff" strokeWidth={2.5} />
+						<ArrowIcon size={12} color="gray" strokeWidth={2.5} />
 						<Text
-							className="text-white text-xs font-semibold"
+							className="text-gray-600 text-xs font-semibold"
 							numberOfLines={1}
 						>
 							{activeLabel}

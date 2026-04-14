@@ -11,7 +11,10 @@ const PeopleRowComponent = ({ person }: PeopleRowProps) => {
 	const router = useRouter();
 
 	const handlePress = useCallback(() => {
-		router.push(`/people/profile/${person.id}`);
+		router.push({
+			pathname: "/(app)/profile/[id]",
+			params: { id: person.id, backPath: "/(app)/people" }, // Pass the current path as backPath
+		});
 	}, [person.id, router]);
 
 	return (

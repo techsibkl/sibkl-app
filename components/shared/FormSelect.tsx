@@ -52,7 +52,7 @@ export const FormSelect = ({
 								]}
 								renderTrigger={(label) => (
 									<Text className="font-regular text-sm">
-										{label || "Select flow"}
+										{label || placeholder}
 									</Text>
 								)}
 							/>

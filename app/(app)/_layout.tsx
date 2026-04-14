@@ -127,6 +127,13 @@ export default function AppLayout() {
 					href: null, // removes it from tab navigation
 				}}
 			/>
+			<Tabs.Screen
+				name="profile"
+				options={{
+					tabBarStyle: { display: "none" },
+					href: null, // hides it from tab bar
+				}}
+			/>
 		</Tabs>
 	);
 }

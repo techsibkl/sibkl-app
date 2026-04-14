@@ -4,13 +4,15 @@ import CellList from "@/components/Cells/CellList";
 import SharedBody from "@/components/shared/SharedBody";
 import SkeletonPeopleRow from "@/components/shared/Skeleton/SkeletonPeopleRow";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
-import { displayDateAsStr } from "@/utils/helper";
+import { Person } from "@/services/Person/person.type";
+import { displayDateAsStr, formatPhone } from "@/utils/helper";
+import { getAvatarColors, getInitials } from "@/utils/helper_profile";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Calendar, Mail, MapPin, Phone, User } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-	Image,
+	Linking,
 	ScrollView,
 	StatusBar,
 	Text,
@@ -21,7 +23,7 @@ import {
 const ProfileScreen = () => {
 	const [activeTab, setActiveTab] = useState("Info");
 	const router = useRouter();
-	const { id } = useLocalSearchParams();
+	const { id, backPath } = useLocalSearchParams();
 
 	const {
 		data: person,
@@ -167,47 +169,72 @@ const ProfileScreen = () => {
 		}
 	};
 
+	const avatarColors = getAvatarColors(undefined);
+	const initials = getInitials(person.full_legal_name);
+
+	const sendWhatsApp = async (person: Person) => {
+		let phone = formatPhone(person.p__phone);
+		const url = `https://wa.me/${phone}?text=Hello%20${encodeURIComponent(person.full_legal_name!)},`;
+		await Linking.openURL(url);
+	};
+
 	return (
-		<SharedBody>
-			<StatusBar barStyle="dark-content" />
-
-			{/* Header with gradient background */}
-			<View className="flex items-center justify- px-5 mb-6">
-				{/* Profile Info */}
-				<View className="items-center px-5">
-					<Image
-						source={require("../../../../assets/images/person.png")}
-						className="w-24 h-24 rounded-full mb-4 border-4 border-white"
-					/>
-					<Text className="text-2xl font-bold text-gray-800 mb-1">
-						{person?.full_legal_name}
-					</Text>
-				</View>
-			</View>
-
-			{/* Tabs */}
-
-			<View className="flex-row gap justify-center">
-				{tabs.map((tab) => (
-					<TouchableOpacity
-						key={tab}
-						onPress={() => setActiveTab(tab)}
-						className={`px-4 py-2 mr-4 rounded-full ${activeTab === tab ? "bg-primary-500" : "bg-background-secondary"}`}
+		<>
+			<SharedBody>
+				<StatusBar barStyle="dark-content" />
+				{/* Avatar + name + phone */}
+				<View className="mt-4 px-16 items-center gap-1">
+					<View
+						className="w-20 h-20 rounded-full items-center justify-center mb-1 border border-gray-300"
+						style={{ backgroundColor: avatarColors.bg }}
 					>
 						<Text
-							className={`font-medium ${activeTab === tab ? "text-white" : "text-gray-600"}`}
+							className="text-2xl font-bold"
+							style={{ color: avatarColors.text }}
 						>
-							{tab}
+							{initials}
 						</Text>
-					</TouchableOpacity>
-				))}
-			</View>
-
-			{/* Tab Content */}
-			<ScrollView className="flex-1" showsVerticalScrollIndicator={false}>
-				{renderTabContent()}
-			</ScrollView>
-		</SharedBody>
+					</View>
+					<Text
+						className="text-text text-xl font-bold"
+						numberOfLines={1}
+						ellipsizeMode="tail"
+					>
+						{person.full_legal_name}
+					</Text>
+					<Text
+						className="text-blue-600"
+						numberOfLines={1}
+						onPress={() => sendWhatsApp(person)}
+					>
+						{person.phone ?? "-"}
+					</Text>
+				</View>
+				{/* Tabs */}
+				<View className="mt-6 w-full flex-row gap-4 justify-center items-center">
+					{tabs.map((tab) => (
+						<TouchableOpacity
+							key={tab}
+							onPress={() => setActiveTab(tab)}
+							className={`px-4 py-2 rounded-full ${activeTab === tab ? "bg-primary-500" : "bg-background-secondary"}`}
+						>
+							<Text
+								className={`font-medium ${activeTab === tab ? "text-white" : "text-gray-600"}`}
+							>
+								{tab}
+							</Text>
+						</TouchableOpacity>
+					))}
+				</View>
+				{/* Tab Content */}
+				<ScrollView
+					className="flex-1"
+					showsVerticalScrollIndicator={false}
+				>
+					{renderTabContent()}
+				</ScrollView>
+			</SharedBody>
+		</>
 	);
 };
 

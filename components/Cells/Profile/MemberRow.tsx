@@ -1,5 +1,5 @@
 import { Person } from "@/services/Person/person.type";
-import { useRouter } from "expo-router";
+import { useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
 
@@ -9,10 +9,20 @@ type MemberRowProps = {
 
 const MemberRow = ({ member }: MemberRowProps) => {
 	const router = useRouter();
+	const { id } = useLocalSearchParams();
+
 	return (
 		<TouchableOpacity
 			className="flex-row items-center py-3 px-4"
-			onPress={() => router.push(`/(app)/people/profile/${member.id}`)}
+			onPress={() => {
+				router.push({
+					pathname: "/(app)/profile/[id]",
+					params: {
+						id: member.id,
+						backPath: `/(app)/cells/profile/${id}`,
+					}, // Pass the current path as backPath
+				});
+			}}
 		>
 			<Image
 				source={require("../../../assets/images/person.png")}
