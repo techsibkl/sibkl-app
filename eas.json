@@ -7,6 +7,7 @@
 		"development": {
 			"developmentClient": true,
 			"distribution": "internal",
+			"autoIncrement": true,
 			"ios": {
 				"simulator": true
 			},
@@ -16,6 +17,7 @@
 		},
 		"staging": {
 			"distribution": "internal",
+			"autoIncrement": true,
 			"ios": {
 				"simulator": false
 			},
