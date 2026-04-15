@@ -1,3 +1,4 @@
+import { inputPaddingComfort } from "@/constants/const_styles";
 import { Search } from "lucide-react-native";
 import React from "react";
 import { TextInput, View } from "react-native";
@@ -16,7 +17,7 @@ export const SharedSearchBar: React.FC<SharedSearchBarProps> = ({
 	searchQuery,
 	onSearchChange,
 	placeholder = "Search keyword",
-	className = "flex-row items-center rounded-[15px] mx-4 px-4 py-3  bg-gray-200 border border-border overflow-hidden",
+	className = "flex-row items-center rounded-[15px] mx-4 px-4 bg-gray-200 border border-border overflow-hidden",
 	iconColor = "#777",
 	placeholderTextColor = "#777",
 	unstyled = false,
@@ -27,6 +28,7 @@ export const SharedSearchBar: React.FC<SharedSearchBarProps> = ({
 				<Search size={20} color={iconColor} />
 				<TextInput
 					className="w-full ml-2"
+					style={inputPaddingComfort}
 					numberOfLines={1}
 					placeholder={placeholder}
 					placeholderTextColor={placeholderTextColor}

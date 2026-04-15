@@ -1,12 +1,14 @@
 import { XIcon } from "lucide-react-native";
-import React from "react";
+import React, { useEffect, useState } from "react";
 import {
+	Dimensions,
 	GestureResponderEvent,
 	Modal,
 	StyleSheet,
 	TouchableOpacity,
-	View
+	View,
 } from "react-native";
+const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 interface SharedModalProps {
 	visible: boolean;
@@ -19,6 +21,17 @@ const SharedModal: React.FC<SharedModalProps> = ({
 	onClose,
 	children,
 }) => {
+	const [isReady, setIsReady] = useState(false);
+
+	useEffect(() => {
+		if (visible) {
+			const t = setTimeout(() => setIsReady(true), 10);
+			return () => clearTimeout(t);
+		} else {
+			setIsReady(false);
+		}
+	}, [visible]);
+
 	return (
 		<Modal
 			animationType="fade"
@@ -37,7 +50,7 @@ const SharedModal: React.FC<SharedModalProps> = ({
 					</TouchableOpacity>
 
 					{/* Content injected here */}
-					{children}
+					{isReady && children}
 				</View>
 			</View>
 		</Modal>
@@ -56,7 +69,8 @@ const styles = StyleSheet.create({
 		margin: 16,
 		width: "90%",
 		maxWidth: 400,
-		maxHeight: "80%",
+		// height: SCREEN_HEIGHT * 0.8, // ✅ instead of "80%"
+		maxHeight: SCREEN_HEIGHT * 0.8,
 		backgroundColor: "white",
 		borderRadius: 15,
 		overflow: "hidden",

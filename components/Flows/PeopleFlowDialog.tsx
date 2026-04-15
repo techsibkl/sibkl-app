@@ -66,7 +66,8 @@ const PeopleFlowDialog = ({
 	return (
 		<View className="h-full w-full bg-white rounded-[15px] overflow-hidden">
 			<ScrollView
-				contentContainerStyle={{ paddingBottom: 20 }}
+				style={{ flex: 1 }}
+				contentContainerStyle={{ paddingBottom: 20, flexGrow: 1 }}
 				showsVerticalScrollIndicator={false}
 			>
 				{/* Status badge */}

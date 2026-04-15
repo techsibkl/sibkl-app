@@ -9,6 +9,7 @@ import React, { useMemo, useState } from "react";
 import {
 	ActivityIndicator,
 	ImageSourcePropType,
+	Platform,
 	Text,
 	TextInput,
 	TouchableOpacity,
@@ -32,18 +33,16 @@ const Page = () => {
 	const [page, setPage] = useState(1);
 	const [loadingMore, setLoadingMore] = useState(false);
 
-	// Filter logic
 	const filteredProfiles = useMemo(() => {
 		return nameQuery
-			? (maskedPeople ?? []).filter((person) => {
-					return person?.full_legal_name
+			? (maskedPeople ?? []).filter((person) =>
+					person?.full_legal_name
 						?.toLowerCase()
-						.includes(nameQuery.trim().toLowerCase());
-				})
+						.includes(nameQuery.trim().toLowerCase()),
+				)
 			: [];
 	}, [nameQuery, maskedPeople]);
 
-	// Paginate results
 	const visibleProfiles = useMemo(
 		() => filteredProfiles.slice(0, page * PAGE_SIZE),
 		[filteredProfiles, page],
@@ -55,9 +54,14 @@ const Page = () => {
 			setTimeout(() => {
 				setPage((prev) => prev + 1);
 				setLoadingMore(false);
-			}, 300); // Simulate async
+			}, 300);
 		}
 	};
+
+	const inputPadding =
+		Platform.OS === "android"
+			? { paddingVertical: 12 }
+			: { paddingVertical: 18 };
 
 	return (
 		<KeyboardAwareScrollView
@@ -67,31 +71,39 @@ const Page = () => {
 			keyboardShouldPersistTaps="handled"
 			contentContainerStyle={{ flexGrow: 1 }}
 		>
-			<View className="items-center justify-center mt-16 py-[7rem]">
+			{/* Logo section */}
+			<View
+				className="items-center justify-center my-16"
+				style={{
+					paddingTop: Platform.OS === "android" ? 48 : 64,
+					paddingBottom: Platform.OS === "android" ? 32 : 48,
+				}}
+			>
 				<PulsingLogo
 					source={SibklText as ImageSourcePropType}
 					className="h-18"
 				/>
 			</View>
-			<View className="bg-background py-10 px-6 rounded-t-[30px] h-full">
+
+			<View className="bg-background py-8 px-6 rounded-t-[30px] flex-1">
 				<Text className="text-3xl font-bold text-gray-700 mb-2">
 					New Here?
 				</Text>
-				<Text className="font-regular text-gray-700 mb-8">
+				<Text className="font-regular text-gray-700 mb-6">
 					Welcome! Enter your name, email, or phone to find an
 					existing profile. Or create a new one.
 				</Text>
 
-				{/* Email input */}
+				{/* Search input */}
 				<View className="ml-[-2px]">
 					<Text className="font-semibold text-gray-700 ml-1 mb-2">
 						Search for an existing profile
 					</Text>
-
 					<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
 						<User2Icon size={20} color="#6b7280" />
 						<TextInput
-							className="font-regular flex-1 ml-3 py-5"
+							className="font-regular flex-1 ml-3"
+							style={inputPadding}
 							placeholder="Search by name, email, or phone"
 							value={nameQuery}
 							onChangeText={setNameQuery}
@@ -107,7 +119,7 @@ const Page = () => {
 				</View>
 
 				{visibleProfiles.length > 0 && nameQuery && (
-					<Text className="font-semibold text-gray-700 ml-1 mb-2 mt-8">
+					<Text className="font-semibold text-gray-700 ml-1 mb-2 mt-6">
 						Then, select a profile that matches:
 					</Text>
 				)}
@@ -122,8 +134,8 @@ const Page = () => {
 							<View className="mt-4">
 								<Text className="text-gray-500 text-center italic">
 									{"Cannot find profile for " +
-										`"${nameQuery}"`}
-									{" ?"}
+										`"${nameQuery}"` +
+										" ?"}
 								</Text>
 								<Text className="text-gray-500 text-center italic">
 									Please create a new account.
@@ -150,8 +162,13 @@ const Page = () => {
 									</Text>
 									<View className="flex-1 h-[1px] bg-gray-300" />
 								</View>
+
 								<TouchableOpacity
-									className={`w-full py-4 rounded-[15px] items-center justify-center mt-6 bg-primary-600`}
+									className="w-full rounded-[15px] items-center justify-center mt-6 bg-primary-600"
+									style={{
+										paddingVertical:
+											Platform.OS === "android" ? 14 : 16,
+									}}
 									onPress={() => {
 										claimStore.setSelectedProfile(null);
 										router.push("/(auth)/new-account");
@@ -162,7 +179,6 @@ const Page = () => {
 									</Text>
 								</TouchableOpacity>
 
-								{/* Sign in link */}
 								<View className="mt-6 items-center">
 									<Text className="font-regular text-gray-600 text-sm">
 										Already have an account?{" "}

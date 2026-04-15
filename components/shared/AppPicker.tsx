@@ -51,7 +51,7 @@ export function AppPicker<T>({
 	return (
 		<>
 			<Pressable
-				className="w-full"
+				className="w-full py-4"
 				disabled={disabled}
 				onPress={() => setOpen(true)}
 			>

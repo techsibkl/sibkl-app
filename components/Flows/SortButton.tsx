@@ -43,7 +43,7 @@ const SortButton = ({ sortKey, sortOrder, onChange, onClear }: Props) => {
 			<TouchableOpacity
 				onPress={() => setOpen(true)}
 				activeOpacity={0.7}
-				className={`flex-row items-center gap-1 px-3 py-4 rounded-[15px] border ${
+				className={`flex-row items-center gap-1 px-3 py-5 rounded-[15px] border ${
 					sortKey
 						? // ? "bg-blue-500 border-blue-500"
 							"bg-white border-gray-200"

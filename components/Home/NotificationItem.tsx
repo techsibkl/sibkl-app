@@ -70,11 +70,15 @@ const NotificationItem = ({ notification }: Props) => {
 				)}
 			</View>
 			<View className="flex-1 gap-y-1">
-				<Text className="font-light text-sm">{notification.title}</Text>
-				<Text className="font-medium">{notification.body}</Text>
+				<Text className="text-black font-light text-sm">
+					{notification.title}
+				</Text>
+				<Text className="text-black font-medium ">
+					{notification.body}
+				</Text>
 				<View className="flex flex-row mt-2 w-full gap-3 items-center justify-between">
 					<View className="px-2 py-1 rounded-full flex-row items-center gap-1 self-start bg-gray-100">
-						<Text className="font-semibold text-xs">
+						<Text className="text-black font-bold text-xs">
 							{notification.type}
 						</Text>
 					</View>

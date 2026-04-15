@@ -21,6 +21,7 @@ import { Stack, useRouter } from "expo-router";
 import React, { useEffect } from "react";
 import { Platform, StatusBar } from "react-native";
 import { PaperProvider } from "react-native-paper";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import "../global.css";
 
@@ -148,18 +149,26 @@ function RootLayoutNav() {
 	}, []);
 
 	return (
-		<PaperProvider>
-			<Stack screenOptions={{ headerShown: false }}>
-				<Stack.Screen name="(auth)" options={{ headerShown: false }} />
-				<Stack.Screen name="(app)" options={{ headerShown: false }} />
-				<Stack.Screen
-					name="(app)/profile"
-					options={{ headerShown: false }}
-				/>
-				<Stack.Screen name="+not-found" />
-			</Stack>
-			<Toast config={toastConfig} />
-		</PaperProvider>
+		<SafeAreaProvider>
+			<PaperProvider>
+				<Stack screenOptions={{ headerShown: false }}>
+					<Stack.Screen
+						name="(auth)"
+						options={{ headerShown: false }}
+					/>
+					<Stack.Screen
+						name="(app)"
+						options={{ headerShown: false }}
+					/>
+					<Stack.Screen
+						name="(app)/profile"
+						options={{ headerShown: false }}
+					/>
+					<Stack.Screen name="+not-found" />
+				</Stack>
+				<Toast config={toastConfig} />
+			</PaperProvider>
+		</SafeAreaProvider>
 	);
 }
 

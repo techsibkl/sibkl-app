@@ -1,3 +1,4 @@
+import { inputPadding } from "@/constants/const_styles";
 import React, { ReactElement } from "react";
 import { Controller } from "react-hook-form";
 import {
@@ -60,7 +61,8 @@ export const FormField = ({
 						{icon && <View className="mr-3">{icon}</View>}
 						<TextInput
 							ref={ref}
-							className={`font-regular flex-1 py-4 ${disabled ? `text-gray-400` : `text-text`}`}
+							style={inputPadding}
+							className={`font-regular flex-1 ${disabled ? `text-gray-400` : `text-text`}`}
 							placeholder={placeholder}
 							placeholderTextColor="#9ca3af"
 							onBlur={onBlur}

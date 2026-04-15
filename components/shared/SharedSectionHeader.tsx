@@ -15,14 +15,16 @@ const SectionHeader: React.FC<SectionHeaderProps> = ({
 }) => {
 	return (
 		<View className="flex-row items-center justify-between px-4 mb-3">
-			<Text className="text-xl font-bold">{title}</Text>
+			<Text className="text-xl text-black font-bold">{title}</Text>
 			{showSeeAll && onPress && (
 				<TouchableOpacity
 					className="flex-row items-center"
 					onPress={onPress}
 					activeOpacity={0.7}
 				>
-					<Text className="font-regular text-sm mr-1">See All</Text>
+					<Text className="font-regular text-black text-sm mr-1">
+						See All
+					</Text>
 					<ChevronRightIcon size={16} />
 				</TouchableOpacity>
 			)}

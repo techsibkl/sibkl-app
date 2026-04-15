@@ -70,7 +70,7 @@ const ChangeFieldAction = ({ action, personFlow, custom_attr }: Props) => {
 				{/* Label + value */}
 				<View className="flex-1">
 					<Text
-						className={`font-semibold ${done ? "text-green-700" : "text-gray-800"}`}
+						className={`font-bold ${done ? "text-green-700" : "text-gray-800"}`}
 					>
 						{title}
 					</Text>

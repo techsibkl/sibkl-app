@@ -8,15 +8,17 @@ import {
 	Users,
 } from "lucide-react-native";
 import React from "react";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AppLayout() {
+	const insets = useSafeAreaInsets();
 	return (
 		<Tabs
 			screenOptions={{
 				tabBarActiveTintColor: "#007AFF",
 				tabBarInactiveTintColor: "#8E8E93",
 				tabBarStyle: {
-					height: 70,
+					height: 50 + Math.max(insets.bottom, 8),
 					paddingTop: 2,
 					paddingHorizontal: 16,
 					borderTopWidth: 0.5,

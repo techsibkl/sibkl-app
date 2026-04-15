@@ -113,7 +113,7 @@ const MoveToStepAction = ({ action, personFlow, steps, flow_id }: Props) => {
 				</View>
 
 				<View className="flex-1">
-					<Text className="text-gray-800 font-semibold">
+					<Text className="text-gray-800 font-bold">
 						Move to step
 					</Text>
 					<Text className="text-gray-500 text-sm mt-0.5">

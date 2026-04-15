@@ -44,7 +44,9 @@ const SendMessageAction = ({ action, personFlow }: Props) => {
 			</View>
 
 			<View className="flex-1">
-				<Text className="font-semibold text-base">Send message</Text>
+				<Text className="text-black font-bold text-base">
+					Send message
+				</Text>
 				<Text className="text-gray-500 text-sm" numberOfLines={1}>
 					{message ?? "No preview"}
 				</Text>

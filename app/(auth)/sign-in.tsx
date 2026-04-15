@@ -6,6 +6,7 @@ import { Controller, useForm } from "react-hook-form";
 import {
 	ActivityIndicator,
 	ImageSourcePropType,
+	Platform,
 	Text,
 	TextInput,
 	TouchableOpacity,
@@ -49,7 +50,6 @@ const Page = () => {
 			setIsLoading(true);
 			await signIn(data.email, data.password);
 			setIsLoading(false);
-			// navigate to your home screen if needed
 		} catch (error: any) {
 			setError("password", { type: "manual", message: error });
 			setIsLoading(false);
@@ -61,76 +61,87 @@ const Page = () => {
 		setValue("rememberMe", !currentValue);
 	};
 
+	// Android TextInput ignores padding from className — use style prop directly
+	const inputPadding =
+		Platform.OS === "android"
+			? { paddingVertical: 12 }
+			: { paddingVertical: 18 };
+
 	return (
 		<KeyboardAwareScrollView
 			className="flex-1 bg-red-700"
 			enableOnAndroid={true}
 			extraScrollHeight={5}
 			keyboardShouldPersistTaps="handled"
-			contentContainerStyle={{
-				flexGrow: 1,
-			}}
+			contentContainerStyle={{ flexGrow: 1 }}
 		>
-			<View className="items-center justify-center mt-16 py-[7rem]">
+			{/* Logo section — smaller top padding on Android */}
+			<View
+				className="items-center justify-center my-16"
+				style={{
+					paddingTop: Platform.OS === "android" ? 48 : 64,
+					paddingBottom: Platform.OS === "android" ? 32 : 48,
+				}}
+			>
 				<PulsingLogo
 					source={SibklText as ImageSourcePropType}
 					className="h-18"
 				/>
 			</View>
-			<View className="bg-background py-10 px-6 rounded-t-[30px] h-full">
+
+			<View className="bg-background py-8 px-6 rounded-t-[30px] flex-1">
 				<Text className="text-3xl font-bold text-gray-700 mb-2">
 					Sign In
 				</Text>
-				<Text className="font-regular text-gray-700 mb-8">
+				<Text className="font-regular text-gray-700 mb-6">
 					Welcome back! It's great to see you.
 				</Text>
-				{/* Sign in form */}
-				<View className="gap-y-6">
+
+				<View className="gap-y-5">
 					{/* Email input */}
 					<View className="ml-[-2px]">
 						<Text className="font-semibold text-gray-700 ml-1 mb-2">
 							Email
 						</Text>
-						<View className="">
-							<Controller
-								control={control}
-								rules={{
-									required: "Email is required",
-									pattern: {
-										value: /^\S+@\S+$/i,
-										message: "Invalid email format",
-									},
-								}}
-								render={({
-									field: { onChange, onBlur, value },
-								}) => (
-									<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
-										<Mail size={20} color="#6b7280" />
-										<TextInput
-											className="font-regular flex-1 ml-3 py-5"
-											placeholder="Enter your email"
-											placeholderTextColor="#9ca3af"
-											onBlur={onBlur}
-											onChangeText={onChange}
-											value={value}
-											keyboardType="email-address"
-											autoCapitalize="none"
-											autoComplete="email"
-											returnKeyType="next"
-											onSubmitEditing={() =>
-												passwordRef.current?.focus()
-											}
-										/>
-									</View>
-								)}
-								name="email"
-							/>
-							{errors.email && (
-								<Text className="text-primary-500 text-sm ml-1 mt-2">
-									{errors.email.message}
-								</Text>
+						<Controller
+							control={control}
+							rules={{
+								required: "Email is required",
+								pattern: {
+									value: /^\S+@\S+$/i,
+									message: "Invalid email format",
+								},
+							}}
+							render={({
+								field: { onChange, onBlur, value },
+							}) => (
+								<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
+									<Mail size={20} color="#6b7280" />
+									<TextInput
+										className="font-regular flex-1 ml-3"
+										style={inputPadding}
+										placeholder="Enter your email"
+										placeholderTextColor="#9ca3af"
+										onBlur={onBlur}
+										onChangeText={onChange}
+										value={value}
+										keyboardType="email-address"
+										autoCapitalize="none"
+										autoComplete="email"
+										returnKeyType="next"
+										onSubmitEditing={() =>
+											passwordRef.current?.focus()
+										}
+									/>
+								</View>
 							)}
-						</View>
+							name="email"
+						/>
+						{errors.email && (
+							<Text className="text-primary-500 text-sm ml-1 mt-2">
+								{errors.email.message}
+							</Text>
+						)}
 					</View>
 
 					{/* Password input */}
@@ -155,7 +166,8 @@ const Page = () => {
 									<Lock size={20} color="#6b7280" />
 									<TextInput
 										ref={passwordRef}
-										className="font-regular flex-1 ml-3 py-5"
+										className="font-regular flex-1 ml-3"
+										style={inputPadding}
 										placeholder="Enter your password"
 										placeholderTextColor="#9ca3af"
 										onBlur={onBlur}
@@ -182,7 +194,6 @@ const Page = () => {
 							)}
 							name="password"
 						/>
-
 						{errors.password && (
 							<Text className="text-primary-500 text-sm ml-1 mt-2">
 								{errors.password.message}
@@ -191,7 +202,7 @@ const Page = () => {
 					</View>
 
 					{/* Remember me and forgot password */}
-					<View className="flex-row items-center justify-between ">
+					<View className="flex-row items-center justify-between">
 						<Controller
 							control={control}
 							render={({ field: { value } }) => (
@@ -231,7 +242,11 @@ const Page = () => {
 
 					{/* Sign in button */}
 					<TouchableOpacity
-						className={`w-full py-4 rounded-[15px] items-center justify-center mt-6 bg-primary-600`}
+						className="w-full rounded-[15px] items-center justify-center mt-4 bg-primary-600"
+						style={{
+							paddingVertical:
+								Platform.OS === "android" ? 14 : 16,
+						}}
 						onPress={handleSubmit(onSubmit)}
 						disabled={isLoading}
 					>
