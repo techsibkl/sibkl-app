@@ -13,7 +13,7 @@ export default ({ config }: { config: any }) => ({
 			process.env.APP_ENV === "production"
 				? "sibkl-app"
 				: "sibkl-app-staging",
-		version: "1.1.0",
+		version: "2.0.0",
 		orientation: "portrait",
 		icon: "./assets/images/sibkl-app-icon.png",
 		scheme: "sibklapp",
