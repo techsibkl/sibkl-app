@@ -43,6 +43,8 @@ export default function AppLayout() {
 			<Tabs.Screen
 				name="cells"
 				options={{
+					tabBarStyle: { display: "none" },
+					href: null, // hides it from tab bar
 					title: "Cells",
 					tabBarIcon: ({ color, size, focused }) => (
 						<Circle
@@ -71,7 +73,7 @@ export default function AppLayout() {
 			<Tabs.Screen
 				name="flows"
 				options={{
-					title: "Flows",
+					title: "Follow-up",
 					tabBarIcon: ({ color, size, focused }) => (
 						<FunnelIcon
 							size={size}

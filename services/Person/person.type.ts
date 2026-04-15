@@ -8,6 +8,7 @@ export type Person = {
 	// first_name: string;
 	// last_name: string;
 	full_legal_name?: string;
+	preferred_name?: string;
 	email: string;
 	birth_date: Date | null;
 	gender: string;
@@ -19,7 +20,7 @@ export type Person = {
 	regular_service: string;
 	age: number;
 	age_group: AgeGroup | null;
-	address_line1: string;
+	full_home_address: string;
 	town: string;
 	city: string;
 	state: string;
@@ -43,6 +44,8 @@ export type Person = {
 	cells: Cell[];
 	cell_ids: number[];
 	district_ids: number[];
+	leader_of_cell_ids?: number[]; // Cell leader of these cells
+	core_of_cell_ids?: number[]; // Cell core team of these cells
 	pastor_district_ids: number[];
 	admin_district_ids: number[];
 	flow_assignee_ids?: number[];

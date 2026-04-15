@@ -12,7 +12,11 @@ export async function fetchFlows(
 	const params = new URLSearchParams();
 
 	if (owned !== undefined) params.append("owned", owned ? "true" : "false");
-	if (flowIds && flowIds.length > 0) params.append("ids", flowIds.join(","));
+	if (flowIds && flowIds.length > 0) {
+		params.append("ids", flowIds.join(","));
+	} else {
+		return [];
+	}
 
 	const response = await secureFetch(
 		`${apiEndpoints.flows.getAll}?${params.toString()}`,

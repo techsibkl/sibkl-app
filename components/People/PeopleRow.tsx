@@ -1,13 +1,15 @@
 import { Person } from "@/services/Person/person.type";
+import { getInitials } from "@/utils/helper_profile";
 import { useRouter } from "expo-router";
 import React, { useCallback } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 type PeopleRowProps = {
 	person: Person;
+	isMe?: boolean;
 };
 
-const PeopleRowComponent = ({ person }: PeopleRowProps) => {
+const PeopleRowComponent = ({ person, isMe }: PeopleRowProps) => {
 	const router = useRouter();
 
 	const handlePress = useCallback(() => {
@@ -21,20 +23,15 @@ const PeopleRowComponent = ({ person }: PeopleRowProps) => {
 		<TouchableOpacity
 			key={person.id}
 			// style={styles.row}
-			className="flex-row items-center py-4 border-b border-border-secondary 0"
+			className="flex-row items-center py-4 border-b border-border-secondary gap-2"
 			onPress={handlePress}
 			activeOpacity={0.7}
 		>
-			{/* Avatar */}
-			<View
-				// style={styles.avatar}
-				className="w-12 h-12 rounded-full bg-background mr-4 overflow-hidden"
-			>
-				<Image
-					source={require("../../assets/images/person.png")}
-					className="w-full h-full"
-					resizeMode="cover"
-				/>
+			{/* Color-coded avatar with initials */}
+			<View className="w-11 h-11 rounded-full bg-gray-200 items-center justify-center">
+				<Text className="text-sm font-bold">
+					{getInitials(person.full_legal_name)}
+				</Text>
 			</View>
 
 			{/* Person Info */}
@@ -43,7 +40,7 @@ const PeopleRowComponent = ({ person }: PeopleRowProps) => {
 					// style={styles.name}
 					className="text-text font-semibold mb-1"
 				>
-					{person.full_legal_name}
+					{person.full_legal_name} {isMe ? "(You)" : ""}
 				</Text>
 				<Text
 					// style={styles.phone}

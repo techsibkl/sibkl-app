@@ -6,7 +6,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { SectionEnum } from "@/types/TableField.type";
 import { displayDateAsStr } from "@/utils/helper";
 import { useRouter } from "expo-router";
-import React from "react";
+import React, { useEffect } from "react";
 import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 const ProfileViewPage = () => {
@@ -24,7 +24,7 @@ const ProfileViewPage = () => {
 		);
 
 	const formatValue = (value: any) => {
-		if (value instanceof Date || typeof value === "string") {
+		if (value instanceof Date) {
 			return displayDateAsStr(value);
 		}
 
@@ -35,6 +35,14 @@ const ProfileViewPage = () => {
 
 		return value ?? "—";
 	};
+
+	// Prefill the form once user profile loads
+	useEffect(() => {
+		if (person) {
+			console.log("Person:", person);
+			console.log("Age Group:", displayDateAsStr(person.age_group));
+		}
+	}, [person]);
 
 	return (
 		<ScrollView

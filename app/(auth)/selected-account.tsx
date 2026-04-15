@@ -80,6 +80,12 @@ const Page = () => {
 							<Text className="text-sm text-text-secondary">
 								Phone: {selectedProfile?.phone}
 							</Text>
+							<Text className="text-sm text-text-secondary">
+								Email: {selectedProfile?.email}
+							</Text>
+							<Text className="text-sm text-text-secondary">
+								Extra inf
+							</Text>
 						</View>
 					)}
 

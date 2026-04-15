@@ -42,17 +42,20 @@ const FlowsPage = () => {
 		}
 	}, [flow_id, isMeModeParam]);
 
-	// Getting people assigned to me from ALL flows
+	// Getting people assigned to me from SINGLE selected flow (or all flows if selectedFlowId is 0)
 	const {
 		data: singleFlowPeople,
 		isPending: singleFlowPending,
 		refetch: singleFlowRefetch,
 	} = usePeopleFlowQuery(selectedFlowId);
+
+	// Getting people assigned to me from ALL flows
 	const {
 		data: peopleFlow,
 		isPending: allPeoplePending,
 		refetch,
 	} = usePeopleFlowQuery(undefined, user?.person?.id);
+
 	const flowIds = useMemo(
 		() => [...new Set(peopleFlow?.map((p) => p.flow_id) || [])],
 		[peopleFlow],

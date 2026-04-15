@@ -1,8 +1,9 @@
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useAuthStore } from "@/stores/authStore";
+import { getInitials } from "@/utils/helper_profile";
 import { useRouter } from "expo-router";
 import React from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 
 const Greeting = () => {
 	const router = useRouter();
@@ -15,7 +16,7 @@ const Greeting = () => {
 		<View className="w-full flex-row justify-between items-start">
 			<View className="col flex-1">
 				<Text
-					className="font-bold mb-1 text-text text-3xl pr-4"
+					className="font-bold mb-1 text-text text-2xl pr-4"
 					numberOfLines={2}
 				>
 					Hi, {currentPerson?.full_legal_name}!
@@ -27,11 +28,12 @@ const Greeting = () => {
 			<TouchableOpacity
 				onPress={() => router.push("/(app)/home/profile")}
 			>
-				<Image
-					source={require("../../assets/images/person.png")}
-					className="w-14 h-14 rounded-xl"
-					resizeMode="contain"
-				/>
+				{/* Color-coded avatar with initials */}
+				<View className="w-14 h-14 rounded-full bg-gray-200 items-center justify-center">
+					<Text className="text-sm font-bold">
+						{getInitials(currentPerson?.full_legal_name)}
+					</Text>
+				</View>
 			</TouchableOpacity>
 		</View>
 	);

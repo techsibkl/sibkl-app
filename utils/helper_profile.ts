@@ -64,22 +64,6 @@ export const validatePerson = (person: Partial<Person>) => {
 		}
 	}
 
-	// if (!person.date_of_visit) {
-	//     errors.date_of_visit = 'Date of Visit cannot be empty.';
-	// }
-
-	// if (!person.address_line1) {
-	//     errors.address_line1 = 'Address Line cannot be empty.';
-	// }
-
-	// if (!person.city) {
-	//     errors.city = 'City cannot be empty.';
-	// }
-
-	// if (!person.state) {
-	//     errors.state = 'State cannot be empty.';
-	// }
-
 	if ("postcode" in person) {
 		if (person.postcode && !/^\d+$/.test(person.postcode)) {
 			errors.postcode = "Postcode can only contain numbers.";

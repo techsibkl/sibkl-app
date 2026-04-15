@@ -1,4 +1,5 @@
 import { Person } from "@/services/Person/person.type";
+import { useAuthStore } from "@/stores/authStore";
 import { FlashList } from "@shopify/flash-list";
 import React, { useState } from "react";
 import { RefreshControl } from "react-native";
@@ -12,8 +13,9 @@ type PeopleListProps = {
 };
 
 const PeopleList = ({ people, onRefresh, isPending }: PeopleListProps) => {
+	const { user } = useAuthStore();
 	const renderItem = ({ item }: { item: Person }) => (
-		<PeopleRow person={item} />
+		<PeopleRow person={item} isMe={item.id === user?.person?.id} />
 	);
 
 	const [refreshing, setRefreshing] = useState(false);

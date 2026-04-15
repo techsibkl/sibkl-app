@@ -32,7 +32,6 @@ const PeopleFlowList = ({
 				<PeopleFlowRow
 					personFlow={item}
 					flow_title={selectedFlowId == 0 ? flow.title : undefined}
-					assignee_name={item.assignee_name}
 					steps={flow.steps}
 					custom_attr={flow.custom_attr}
 				/>

@@ -16,6 +16,7 @@ export enum SectionEnum {
 	EMERGENCY_CONTACT = "Emergency Contact",
 	CHURCH_DETAILS = "Church Details",
 	MEMBERSHIP_DETAILS = "Membership Details",
+	CLASS_DETAILS = "Classes",
 	NONE = "NONE",
 }
 

@@ -26,7 +26,6 @@ import PeopleFlowDialog from "./PeopleFlowDialog";
 type PeopleFlowRowProps = {
 	personFlow: PeopleFlow;
 	flow_title?: string;
-	assignee_name?: string;
 	steps: { [key: string]: FlowStep };
 	custom_attr: { [key: string]: SingleCustomAttr };
 };
@@ -48,7 +47,6 @@ const getAvatarColors = (status?: FlowStatus) => {
 const PeopleFlowRowComponent = ({
 	personFlow,
 	flow_title,
-	assignee_name,
 	steps,
 	custom_attr,
 }: PeopleFlowRowProps) => {
@@ -63,7 +61,9 @@ const PeopleFlowRowComponent = ({
 	const avatarColors = getAvatarColors(personFlow.status);
 	const initials = getInitials(personFlow.p__full_legal_name);
 	const effectiveAssignee =
-		assignee_name ?? personFlow.last_contacted_by_name ?? null;
+		personFlow.assignee_name ??
+		personFlow.last_contacted_by_name ??
+		undefined;
 
 	return (
 		<>
@@ -197,6 +197,7 @@ const PeopleFlowRowComponent = ({
 				<PeopleFlowDialog
 					onDismiss={() => setModalVisible(false)}
 					personFlow={personFlow}
+					assignee_name={effectiveAssignee}
 					step={_step}
 					steps={steps}
 					flow_id={personFlow.flow_id!}

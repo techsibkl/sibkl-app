@@ -94,7 +94,10 @@ export default ({ config }: { config: any }) => ({
 			ENV: process.env.APP_ENV,
 			API_URL: process.env.API_URL,
 			eas: {
-				// projectId: "dc1379b3-8fa8-4f9b-a2f5-87f7b8a4eb8b",
+				// Production
+				// projectId: "c415449d-f4d9-408f-854f-e26f86e8e7ad",
+
+				// Staging
 				projectId: "383a6cf5-4697-493c-8d20-98564cc6daaf",
 			},
 		},

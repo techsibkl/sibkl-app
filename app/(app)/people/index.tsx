@@ -4,7 +4,7 @@ import PeopleList from "@/components/People/PeopleList";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import {
-	usePeopleScopedFieldsQuery
+	usePeopleQuery
 } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import React, { useMemo, useState } from "react";
@@ -18,7 +18,14 @@ const PeopleScreen = () => {
 		error,
 		isError,
 		refetch,
-	} = usePeopleScopedFieldsQuery();
+	} = usePeopleQuery();
+	// const {
+	// 	data: people,
+	// 	isPending,
+	// 	error,
+	// 	isError,
+	// 	refetch,
+	// } = usePeopleScopedFieldsQuery();
 
 	const [searchQuery, setSearchQuery] = useState("");
 

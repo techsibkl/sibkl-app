@@ -81,7 +81,7 @@ const ProfileScreen = () => {
 								Address
 							</Text>
 							<Text className="text-base text-gray-800 font-medium">
-								{person?.address_line1}
+								{person?.full_home_address}
 							</Text>
 						</View>
 					</View>
