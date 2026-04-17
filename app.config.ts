@@ -9,10 +9,7 @@ export default ({ config }: { config: any }) => ({
 			process.env.APP_ENV === "production"
 				? "SIBKL App"
 				: "SIBKL (Staging)",
-		slug:
-			process.env.APP_ENV === "production"
-				? "sibkl-app"
-				: "sibkl-app-staging",
+		slug: "sibkl-app",
 		version: "2.0.0",
 		orientation: "portrait",
 		icon: "./assets/images/sibkl-app-icon.png",
@@ -95,10 +92,10 @@ export default ({ config }: { config: any }) => ({
 			API_URL: process.env.API_URL,
 			eas: {
 				// Production
-				// projectId: "c415449d-f4d9-408f-854f-e26f86e8e7ad",
+				projectId: "c415449d-f4d9-408f-854f-e26f86e8e7ad",
 
 				// Staging
-				projectId: "383a6cf5-4697-493c-8d20-98564cc6daaf",
+				// projectId: "383a6cf5-4697-493c-8d20-98564cc6daaf",
 			},
 		},
 	},

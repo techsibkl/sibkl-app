@@ -3,6 +3,7 @@
 		"version": ">= 14.0.2",
 		"appVersionSource": "remote"
 	},
+
 	"build": {
 		"development": {
 			"developmentClient": true,
@@ -15,6 +16,7 @@
 				"buildType": "apk"
 			}
 		},
+
 		"staging": {
 			"distribution": "internal",
 			"autoIncrement": true,
@@ -29,6 +31,7 @@
 				"API_URL": "https://us-central1-leafy-loader-444703-d0.cloudfunctions.net"
 			}
 		},
+
 		"production": {
 			"distribution": "store",
 			"autoIncrement": true,
@@ -44,6 +47,7 @@
 			}
 		}
 	},
+
 	"submit": {
 		"staging": {
 			"ios": {
@@ -55,9 +59,15 @@
 				"track": "internal"
 			}
 		},
+
 		"production": {
+			"ios": {
+				"appleId": "tech@sibkl.org.my",
+				"ascAppId": "6762274718",
+				"appleTeamId": "HR28GRB742"
+			},
 			"android": {
-				"track": "production"
+				"track": "internal"
 			}
 		}
 	}
