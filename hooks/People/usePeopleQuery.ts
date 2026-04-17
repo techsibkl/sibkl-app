@@ -1,16 +1,51 @@
 import {
 	fetchPeople,
+	fetchPeoplePaginated,
 	fetchPeopleScopedFields,
 	fetchPersonById,
 } from "@/services/Person/person.service";
 import { Person } from "@/services/Person/person.type";
-import { useQuery } from "@tanstack/react-query";
+import { PeoplePaginatedParams } from "@/types/PeoplePaginated.type";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
+import { useMemo } from "react";
 
 export const usePeopleQuery = () => {
 	return useQuery<Person[]>({
 		queryKey: ["people"],
 		queryFn: () => fetchPeople(),
 	});
+};
+
+export const usePeoplePaginatedQuery = (
+	params: Omit<PeoplePaginatedParams, "page"> = {},
+) => {
+	const query = useInfiniteQuery({
+		queryKey: ["people_paginated", params],
+		queryFn: ({ pageParam = 1 }) =>
+			fetchPeoplePaginated({ ...params, page: pageParam }),
+		initialPageParam: 1,
+		getNextPageParam: (lastPage) => {
+			const { page, total } = lastPage.meta;
+			return page < total ? page + 1 : undefined;
+		},
+	});
+
+	// Flatten all pages into a single array
+	const people: Person[] = useMemo(
+		() => query.data?.pages.flatMap((p) => p.data) ?? [],
+		[query.data],
+	);
+
+	const meta = query.data?.pages.at(-1)?.meta;
+
+	return {
+		...query,
+		people,
+		meta,
+		loadMore: query.fetchNextPage,
+		isLoadingMore: query.isFetchingNextPage,
+		hasMore: query.hasNextPage,
+	};
 };
 
 export const useSinglePersonQuery = (personId: number) => {

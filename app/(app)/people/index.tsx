@@ -3,41 +3,37 @@
 import PeopleList from "@/components/People/PeopleList";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
-import {
-	usePeopleQuery
-} from "@/hooks/People/usePeopleQuery";
+import { usePeoplePaginatedQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
-import React, { useMemo, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { StatusBar, Text, View } from "react-native";
 
 const PeopleScreen = () => {
 	const { isDark } = useThemeColors();
-	const {
-		data: people,
-		isPending,
-		error,
-		isError,
-		refetch,
-	} = usePeopleQuery();
-	// const {
-	// 	data: people,
-	// 	isPending,
-	// 	error,
-	// 	isError,
-	// 	refetch,
-	// } = usePeopleScopedFieldsQuery();
-
 	const [searchQuery, setSearchQuery] = useState("");
+	const [debouncedSearch, setDebouncedSearch] = useState("");
 
-	const filteredPeople = useMemo(() => {
-		return (people ?? []).filter(
-			(person) =>
-				person?.full_legal_name
-					?.toLowerCase()
-					.includes(searchQuery.toLowerCase()) ||
-				person?.phone?.includes(searchQuery),
-		);
-	}, [people, searchQuery]);
+	// Debounce search so we don't fire on every keystroke
+	useEffect(() => {
+		const t = setTimeout(() => setDebouncedSearch(searchQuery), 600);
+		return () => clearTimeout(t);
+	}, [searchQuery]);
+
+	const {
+		people,
+		isPending,
+		isError,
+		error,
+		refetch,
+		loadMore,
+		isLoadingMore,
+		hasMore,
+	} = usePeoplePaginatedQuery({
+		search: debouncedSearch || undefined,
+		sortField: "created_at",
+		sortOrder: "DESC",
+		pageSize: 50,
+	});
 
 	const refresh = async () => {
 		await refetch();
@@ -46,30 +42,26 @@ const PeopleScreen = () => {
 	if (isError)
 		return (
 			<SharedBody>
-				{/* <Text>{JSON.stringify(error)}</Text> */}
 				<Text>{error.message}</Text>
-				<Text>{error.name}</Text>
 			</SharedBody>
 		);
 
 	return (
 		<SharedBody>
-			<StatusBar
-				className="bg-background "
-				barStyle={isDark ? "light-content" : "dark-content"}
-			/>
-			{/* Search Bar */}
+			<StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
 			<SharedSearchBar
 				searchQuery={searchQuery}
 				onSearchChange={setSearchQuery}
 				placeholder="Search people..."
 			/>
-			{/* People List */}
 			<View className="flex-1">
 				<PeopleList
-					people={filteredPeople}
+					people={people}
 					onRefresh={refresh}
+					onLoadMore={loadMore}
 					isPending={isPending}
+					isLoadingMore={isLoadingMore}
+					hasMore={hasMore}
 				/>
 			</View>
 		</SharedBody>

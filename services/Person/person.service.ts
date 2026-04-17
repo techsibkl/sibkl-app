@@ -1,3 +1,8 @@
+import {
+	PeoplePaginatedMeta,
+	PeoplePaginatedParams,
+	PeoplePaginatedResponse,
+} from "@/types/PeoplePaginated.type";
 import { apiEndpoints } from "@/utils/endpoints";
 import { dateReplacer, formatObjStrToDate } from "@/utils/helper";
 import { secureFetch } from "@/utils/secureFetch";
@@ -18,6 +23,43 @@ export const fetchPeople = async (): Promise<Person[]> => {
 		};
 	}
 	return json.data as Person[];
+};
+
+export const fetchPeoplePaginated = async (
+	params: PeoplePaginatedParams = {},
+): Promise<PeoplePaginatedResponse> => {
+	const query = new URLSearchParams();
+
+	const append = (key: string, val: any) => {
+		if (val !== undefined && val !== null && val !== "") {
+			query.append(key, String(val));
+		}
+	};
+
+	append("page", params.page ?? 1);
+	append("pageSize", params.pageSize ?? 50);
+	append("role", params.role);
+	append("search", params.search);
+	append("sortField", params.sortField);
+	append("sortOrder", params.sortOrder);
+	if (params.includeArchived) append("includeArchived", "true");
+
+	if (params.filters && Object.keys(params.filters).length > 0) {
+		query.append("filters", JSON.stringify(params.filters));
+	}
+
+	const response = await secureFetch(
+		`${apiEndpoints.people.getPaginated}?${query.toString()}`,
+	);
+	const json: ReturnVal = await response.json();
+
+	if (!json.success)
+		throw { status: json.status_code, message: json.message };
+
+	return {
+		data: json.data as Person[],
+		meta: json.meta as PeoplePaginatedMeta,
+	};
 };
 
 export async function fetchPersonById(id: number): Promise<Person> {

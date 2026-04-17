@@ -2,32 +2,57 @@ import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
 import { FlashList } from "@shopify/flash-list";
 import React, { useState } from "react";
-import { RefreshControl } from "react-native";
+import { ActivityIndicator, RefreshControl, View } from "react-native";
 import SkeletonList from "../shared/Skeleton/SkeletonList";
 import PeopleRow from "./PeopleRow";
 
 type PeopleListProps = {
 	people: Person[];
 	onRefresh?: () => Promise<void>;
+	onLoadMore?: () => void;
 	isPending?: boolean;
+	isLoadingMore?: boolean;
+	hasMore?: boolean;
 };
 
-const PeopleList = ({ people, onRefresh, isPending }: PeopleListProps) => {
+const PeopleList = ({
+	people,
+	onRefresh,
+	onLoadMore,
+	isPending,
+	isLoadingMore,
+	hasMore,
+}: PeopleListProps) => {
 	const { user } = useAuthStore();
+	const [refreshing, setRefreshing] = useState(false);
+
 	const renderItem = ({ item }: { item: Person }) => (
 		<PeopleRow person={item} isMe={item.id === user?.person?.id} />
 	);
 
-	const [refreshing, setRefreshing] = useState(false);
-
 	const handleRefresh = async () => {
 		if (!onRefresh) return;
 		setRefreshing(true);
-		console.log("Refreshing people list...");
 		await onRefresh();
 		setRefreshing(false);
-		console.log("Refresh complete.");
 	};
+
+	const handleEndReached = () => {
+		if (hasMore && !isLoadingMore && !isPending) {
+			onLoadMore?.();
+		}
+	};
+
+	const ListFooter = () => {
+		if (!isLoadingMore) return null;
+		return (
+			<View className="py-4 items-center">
+				<ActivityIndicator size="small" color="#6b7280" />
+			</View>
+		);
+	};
+
+	if (isPending) return <SkeletonList length={20} />;
 
 	return (
 		<FlashList
@@ -37,16 +62,18 @@ const PeopleList = ({ people, onRefresh, isPending }: PeopleListProps) => {
 				paddingVertical: 8,
 			}}
 			keyExtractor={(item) => item.id.toString()}
-			ListEmptyComponent={<SkeletonList length={20} />}
 			estimatedItemSize={100}
 			removeClippedSubviews
 			renderItem={renderItem}
+			onEndReached={handleEndReached}
+			onEndReachedThreshold={0.3}
+			ListFooterComponent={<ListFooter />}
 			refreshControl={
 				<RefreshControl
 					refreshing={refreshing}
 					onRefresh={handleRefresh}
-					colors={["#6b7280"]} // Android spinner color
-					tintColor="#6b7280" // iOS spinner color
+					colors={["#6b7280"]}
+					tintColor="#6b7280"
 				/>
 			}
 		/>

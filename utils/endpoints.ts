@@ -21,6 +21,7 @@ export const apiEndpoints = {
 	people: {
 		getAll: _endpoint("people"),
 		getScoped: _endpoint("people/scoped"),
+		getPaginated: _endpoint("people/paginated"),
 		getById: (id: number | string) => _endpoint(`people/${id}`),
 		geteWithNoUid: _endpoint(`people/with-no-uid`),
 		update: (id: number | string) => _endpoint(`people/update/${id}`),
