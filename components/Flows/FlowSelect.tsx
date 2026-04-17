@@ -14,7 +14,7 @@ const FlowSelector = ({ flows, selectedFlowId, onSelect }: Props) => {
 		<View className="flex-1 w-full">
 			{/* <Text>Hello</Text> */}
 			<View
-				className={`pl-4 h-12 flex border border-border rounded-[15px] bg-white justify-center`}
+				className={`pl-4 flex border border-border rounded-[15px] bg-white justify-center`}
 			>
 				<AppPicker
 					value={selectedFlowId}

@@ -1,4 +1,10 @@
-export const CATEGORIES = ["Cell", "Discipleship", "Policies", "Training"];
+export const CATEGORIES = [
+	"Cell",
+	"Worship",
+	"Discipleship",
+	"Policies",
+	"Training",
+];
 export const FORMATS = ["Video", "PDF"];
 export const RESOURCE_DRIVES = [
 	{

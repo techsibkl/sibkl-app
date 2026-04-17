@@ -14,7 +14,48 @@ type ViewResourceDialogProps = {
 	resource: MediaResource;
 };
 
+const toYoutubeEmbedUrl = (url: string): string | null => {
+	try {
+		const u = new URL(url);
+		if (u.hostname === "youtu.be") {
+			return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
+		}
+		if (u.hostname.includes("youtube.com")) {
+			const id = u.searchParams.get("v");
+			if (id) return `https://www.youtube.com/embed/${id}`;
+		}
+		return null;
+	} catch {
+		return null;
+	}
+};
+
+export const getThumbnail = (item: MediaResource): string | null => {
+	if (item.thumbnail_id)
+		return `https://drive.google.com/thumbnail?id=${item.thumbnail_id}`;
+	if (item.drive_file_id)
+		return `https://drive.google.com/thumbnail?id=${item.drive_file_id}`;
+	if (item.youtube_link) {
+		try {
+			const u = new URL(item.youtube_link);
+			const videoId =
+				u.hostname === "youtu.be"
+					? u.pathname.slice(1)
+					: u.searchParams.get("v");
+			if (videoId)
+				return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
+		} catch {
+			return null;
+		}
+	}
+	return null;
+};
+
 const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
+	const embedUrl = resource.youtube_link
+		? toYoutubeEmbedUrl(resource.youtube_link)
+		: null;
+
 	const handleItemPress = async (url: string) => {
 		try {
 			await Linking.openURL(url);
@@ -24,11 +65,11 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 	};
 
 	const handleShare = async () => {
-		if (!resource.drive_view_link) return;
+		const share_url = resource.drive_view_link || resource.youtube_link;
 		try {
 			await Share.share({
-				message: `${resource.title}\n${resource.description}\n\nDownload the resource here: ${resource.drive_view_link}`,
-				url: resource.drive_view_link, // iOS-specific, still nice to include
+				message: `${resource.title}\n\nDownload the resource here:`,
+				url: share_url,
 				title: resource.title,
 			});
 		} catch (error) {
@@ -36,25 +77,41 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 		}
 	};
 
+	const thumbnail = getThumbnail(resource);
+
 	return (
 		<View
 			className="flex-row bg-white rounded-[15px] overflow-hidden items-center justify-between"
-			style={{
-				shadowRadius: 5, // Override the default blur
-				shadowOpacity: 0.05,
-			}}
+			style={{ shadowRadius: 5, shadowOpacity: 0.05 }}
 		>
 			<View className="flex-1">
-				{resource.drive_file_id && (
+				{resource.drive_file_id ? (
 					<Image
 						source={{
 							uri: `https://drive.google.com/thumbnail?id=${resource.drive_file_id}&sz=s1080`,
 						}}
-						className="w-full  mb-3"
+						className="w-full mb-3"
 						style={{ aspectRatio: 16 / 9 }}
 						resizeMode="cover"
 					/>
+				) : thumbnail ? (
+					<Image
+						source={{ uri: thumbnail }}
+						className="w-full mb-3"
+						style={{ aspectRatio: 16 / 9 }}
+						resizeMode="cover"
+					/>
+				) : (
+					<View
+						className="w-full bg-gray-100 items-center justify-center mb-3"
+						style={{ aspectRatio: 16 / 9 }}
+					>
+						<Text className="text-gray-400 text-xs">
+							No Preview
+						</Text>
+					</View>
 				)}
+
 				<View className="py-2 px-4">
 					<Text
 						className="text-text text-xl font-bold mb-1"
@@ -71,21 +128,23 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 						{resource.description}
 					</Text>
 				</View>
-				{resource.drive_view_link && (
+
+				{(resource.drive_view_link || resource.youtube_link) && (
 					<View className="flex-row border-t mt-2 border-border">
-						{/* Open File */}
 						<TouchableOpacity
 							className="flex-1 py-6 items-center justify-center border-r border-border"
 							onPress={() =>
-								handleItemPress(resource.drive_view_link!)
+								handleItemPress(
+									resource.drive_view_link ??
+										resource.youtube_link!,
+								)
 							}
 						>
 							<Text className="text-gray-500 font-semibold">
-								Open File
+								{resource.youtube_link ? "Watch" : "Open File"}
 							</Text>
 						</TouchableOpacity>
 
-						{/* Share */}
 						<TouchableOpacity
 							className="flex-1 py-6 items-center justify-center"
 							onPress={handleShare}

@@ -1,21 +1,25 @@
 export type MediaResource = {
-	id: string; // unique identifier in your DB
-	title: string; // custom resource title
-	description?: string; // summary/notes
-	category: string; // e.g. "discipleship", "policies"
-	tags?: string[]; // searchable keywords
-	file_type: "Video" | "PDF" | "Image" | "Folder"; // derived from mimeType
-	drive_file_id: string; // returned by Drive API
-	drive_view_link: string; // https://drive.google.com/file/d/{id}/view
-	drive_download_link: string; // https://drive.google.com/uc?export=download&id={id}
-	thumbnail_id: string | null;
-	thumbnail?: string; // from Drive API (`thumbnailLink`)
-	upload_date: string; // stored when uploaded
-	created_by?: string; // original author (optional)
-	uploaded_by: string; // admin user ID/email
-	file_size: string;
-	uploaded_by_name: string;
-	// size_in_bytes?: number; // from Drive API
-	// duration_seconds?: number; // (if Video/audio, can query later)
-	is_featured?: boolean; // highlight certain resources
+	id?: number; // optional while creating
+	title: string;
+	description?: string;
+	category: string;
+	tags?: string[];
+	file_type: "Video" | "PDF" | "Image";
+	drive_file_id?: string;
+	drive_view_link?: string;
+	drive_download_link?: string;
+	thumbnail_id?: string | null;
+	thumbnail?: string;
+	upload_date?: string;
+	created_by?: string;
+	uploaded_by?: string;
+	uploaded_by_name?: string;
+	file_size?: string;
+	is_featured?: boolean;
+	role_group_ids?: number[];
+	// NEW
+	youtube_video_id?: string;
+	youtube_url?: string;
+	upload_to_youtube?: boolean;
+	youtube_link?: string;
 };
