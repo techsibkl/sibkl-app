@@ -1,6 +1,6 @@
 import { FormField } from "@/components/shared/FormField";
 import PulsingLogo from "@/components/shared/PulsingLogo";
-import { fetchPeople } from "@/services/Person/person.service";
+import { fetchPersonById } from "@/services/Person/person.service";
 import { useClaimStore } from "@/stores/claimStore";
 import { apiEndpoints } from "@/utils/endpoints";
 import { secureFetch } from "@/utils/secureFetch";
@@ -61,7 +61,7 @@ const Page = () => {
 			// Call react query here
 			await qc.prefetchQuery({
 				queryKey: ["person", personId],
-				queryFn: () => fetchPeople(personId),
+				queryFn: () => fetchPersonById(personId),
 			});
 			router.push("/(auth)/complete-profile");
 			return;

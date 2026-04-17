@@ -9,9 +9,17 @@ export default function AuthLayout() {
 			<Stack.Screen name="sign-in" />
 			<Stack.Screen name="sign-up" />
 			<Stack.Screen name="complete-profile" />
-			<Stack.Screen name="forgot-password" />
 			<Stack.Screen name="new-account" />
 			<Stack.Screen name="claim-set-password" />
+			<Stack.Screen
+				name="forgot-password"
+				options={{
+					headerShown: true,
+					header() {
+						return <SharedHeader title="Forgot Password" />;
+					},
+				}}
+			/>
 			<Stack.Screen
 				name="selected-account"
 				options={{

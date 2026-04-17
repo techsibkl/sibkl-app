@@ -1,5 +1,5 @@
 import { useAuthStore } from "@/stores/authStore";
-import { Link } from "expo-router";
+import { Link, router } from "expo-router";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
 import React, { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
@@ -231,13 +231,18 @@ const Page = () => {
 							)}
 							name="rememberMe"
 						/>
-						<Link href="/forgot-password" asChild>
-							<TouchableOpacity>
-								<Text className="text-sm text-blue-500 font-semibold">
-									Forgot Password?
-								</Text>
-							</TouchableOpacity>
-						</Link>
+						<TouchableOpacity
+							onPress={() =>
+								router.push({
+									pathname: "/forgot-password",
+									params: { email: watch("email") },
+								})
+							}
+						>
+							<Text className="text-sm text-blue-500 font-semibold">
+								Forgot Password?
+							</Text>
+						</TouchableOpacity>
 					</View>
 
 					{/* Sign in button */}
