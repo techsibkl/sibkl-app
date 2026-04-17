@@ -1,4 +1,4 @@
-import { getAuth } from "@react-native-firebase/auth"; // or "@react-native-firebase/auth" v22 modular style
+import { getAuth, getIdToken } from "@react-native-firebase/auth"; // or "@react-native-firebase/auth" v22 modular style
 
 export async function secureFetch(
   input: RequestInfo,
