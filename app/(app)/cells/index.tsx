@@ -2,11 +2,10 @@
 
 import CellList from "@/components/Cells/CellList";
 import CreateSessionSheet from "@/components/Cells/CreateSessionSheet";
+import { Can } from "@/components/shared/Can";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
-import {
-	useSinglePersonQuery
-} from "@/hooks/People/usePeopleQuery";
+import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Cell } from "@/services/Cell/cell.types";
 import { useAuthStore } from "@/stores/authStore";
@@ -22,19 +21,23 @@ import { FAB, Portal, Provider } from "react-native-paper";
 const CellsScreen = () => {
   const { isDark } = useThemeColors();
   const { user } = useAuthStore();
-	const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);  const [open, setOpen] = useState(false);
+  const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
+  const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
+  console.log("roles:", user?.person?.roles); // can use this for this to set in the create sheet
   // ref
   const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
-
-	const filteredCells = (person?.cells ?? []).filter((cell: Cell) =>
-		cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase()),
-	);
-	// // derive filtered list
-	// const filteredCells = (user?.person?.cells ?? []).filter((cell: Cell) =>
-	// 	cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase())
-	// );
+  // console.log("user:", user);
+  // console.log("firebaseUser:", firebaseUser);
+  const filteredCells = (person?.cells ?? []).filter((cell: Cell) =>
+    cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
+  // // derive filtered list
+  // const filteredCells = (user?.person?.cells ?? []).filter((cell: Cell) =>
+  // 	cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase())
+  // );
+  console.log(user);
 
   if (!user)
     return (

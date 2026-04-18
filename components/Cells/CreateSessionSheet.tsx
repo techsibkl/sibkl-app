@@ -29,7 +29,7 @@ const CreateSessionSheet = forwardRef<
             cell_id: "1",
             meeting_date: date.toISOString().split("T")[0],
           }),
-        }
+        },
       );
 
       const result = await response.json();
