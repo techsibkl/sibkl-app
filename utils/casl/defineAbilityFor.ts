@@ -1,8 +1,8 @@
 import { Person } from "@/services/Person/person.type";
 import {
-	AbilityBuilder,
-	type AnyAbility,
-	createMongoAbility,
+  AbilityBuilder,
+  type AnyAbility,
+  createMongoAbility,
 } from "@casl/ability";
 
 export enum Role {
