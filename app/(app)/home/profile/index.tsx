@@ -5,9 +5,10 @@ import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useAuthStore } from "@/stores/authStore";
 import { SectionEnum } from "@/types/TableField.type";
 import { displayDateAsStr } from "@/utils/helper";
+import { getInitials } from "@/utils/helper_profile";
 import { useRouter } from "expo-router";
-import React, { useEffect } from "react";
-import { Image, ScrollView, Text, TouchableOpacity, View } from "react-native";
+import React from "react";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 const ProfileViewPage = () => {
 	const { user } = useAuthStore();
@@ -36,14 +37,6 @@ const ProfileViewPage = () => {
 		return value ?? "—";
 	};
 
-	// Prefill the form once user profile loads
-	useEffect(() => {
-		if (person) {
-			console.log("Person:", person);
-			console.log("Age Group:", displayDateAsStr(person.age_group));
-		}
-	}, [person]);
-
 	return (
 		<ScrollView
 			contentContainerStyle={{ flexGrow: 1 }}
@@ -52,11 +45,11 @@ const ProfileViewPage = () => {
 			<SharedBody>
 				{/* Header */}
 				<View className="items-center mb-6 gap-1">
-					<Image
-						source={require("../../../../assets/images/person.png")}
-						className="w-20 h-20 rounded-xl"
-						resizeMode="contain"
-					/>
+					<View className="w-20 h-20 rounded-full bg-gray-200 items-center justify-center">
+						<Text className="text-lg font-bold">
+							{getInitials(person.full_legal_name)}
+						</Text>
+					</View>
 					<Text className="text-2xl font-bold">
 						{`${person.full_legal_name}`}
 					</Text>

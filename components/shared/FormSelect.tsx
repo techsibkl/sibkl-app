@@ -31,7 +31,9 @@ export const FormSelect = ({
 
 	return (
 		<View>
-			<Text className="text-sm font-medium text-text mb-2">{label}</Text>
+			<Text className="text-sm font-medium text-text pl-1 mb-2">
+				{label}
+			</Text>
 			<Controller
 				control={control}
 				name={name}
@@ -44,15 +46,23 @@ export const FormSelect = ({
 							<AppPicker
 								value={value}
 								onChange={onChange}
-								options={[
-									...options.map((o) => ({
-										label: String(o),
-										value: o,
-									})),
-								]}
-								renderTrigger={(label) => (
-									<Text className="font-regular text-sm">
-										{label || placeholder}
+								placeholder={placeholder}
+								options={options.map((o) => ({
+									label: String(o),
+									value: o,
+								}))}
+								onAfterChange={(v) => onChangeTextCallback?.(v)}
+								onClose={(v) => onBlurCallback?.(v)}
+								renderTrigger={(label, isPlaceholder) => (
+									<Text
+										className="font-regular text-sm"
+										style={{
+											color: isPlaceholder
+												? "#9ca3af"
+												: "#111827",
+										}}
+									>
+										{isPlaceholder ? placeholder : label}
 									</Text>
 								)}
 							/>
@@ -61,7 +71,7 @@ export const FormSelect = ({
 				}}
 			/>
 			{errors[name] && (
-				<Text className="text-primary-500 text-sm mt-1">
+				<Text className="text-primary-500 text-sm pl-1 mt-1">
 					{errors[name]?.message}
 				</Text>
 			)}

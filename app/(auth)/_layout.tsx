@@ -1,6 +1,7 @@
 import SharedHeader from "@/components/shared/SharedHeader";
-import { Stack } from "expo-router";
+import { router, Stack } from "expo-router";
 import React from "react";
+import { Alert } from "react-native";
 
 export default function AuthLayout() {
 	return (
@@ -8,9 +9,36 @@ export default function AuthLayout() {
 			<Stack.Screen name="index" />
 			<Stack.Screen name="sign-in" />
 			<Stack.Screen name="sign-up" />
-			<Stack.Screen name="complete-profile" />
 			<Stack.Screen name="new-account" />
 			<Stack.Screen name="claim-set-password" />
+			<Stack.Screen
+				name="complete-profile"
+				options={{
+					headerShown: true,
+					header() {
+						return (
+							<SharedHeader
+								title="Complete Profile"
+								backFunc={() => {
+									Alert.alert(
+										"Are you sure you want to go back?",
+										"Your progress will be lost.",
+										[
+											{ text: "Cancel", style: "cancel" },
+											{
+												text: "Yes, back to login",
+												style: "destructive",
+												onPress: () =>
+													router.replace("/(auth)"),
+											},
+										],
+									);
+								}}
+							/>
+						);
+					},
+				}}
+			/>
 			<Stack.Screen
 				name="forgot-password"
 				options={{

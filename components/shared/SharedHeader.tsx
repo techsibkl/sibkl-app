@@ -47,7 +47,7 @@ const SharedHeader = ({ title, isPop, backFunc, child }: SharedHeaderProps) => {
 							<ChevronLeft size={30} />
 						</TouchableOpacity>
 					)}
-					<Text className="text-3xl text-black font-bold">
+					<Text className="text-2xl text-black font-bold">
 						{title}
 					</Text>
 				</View>

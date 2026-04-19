@@ -12,73 +12,98 @@ type Props<T> = {
 	options: PickerOption<T>[];
 	onChange: (value: T) => void;
 	disabled?: boolean;
-
-	/** iOS trigger */
-	renderTrigger?: (label: string) => React.ReactNode;
+	renderTrigger?: (label: string, isPlaceholder: boolean) => React.ReactNode;
+	onAfterChange?: (value: T) => void; // onChangeText — fires on select
+	onClose?: (value: T) => void; // onBlur — fires on dismiss
 };
-
 export function AppPicker<T>({
 	value,
 	options,
 	onChange,
 	disabled = false,
 	renderTrigger,
-}: Props<T>) {
+	onAfterChange,
+	onClose,
+	placeholder = "Select an option...",
+}: Props<T> & { placeholder?: string }) {
 	const [open, setOpen] = useState(false);
+	const [localValue, setLocalValue] = useState<T | null>(value ?? null);
 
 	const selectedLabel = options.find((o) => o.value === value)?.label ?? "";
+	const isPlaceholder = value === null || value === undefined || value === "";
 
-	// ✅ ANDROID — inline picker
+	const allOptions = [
+		{ label: placeholder, value: null as unknown as T },
+		...options,
+	];
+
 	if (Platform.OS === "android") {
 		return (
 			<Picker
 				enabled={!disabled}
 				selectedValue={value}
-				onValueChange={onChange}
+				onValueChange={(v) => {
+					onChange(v);
+					onClose?.(v);
+				}}
 			>
-				{options.map((opt) => (
+				{allOptions.map((opt, i) => (
 					<Picker.Item
-						key={String(opt.value)}
+						key={i === 0 ? "__placeholder__" : String(opt.value)}
 						label={opt.label}
 						value={opt.value}
+						color={i === 0 ? "#9ca3af" : "#111827"}
 					/>
 				))}
 			</Picker>
 		);
 	}
 
-	// ✅ IOS — modal picker
+	const handleDone = () => {
+		onChange(localValue as T);
+		setOpen(false);
+		onClose?.(localValue as T);
+	};
+
 	return (
 		<>
 			<Pressable
 				className="w-full py-4"
 				disabled={disabled}
-				onPress={() => setOpen(true)}
+				onPress={() => {
+					setLocalValue(value ?? null);
+					setOpen(true);
+				}}
 			>
-				{renderTrigger?.(selectedLabel)}
+				{renderTrigger?.(selectedLabel, isPlaceholder)}
 			</Pressable>
 
 			<Modal visible={open} transparent animationType="slide">
 				<Pressable className="flex-1 justify-end bg-black/30">
 					<View className="bg-white rounded-t-2xl">
 						<View className="flex-row justify-end p-4 border-b border-border">
-							<Pressable onPress={() => setOpen(false)}>
+							<Pressable onPress={handleDone}>
 								<Text className="text-blue-600 font-semibold">
 									Done
 								</Text>
 							</Pressable>
 						</View>
 						<Picker
-							selectedValue={value}
+							selectedValue={localValue}
 							onValueChange={(v) => {
-								onChange(v);
+								setLocalValue(v as T);
 							}}
 						>
-							{options.map((opt) => (
+							{allOptions.map((opt, i) => (
 								<Picker.Item
-									key={String(opt.value)}
+									key={
+										i === 0
+											? "__placeholder__"
+											: String(opt.value)
+									}
 									label={opt.label}
 									value={opt.value}
+									color={i === 0 ? "#9ca3af" : "#111827"}
 								/>
 							))}
 						</Picker>

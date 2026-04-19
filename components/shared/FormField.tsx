@@ -50,7 +50,9 @@ export const FormField = ({
 	ref,
 }: Props) => (
 	<View>
-		<Text className="text-sm font-medium text-text mb-2">{label}</Text>
+		<Text className="text-sm font-medium text-text pl-1 mb-2">
+			{label} {disabled ? "(not editable)" : ""}
+		</Text>
 		<View>
 			<Controller
 				control={control}
@@ -65,9 +67,20 @@ export const FormField = ({
 							className={`font-regular flex-1 ${disabled ? `text-gray-400` : `text-text`}`}
 							placeholder={placeholder}
 							placeholderTextColor="#9ca3af"
-							onBlur={onBlur}
-							onChangeText={onChange}
-							value={value}
+							onBlur={() => {
+								onBlur();
+								onBlurCallback?.(value);
+							}}
+							onChangeText={(text) => {
+								onChange(text);
+								onChangeTextCallback?.(text);
+							}}
+							// For controlled components, value should never be undefined or null (string)
+							value={
+								value !== undefined && value !== null
+									? String(value)
+									: ""
+							}
 							readOnly={disabled}
 							keyboardType={keyboardType}
 							secureTextEntry={secureTextEntry}
@@ -78,7 +91,7 @@ export const FormField = ({
 				)}
 			/>
 			{errors[name] && (
-				<Text className="text-primary-500 text-sm mt-1">
+				<Text className="text-primary-500 text-sm pl-1 mt-1">
 					{errors[name]?.message}
 				</Text>
 			)}

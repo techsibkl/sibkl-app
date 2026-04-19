@@ -1,5 +1,6 @@
 import DynamicFormField from "@/components/shared/DynamicFormField";
 import SharedBody from "@/components/shared/SharedBody";
+import SkeletonPeopleRow from "@/components/shared/Skeleton/SkeletonPeopleRow";
 import { groupedPersonFields } from "@/constants/const_person";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { updatePeople } from "@/services/Person/person.service";
@@ -11,19 +12,15 @@ import { SectionEnum } from "@/types/TableField.type";
 import { formatPhone } from "@/utils/helper";
 import {
 	getAgeGroup,
+	getInitials,
 	pickFieldsBySection,
 	validatePerson,
 } from "@/utils/helper_profile";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import {
-	ActivityIndicator,
-	Image,
-	Text,
-	TouchableOpacity,
-	View,
-} from "react-native";
+import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import Toast from "react-native-toast-message";
 
 // Create a type using those keys
 export type ProfileFormData = Partial<Person>;
@@ -42,6 +39,7 @@ const Page = () => {
 		reset,
 		getValues,
 		setValue,
+		watch,
 		setError,
 		clearErrors,
 
@@ -76,8 +74,6 @@ const Page = () => {
 				SectionEnum.PERSONAL_INFORMATION,
 			);
 			reset(personalInfoData as ProfileFormData);
-
-			console.log("✅ Filled form with person data");
 		}
 	}, [selectedPerson, reset]);
 
@@ -93,6 +89,12 @@ const Page = () => {
 					message: message,
 				});
 			});
+			Toast.show({
+				type: "error",
+				text1Style: { fontSize: 16, fontWeight: "bold" },
+				text1: "Please enter valid input",
+			});
+
 			return; // Don't proceed with submission
 		}
 
@@ -105,7 +107,6 @@ const Page = () => {
 			try {
 				const response = await updatePeople(formPerson);
 				if (response.success) {
-					console.log("successfully updated the profile");
 					authStore.init();
 				}
 			} catch (error) {
@@ -113,7 +114,6 @@ const Page = () => {
 				return;
 			}
 		} else {
-			console.log("Signing up profile with data:", data);
 			const user = await signUp(data);
 			if (!user) {
 				console.error("Something went wrong signing up ");
@@ -127,8 +127,9 @@ const Page = () => {
 		setValue(key, value);
 
 		if (key === "age") {
+			const parsed = parseInt(value);
 			setValue("birth_date", null);
-			setValue("age_group", getAgeGroup(value));
+			setValue("age_group", getAgeGroup(isNaN(parsed) ? 0 : parsed));
 		}
 
 		if (key === "age_group" && value) {
@@ -139,32 +140,23 @@ const Page = () => {
 		if (key === "birth_date" && value) {
 			const birthDateObj = new Date(value);
 			const today = new Date();
-
-			// Calculate the difference in years
 			let calculatedAge =
 				today.getFullYear() - birthDateObj.getFullYear();
-
-			// Adjust if the birthday has not yet occurred this year
 			const hasHadBirthdayThisYear =
 				today.getMonth() > birthDateObj.getMonth() ||
 				(today.getMonth() === birthDateObj.getMonth() &&
 					today.getDate() >= birthDateObj.getDate());
-
-			if (!hasHadBirthdayThisYear) {
-				calculatedAge--;
-			}
+			if (!hasHadBirthdayThisYear) calculatedAge--;
 
 			setValue("age", calculatedAge);
 			setValue("age_group", getAgeGroup(calculatedAge));
 		}
 
 		if (!submitAttempted) return;
-		// Re-validate the field on update if submission has been attempted
 		const currentData = getValues();
 		const validationErrors = validatePerson(currentData);
-
 		if (validationErrors[key]) {
-			setError(key, {
+			setError(key as any, {
 				type: "manual",
 				message: validationErrors[key],
 			});
@@ -177,87 +169,94 @@ const Page = () => {
 		}
 	};
 
+	const fullName = watch("full_legal_name");
+
 	if (isPending)
 		return (
 			<SharedBody>
-				<ActivityIndicator />
+				<SkeletonPeopleRow />
 			</SharedBody>
 		);
 
 	return (
-		<KeyboardAwareScrollView
-			enableOnAndroid={true}
-			extraScrollHeight={60} // 👈 pushes inputs above keyboard
-			keyboardShouldPersistTaps="handled"
-			contentContainerStyle={{ flexGrow: 1 }}
-		>
-			<SharedBody>
-				{/* Logo - Replace with your app logo */}
-				<View className="items-center mt-16 mb-6">
-					{/* Placeholder for your logo image */}
-					<Image
-						source={require("../../assets/images/person.png")}
-						className="w-20 h-20 rounded-xl"
-						resizeMode="contain"
-					/>
-					<Text className="text-2xl font-bold text-text">
-						Complete Profile
-					</Text>
-					<Text className="text-text-secondary mt-1 text-center">
-						You&apos;re almost there!!
-					</Text>
-				</View>
+		<>
+			<KeyboardAwareScrollView
+				className="flex-1 bg-background relative"
+				enableOnAndroid={true}
+				extraScrollHeight={60}
+				keyboardShouldPersistTaps="handled"
+				contentContainerStyle={{ flexGrow: 1 }}
+			>
+				<SharedBody>
+					{/* Logo - Replace with your app logo */}
+					<View className="items-center my-6">
+						<View className="w-20 h-20 rounded-full bg-gray-200 items-center justify-center mb-4">
+							<Text className="text-lg font-bold">
+								{getInitials(fullName)}
+							</Text>
+						</View>
+						<Text className="text-2xl font-bold text-text">
+							{fullName ? `Welcome, ${fullName}!` : "Welcome!"}
+						</Text>
+						<Text className="text-text-secondary mt-1 text-center">
+							You&apos;re almost there!!
+						</Text>
+					</View>
 
-				<View className="px-5 pt-4">
-					{Object.entries(groupedPersonFields)
-						.filter(
-							([section]) =>
-								section === SectionEnum.PERSONAL_INFORMATION,
-						)
-						.map(([section, fields]) => (
-							<View key={section} className="mb-12">
-								<Text className="ml-1 mb-4 pb-2 text-black font-semibold border-b border-gray-300">
-									{section}
-								</Text>
+					<View className="px-5 pt-4 pb-10">
+						{Object.entries(groupedPersonFields)
+							.filter(
+								([section]) =>
+									section ===
+									SectionEnum.PERSONAL_INFORMATION,
+							)
+							.map(([section, fields]) => (
+								<View key={section} className="mb-12">
+									{/* <Text className="ml-1 mb-4 pb-2 text-black font-semibold border-b border-gray-300">
+										{section}
+									</Text> */}
 
-								<View className="gap-y-6">
-									{fields
-										.filter((f) => f.editable !== false)
-										.map((field) => (
-											<DynamicFormField
-												key={field.key}
-												field={field}
-												control={control}
-												errors={errors}
-												onFieldUpdate={
-													handleFieldUpdate
-												}
-												onFieldComplete={
-													handleFieldComplete
-												}
-												disabled={
-													field.key === "email" &&
-													!!selectedProfile
-												}
-											/>
-										))}
+									<View className="gap-y-6">
+										{fields
+											.filter((f) => f.editable !== false)
+											.map((field) => (
+												<DynamicFormField
+													key={field.key}
+													field={field}
+													control={control}
+													errors={errors}
+													onFieldUpdate={
+														handleFieldUpdate
+													}
+													onFieldComplete={
+														handleFieldComplete
+													}
+													disabled={
+														field.key === "email"
+													}
+												/>
+											))}
+									</View>
 								</View>
-							</View>
-						))}
-				</View>
-
-				{/* Complete button */}
-				<TouchableOpacity
-					className="bg-primary-600 p-4 rounded-[15px] mx-5 mb-20"
-					onPress={handleSubmit(onSubmit)}
-					disabled={isSubmitting}
-				>
-					<Text className="text-white text-center font-semibold">
+							))}
+					</View>
+				</SharedBody>
+			</KeyboardAwareScrollView>
+			{/* Sticky button */}
+			<TouchableOpacity
+				className={`absolute bottom-0 w-full py-4 items-center justify-center mt-6  bg-primary-600`}
+				onPress={handleSubmit(onSubmit)}
+				disabled={isSubmitting}
+			>
+				{isSubmitting ? (
+					<ActivityIndicator color="white" />
+				) : (
+					<Text className="text-white text-center text-lg font-semibold">
 						{isSubmitting ? "Submitting..." : "Submit"}
 					</Text>
-				</TouchableOpacity>
-			</SharedBody>
-		</KeyboardAwareScrollView>
+				)}
+			</TouchableOpacity>
+		</>
 	);
 };
 
