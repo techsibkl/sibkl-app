@@ -35,8 +35,8 @@ export default ({ config }: { config: any }) => ({
 
 		android: {
 			adaptiveIcon: {
-				foregroundImage: "./assets/images/sibkl-app-icon.png",
-				backgroundColor: "#ffffff",
+				foregroundImage: "./assets/images/android-sibkl-logo.png",
+				backgroundColor: "#A61E0F",
 			},
 			googleServicesFile:
 				process.env.APP_ENV === "production"

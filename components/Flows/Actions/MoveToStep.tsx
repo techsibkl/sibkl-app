@@ -17,6 +17,7 @@ type Props = {
 	personFlow: PeopleFlow;
 	steps: { [key: string]: FlowStep };
 	flow_id: number;
+	onSuccess?: () => void;
 };
 
 // Tailwind color name → hex for RN (mirrors defaultFlowStatusAttrs colors)
@@ -29,7 +30,7 @@ const COLOR_HEX: Record<string, { text: string; bg: string; border: string }> =
 	};
 
 type StepOption = {
-	key: string | null;
+	key: string;
 	label: string;
 	status: FlowStatus;
 	color: string;
@@ -46,14 +47,6 @@ const buildGroupedSteps = (steps: {
 		[FlowStatus.COMPLETED_FAIL]: [],
 	};
 
-	// Virtual "Not Started" entry (null key = reset to beginning)
-	grouped[FlowStatus.NOT_STARTED].push({
-		key: null,
-		label: "Not Started",
-		status: FlowStatus.NOT_STARTED,
-		color: defaultFlowStatusAttrs[FlowStatus.NOT_STARTED]?.color ?? "gray",
-	});
-
 	Object.entries(steps)
 		.sort(([, a], [, b]) => a.sort_order - b.sort_order)
 		.forEach(([key, step]) => {
@@ -66,37 +59,35 @@ const buildGroupedSteps = (steps: {
 	return Object.values(grouped).filter((g) => g.length > 0);
 };
 
-const MoveToStepAction = ({ action, personFlow, steps, flow_id }: Props) => {
+const MoveToStepAction = ({ action, personFlow, steps, flow_id, onSuccess }: Props) => {
 	const [open, setOpen] = useState(false);
 	const { mutate: changeStep, isPending } = useChangeStepMutation();
 
 	const suggestedStep = action.value ? steps[action.value as string] : null;
-	const currentStep = personFlow.step_key ? steps[personFlow.step_key] : null;
+	const effectiveStepKey = personFlow.step_key ?? "not_started";
+	const currentStep = steps[effectiveStepKey] ?? null;
 	const groupedSteps = buildGroupedSteps(steps);
 
 	const handleSelect = (option: StepOption) => {
 		// Skip if already on this step
-		const isSameStep = option.key === (personFlow.step_key ?? null);
+		const isSameStep = option.key === effectiveStepKey;
 		if (isSameStep) {
 			setOpen(false);
 			return;
 		}
 
-		const targetStep = option.key
-			? steps[option.key]
-			: {
-					label: "Not Started",
-					sort_order: -9999,
-					status: FlowStatus.NOT_STARTED,
-				};
+		const targetStep = steps[option.key];
 
-		changeStep({
-			flowId: flow_id,
-			peopleIds: [personFlow.people_id!],
-			step_key: option.key,
-			step: targetStep as FlowStep,
-			districtId: personFlow.district_id,
-		});
+		changeStep(
+			{
+				flowId: flow_id,
+				peopleIds: [personFlow.people_id!],
+				step_key: option.key,
+				step: targetStep as FlowStep,
+				districtId: personFlow.district_id,
+			},
+			{ onSuccess: () => onSuccess?.() },
+		);
 		setOpen(false);
 	};
 
@@ -158,13 +149,12 @@ const MoveToStepAction = ({ action, personFlow, steps, flow_id }: Props) => {
 								const hex =
 									COLOR_HEX[option.color] ?? COLOR_HEX.gray;
 								const isCurrentStep =
-									option.key ===
-									(personFlow.step_key ?? null);
+									option.key === effectiveStepKey;
 								const isSuggested = option.key === action.value;
 
 								return (
 									<TouchableOpacity
-										key={option.key ?? "__not_started"}
+										key={option.key}
 										onPress={() => handleSelect(option)}
 										activeOpacity={0.7}
 										className="flex-row items-center gap-3 px-4 py-3"

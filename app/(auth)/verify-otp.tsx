@@ -15,6 +15,7 @@ import React, { useEffect, useRef, useState } from "react";
 import {
 	ActivityIndicator,
 	Alert,
+	Platform,
 	Text,
 	TextInput,
 	TouchableOpacity,
@@ -198,14 +199,18 @@ const Page = () => {
 							Please enter the code below:
 						</Text>
 
-						<View className="w-full flex flex-row justify-between items-center self-center gap-1 mb-8">
+						<View className="w-full flex-row justify-between items-center self-center gap-2 mb-8">
 							{otp.map((digit, index) => (
 								<TextInput
 									key={index}
 									ref={(ref) => {
 										inputRefs.current[index] = ref;
 									}}
-									className="px-6 py-5 border border-border bg-card rounded-[15px] text-center text-md font-semibold text-text"
+									className="flex-1 border border-border bg-card rounded-[15px] text-center text-md font-semibold text-text"
+									style={{
+										paddingVertical:
+											Platform.OS === "android" ? 12 : 18,
+									}}
 									value={digit}
 									onChangeText={(value) =>
 										handleOtpChange(value.slice(-1), index)

@@ -49,7 +49,8 @@ export function getStepStatusStyleNative(
 		purple: { bg: "#F3E8FF", text: "#A855F7" },
 	};
 
-	const step = steps && step_key ? steps[step_key] : null;
+	const effectiveKey = step_key ?? "not_started";
+	const step = steps ? steps[effectiveKey] : null;
 	if (!step || step.status == FlowStatus.NOT_STARTED) {
 		return colorMap.gray;
 	}

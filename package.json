@@ -12,6 +12,7 @@
 		"ios:dev": "dotenv -e .env.development -- expo run:ios --device",
 		"ios:staging": "dotenv -e .env.staging -- expo run:ios --device",
 		"ios:prod": "dotenv -e .env.production -- expo run:ios --device",
+		"android:dev": "dotenv -e .env.development -- expo run:android --device",
 		"android:staging": "dotenv -e .env.staging -- expo run:android --device",
 		"android:prod": "dotenv -e .env.production -- expo run:android --device"
 	},

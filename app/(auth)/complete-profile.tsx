@@ -20,6 +20,7 @@ import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
 // Create a type using those keys
@@ -178,6 +179,8 @@ const Page = () => {
 			</SharedBody>
 		);
 
+	const { bottom } = useSafeAreaInsets();
+
 	return (
 		<>
 			<KeyboardAwareScrollView
@@ -203,7 +206,10 @@ const Page = () => {
 						</Text>
 					</View>
 
-					<View className="px-5 pt-4 pb-10">
+					<View
+						className="px-5 pt-4"
+						style={{ paddingBottom: bottom + 80 }}
+					>
 						{Object.entries(groupedPersonFields)
 							.filter(
 								([section]) =>
@@ -243,8 +249,10 @@ const Page = () => {
 				</SharedBody>
 			</KeyboardAwareScrollView>
 			{/* Sticky button */}
+
 			<TouchableOpacity
-				className={`absolute bottom-0 w-full py-4 items-center justify-center mt-6  bg-primary-600`}
+				className="absolute bottom-0 w-full items-center justify-center bg-primary-600"
+				style={{ paddingBottom: bottom + 16, paddingTop: 16 }}
 				onPress={handleSubmit(onSubmit)}
 				disabled={isSubmitting}
 			>
@@ -252,7 +260,7 @@ const Page = () => {
 					<ActivityIndicator color="white" />
 				) : (
 					<Text className="text-white text-center text-lg font-semibold">
-						{isSubmitting ? "Submitting..." : "Submit"}
+						Submit
 					</Text>
 				)}
 			</TouchableOpacity>

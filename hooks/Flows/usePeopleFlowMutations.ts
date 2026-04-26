@@ -1,6 +1,8 @@
 import { updateStep } from "@/services/Flow/flow.service";
 import { FlowStep } from "@/services/Flow/flow.types";
+import { myToast } from "@/utils/helper";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import Toast from "react-native-toast-message";
 
 // export const useAssignMutation = (flow?: Flow) => {
 //   const peopleStore = usePeopleStore();
@@ -59,13 +61,13 @@ export const useChangeStepMutation = () => {
 				payload.districtId,
 			),
 		onSuccess: (res, variables) => {
-			//Future Task, this thing causes refetch, however, it will cause the table to move back to the first index which is the Total tab
-			qc.invalidateQueries({
-				queryKey: ["peopleFlow", variables?.flowId],
-			});
+			// Targeted: only invalidate this flow + the "all flows" assigned-to-me list
+			qc.invalidateQueries({ queryKey: ["peopleFlow", variables?.flowId] });
+			qc.invalidateQueries({ queryKey: ["peopleFlow", "all"] });
 			variables?.peopleIds.forEach((id) => {
 				qc.invalidateQueries({ queryKey: ["people", id] });
 			});
+			Toast.show(myToast(res));
 		},
 	});
 };

@@ -184,20 +184,21 @@ const PeopleFlowDialog = ({
 
 				{/* Actions */}
 				<View className="gap-y-2 flex flex-col w-full px-6 mt-5">
-					{step?.actions?.map((action, i) => {
-						const Component = ActionComponents[action.type];
-						if (!Component) return null;
-						return (
-							<Component
-								key={i}
-								action={action}
-								personFlow={personFlow}
-								custom_attr={custom_attr}
-								steps={steps}
-								flow_id={flow_id}
-							/>
-						);
-					})}
+			{step?.actions?.map((action, i) => {
+					const Component = ActionComponents[action.type];
+					if (!Component) return null;
+					return (
+						<Component
+							key={i}
+							action={action}
+							personFlow={personFlow}
+							custom_attr={custom_attr}
+							steps={steps}
+							flow_id={flow_id}
+							onSuccess={onDismiss}
+						/>
+					);
+				})}
 				</View>
 			</ScrollView>
 

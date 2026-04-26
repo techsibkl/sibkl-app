@@ -54,7 +54,8 @@ const PeopleFlowRowComponent = ({
 	const [noteDialogVisible, setNoteDialogVisible] = useState(false);
 
 	const _step = useMemo(() => {
-		return personFlow.step_key ? steps[personFlow.step_key] : null;
+		const key = personFlow.step_key ?? "not_started";
+		return steps?.[key] ?? null;
 	}, [personFlow.step_key, steps]);
 
 	const colors = getStepStatusStyleNative(personFlow.step_key, steps);
