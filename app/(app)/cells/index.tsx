@@ -2,7 +2,6 @@
 
 import CellList from "@/components/Cells/CellList";
 import CreateSessionSheet from "@/components/Cells/CreateSessionSheet";
-import { Can } from "@/components/shared/Can";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
@@ -20,12 +19,51 @@ import { FAB, Portal, Provider } from "react-native-paper";
 
 const CellsScreen = () => {
   const { isDark } = useThemeColors();
-  const { user } = useAuthStore();
+  const { user, ability } = useAuthStore();
   const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
-  console.log("roles:", user?.person?.roles); // can use this for this to set in the create sheet
+  const ledCells: number[] = person?.leader_of_cell_ids;
+  const ledCellsFormatted = (person?.cells ?? []) // ← use same source
+    .filter((cell) => cell.id && ledCells.map(Number).includes(Number(cell.id)))
+    .map((cell) => ({ id: cell.id!, name: cell.cell_name! }));
+
+  const fabActions = [
+    ability.can("create", "CellSession") && {
+      icon: "calendar",
+      label: "New Session",
+      onPress: () => createSessionSheetModalRef.current?.present(),
+      color: "white",
+      style: { backgroundColor: "#d6361e" },
+    },
+    ability.can("create", "CellMembers") && {
+      icon: "account-plus",
+      label: "Add Member",
+      onPress: () => console.log("Add Member"),
+      color: "white",
+      style: { backgroundColor: "#d6361e" },
+    },
+    ability.can("read", "CellDetails") && {
+      icon: "camera",
+      label: "Mark Attendance",
+      onPress: () => router.push("/(app)/cells/scanner"),
+      color: "white",
+      style: { backgroundColor: "#d6361e" },
+    },
+    ability.can("read", "CellSession") && {
+      icon: "calendar-clock",
+      label: "View Sessions",
+      onPress: () =>
+        router.push({
+          pathname: "/(app)/cells/sessions",
+          params: { cell_id: ledCellsFormatted[0]?.id },
+        }),
+      color: "white",
+      style: { backgroundColor: "#d6361e" },
+    },
+  ].filter(Boolean);
+
   // ref
   const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
   // console.log("user:", user);
@@ -37,7 +75,6 @@ const CellsScreen = () => {
   // const filteredCells = (user?.person?.cells ?? []).filter((cell: Cell) =>
   // 	cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase())
   // );
-  console.log(user);
 
   if (!user)
     return (
@@ -75,32 +112,13 @@ const CellsScreen = () => {
               color="white"
               fabStyle={{ backgroundColor: "#d6361e" }} // Tailwind red-500
               visible
-              actions={[
-                {
-                  icon: "calendar",
-                  label: "New Session",
-                  onPress: () => createSessionSheetModalRef.current?.present(),
-                  color: "white",
-                  style: { backgroundColor: "#d6361e" },
-                },
-                {
-                  icon: "account-plus",
-                  label: "Add Member",
-                  onPress: () => console.log("Add Member"),
-                  color: "white",
-                  style: { backgroundColor: "#d6361e" },
-                },
-                {
-                  icon: "camera",
-                  label: "Mark Attendance",
-                  onPress: () => router.push("/(app)/cells/scanner"),
-                  color: "white",
-                  style: { backgroundColor: "#d6361e" },
-                },
-              ]}
+              actions={fabActions}
               onStateChange={({ open }) => setOpen(open)}
             />
-            <CreateSessionSheet ref={createSessionSheetModalRef} />
+            <CreateSessionSheet
+              ref={createSessionSheetModalRef}
+              ledCells={ledCellsFormatted}
+            />
           </Portal>
         </Provider>
       </BottomSheetModalProvider>

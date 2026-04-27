@@ -110,6 +110,10 @@ export function defineAbilityFor(person: Person): AnyAbility {
       can(["create", "update", "delete"], "CellChangeRequest", {
         cell_ids: { $in: person.leader_of_cell_ids },
       });
+
+      can(["create", "read", "update"], "CellSession", {
+        cell_id: { $in: person.leader_of_cell_ids },
+      });
     }
 
     if (person?.roles?.includes(Role.CELL_CORE)) {
