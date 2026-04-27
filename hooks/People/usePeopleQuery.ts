@@ -10,10 +10,10 @@ import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 export const usePeopleQuery = () => {
-	return useQuery<Person[]>({
-		queryKey: ["people"],
-		queryFn: () => fetchPeople(),
-	});
+  return useQuery<Person[]>({
+    queryKey: ["people"],
+    queryFn: () => fetchPeople(),
+  });
 };
 
 export const usePeoplePaginatedQuery = (
@@ -69,12 +69,12 @@ export const useSinglePersonQuery = (personId: number) => {
 };
 
 export const usePeopleScopedFieldsQuery = () => {
-	return useQuery<Person[]>({
-		queryKey: ["people_scoped"],
-		queryFn: () => fetchPeopleScopedFields(),
-		// Don't refetch on window focus — table state is user-driven
-		refetchOnWindowFocus: false,
-		// Keep previous page data visible while next page loads (no flicker)
-		placeholderData: (prev) => prev,
-	});
+  return useQuery<Person[]>({
+    queryKey: ["people_scoped"],
+    queryFn: () => fetchPeopleScopedFields(),
+    // Don't refetch on window focus — table state is user-driven
+    refetchOnWindowFocus: false,
+    // Keep previous page data visible while next page loads (no flicker)
+    placeholderData: (prev) => prev,
+  });
 };
