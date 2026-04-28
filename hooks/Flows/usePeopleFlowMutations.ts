@@ -1,21 +1,34 @@
+import { assignPersonToFlow } from "@/services/Flow/assign.service";
 import { updateStep } from "@/services/Flow/flow.service";
 import { FlowStep } from "@/services/Flow/flow.types";
 import { myToast } from "@/utils/helper";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import Toast from "react-native-toast-message";
 
-// export const useAssignMutation = (flow?: Flow) => {
-//   const peopleStore = usePeopleStore();
-//   const qc = useQueryClient();
+export const useAssignMutation = (flowId: number) => {
+	const qc = useQueryClient();
 
-//   return useMutation({
-//     mutationFn: (payload: { people: Person[]; flow?: Flow; assignee_id?: number; assigneeName?: string }) =>
-//       peopleStore.assign(payload),
-//     onSuccess: (_, variables) => {
-//       qc.invalidateQueries({ queryKey: ["peopleFlow", variables.flow?.id] });
-//     }
-//   });
-// };
+	return useMutation({
+		mutationFn: (payload: {
+			people: Array<{ id: number; full_legal_name: string }>;
+			flow?: { id: number; title?: string };
+			assignee_id?: number;
+			assigneeName?: string;
+		}) => assignPersonToFlow(payload),
+		onSuccess: (res, variables) => {
+			qc.invalidateQueries({ queryKey: ["peopleFlow", flowId] });
+			qc.invalidateQueries({ queryKey: ["peopleFlow", "all"] });
+			if (variables.people) {
+				variables.people.forEach((person) => {
+					qc.invalidateQueries({
+						queryKey: ["people", person.id],
+					});
+				});
+			}
+			Toast.show(myToast(res));
+		},
+	});
+};
 
 // export const useAssignDistrictMutation = (flow?: Flow) => {
 //   const peopleStore = usePeopleStore();
