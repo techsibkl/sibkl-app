@@ -1,9 +1,9 @@
+import NoteItem from "@/components/Notes/NoteItem";
 import { useNotesByPersonQuery } from "@/hooks/Note/useNotesQuery";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { createNote, deleteNote } from "@/services/Note/notes.service";
 import { useQueryClient } from "@tanstack/react-query";
 import { SendIcon } from "lucide-react-native";
-import NoteItem from "@/components/Notes/NoteItem";
 import React, { useState } from "react";
 import {
 	ActivityIndicator,
@@ -112,7 +112,7 @@ const NotesTab = ({ personFlow }: NotesTabProps) => {
 			<View className="mb-4 gap-2">
 				<View className="flex-row gap-2">
 					<TextInput
-						className="flex-1 border border-border rounded-lg px-3 py-1 text-gray-900 text-sm"
+						className="flex-1 border border-border rounded-lg px-3 py-2 text-gray-900 text-sm"
 						placeholder="Add a new note here..."
 						value={newNote}
 						onChangeText={setNewNote}
@@ -121,7 +121,7 @@ const NotesTab = ({ personFlow }: NotesTabProps) => {
 						placeholderTextColor="#9ca3af"
 					/>
 					<TouchableOpacity
-						className="px-3 py-1 bg-blue-600 rounded-lg items-center justify-center"
+						className="px-3 py-2 bg-blue-600 rounded-lg items-center justify-center"
 						onPress={handleCreateNote}
 						disabled={isSubmitting || !newNote.trim()}
 					>
@@ -134,24 +134,24 @@ const NotesTab = ({ personFlow }: NotesTabProps) => {
 				</View>
 			</View>
 
-		{/* Notes List */}
-		<View className="gap-3 ">
-			{notes.length === 0 ? (
-				<View className="items-center justify-center py-8">
-					<Text className="text-gray-400 text-sm">
-						No notes yet for this person.
-					</Text>
-				</View>
-			) : (
-				notes.map((note) => (
-					<NoteItem
-						key={note.id}
-						note={note}
-						onDelete={handleDeleteNote}
-					/>
-				))
-			)}
-		</View>
+			{/* Notes List */}
+			<View className="gap-3 ">
+				{notes.length === 0 ? (
+					<View className="items-center justify-center py-8">
+						<Text className="text-gray-400 text-sm">
+							No notes yet for this person.
+						</Text>
+					</View>
+				) : (
+					notes.map((note) => (
+						<NoteItem
+							key={note.id}
+							note={note}
+							onDelete={handleDeleteNote}
+						/>
+					))
+				)}
+			</View>
 		</ScrollView>
 	);
 };

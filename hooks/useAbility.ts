@@ -3,5 +3,6 @@
 import { useAuthStore } from "@/stores/authStore";
 
 export const useAbility = () => {
-	return useAuthStore((state) => state.ability);
+	const ability = useAuthStore((state) => state.ability);
+	return { can: ability.can.bind(ability) };
 };

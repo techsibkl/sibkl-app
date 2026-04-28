@@ -39,6 +39,9 @@ export function defineAbilityFor(person: Person): AnyAbility {
 		can(["read", "update", "delete"], "PeopleProfileNotes", {
 			owner_id: person.id,
 		});
+		can(["read", "create"], "PeopleProfileNotes", {
+			assignee_ids: { $in: [person.id] },
+		});
 		can(["read", "update", "assign", "default", "add"], "PeopleFlow", {
 			assignee_id: person.id,
 		});
@@ -95,39 +98,39 @@ export function defineAbilityFor(person: Person): AnyAbility {
 
 		if (person?.roles?.includes(Role.CELL_LEADER)) {
 			can(["read", "update"], "PeopleProfile", {
-				cell_ids: { $in: person.leader_of_cell_ids },
+				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});
 
 			can(["create", "read", "delete"], "PeopleProfileNotes", {
-				cell_ids: { $in: person.leader_of_cell_ids },
+				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});
 
 			can(["read", "update"], "CellDetails", {
-				cell_ids: { $in: person.leader_of_cell_ids },
+				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});
 
 			can(["create", "read", "update", "delete"], "CellMembers", {
-				cell_ids: { $in: person.leader_of_cell_ids },
+				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});
 
 			can(["create", "update", "delete"], "CellChangeRequest", {
-				cell_ids: { $in: person.leader_of_cell_ids },
+				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});
 		}
 
 		if (person?.roles?.includes(Role.CELL_CORE)) {
 			can(["read", "update"], "PeopleProfile", {
-				cell_ids: { $in: person.core_of_cell_ids },
+				cell_ids: { $in: person.core_of_cell_ids ?? [] },
 			});
 			can(["create", "read", "delete"], "PeopleProfileNotes", {
-				cell_ids: { $in: person.core_of_cell_ids },
+				cell_ids: { $in: person.core_of_cell_ids ?? [] },
 			});
 			can(["read"], "CellDetails", {
-				cell_ids: { $in: person.core_of_cell_ids },
+				cell_ids: { $in: person.core_of_cell_ids ?? [] },
 			});
 
 			can(["read"], "CellMembers", {
-				cell_ids: { $in: person.core_of_cell_ids },
+				cell_ids: { $in: person.core_of_cell_ids ?? [] },
 			});
 		}
 

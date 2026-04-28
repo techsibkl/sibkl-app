@@ -5,7 +5,7 @@ import { Note } from "./note.type";
 
 export async function fetchNotes(id: number): Promise<Note[]> {
 	const response = await secureFetch(
-		`${apiEndpoints.notes.getByPeopleId(id)}`
+		`${apiEndpoints.notes.getByPeopleId(id)}`,
 	);
 	const json: ReturnVal = await response.json();
 
@@ -20,10 +20,7 @@ export async function fetchNotes(id: number): Promise<Note[]> {
 	return data || [];
 }
 
-export async function updateNote(
-	id: string,
-	text: string
-): Promise<ReturnVal> {
+export async function updateNote(id: string, text: string): Promise<ReturnVal> {
 	let payload = {
 		id: id,
 		note: text,
@@ -44,12 +41,10 @@ export async function updateNote(
 export async function createNote(
 	peopleId: number,
 	note: string,
-	districtIds?: number[]
 ): Promise<ReturnVal> {
 	let payload = {
 		people_id: peopleId,
 		note: note,
-		district_ids: districtIds,
 	};
 
 	// Send the request to the server
@@ -65,11 +60,16 @@ export async function createNote(
 }
 
 export async function deleteNote(id: string): Promise<ReturnVal> {
+	let payload = {
+		id: id,
+	};
+
 	let response = await secureFetch(`${apiEndpoints.notes.delete(id)}`, {
 		method: "DELETE",
 		headers: {
 			"Content-Type": "application/json",
 		},
+		body: JSON.stringify(payload),
 	});
 	let data = await response.json();
 	return data;
