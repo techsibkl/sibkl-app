@@ -57,6 +57,8 @@ export const apiEndpoints = {
       _endpoint(`cells/${cellId}/sessions/${sessionId}`),
     createSession: (cellId: number | string) =>
       _endpoint(`cells/${cellId}/create-cell-session`),
+    signInToSession: (cellId: number | string) =>
+      _endpoint(`cells/${cellId}/sign-in-to-session`),
   },
   resources: {
     getAll: _endpoint("resources"),

@@ -1,57 +1,58 @@
+import { useSignInToCellSessionMutation } from "@/hooks/CellAttendance/useCellAttendanceQuery";
 import { useAuthStore } from "@/stores/authStore";
-import { secureFetch } from "@/utils/secureFetch";
 import { CameraView } from "expo-camera";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
+  LayoutChangeEvent,
   Platform,
   Pressable,
   StatusBar,
-  StyleSheet,
   Text,
   View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-const RED = "#d6361e";
-
 type ScanState = "idle" | "loading" | "success" | "error";
+
+const WINDOW_SIZE = 260;
+const CORNER_SIZE = 28;
+const CORNER_THICKNESS = 3;
+const RED = "#d6361e";
 
 export default function QrScan() {
   const [scanState, setScanState] = useState<ScanState>("idle");
   const [message, setMessage] = useState("");
+  const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
+
   const personId = useAuthStore((state) => state.user?.person?.id);
+  const { cell_id } = useLocalSearchParams<{ cell_id: string }>();
+  const { mutateAsync: signIn } = useSignInToCellSessionMutation(
+    Number(cell_id ?? 0),
+  );
+
+  const handleLayout = (e: LayoutChangeEvent) => {
+    const { width, height } = e.nativeEvent.layout;
+    setScreenSize({ width, height });
+  };
 
   const handleScan = useCallback(
     async ({ data }: { data: string }) => {
-      if (scanState !== "idle") return;
+      if (scanState !== "idle" || !personId) return;
       setScanState("loading");
-
       try {
-        const response = await secureFetch(
-          `http://192.168.1.100:5001/leafy-loader-444703-d0/us-central1/cells/${data}/sign-in-to-session`,
-          {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              attendance_id: data,
-              people_id: personId,
-            }),
-          },
-        );
-
-        const result = await response.json();
-        console.log("Attendance Result:", result);
+        await signIn({ attendanceId: data, peopleId: personId });
         setMessage("Attendance recorded successfully!");
         setScanState("success");
-      } catch (err) {
-        console.error(err);
-        setMessage("Failed to submit attendance. Please try again.");
+      } catch (err: any) {
+        setMessage(
+          err?.message ?? "Failed to submit attendance. Please try again.",
+        );
         setScanState("error");
       }
     },
-    [scanState, personId],
+    [scanState, personId, signIn],
   );
 
   const handleReset = () => {
@@ -59,88 +60,197 @@ export default function QrScan() {
     setMessage("");
   };
 
+  // Calculate exact pixel positions for corners
+  const windowLeft =
+    screenSize.width > 0 ? (screenSize.width - WINDOW_SIZE) / 2 : 0;
+  const windowTop =
+    screenSize.height > 0 ? (screenSize.height - WINDOW_SIZE) / 2 : 0;
+
   return (
-    <View style={styles.root}>
+    <View className="flex-1 bg-black" onLayout={handleLayout}>
       {Platform.OS === "android" && <StatusBar hidden />}
 
       {/* Full screen camera */}
       <CameraView
-        style={StyleSheet.absoluteFill}
+        className="absolute inset-0"
         facing="back"
         barcodeScannerSettings={{ barcodeTypes: "qr" }}
         onBarcodeScanned={scanState === "idle" ? handleScan : undefined}
       />
 
-      {/* Dark overlay */}
-      <View style={StyleSheet.absoluteFill} pointerEvents="none">
-        {/* Top dark region */}
-        <View style={styles.overlayTop} />
-
-        {/* Middle row: dark | clear window | dark */}
-        <View style={styles.overlayMiddle}>
-          <View style={styles.overlaySide} />
-          <View style={styles.scanWindow} />
-          <View style={styles.overlaySide} />
+      {/* Dark overlay cutout — 4 regions around the scan window */}
+      {screenSize.width > 0 && (
+        <View className="absolute inset-0" pointerEvents="none">
+          {/* Top */}
+          <View
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              height: windowTop,
+              backgroundColor: "rgba(0,0,0,0.65)",
+            }}
+          />
+          {/* Bottom */}
+          <View
+            style={{
+              position: "absolute",
+              bottom: 0,
+              left: 0,
+              right: 0,
+              top: windowTop + WINDOW_SIZE,
+              backgroundColor: "rgba(0,0,0,0.65)",
+            }}
+          />
+          {/* Left */}
+          <View
+            style={{
+              position: "absolute",
+              top: windowTop,
+              left: 0,
+              width: windowLeft,
+              height: WINDOW_SIZE,
+              backgroundColor: "rgba(0,0,0,0.65)",
+            }}
+          />
+          {/* Right */}
+          <View
+            style={{
+              position: "absolute",
+              top: windowTop,
+              right: 0,
+              width: windowLeft,
+              height: WINDOW_SIZE,
+              backgroundColor: "rgba(0,0,0,0.65)",
+            }}
+          />
         </View>
+      )}
 
-        {/* Bottom dark region */}
-        <View style={styles.overlayBottom} />
-      </View>
-
-      {/* Corner brackets on the scan window */}
-      <View style={styles.bracketsContainer} pointerEvents="none">
-        <View style={[styles.corner, styles.cornerTL]} />
-        <View style={[styles.corner, styles.cornerTR]} />
-        <View style={[styles.corner, styles.cornerBL]} />
-        <View style={[styles.corner, styles.cornerBR]} />
-      </View>
+      {/* Corner brackets — pixel perfect */}
+      {screenSize.width > 0 && (
+        <View className="absolute inset-0" pointerEvents="none">
+          {/* Top Left */}
+          <View
+            style={{
+              position: "absolute",
+              top: windowTop,
+              left: windowLeft,
+              width: CORNER_SIZE,
+              height: CORNER_SIZE,
+              borderTopWidth: CORNER_THICKNESS,
+              borderLeftWidth: CORNER_THICKNESS,
+              borderColor: RED,
+              borderTopLeftRadius: 4,
+            }}
+          />
+          {/* Top Right */}
+          <View
+            style={{
+              position: "absolute",
+              top: windowTop,
+              left: windowLeft + WINDOW_SIZE - CORNER_SIZE,
+              width: CORNER_SIZE,
+              height: CORNER_SIZE,
+              borderTopWidth: CORNER_THICKNESS,
+              borderRightWidth: CORNER_THICKNESS,
+              borderColor: RED,
+              borderTopRightRadius: 4,
+            }}
+          />
+          {/* Bottom Left */}
+          <View
+            style={{
+              position: "absolute",
+              top: windowTop + WINDOW_SIZE - CORNER_SIZE,
+              left: windowLeft,
+              width: CORNER_SIZE,
+              height: CORNER_SIZE,
+              borderBottomWidth: CORNER_THICKNESS,
+              borderLeftWidth: CORNER_THICKNESS,
+              borderColor: RED,
+              borderBottomLeftRadius: 4,
+            }}
+          />
+          {/* Bottom Right */}
+          <View
+            style={{
+              position: "absolute",
+              top: windowTop + WINDOW_SIZE - CORNER_SIZE,
+              left: windowLeft + WINDOW_SIZE - CORNER_SIZE,
+              width: CORNER_SIZE,
+              height: CORNER_SIZE,
+              borderBottomWidth: CORNER_THICKNESS,
+              borderRightWidth: CORNER_THICKNESS,
+              borderColor: RED,
+              borderBottomRightRadius: 4,
+            }}
+          />
+        </View>
+      )}
 
       {/* Top bar */}
-      <SafeAreaView style={styles.topBar}>
-        <Pressable style={styles.backBtn} onPress={() => router.back()}>
-          <Text style={styles.backText}>✕</Text>
+      <SafeAreaView className="absolute top-0 left-0 right-0 flex-row items-center justify-between px-4 pt-2">
+        <Pressable
+          className="w-10 h-10 rounded-full bg-white/20 items-center justify-center"
+          onPress={() => router.back()}
+        >
+          <Text className="text-white text-base font-semibold">✕</Text>
         </Pressable>
-        <Text style={styles.topTitle}>Scan QR Code</Text>
-        <View style={{ width: 40 }} />
+        <Text className="text-white text-base font-bold tracking-wide">
+          Scan QR Code
+        </Text>
+        <View className="w-10" />
       </SafeAreaView>
 
-      {/* Bottom UI */}
-      <View style={styles.bottomPanel}>
+      {/* Bottom panel */}
+      <View className="absolute bottom-0 left-0 right-0 px-6 pb-12 pt-6 items-center gap-4">
         {scanState === "idle" && (
-          <Text style={styles.hint}>
+          <Text className="text-white/70 text-sm text-center leading-5">
             Point your camera at the session QR code
           </Text>
         )}
 
         {scanState === "loading" && (
-          <View style={styles.feedbackBox}>
+          <View className="bg-white rounded-2xl p-6 items-center gap-3 w-full">
             <ActivityIndicator color={RED} size="small" />
-            <Text style={styles.feedbackText}>Submitting attendance...</Text>
+            <Text className="text-sm font-medium text-gray-600">
+              Submitting attendance...
+            </Text>
           </View>
         )}
 
         {scanState === "success" && (
-          <View style={styles.feedbackBox}>
-            <View style={[styles.feedbackIcon, { borderColor: "#22c55e" }]}>
-              <Text style={{ fontSize: 22 }}>✓</Text>
+          <View className="bg-white rounded-2xl p-6 items-center gap-3 w-full">
+            <View className="w-14 h-14 rounded-full border-2 border-green-500 bg-green-50 items-center justify-center">
+              <Text className="text-2xl">✓</Text>
             </View>
-            <Text style={[styles.feedbackText, { color: "#22c55e" }]}>
+            <Text className="text-sm font-medium text-green-600 text-center leading-5">
               {message}
             </Text>
-            <Pressable style={styles.primaryBtn} onPress={() => router.back()}>
-              <Text style={styles.primaryBtnText}>Done</Text>
+            <Pressable
+              className="bg-red-600 rounded-xl py-3 px-8 mt-1"
+              onPress={() => router.back()}
+            >
+              <Text className="text-white font-bold text-base">Done</Text>
             </Pressable>
           </View>
         )}
 
         {scanState === "error" && (
-          <View style={styles.feedbackBox}>
-            <View style={[styles.feedbackIcon, { borderColor: RED }]}>
-              <Text style={{ fontSize: 22 }}>✕</Text>
+          <View className="bg-white rounded-2xl p-6 items-center gap-3 w-full">
+            <View className="w-14 h-14 rounded-full border-2 border-red-600 bg-red-50 items-center justify-center">
+              <Text className="text-2xl">✕</Text>
             </View>
-            <Text style={[styles.feedbackText, { color: RED }]}>{message}</Text>
-            <Pressable style={styles.primaryBtn} onPress={handleReset}>
-              <Text style={styles.primaryBtnText}>Try Again</Text>
+            <Text className="text-sm font-medium text-red-600 text-center leading-5">
+              {message}
+            </Text>
+            <Pressable
+              className="bg-red-600 rounded-xl py-3 px-8 mt-1"
+              onPress={handleReset}
+            >
+              <Text className="text-white font-bold text-base">Try Again</Text>
             </Pressable>
           </View>
         )}
@@ -148,149 +258,3 @@ export default function QrScan() {
     </View>
   );
 }
-
-const WINDOW_SIZE = 260;
-const CORNER_SIZE = 24;
-const CORNER_THICKNESS = 3;
-
-const styles = StyleSheet.create({
-  root: { flex: 1, backgroundColor: "#000" },
-
-  // Cutout overlay
-  overlayTop: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)" },
-  overlayMiddle: { flexDirection: "row", height: WINDOW_SIZE },
-  overlaySide: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)" },
-  scanWindow: { width: WINDOW_SIZE, height: WINDOW_SIZE },
-  overlayBottom: { flex: 1, backgroundColor: "rgba(0,0,0,0.6)" },
-
-  // Corner brackets
-  bracketsContainer: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  corner: {
-    position: "absolute",
-    width: CORNER_SIZE,
-    height: CORNER_SIZE,
-    borderColor: RED,
-  },
-  cornerTL: {
-    top: "50%",
-    left: "50%",
-    marginTop: -(WINDOW_SIZE / 2),
-    marginLeft: -(WINDOW_SIZE / 2),
-    borderTopWidth: CORNER_THICKNESS,
-    borderLeftWidth: CORNER_THICKNESS,
-    borderTopLeftRadius: 4,
-  },
-  cornerTR: {
-    top: "50%",
-    right: "50%",
-    marginTop: -(WINDOW_SIZE / 2),
-    marginRight: -(WINDOW_SIZE / 2),
-    borderTopWidth: CORNER_THICKNESS,
-    borderRightWidth: CORNER_THICKNESS,
-    borderTopRightRadius: 4,
-  },
-  cornerBL: {
-    bottom: "50%",
-    left: "50%",
-    marginBottom: -(WINDOW_SIZE / 2),
-    marginLeft: -(WINDOW_SIZE / 2),
-    borderBottomWidth: CORNER_THICKNESS,
-    borderLeftWidth: CORNER_THICKNESS,
-    borderBottomLeftRadius: 4,
-  },
-  cornerBR: {
-    bottom: "50%",
-    right: "50%",
-    marginBottom: -(WINDOW_SIZE / 2),
-    marginRight: -(WINDOW_SIZE / 2),
-    borderBottomWidth: CORNER_THICKNESS,
-    borderRightWidth: CORNER_THICKNESS,
-    borderBottomRightRadius: 4,
-  },
-
-  // Top bar
-  topBar: {
-    position: "absolute",
-    top: 0,
-    left: 0,
-    right: 0,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 16,
-    paddingTop: 8,
-  },
-  backBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: "rgba(255,255,255,0.15)",
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  backText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  topTitle: {
-    color: "#fff",
-    fontSize: 16,
-    fontWeight: "700",
-    letterSpacing: 0.3,
-  },
-
-  // Bottom panel
-  bottomPanel: {
-    position: "absolute",
-    bottom: 0,
-    left: 0,
-    right: 0,
-    paddingHorizontal: 24,
-    paddingBottom: 48,
-    paddingTop: 24,
-    alignItems: "center",
-    gap: 16,
-  },
-  hint: {
-    color: "rgba(255,255,255,0.7)",
-    fontSize: 14,
-    textAlign: "center",
-    lineHeight: 20,
-  },
-  feedbackBox: {
-    backgroundColor: "#fff",
-    borderRadius: 16,
-    padding: 24,
-    alignItems: "center",
-    gap: 12,
-    width: "100%",
-  },
-  feedbackIcon: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    borderWidth: 2,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-  feedbackText: {
-    fontSize: 14,
-    fontWeight: "500",
-    textAlign: "center",
-    color: "#444",
-    lineHeight: 20,
-  },
-  primaryBtn: {
-    backgroundColor: RED,
-    borderRadius: 10,
-    paddingVertical: 12,
-    paddingHorizontal: 32,
-    marginTop: 4,
-  },
-  primaryBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
-});
