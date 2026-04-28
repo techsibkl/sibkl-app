@@ -35,7 +35,7 @@ export default ({ config }: { config: any }) => ({
 
 		android: {
 			adaptiveIcon: {
-				foregroundImage: "./assets/images/android-sibkl-logo.png",
+				foregroundImage: "./assets/images/android-app-icon.png",
 				backgroundColor: "#A61E0F",
 			},
 			googleServicesFile:
@@ -74,10 +74,10 @@ export default ({ config }: { config: any }) => ({
 			[
 				"expo-splash-screen",
 				{
-					image: "./assets/images/sibkl-app-icon.png",
-					imageWidth: 200,
+					image: "./assets/images/sibkl-text-white.png",
+					imageWidth: 180,
 					resizeMode: "contain",
-					backgroundColor: "#ffffff",
+					backgroundColor: "#A61E0F",
 				},
 			],
 		],
