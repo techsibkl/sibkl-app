@@ -1,4 +1,8 @@
 import toastConfig from "@/config/toastConfig";
+import {
+	customLightTheme,
+	customNavigationTheme,
+} from "@/constants/const_styles";
 import { updateDeviceToken } from "@/services/User/user.service";
 import { useAuthStore } from "@/stores/authStore";
 import { getApp } from "@react-native-firebase/app";
@@ -12,20 +16,23 @@ import {
 	requestPermission,
 	setBackgroundMessageHandler,
 } from "@react-native-firebase/messaging";
-import { DefaultTheme, ThemeProvider } from "@react-navigation/native";
+import { ThemeProvider } from "@react-navigation/native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Device from "expo-device";
 import { useFonts } from "expo-font";
 import * as Notifications from "expo-notifications";
 import { Stack, useRouter } from "expo-router";
 import React, { useEffect } from "react";
-import { Platform, StatusBar } from "react-native";
+import { Appearance, Platform, StatusBar } from "react-native";
 import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import "../global.css";
 
 const queryClient = new QueryClient();
+
+// Force light theme globally
+Appearance.setColorScheme("light");
 
 // ─── Module-level messaging instance ─────────────────────────────────────────
 const messagingInstance = getMessaging(getApp());
@@ -63,7 +70,10 @@ async function registerAndGetToken(): Promise<string | null> {
 		// expo-notifications handles this correctly across Android versions.
 		const { status } = await Notifications.requestPermissionsAsync();
 		if (status !== "granted") {
-			console.warn("[FCM] Android notification permission denied:", status);
+			console.warn(
+				"[FCM] Android notification permission denied:",
+				status,
+			);
 			return null;
 		}
 	}
@@ -158,24 +168,16 @@ function RootLayoutNav() {
 
 	return (
 		<SafeAreaProvider>
-			<PaperProvider>
-				<Stack screenOptions={{ headerShown: false }}>
-					<Stack.Screen
-						name="(auth)"
-						options={{ headerShown: false }}
-					/>
-					<Stack.Screen
-						name="(app)"
-						options={{ headerShown: false }}
-					/>
-					<Stack.Screen
-						name="(app)/profile"
-						options={{ headerShown: false }}
-					/>
-					<Stack.Screen name="+not-found" />
-				</Stack>
-				<Toast config={toastConfig} />
-			</PaperProvider>
+			<Stack screenOptions={{ headerShown: false }}>
+				<Stack.Screen name="(auth)" options={{ headerShown: false }} />
+				<Stack.Screen name="(app)" options={{ headerShown: false }} />
+				<Stack.Screen
+					name="(app)/profile"
+					options={{ headerShown: false }}
+				/>
+				<Stack.Screen name="+not-found" />
+			</Stack>
+			<Toast config={toastConfig} />
 		</SafeAreaProvider>
 	);
 }
@@ -189,9 +191,11 @@ export default function RootLayout() {
 
 	return (
 		<QueryClientProvider client={queryClient}>
-			<ThemeProvider value={DefaultTheme}>
-				<RootLayoutNav />
-				<StatusBar />
+			<ThemeProvider value={customNavigationTheme}>
+				<PaperProvider theme={customLightTheme}>
+					<RootLayoutNav />
+					<StatusBar barStyle="dark-content" />
+				</PaperProvider>
 			</ThemeProvider>
 		</QueryClientProvider>
 	);

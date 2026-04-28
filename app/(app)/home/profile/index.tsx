@@ -46,11 +46,11 @@ const ProfileViewPage = () => {
 				{/* Header */}
 				<View className="items-center mb-6 gap-1">
 					<View className="w-20 h-20 rounded-full bg-gray-200 items-center justify-center">
-						<Text className="text-lg font-bold">
+						<Text className="text-lg  font-bold">
 							{getInitials(person.full_legal_name)}
 						</Text>
 					</View>
-					<Text className="text-2xl font-bold">
+					<Text className="text-2xl text-text font-bold">
 						{`${person.full_legal_name}`}
 					</Text>
 					<Text className="font-regular text-text-secondary text-center">
@@ -75,7 +75,7 @@ const ProfileViewPage = () => {
 						)
 						.map(([section, fields]) => (
 							<View key={section} className="mb-12">
-								<Text className="ml-1 pb-2 text-lg font-semibold border-b border-gray-300">
+								<Text className="ml-1 pb-2 mb-4 text-lg font-bold text-text border-b border-gray-300">
 									{section}
 								</Text>
 
@@ -97,7 +97,7 @@ const ProfileViewPage = () => {
 													<Text className="font-regular text-gray-500 text-xs mb-1">
 														{field.header}
 													</Text>
-													<Text className="font-medium">
+													<Text className="font-medium text-text">
 														{formattedValue || "—"}
 													</Text>
 												</View>
