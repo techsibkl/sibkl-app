@@ -1,17 +1,20 @@
 "use client";
 
 import CellList from "@/components/Cells/CellList";
+import NotesTab from "@/components/Flows/NotesTab";
 import SharedBody from "@/components/shared/SharedBody";
 import SkeletonPeopleRow from "@/components/shared/Skeleton/SkeletonPeopleRow";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { Person } from "@/services/Person/person.type";
 import { displayDateAsStr, formatPhone } from "@/utils/helper";
-import { getAvatarColors, getInitials } from "@/utils/helper_profile";
+import { getInitials } from "@/utils/helper_profile";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Calendar, Mail, MapPin, Phone, User } from "lucide-react-native";
 import React, { useState } from "react";
 import {
+	Alert,
+	Clipboard,
 	Linking,
 	ScrollView,
 	StatusBar,
@@ -32,7 +35,16 @@ const ProfileScreen = () => {
 		isError,
 	} = useSinglePersonQuery(Number(id));
 
-	const tabs = ["Info", "Cells", "Flows"];
+	const tabs = ["Info", "Cells", "Notes", "Flows"];
+
+	const copyPhoneToClipboard = (phone: string | undefined) => {
+		if (!phone) {
+			Alert.alert("Error", "No phone number available");
+			return;
+		}
+		Clipboard.setString(phone);
+		Alert.alert("Copied", "Phone number copied to clipboard");
+	};
 
 	const renderPersonalInformation = () => (
 		<View className="px-5 py-6">
@@ -158,10 +170,22 @@ const ProfileScreen = () => {
 
 	const renderTabContent = () => {
 		switch (activeTab) {
-			case "Personal Information":
+			case "Info":
 				return renderPersonalInformation();
 			case "Cells":
 				return renderCellGroups();
+			case "Notes":
+				return (
+					<NotesTab
+						personFlow={
+							{
+								p__id: person!.id,
+								p__full_legal_name: person!.full_legal_name,
+								p__phone: person!.phone,
+							} as any
+						}
+					/>
+				);
 			case "Flows":
 				return renderFlows();
 			default:
@@ -169,7 +193,6 @@ const ProfileScreen = () => {
 		}
 	};
 
-	const avatarColors = getAvatarColors(undefined);
 	const initials = getInitials(person.full_legal_name);
 
 	const sendWhatsApp = async (person: Person) => {
@@ -182,44 +205,51 @@ const ProfileScreen = () => {
 		<>
 			<SharedBody>
 				<StatusBar barStyle="dark-content" />
-				{/* Avatar + name + phone */}
-				<View className="mt-4 px-16 items-center gap-1">
-					<View
-						className="w-20 h-20 rounded-full items-center justify-center mb-1 border border-gray-300"
-						style={{ backgroundColor: avatarColors.bg }}
-					>
-						<Text
-							className="text-2xl font-bold"
-							style={{ color: avatarColors.text }}
-						>
+				{/* Avatar + name + phone - Horizontal compact layout */}
+				<View className="mt-4 px-6 flex-row items-center justify-center gap-3">
+					<View className="w-14 h-14 rounded-full items-center justify-center flex-shrink-0 bg-gray-200">
+						<Text className="text-lg font-bold text-gray-800">
 							{initials}
 						</Text>
 					</View>
-					<Text
-						className="text-text text-xl font-bold"
-						numberOfLines={1}
-						ellipsizeMode="tail"
-					>
-						{person.full_legal_name}
-					</Text>
-					<Text
-						className="text-blue-600"
-						numberOfLines={1}
-						onPress={() => sendWhatsApp(person)}
-					>
-						{person.phone ?? "-"}
-					</Text>
+					<View className="flex-1 ">
+						<Text
+							className="text-text text-lg font-bold"
+							numberOfLines={1}
+							ellipsizeMode="tail"
+						>
+							{person.full_legal_name}
+						</Text>
+						<Text
+							className="text-blue-600 text-sm"
+							numberOfLines={1}
+							onPress={() => sendWhatsApp(person)}
+							onLongPress={() =>
+								copyPhoneToClipboard(formatPhone(person.phone))
+							}
+						>
+							{person.phone ?? "-"}
+						</Text>
+					</View>
 				</View>
 				{/* Tabs */}
-				<View className="mt-6 w-full flex-row gap-4 justify-center items-center">
+				<View className="mt-6 flex-row px-6 gap-1 border-b border-border">
 					{tabs.map((tab) => (
 						<TouchableOpacity
 							key={tab}
+							className={`flex-1 py-3 px-3 rounded-t-xl items-center justify-center transition ${
+								activeTab === tab
+									? "bg-blue-50 border-b-2 border-blue-600"
+									: ""
+							}`}
 							onPress={() => setActiveTab(tab)}
-							className={`px-4 py-2 rounded-full ${activeTab === tab ? "bg-primary-500" : "bg-background-secondary"}`}
 						>
 							<Text
-								className={`font-medium ${activeTab === tab ? "text-white" : "text-gray-600"}`}
+								className={`font-semibold text-sm ${
+									activeTab === tab
+										? "text-blue-600"
+										: "text-gray-500"
+								}`}
 							>
 								{tab}
 							</Text>

@@ -15,7 +15,7 @@ const SendMessageAction = ({ action, personFlow }: Props) => {
 	const { data: template } = useTemplateByIdQuery(action.value);
 
 	const message = useMemo(() => {
-		let msg = convertToWhatsApp(template?.template ?? "Hello,");
+		let msg = convertToWhatsApp(template?.body ?? "Hello,");
 
 		msg = msg.replace(/{{(.*?)}}/g, (match, p1) => {
 			let attr = p1.trim();
@@ -23,13 +23,13 @@ const SendMessageAction = ({ action, personFlow }: Props) => {
 		});
 
 		return msg;
-	}, [template?.template, personFlow]); // Recalculate when these change
+	}, [template?.body, personFlow, action.value]);
 
 	// Send Whastapp message
 	const sendWhatsApp = async (person: PeopleFlow) => {
 		let phone = formatPhone(person.p__phone);
-		// const url = `tg://msg?text=${encodeURIComponent(message)}&to={phone}`;
-		const url = `https://wa.me/${phone}?text=${message}`;
+		const encodedMessage = encodeURIComponent(message);
+		const url = `https://wa.me/${phone}?text=${encodedMessage}`;
 		await Linking.openURL(url);
 	};
 
