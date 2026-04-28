@@ -35,6 +35,10 @@ export const apiEndpoints = {
 		updateStatus: _endpoint("peopleFlows/updateStatus"),
 		updateStep: _endpoint("peopleFlows/updateStep"),
 	},
+	assign: {
+		person: _endpoint("assign/person"),
+		district: _endpoint("assign/district"),
+	},
 	flows: {
 		create: _endpoint("flows/create"),
 		getAll: _endpoint("flows"),

@@ -12,7 +12,7 @@ import {
 	PhoneIcon,
 	UserIcon,
 } from "lucide-react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useMemo, useState } from "react";
 import {
 	Alert,
 	Linking,
@@ -22,6 +22,13 @@ import {
 	View,
 } from "react-native";
 import NotesTab from "./NotesTab";
+import AssignPersonDialog from "./AssignPersonDialog";
+import { useAssignMutation } from "@/hooks/Flows/usePeopleFlowMutations";
+import { fetchPeoplePaginated } from "@/services/Person/person.service";
+import { useQuery } from "@tanstack/react-query";
+import { Person } from "@/services/Person/person.type";
+import { useAuthStore } from "@/stores/authStore";
+import { subject } from "@casl/ability";
 
 type PeopleFlowDialogProps = {
 	onDismiss: () => void;
@@ -33,6 +40,7 @@ type PeopleFlowDialogProps = {
 	assignee_name?: string;
 	custom_attr?: { [key: string]: SingleCustomAttr };
 	colors: { bg: string; text: string };
+	flow_district_id?: number;
 };
 
 const PeopleFlowDialog = ({
@@ -45,13 +53,41 @@ const PeopleFlowDialog = ({
 	assignee_name,
 	custom_attr,
 	colors,
+	flow_district_id,
 }: PeopleFlowDialogProps) => {
 	const [activeTab, setActiveTab] = useState<"action" | "notes">("action");
+	const [assignDialogVisible, setAssignDialogVisible] = useState(false);
 	const avatarColors = getAvatarColors(personFlow.status);
 	const initials = getInitials(personFlow.p__full_legal_name);
 	const effectiveAssignee =
 		assignee_name ?? personFlow.last_contacted_by_name ?? null;
 	const router = useRouter();
+	const { ability, user } = useAuthStore();
+
+	// Fetch people with CASL-filtered list (only people under me)
+	const { data: paginatedResponse } = useQuery({
+		queryKey: ["people_paginated"],
+		queryFn: () => fetchPeoplePaginated({ pageSize: 500 }),
+	});
+
+	const people = useMemo(() => paginatedResponse?.data || [], [paginatedResponse]);
+
+	// Check if current user can assign based on CASL
+	const canAssign = useMemo(() => {
+		if (!ability || !user?.person) return false;
+
+		return ability.can(
+			"assign",
+			subject("PeopleFlow", {
+				district_id: flow_district_id,
+				flow_district_id: flow_district_id,
+				assignee_id: personFlow.assignee_id,
+			}),
+		);
+	}, [ability, user?.person, flow_district_id, personFlow.assignee_id]);
+
+	const { mutateAsync: assignMutation, isPending: isAssigning } =
+		useAssignMutation(flow_id);
 
 	const sendWhatsApp = async (person: PeopleFlow) => {
 		let phone = formatPhone(person.p__phone);
@@ -74,6 +110,35 @@ const PeopleFlowDialog = ({
 		});
 		onDismiss();
 	}, [personFlow.p__id, router, onDismiss]);
+
+	const handleAssignPerson = useCallback(
+		async (person: Person) => {
+			try {
+				const res = await assignMutation({
+					people: [
+						{
+							id: Number(personFlow.p__id),
+							full_legal_name: personFlow.p__full_legal_name!,
+						},
+					],
+					flow: {
+						id: flow_id,
+						title: flow_title,
+					},
+					assignee_id: person.id,
+					assigneeName: person.full_legal_name,
+				});
+
+				if (res.success) {
+					setAssignDialogVisible(false);
+					Alert.alert("Success", "Assigned successfully");
+				}
+			} catch (error) {
+				Alert.alert("Error", "Failed to assign person");
+			}
+		},
+		[personFlow, flow_id, flow_title, assignMutation],
+	);
 
 	return (
 		<View className="h-full w-full bg-white rounded-[15px] overflow-hidden">
@@ -271,13 +336,48 @@ const PeopleFlowDialog = ({
 				)}
 			</ScrollView>
 
-			{/* Back */}
-			<TouchableOpacity
-				className="w-full py-5 items-center justify-center border-t border-border"
-				onPress={onDismiss}
-			>
-				<Text className="text-gray-500">Back</Text>
-			</TouchableOpacity>
+				{/* Back and Assign buttons */}
+			<View className="border-t border-border flex-row">
+				<TouchableOpacity
+					onPress={onDismiss}
+					className="flex-1 py-5 items-center justify-center"
+				>
+					<Text className="text-gray-500">Back</Text>
+				</TouchableOpacity>
+				<View className="w-px bg-border" />
+				<TouchableOpacity
+					onPress={() => setAssignDialogVisible(true)}
+					disabled={isAssigning || !canAssign}
+					className="flex-1 py-5 items-center justify-center"
+				>
+					<Text
+						className={`font-semibold ${
+							canAssign && !isAssigning
+								? "text-blue-600"
+								: "text-gray-400"
+						}`}
+					>
+						{isAssigning ? "Assigning..." : "Assign"}
+					</Text>
+				</TouchableOpacity>
+			</View>
+
+			{/* Assign Dialog */}
+			<AssignPersonDialog
+				visible={assignDialogVisible}
+				onDismiss={() => setAssignDialogVisible(false)}
+				onAssign={handleAssignPerson}
+				people={people}
+				loading={isAssigning}
+				currentAssignee={
+					assignee_name
+						? {
+								id: 0,
+								full_legal_name: assignee_name,
+						  } as Person
+						: null
+				}
+			/>
 		</View>
 	);
 };

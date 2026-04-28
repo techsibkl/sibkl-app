@@ -204,6 +204,7 @@ const PeopleFlowRowComponent = ({
 					flow_id={personFlow.flow_id!}
 					custom_attr={custom_attr}
 					colors={colors}
+					flow_district_id={personFlow.district_id}
 				/>
 			</SharedModal>
 
