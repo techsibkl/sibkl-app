@@ -1,9 +1,12 @@
 import SharedHeader from "@/components/shared/SharedHeader";
-import { router, Stack } from "expo-router";
+import { useAuthStore } from "@/stores/authStore";
+import { Stack } from "expo-router";
 import React from "react";
 import { Alert } from "react-native";
 
 export default function AuthLayout() {
+	const { signOut } = useAuthStore();
+
 	return (
 		<Stack screenOptions={{ headerShown: false }}>
 			<Stack.Screen name="index" />
@@ -28,8 +31,10 @@ export default function AuthLayout() {
 											{
 												text: "Yes, back to login",
 												style: "destructive",
-												onPress: () =>
-													router.replace("/(auth)"),
+												onPress: async () => {
+													await signOut();
+													// router.replace("/(auth)");
+												},
 											},
 										],
 									);

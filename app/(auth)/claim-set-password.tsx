@@ -1,7 +1,6 @@
 import { FormField } from "@/components/shared/FormField";
 import PulsingLogo from "@/components/shared/PulsingLogo";
 import { fetchPersonById } from "@/services/Person/person.service";
-import { useClaimStore } from "@/stores/claimStore";
 import { apiEndpoints } from "@/utils/endpoints";
 import { secureFetch } from "@/utils/secureFetch";
 import {
@@ -34,7 +33,6 @@ const Page = () => {
 	const passwordRef = useRef<TextInput>(null);
 
 	const router = useRouter();
-	const { selectedProfile } = useClaimStore();
 	const qc = useQueryClient();
 	const { full_email, id } = useLocalSearchParams();
 
@@ -63,9 +61,14 @@ const Page = () => {
 				queryKey: ["person", personId],
 				queryFn: () => fetchPersonById(personId),
 			});
-			router.push("/(auth)/complete-profile");
+			router.replace({
+				pathname: "/(auth)/complete-profile",
+				params: { claimedPeopleId: String(personId) },
+			});
 			return;
 		}
+
+		throw new Error(json.message || "Failed to link account.");
 	};
 
 	const onSubmit = async (data: signUpFormData) => {
@@ -106,7 +109,7 @@ const Page = () => {
 					Claim Account
 				</Text>
 				<Text className="font-regular text-gray-700 mb-8">
-					You're almost there! Enter your new password to claim your
+					You&apos;re almost there! Enter your new password to claim your
 					account.
 				</Text>
 

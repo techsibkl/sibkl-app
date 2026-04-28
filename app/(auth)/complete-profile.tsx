@@ -16,6 +16,7 @@ import {
 	pickFieldsBySection,
 	validatePerson,
 } from "@/utils/helper_profile";
+import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
@@ -26,13 +27,26 @@ import Toast from "react-native-toast-message";
 // Create a type using those keys
 export type ProfileFormData = Partial<Person>;
 const Page = () => {
-	const { pendingSignUp, setPendingSignUp } = useSignUpStore();
+	const { pendingSignUp } = useSignUpStore();
 	const authStore = useAuthStore();
+	const { signUp, user: appUser } = authStore;
 	const { selectedProfile } = useClaimStore();
+	const { bottom } = useSafeAreaInsets();
+	const { claimedPeopleId } = useLocalSearchParams();
+	const routeClaimedPeopleId = Array.isArray(claimedPeopleId)
+		? claimedPeopleId[0]
+		: claimedPeopleId;
+	const claimedPeopleIdNumber = routeClaimedPeopleId
+		? Number(routeClaimedPeopleId)
+		: undefined;
+	const activeClaimedPeopleId =
+		selectedProfile?.id ??
+		(Number.isFinite(claimedPeopleIdNumber) ? claimedPeopleIdNumber : undefined);
 	const { data: selectedPerson, isPending } = useSinglePersonQuery(
-		selectedProfile?.id ?? -1,
+		activeClaimedPeopleId ?? -1,
 	);
-	const { signUp, user: appUser } = useAuthStore();
+	const profileEmail =
+		pendingSignUp?.email || appUser?.email || authStore.firebaseUser?.email || "";
 	const [submitAttempted, setSubmitAttempted] = useState(false);
 	const {
 		control,
@@ -48,7 +62,7 @@ const Page = () => {
 	} = useForm<ProfileFormData>({
 		defaultValues: {
 			full_legal_name: "",
-			email: pendingSignUp?.email ?? appUser?.email ?? "",
+			email: profileEmail,
 			phone: "",
 			gender: "male",
 			marital_status: "",
@@ -78,6 +92,12 @@ const Page = () => {
 		}
 	}, [selectedPerson, reset]);
 
+	useEffect(() => {
+		if (!selectedPerson && profileEmail && !getValues("email")) {
+			setValue("email", profileEmail);
+		}
+	}, [getValues, profileEmail, selectedPerson, setValue]);
+
 	const onSubmit = async (data: ProfileFormData) => {
 		clearErrors();
 		setSubmitAttempted(true);
@@ -99,9 +119,9 @@ const Page = () => {
 			return; // Don't proceed with submission
 		}
 
-		if (selectedProfile) {
+		if (activeClaimedPeopleId) {
 			const formPerson: Partial<Person> = {
-				id: selectedProfile.id,
+				id: activeClaimedPeopleId,
 				...data,
 			};
 
@@ -178,8 +198,6 @@ const Page = () => {
 				<SkeletonPeopleRow />
 			</SharedBody>
 		);
-
-	const { bottom } = useSafeAreaInsets();
 
 	return (
 		<>

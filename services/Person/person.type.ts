@@ -60,4 +60,5 @@ export type MaskedPerson = {
 	full_legal_name: string;
 	email: string;
 	phone: string;
+	migrate_extra_info?: string; // Extra info for migration
 };

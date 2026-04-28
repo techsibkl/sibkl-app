@@ -84,7 +84,8 @@ const Page = () => {
 								Email: {selectedProfile?.email}
 							</Text>
 							<Text className="text-sm text-text-secondary">
-								Extra inf
+								Extra info:{" "}
+								{selectedProfile?.migrate_extra_info}
 							</Text>
 						</View>
 					)}
