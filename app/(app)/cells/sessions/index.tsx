@@ -1,3 +1,4 @@
+import SharedBody from "@/components/shared/SharedBody";
 import { useCellSessionsQuery } from "@/hooks/CellAttendance/useCellAttendanceQuery";
 import { CellSession } from "@/services/CellAttendance/cellAttendance.type";
 import { FlashList } from "@shopify/flash-list";
@@ -33,7 +34,7 @@ const SessionCard = ({
   return (
     <Pressable
       onPress={onPress}
-      className="flex-row items-center bg-white rounded-2xl p-4 border border-gray-100 gap-3"
+      className="flex-row items-center bg-white rounded-2xl p-4 border border-gray-100 gap-3 mb-2"
       style={{ elevation: 2 }}
     >
       {/* Date badge */}
@@ -207,7 +208,7 @@ export default function SessionsScreen() {
   ];
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SharedBody>
       <FlashList
         data={listData}
         estimatedItemSize={90}
@@ -257,6 +258,6 @@ export default function SessionsScreen() {
           );
         }}
       />
-    </SafeAreaView>
+    </SharedBody>
   );
 }

@@ -1,3 +1,4 @@
+import SharedBody from "@/components/shared/SharedBody";
 import { useCellSessionByIdQuery } from "@/hooks/CellAttendance/useCellAttendanceQuery";
 import { CellSessionAttendee } from "@/services/CellAttendance/cellAttendance.type";
 import { FlashList } from "@shopify/flash-list";
@@ -13,7 +14,6 @@ import {
   View,
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
-import { SafeAreaView } from "react-native-safe-area-context";
 
 const AttendeeRow = ({ attendee }: { attendee: CellSessionAttendee }) => {
   const initial = attendee.guest_name
@@ -80,17 +80,17 @@ export default function SessionDetailScreen() {
 
   if (isLoading) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-white">
+      <SharedBody>
         <ActivityIndicator color="#d6361e" size="large" />
-      </SafeAreaView>
+      </SharedBody>
     );
   }
 
   if (isError || !session) {
     return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-white">
+      <SharedBody>
         <Text className="text-red-600 text-base">Failed to load session.</Text>
-      </SafeAreaView>
+      </SharedBody>
     );
   }
 
@@ -102,7 +102,7 @@ export default function SessionDetailScreen() {
       : 0;
 
   return (
-    <SafeAreaView className="flex-1 bg-white">
+    <SharedBody>
       <ScrollView
         contentContainerStyle={{ padding: 24, paddingBottom: 48 }}
         showsVerticalScrollIndicator={false}
@@ -249,6 +249,6 @@ export default function SessionDetailScreen() {
           </View>
         )}
       </ScrollView>
-    </SafeAreaView>
+    </SharedBody>
   );
 }
