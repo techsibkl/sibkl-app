@@ -68,7 +68,10 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 		const share_url = resource.drive_view_link || resource.youtube_link;
 		try {
 			await Share.share({
-				message: `${resource.title}\n\nDownload the resource here:`,
+				// On Android, `url` is ignored — the link must be in `message`
+				message: share_url
+					? `${resource.title}\n\nDownload the resource here: ${share_url}`
+					: resource.title,
 				url: share_url,
 				title: resource.title,
 			});

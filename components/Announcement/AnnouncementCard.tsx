@@ -18,6 +18,7 @@ type AnnouncementCardProps = {
 
 const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 	const [imageHeight, setImageHeight] = useState(200); // fallback height
+	const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 	const screenWidth = Dimensions.get("window").width;
 
 	const handleItemPress = async (url: string) => {
@@ -44,14 +45,14 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 
 				const finalHeight = Math.min(
 					Math.max(calculatedHeight, minHeight),
-					maxHeight
+					maxHeight,
 				);
 				setImageHeight(finalHeight);
 			},
 			(error) => {
 				console.log("Error getting image size:", error);
 				setImageHeight(200); // fallback
-			}
+			},
 		);
 	}, [announcement.drive_file_id]);
 
@@ -102,11 +103,26 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 					</Text>
 					<Text
 						className="text-text text-base mb-1"
-						numberOfLines={4}
+						numberOfLines={descriptionExpanded ? undefined : 4}
 						ellipsizeMode="tail"
 					>
 						{announcement.description}
 					</Text>
+					{announcement.description &&
+						announcement.description.length > 0 && (
+							<TouchableOpacity
+								onPress={() =>
+									setDescriptionExpanded((prev) => !prev)
+								}
+								className="mb-1"
+							>
+								<Text className="text-secondary-500 text-sm font-semibold">
+									{descriptionExpanded
+										? "Read less"
+										: "Read more..."}
+								</Text>
+							</TouchableOpacity>
+						)}
 					{/* Date and Location Info */}
 					<View className="mt-2 gap-1">
 						{dateDisplay && (
@@ -149,7 +165,7 @@ const AnnouncementCard = ({ announcement }: AnnouncementCardProps) => {
 						onPress={() => handleItemPress(announcement.cta_link!)}
 					>
 						<Text className="text-gray-500 font-semibold">
-							View More
+							Open Link
 						</Text>
 					</TouchableOpacity>
 				)}

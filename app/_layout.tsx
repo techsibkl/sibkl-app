@@ -58,6 +58,14 @@ async function registerAndGetToken(): Promise<string | null> {
 			vibrationPattern: [0, 250, 250, 250],
 			lightColor: "#FF231F7C",
 		});
+
+		// Android 13+ (API 33) requires an explicit POST_NOTIFICATIONS permission request.
+		// expo-notifications handles this correctly across Android versions.
+		const { status } = await Notifications.requestPermissionsAsync();
+		if (status !== "granted") {
+			console.warn("[FCM] Android notification permission denied:", status);
+			return null;
+		}
 	}
 
 	// Handles APNs registration on iOS automatically

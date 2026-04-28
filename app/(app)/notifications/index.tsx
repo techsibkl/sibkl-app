@@ -1,5 +1,6 @@
 import NotificationList from "@/components/Home/NotificationList";
 import SharedBody from "@/components/shared/SharedBody";
+import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { useNotificationQuery } from "@/hooks/Notifications/useNotificationsQuery";
 import React, { useMemo, useState } from "react";
 import { View } from "react-native";
@@ -13,6 +14,7 @@ const NotificationsPage = () => {
 	};
 
 	const [filter, setFilter] = useState<"all" | "unread" | "closed">("all");
+	const [searchQuery, setSearchQuery] = useState("");
 
 	// Helper function to check if notification is read
 	const isNotificationRead = (notification: any) =>
@@ -24,7 +26,7 @@ const NotificationsPage = () => {
 
 	const unreadCount = useMemo(
 		() => notifications.filter((n) => !isNotificationRead(n)).length,
-		[notifications]
+		[notifications],
 	);
 
 	const filteredNotifications = useMemo(() => {
@@ -37,6 +39,17 @@ const NotificationsPage = () => {
 				filtered = notifications.filter((n) => isNotificationClosed(n));
 				break;
 		}
+		// Apply search filter
+		if (searchQuery.trim()) {
+			const q = searchQuery.toLowerCase();
+			filtered = filtered.filter(
+				(n: any) =>
+					n.title?.toLowerCase().includes(q) ||
+					n.message?.toLowerCase().includes(q) ||
+					n.body?.toLowerCase().includes(q),
+			);
+		}
+
 		// Sort by created_at (newest first), with unread notifications prioritized
 		return filtered.sort((a, b) => {
 			const aIsRead = isNotificationRead(a);
@@ -52,10 +65,15 @@ const NotificationsPage = () => {
 				new Date(a.created_at).getTime()
 			);
 		});
-	}, [notifications, filter]);
+	}, [notifications, filter, searchQuery]);
 
 	return (
 		<SharedBody>
+			<SharedSearchBar
+				searchQuery={searchQuery}
+				onSearchChange={setSearchQuery}
+				placeholder="Search notifications..."
+			/>
 			<View className="flex-1 mt-4 ">
 				<NotificationList
 					notifications={filteredNotifications}
