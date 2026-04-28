@@ -1,7 +1,7 @@
 import { Announcement } from "@/services/Announcement/announcement.types";
 import { displayDateAsStr } from "@/utils/helper";
 import { Calendar1Icon, LinkIcon, MapPinIcon } from "lucide-react-native";
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { Image, Linking, Text, TouchableOpacity, View } from "react-native";
 
 type AnnouncementDialogProps = {
@@ -9,6 +9,7 @@ type AnnouncementDialogProps = {
 };
 
 const AnnouncementDialog = ({ announcement }: AnnouncementDialogProps) => {
+	const [descriptionExpanded, setDescriptionExpanded] = useState(false);
 	const handleItemPress = async (url: string) => {
 		try {
 			await Linking.openURL(url);
@@ -65,11 +66,26 @@ const AnnouncementDialog = ({ announcement }: AnnouncementDialogProps) => {
 					</Text>
 					<Text
 						className="text-text text-base mb-1"
-						numberOfLines={4}
+						numberOfLines={descriptionExpanded ? undefined : 4}
 						ellipsizeMode="tail"
 					>
 						{announcement.description}
 					</Text>
+					{announcement.description &&
+						announcement.description.length > 0 && (
+							<TouchableOpacity
+								onPress={() =>
+									setDescriptionExpanded((prev) => !prev)
+								}
+								className="mb-1"
+							>
+								<Text className="text-secondary-500 text-sm font-semibold">
+									{descriptionExpanded
+										? "Read less"
+										: "Read more..."}
+								</Text>
+							</TouchableOpacity>
+						)}
 					{/* Date and Location Info */}
 					<View className="mt-2 gap-1">
 						{dateDisplay && (
@@ -112,7 +128,7 @@ const AnnouncementDialog = ({ announcement }: AnnouncementDialogProps) => {
 						onPress={() => handleItemPress(announcement.cta_link!)}
 					>
 						<Text className="text-gray-500 font-semibold">
-							View More
+							Open Link
 						</Text>
 					</TouchableOpacity>
 				)}
