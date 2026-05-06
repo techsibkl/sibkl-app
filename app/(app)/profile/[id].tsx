@@ -8,13 +8,13 @@ import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { Person } from "@/services/Person/person.type";
 import { displayDateAsStr, formatPhone } from "@/utils/helper";
 import { getInitials } from "@/utils/helper_profile";
+import Clipboard from "@react-native-clipboard/clipboard";
 import { Ionicons } from "@expo/vector-icons";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import { Calendar, Mail, MapPin, Phone, User } from "lucide-react-native";
 import React, { useState } from "react";
 import {
 	Alert,
-	Clipboard,
 	Linking,
 	ScrollView,
 	StatusBar,
@@ -196,7 +196,7 @@ const ProfileScreen = () => {
 	const initials = getInitials(person.full_legal_name);
 
 	const sendWhatsApp = async (person: Person) => {
-		let phone = formatPhone(person.p__phone);
+		let phone = formatPhone(person.phone);
 		const url = `https://wa.me/${phone}?text=Hello%20${encodeURIComponent(person.full_legal_name!)},`;
 		await Linking.openURL(url);
 	};
