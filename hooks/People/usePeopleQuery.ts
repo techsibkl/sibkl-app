@@ -56,7 +56,11 @@ export const useSinglePersonQuery = (personId: number) => {
 			return res;
 		},
 		retry: (failureCount, error: any) => {
-			if (error?.status === 401 || error?.status === 403) {
+			if (
+				error?.status === 401 ||
+				error?.status === 403 ||
+				error?.status === 404
+			) {
 				return false;
 			}
 			return failureCount < 3;
