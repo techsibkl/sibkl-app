@@ -36,13 +36,15 @@ export const usePeopleFlowQuery = (flowId?: number, assigneeId?: number) => {
 	return useQuery<PeopleFlow[]>({
 		queryKey: [
 			"peopleFlow",
-			flowId ?? "all",
+			flowId === 0 ? "all" : flowId,
 			"assignee",
 			assigneeId ?? "none",
 		],
 
 		queryFn: () => fetchPeopleFlow(flowId, assigneeId),
 		placeholderData: <PeopleFlow[]>[],
-		enabled: !!flowId || !!assigneeId,
+		// Enable if: flowId is explicitly 0 (ALL), flowId is a positive number, or assigneeId is provided
+		enabled: flowId === 0 || !!flowId || !!assigneeId,
+		staleTime: 1000 * 60 * 5, // Cache for 5 minutes
 	});
 };

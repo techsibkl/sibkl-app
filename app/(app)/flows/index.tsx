@@ -39,6 +39,10 @@ const FlowsPage = () => {
 		if (flow_id) {
 			setSelectedFlowId(Number(flow_id));
 			setIsMeMode(isMeModeParam === "true");
+		} else {
+			// On initial page load, ensure the ALL flows query runs
+			setSelectedFlowId(0);
+			allFlowsRefetch();
 		}
 	}, [flow_id, isMeModeParam]);
 
@@ -47,14 +51,14 @@ const FlowsPage = () => {
 		data: singleFlowPeople,
 		isPending: singleFlowPending,
 		refetch: singleFlowRefetch,
-	} = usePeopleFlowQuery(selectedFlowId || undefined);
+	} = usePeopleFlowQuery(selectedFlowId);
 
 	// Getting people from ALL flows (only when selectedFlowId === 0)
 	const {
 		data: allFlowsPeople,
 		isPending: allFlowsPending,
 		refetch: allFlowsRefetch,
-	} = usePeopleFlowQuery(undefined);
+	} = usePeopleFlowQuery();
 
 	const flowIds = useMemo(
 		() => [...new Set(allFlowsPeople?.map((p) => p.flow_id) || [])],
@@ -95,7 +99,14 @@ const FlowsPage = () => {
 		}
 
 		return list;
-	}, [selectedFlowId, allFlowsPeople, singleFlowPeople, searchQuery, isMeMode, user?.person?.id]);
+	}, [
+		selectedFlowId,
+		allFlowsPeople,
+		singleFlowPeople,
+		searchQuery,
+		isMeMode,
+		user?.person?.id,
+	]);
 
 	// Final list — status tab + sort applied on top
 	const effectivePeopleFlow = useMemo(() => {
