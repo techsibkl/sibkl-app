@@ -17,19 +17,18 @@ const FlowSelector = ({ flows, selectedFlowId, onSelect }: Props) => {
 				className={`pl-4 flex border border-border rounded-[15px] bg-white justify-center`}
 			>
 				<AppPicker
-					value={selectedFlowId}
+					value={selectedFlowId ?? 0}
 					onChange={(v) => onSelect(v)}
 					options={[
-						{ label: "ALL (assigned to me)", value: 0 },
+						{ label: "ALL FOLLOW-UP (Combined)", value: 0 },
 						...flows.map((f) => ({
 							label: f.title,
 							value: f.id,
 						})),
 					]}
+					showPlaceholder={false}
 					renderTrigger={(label) => (
-						<Text className="font-medium text-md">
-							{label || "Select flow"}
-						</Text>
+						<Text className="font-medium text-md">{label}</Text>
 					)}
 				/>
 			</View>
