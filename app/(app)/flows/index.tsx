@@ -39,26 +39,30 @@ const FlowsPage = () => {
 		if (flow_id) {
 			setSelectedFlowId(Number(flow_id));
 			setIsMeMode(isMeModeParam === "true");
+		} else {
+			// On initial page load, ensure the ALL flows query runs
+			setSelectedFlowId(0);
+			allFlowsRefetch();
 		}
 	}, [flow_id, isMeModeParam]);
 
-	// Getting people assigned to me from SINGLE selected flow (or all flows if selectedFlowId is 0)
+	// Getting people from SINGLE selected flow
 	const {
 		data: singleFlowPeople,
 		isPending: singleFlowPending,
 		refetch: singleFlowRefetch,
 	} = usePeopleFlowQuery(selectedFlowId);
 
-	// Getting people assigned to me from ALL flows
+	// Getting people from ALL flows (only when selectedFlowId === 0)
 	const {
-		data: peopleFlow,
-		isPending: allPeoplePending,
-		refetch,
-	} = usePeopleFlowQuery(undefined, user?.person?.id);
+		data: allFlowsPeople,
+		isPending: allFlowsPending,
+		refetch: allFlowsRefetch,
+	} = usePeopleFlowQuery();
 
 	const flowIds = useMemo(
-		() => [...new Set(peopleFlow?.map((p) => p.flow_id) || [])],
-		[peopleFlow],
+		() => [...new Set(allFlowsPeople?.map((p) => p.flow_id) || [])],
+		[allFlowsPeople],
 	);
 
 	const {
@@ -68,16 +72,19 @@ const FlowsPage = () => {
 	} = useFlowsQuery(flowIds as number[]);
 
 	const allPending = useMemo(() => {
-		return singleFlowPending || allPeoplePending || flowsPending;
-	}, [singleFlowPending, allPeoplePending, flowsPending]);
+		return selectedFlowId === 0
+			? allFlowsPending || flowsPending
+			: singleFlowPending || flowsPending;
+	}, [selectedFlowId, allFlowsPending, singleFlowPending, flowsPending]);
 
-	// Pre-status-filter list (search + me mode applied) — fed into the tab counts
+	// Pre-status-filter list (search + isMeMode applied) — fed into the tab counts
 	const preFilteredPeopleFlow = useMemo(() => {
 		let list =
 			selectedFlowId === 0
-				? (peopleFlow ?? [])
+				? (allFlowsPeople ?? [])
 				: (singleFlowPeople ?? []);
 
+		// Search filter
 		list = list.filter(
 			(person) =>
 				person?.p__full_legal_name
@@ -86,6 +93,7 @@ const FlowsPage = () => {
 				person?.p__phone?.includes(searchQuery),
 		);
 
+		// Apply isMeMode frontend filter
 		if (isMeMode) {
 			list = list.filter((p) => p.assignee_id === user?.person?.id);
 		}
@@ -93,7 +101,7 @@ const FlowsPage = () => {
 		return list;
 	}, [
 		selectedFlowId,
-		peopleFlow,
+		allFlowsPeople,
 		singleFlowPeople,
 		searchQuery,
 		isMeMode,
@@ -130,7 +138,11 @@ const FlowsPage = () => {
 		setSortOrder("desc");
 	};
 	const refresh = async () => {
-		selectedFlowId === 0 ? await refetch() : await singleFlowRefetch();
+		if (selectedFlowId === 0) {
+			await allFlowsRefetch();
+		} else {
+			await singleFlowRefetch();
+		}
 		flowRefetch();
 	};
 
@@ -159,25 +171,21 @@ const FlowsPage = () => {
 					selectedFlowId={selectedFlowId}
 					onSelect={setSelectedFlowId}
 				/>
-				<>
-					{selectedFlowId !== 0 && (
-						<TouchableOpacity
-							onPress={() => setIsMeMode((prev) => !prev)}
-							className={`flex flex-row items-center justify-center gap-2 px-4 py-3 rounded-[15px] border ${isMeMode ? "bg-blue-500 border-blue-500" : "bg-transparent border-blue-300"}`}
-							activeOpacity={0.7}
+				<TouchableOpacity
+					onPress={() => setIsMeMode((prev) => !prev)}
+					className={`flex flex-row items-center justify-center gap-2 px-4 py-3 rounded-[15px] border ${isMeMode ? "bg-blue-500 border-blue-500" : "bg-transparent border-blue-300"}`}
+					activeOpacity={0.7}
+				>
+					<View>
+						<Text
+							className={`text-sm font-semibold ${isMeMode ? "text-white" : "text-blue-300"}`}
 						>
-							<View>
-								<Text
-									className={`text-sm font-semibold ${isMeMode ? "text-white" : "text-blue-300"}`}
-								>
-									{"Assigned to Me"}
-								</Text>
-							</View>
+							{"Assigned to Me"}
+						</Text>
+					</View>
 
-							{isMeMode && <CheckIcon color={"#fff"} size={16} />}
-						</TouchableOpacity>
-					)}
-				</>
+					{isMeMode && <CheckIcon color={"#fff"} size={16} />}
+				</TouchableOpacity>
 			</View>
 
 			{/* Status tab bar — counts reflect search + me-mode filter */}

@@ -5,12 +5,35 @@ import React from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 // Map the color strings from defaultFlowStatusAttrs to Tailwind classes
-const COLOR_MAP: Record<string, { active: string; badge: string }> = {
-	gray: { active: "bg-gray-400", badge: "bg-gray-300" },
-	purple: { active: "bg-purple-500", badge: "bg-purple-400" },
-	green: { active: "bg-green-500", badge: "bg-green-400" },
-	red: { active: "bg-red-400", badge: "bg-red-300" },
-	blue: { active: "bg-blue-500", badge: "bg-blue-400" },
+const COLOR_MAP: Record<
+	string,
+	{ active: string; inactive: string; badge: string }
+> = {
+	gray: {
+		active: "bg-gray-400",
+		inactive: "text-gray-500 border-gray-300",
+		badge: "bg-gray-300",
+	},
+	purple: {
+		active: "bg-purple-500",
+		inactive: "text-purple-500 border-purple-300",
+		badge: "bg-purple-400",
+	},
+	green: {
+		active: "bg-green-500",
+		inactive: "text-green-500 border-green-300",
+		badge: "bg-green-400",
+	},
+	red: {
+		active: "bg-red-400",
+		inactive: "text-red-500 border-red-300",
+		badge: "bg-red-300",
+	},
+	blue: {
+		active: "bg-blue-500",
+		inactive: "text-blue-500 border-blue-300",
+		badge: "bg-blue-400",
+	},
 };
 
 const TABS: { label: string; status: FlowStatus | null }[] = [
@@ -62,13 +85,13 @@ const FlowStatusTabs = ({ peopleFlow, selectedStatus, onSelect }: Props) => {
 						activeOpacity={0.75}
 						className={`flex-row items-center gap-1.5 px-3 py-2 rounded-full border ${
 							isActive
-								? `${colors.active} border-transparent`
-								: "bg-white border-gray-200"
+								? `${colors.active} border-transparent text-white`
+								: `bg-white ${colors.inactive} `
 						}`}
 					>
 						<Text
 							className={`text-xs font-semibold ${
-								isActive ? "text-white" : "text-gray-600"
+								isActive ? "text-white" : `${colors.inactive}`
 							}`}
 						>
 							{label}

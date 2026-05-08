@@ -14,6 +14,7 @@ import { getInitials } from "@/utils/helper_profile";
 import {
 	ChevronRightIcon,
 	CircleDashedIcon,
+	CircleIcon,
 	FunnelIcon,
 	UserIcon,
 } from "lucide-react-native";
@@ -141,6 +142,19 @@ const PeopleFlowRowComponent = ({
 										numberOfLines={1}
 									>
 										{flow_title}
+									</Text>
+								</View>
+							)}
+
+							{/* District */}
+							{personFlow.district_id && (
+								<View className="flex-row items-center gap-x-1 flex-wrap">
+									<CircleIcon size={10} color="#9ca3af" />
+									<Text
+										className="text-xs text-gray-400 mt-0.5"
+										numberOfLines={1}
+									>
+										{personFlow.district_name}
 									</Text>
 								</View>
 							)}

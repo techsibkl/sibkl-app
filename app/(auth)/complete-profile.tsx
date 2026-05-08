@@ -1,7 +1,7 @@
 import DynamicFormField from "@/components/shared/DynamicFormField";
 import SharedBody from "@/components/shared/SharedBody";
 import SkeletonPeopleRow from "@/components/shared/Skeleton/SkeletonPeopleRow";
-import { groupedPersonFields } from "@/constants/const_person";
+import { DEFAULT_PERSON_COLUMNS } from "@/constants/const_person";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { updatePeople } from "@/services/Person/person.service";
 import { Person } from "@/services/Person/person.type";
@@ -13,8 +13,7 @@ import { formatPhone } from "@/utils/helper";
 import {
 	getAgeGroup,
 	getInitials,
-	pickFieldsBySection,
-	validatePerson,
+	validateCompleteProfile,
 } from "@/utils/helper_profile";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
@@ -24,8 +23,23 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 
-// Create a type using those keys
 export type ProfileFormData = Partial<Person>;
+
+const completeProfileFields = DEFAULT_PERSON_COLUMNS.filter(
+	(f) => f.completeProfileOnly === true,
+);
+
+const groupedCompleteProfileFields = completeProfileFields.reduce(
+	(acc, field) => {
+		if (!field.section || field.section == SectionEnum.NONE) return acc;
+		const section = field.section;
+		if (!acc[section]) acc[section] = [];
+		acc[section].push(field);
+		return acc;
+	},
+	{} as Record<string, typeof completeProfileFields>,
+);
+
 const Page = () => {
 	const { pendingSignUp } = useSignUpStore();
 	const authStore = useAuthStore();
@@ -48,6 +62,7 @@ const Page = () => {
 	const profileEmail =
 		pendingSignUp?.email || appUser?.email || authStore.firebaseUser?.email || "";
 	const [submitAttempted, setSubmitAttempted] = useState(false);
+
 	const {
 		control,
 		handleSubmit,
@@ -57,38 +72,27 @@ const Page = () => {
 		watch,
 		setError,
 		clearErrors,
-
 		formState: { errors, isSubmitting },
 	} = useForm<ProfileFormData>({
 		defaultValues: {
 			full_legal_name: "",
 			email: profileEmail,
 			phone: "",
-			gender: "male",
-			marital_status: "",
 			birth_date: null,
-			occupation: "",
 			age: undefined,
 			age_group: null,
-			full_home_address: "",
-			city: "",
-			state: "",
-			postcode: "",
-			emergency_contact_name: "",
-			emergency_contact_phone: "",
-			emergency_contact_relationship: "",
 		},
 	});
 
-	// When selectedProfile changes, update the form values
-	// when person data comes from React Query, preset the form
 	useEffect(() => {
 		if (selectedPerson) {
-			const personalInfoData = pickFieldsBySection(
-				selectedPerson,
-				SectionEnum.PERSONAL_INFORMATION,
-			);
-			reset(personalInfoData as ProfileFormData);
+			const profileData = completeProfileFields.reduce((acc, field) => {
+				if (field.key in selectedPerson) {
+					acc[field.key] = selectedPerson[field.key];
+				}
+				return acc;
+			}, {} as ProfileFormData);
+			reset(profileData);
 		}
 	}, [selectedPerson, reset]);
 
@@ -101,43 +105,36 @@ const Page = () => {
 	const onSubmit = async (data: ProfileFormData) => {
 		clearErrors();
 		setSubmitAttempted(true);
-		const validationErrors: Record<string, string> = validatePerson(data);
-		// If there are errors, set them in react-hook-form
+		const validationErrors = validateCompleteProfile(data);
+
 		if (Object.keys(validationErrors).length > 0) {
 			Object.entries(validationErrors).forEach(([field, message]) => {
-				setError(field, {
-					type: "manual",
-					message: message,
-				});
+				setError(field, { type: "manual", message });
 			});
 			Toast.show({
 				type: "error",
 				text1Style: { fontSize: 16, fontWeight: "bold" },
 				text1: "Please enter valid input",
 			});
-
-			return; // Don't proceed with submission
+			return;
 		}
 
 		if (activeClaimedPeopleId) {
-			const formPerson: Partial<Person> = {
-				id: activeClaimedPeopleId,
-				...data,
-			};
-
 			try {
-				const response = await updatePeople(formPerson);
+				const response = await updatePeople({
+					id: activeClaimedPeopleId,
+					...data,
+				});
 				if (response.success) {
 					authStore.init();
 				}
 			} catch (error) {
 				console.error("Error updating person profile:", error);
-				return;
 			}
 		} else {
 			const user = await signUp(data);
 			if (!user) {
-				console.error("Something went wrong signing up ");
+				console.error("Something went wrong signing up");
 				return;
 			}
 			authStore.init();
@@ -175,7 +172,7 @@ const Page = () => {
 
 		if (!submitAttempted) return;
 		const currentData = getValues();
-		const validationErrors = validatePerson(currentData);
+		const validationErrors = validateCompleteProfile(currentData);
 		if (validationErrors[key]) {
 			setError(key as any, {
 				type: "manual",
@@ -185,19 +182,20 @@ const Page = () => {
 	};
 
 	const handleFieldComplete = (key: string, value: any) => {
-		if (key === "phone" || key === "emergency_contact_phone") {
+		if (key === "phone") {
 			setValue(key, formatPhone(value));
 		}
 	};
 
 	const fullName = watch("full_legal_name");
 
-	if (isPending)
+	if (isPending) {
 		return (
 			<SharedBody>
 				<SkeletonPeopleRow />
 			</SharedBody>
 		);
+	}
 
 	return (
 		<>
@@ -209,7 +207,6 @@ const Page = () => {
 				contentContainerStyle={{ flexGrow: 1 }}
 			>
 				<SharedBody>
-					{/* Logo - Replace with your app logo */}
 					<View className="items-center my-6">
 						<View className="w-20 h-20 rounded-full bg-gray-200 items-center justify-center mb-4">
 							<Text className="text-lg font-bold">
@@ -228,45 +225,34 @@ const Page = () => {
 						className="px-5 pt-4"
 						style={{ paddingBottom: bottom + 80 }}
 					>
-						{Object.entries(groupedPersonFields)
-							.filter(
-								([section]) =>
-									section ===
-									SectionEnum.PERSONAL_INFORMATION,
-							)
-							.map(([section, fields]) => (
+						{Object.entries(groupedCompleteProfileFields).map(
+							([section, fields]) => (
 								<View key={section} className="mb-12">
-									{/* <Text className="ml-1 mb-4 pb-2 text-black font-semibold border-b border-gray-300">
-										{section}
-									</Text> */}
-
 									<View className="gap-y-6">
-										{fields
-											.filter((f) => f.editable !== false)
-											.map((field) => (
-												<DynamicFormField
-													key={field.key}
-													field={field}
-													control={control}
-													errors={errors}
-													onFieldUpdate={
-														handleFieldUpdate
-													}
-													onFieldComplete={
-														handleFieldComplete
-													}
-													disabled={
-														field.key === "email"
-													}
-												/>
-											))}
+										{fields.map((field) => (
+											<DynamicFormField
+												key={field.key}
+												field={field}
+												control={control}
+												errors={errors}
+												onFieldUpdate={
+													handleFieldUpdate
+												}
+												onFieldComplete={
+													handleFieldComplete
+												}
+												disabled={
+													field.key === "email"
+												}
+											/>
+										))}
 									</View>
 								</View>
-							))}
+							),
+						)}
 					</View>
 				</SharedBody>
 			</KeyboardAwareScrollView>
-			{/* Sticky button */}
 
 			<TouchableOpacity
 				className="absolute bottom-0 w-full items-center justify-center bg-primary-600"

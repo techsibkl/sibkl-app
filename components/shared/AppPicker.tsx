@@ -15,6 +15,7 @@ type Props<T> = {
 	renderTrigger?: (label: string, isPlaceholder: boolean) => React.ReactNode;
 	onAfterChange?: (value: T) => void; // onChangeText — fires on select
 	onClose?: (value: T) => void; // onBlur — fires on dismiss
+	showPlaceholder?: boolean;
 };
 export function AppPicker<T>({
 	value,
@@ -25,6 +26,7 @@ export function AppPicker<T>({
 	onAfterChange,
 	onClose,
 	placeholder = "Select an option...",
+	showPlaceholder = true,
 }: Props<T> & { placeholder?: string }) {
 	const [open, setOpen] = useState(false);
 	const [localValue, setLocalValue] = useState<T | null>(value ?? null);
@@ -32,10 +34,9 @@ export function AppPicker<T>({
 	const selectedLabel = options.find((o) => o.value === value)?.label ?? "";
 	const isPlaceholder = value === null || value === undefined || value === "";
 
-	const allOptions = [
-		{ label: placeholder, value: null as unknown as T },
-		...options,
-	];
+	const allOptions = showPlaceholder
+		? [{ label: placeholder, value: null as unknown as T }, ...options]
+		: options;
 
 	if (Platform.OS === "android") {
 		return (

@@ -8,6 +8,7 @@ import Clipboard from "@react-native-clipboard/clipboard";
 import { useRouter } from "expo-router";
 import {
 	CircleDashedIcon,
+	CircleIcon,
 	GitBranchIcon,
 	PhoneIcon,
 	UserIcon,
@@ -159,6 +160,17 @@ const PeopleFlowDialog = ({
 								numberOfLines={1}
 							>
 								{flow_title}
+							</Text>
+						</View>
+					)}
+					{personFlow.district_id && (
+						<View className="flex-row items-center gap-2">
+							<CircleIcon size={13} color="#9ca3af" />
+							<Text
+								className="text-xs text-gray-500 flex-1"
+								numberOfLines={1}
+							>
+								{personFlow.district_name}
 							</Text>
 						</View>
 					)}
