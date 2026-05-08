@@ -9,6 +9,7 @@ export type TableField = {
 	type?: FieldTypeEnum;
 	section?: SectionEnum;
 	options?: (string | null | number)[];
+	completeProfileOnly?: boolean; // Include in complete profile form
 };
 
 export enum SectionEnum {

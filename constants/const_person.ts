@@ -19,6 +19,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		type: FieldTypeEnum.TEXT,
 		section: SectionEnum.PERSONAL_INFORMATION,
 		editable: true,
+		completeProfileOnly: true,
 	},
 	// {
 	//   key: "first_name",
@@ -46,6 +47,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		type: FieldTypeEnum.TEXT,
 		section: SectionEnum.PERSONAL_INFORMATION,
 		editable: true,
+		completeProfileOnly: true,
 	},
 	{
 		key: "phone",
@@ -55,6 +57,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		type: FieldTypeEnum.TEXT,
 		section: SectionEnum.PERSONAL_INFORMATION,
 		editable: true,
+		completeProfileOnly: true,
 	},
 	{
 		key: "gender",
@@ -95,6 +98,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.PERSONAL_INFORMATION,
 		editable: true,
+		completeProfileOnly: true,
 	},
 
 	{
@@ -131,6 +135,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		type: FieldTypeEnum.TEXT,
 		section: SectionEnum.PERSONAL_INFORMATION,
 		editable: true,
+		completeProfileOnly: true,
 	},
 	{
 		key: "age_group",
@@ -140,6 +145,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		type: FieldTypeEnum.SELECT,
 		section: SectionEnum.PERSONAL_INFORMATION,
 		editable: true,
+		completeProfileOnly: true,
 		options: Object.values(AgeGroup),
 	},
 	{

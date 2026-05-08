@@ -16,6 +16,7 @@ export enum Role {
 	// PEOPLE_ADMIN is a special role that can manage people but not permissions or cells/districts
 	// i.e MSJ, Connect, Guest Ministry Admins
 	PEOPLE_ADMIN = "People Admin",
+	MEDIA_ADMIN = "Media Admin",
 	STAFF = "Staff",
 	DISTRICT_PASTOR = "District Pastor",
 	DISTRICT_ADMIN = "District Admin",
@@ -39,19 +40,19 @@ export function defineAbilityFor(person: Person): AnyAbility {
 		can(["read", "update", "delete"], "PeopleProfileNotes", {
 			owner_id: person.id,
 		});
-	can(["read", "create"], "PeopleProfileNotes", {
-		assignee_ids: { $in: [person.id] },
-	});
-	can(["read", "update", "assign", "default", "add"], "PeopleFlow", {
-		assignee_id: person.id,
-	});
-	can("read", "Notification", { people_id: person.id });
-	can("read", "Announcement", {
-		role_group_ids: { $in: person.role_group_ids ?? [] },
-	});
-	can("read", "Resource", {
-		role_group_ids: { $in: person.role_group_ids ?? [] },
-	});
+		can(["read", "create"], "PeopleProfileNotes", {
+			assignee_ids: { $in: [person.id] },
+		});
+		can(["read", "update", "assign", "default", "add"], "PeopleFlow", {
+			assignee_id: person.id,
+		});
+		can("read", "Notification", { people_id: person.id });
+		can("read", "Announcements", {
+			role_group_ids: { $in: person.role_group_ids ?? [] },
+		});
+		can("read", "Resource", {
+			role_group_ids: { $in: person.role_group_ids ?? [] },
+		});
 
 		if (
 			!person ||
@@ -149,6 +150,12 @@ export function defineAbilityFor(person: Person): AnyAbility {
 			cannot(["create", "update", "delete"], "CellChangeRequest");
 			cannot(["create", "update", "delete"], "DistrictDetails");
 			cannot(["create", "update", "delete"], "Zone");
+		}
+
+		if (person?.roles?.includes(Role.MEDIA_ADMIN)) {
+			cannot("manage", "all");
+			can("manage", "Announcements");
+			can("manage", "Resource");
 		}
 
 		if (person?.roles?.includes(Role.STAFF)) {

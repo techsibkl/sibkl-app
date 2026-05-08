@@ -92,6 +92,55 @@ export const validatePerson = (person: Partial<Person>) => {
 	return errors;
 };
 
+// Validation specifically for complete profile (simplified set of fields)
+export const validateCompleteProfile = (person: Partial<Person>) => {
+	const errors: { [key: string]: string } = {};
+
+	if (!person.full_legal_name) {
+		errors.full_legal_name = "Full Legal Name cannot be empty.";
+	} else if (!/^[A-Za-z\s@\-]+$/.test(person.full_legal_name)) {
+		errors.full_legal_name = "Full Legal Name has invalid characters.";
+	} else if (person.full_legal_name.replace(/[\s@\-]+/g, "").length < 5) {
+		errors.full_legal_name =
+			"Full Legal Name must contain at least 5 alphabets.";
+	} else if (
+		/(.)\1{3,}/.test(person.full_legal_name.replace(/[\s@\-]/g, ""))
+	) {
+		errors.full_legal_name =
+			"Full Legal Name cannot contain more than 4 consecutive identical letters.";
+	}
+
+	if (!person.email) {
+		errors.email = "Email is required.";
+	} else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(person.email)) {
+		errors.email = "A valid email is required.";
+	}
+
+	if (!person.phone) {
+		errors.phone = "Phone number cannot be empty";
+	} else if (!/^\d{10,15}$/.test(person.phone)) {
+		errors.phone = "A valid phone number is required.";
+	}
+
+	if (!person.birth_date) {
+		errors.birth_date = "Birth date is required.";
+	}
+
+	if (person.age !== undefined && person.age !== null) {
+		if (person.age < 0) {
+			errors.age = "Age cannot be less than 0";
+		}
+	} else {
+		errors.age = "Age is required.";
+	}
+
+	if (!person.age_group) {
+		errors.age_group = "Age group is required.";
+	}
+
+	return errors;
+};
+
 export const getAgeGroup = (age: number): AgeGroup | null => {
 	if (age <= 12) return AgeGroup.AgeBelow13;
 	if (age >= 13 && age <= 17) return AgeGroup.Age13_17;
