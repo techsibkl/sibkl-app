@@ -21,6 +21,7 @@
 			"distribution": "internal",
 			"autoIncrement": true,
 			"ios": {
+				"image": "latest",
 				"simulator": false
 			},
 			"android": {
@@ -36,6 +37,7 @@
 			"distribution": "store",
 			"autoIncrement": true,
 			"ios": {
+				"image": "latest",
 				"simulator": false
 			},
 			"android": {

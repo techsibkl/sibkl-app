@@ -39,13 +39,19 @@ export function defineAbilityFor(person: Person): AnyAbility {
 		can(["read", "update", "delete"], "PeopleProfileNotes", {
 			owner_id: person.id,
 		});
-		can(["read", "create"], "PeopleProfileNotes", {
-			assignee_ids: { $in: [person.id] },
-		});
-		can(["read", "update", "assign", "default", "add"], "PeopleFlow", {
-			assignee_id: person.id,
-		});
-		can("read", "Notification", { people_id: person.id });
+	can(["read", "create"], "PeopleProfileNotes", {
+		assignee_ids: { $in: [person.id] },
+	});
+	can(["read", "update", "assign", "default", "add"], "PeopleFlow", {
+		assignee_id: person.id,
+	});
+	can("read", "Notification", { people_id: person.id });
+	can("read", "Announcement", {
+		role_group_ids: { $in: person.role_group_ids ?? [] },
+	});
+	can("read", "Resource", {
+		role_group_ids: { $in: person.role_group_ids ?? [] },
+	});
 
 		if (
 			!person ||

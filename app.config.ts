@@ -68,6 +68,7 @@ export default ({ config }: { config: any }) => ({
 				{
 					ios: {
 						useFrameworks: "static",
+						deploymentTarget: "15.1",
 					},
 				},
 			],
