@@ -40,9 +40,7 @@ const FlowsPage = () => {
 			setSelectedFlowId(Number(flow_id));
 			setIsMeMode(isMeModeParam === "true");
 		} else {
-			// On initial page load, ensure the ALL flows query runs
 			setSelectedFlowId(0);
-			allFlowsRefetch();
 		}
 	}, [flow_id, isMeModeParam]);
 
@@ -58,7 +56,7 @@ const FlowsPage = () => {
 		data: allFlowsPeople,
 		isPending: allFlowsPending,
 		refetch: allFlowsRefetch,
-	} = usePeopleFlowQuery();
+	} = usePeopleFlowQuery(0);
 
 	const flowIds = useMemo(
 		() => [...new Set(allFlowsPeople?.map((p) => p.flow_id) || [])],
