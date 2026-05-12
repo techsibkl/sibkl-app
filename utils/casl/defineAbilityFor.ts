@@ -153,7 +153,6 @@ export function defineAbilityFor(person: Person): AnyAbility {
 		}
 
 		if (person?.roles?.includes(Role.MEDIA_ADMIN)) {
-			cannot("manage", "all");
 			can("manage", "Announcements");
 			can("manage", "Resource");
 		}
