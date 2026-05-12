@@ -3,6 +3,10 @@ import { Flow } from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { useQuery } from "@tanstack/react-query";
 
+type PeopleFlowQueryOptions = {
+	enabled?: boolean;
+};
+
 export const useFlowsQuery = (flow_ids?: number[], owned?: boolean) => {
 	return useQuery<Flow[]>({
 		queryKey: ["flows", flow_ids, owned ?? false],
@@ -32,19 +36,27 @@ export const useSingleFlowQuery = (flowId?: number) => {
  * @param flowId - The ID of the flow to fetch people for (fixed) cannot use `flow.value.id` because of possible undefined state
  * Reactive flow because need to wait for singleFlowQuery to resolve
  */
-export const usePeopleFlowQuery = (flowId?: number, assigneeId?: number) => {
+export const usePeopleFlowQuery = (
+	flowId?: number,
+	assigneeId?: number,
+	options?: PeopleFlowQueryOptions,
+) => {
+	const isAllFlowsQuery =
+		flowId === undefined && assigneeId === undefined && options?.enabled === true;
+	const defaultEnabled = flowId === 0 || !!flowId || !!assigneeId;
+	const enabled = options?.enabled ?? defaultEnabled;
+
 	return useQuery<PeopleFlow[]>({
 		queryKey: [
 			"peopleFlow",
-			flowId === 0 ? "all" : flowId,
+			isAllFlowsQuery || flowId === 0 ? "all" : flowId,
 			"assignee",
 			assigneeId ?? "none",
 		],
 
 		queryFn: () => fetchPeopleFlow(flowId, assigneeId),
 		placeholderData: <PeopleFlow[]>[],
-		// Enable if: flowId is explicitly 0 (ALL), flowId is a positive number, or assigneeId is provided
-		enabled: flowId === 0 || !!flowId || !!assigneeId,
+		enabled,
 		staleTime: 1000 * 60 * 5, // Cache for 5 minutes
 	});
 };

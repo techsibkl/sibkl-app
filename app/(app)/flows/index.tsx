@@ -40,9 +40,7 @@ const FlowsPage = () => {
 			setSelectedFlowId(Number(flow_id));
 			setIsMeMode(isMeModeParam === "true");
 		} else {
-			// On initial page load, ensure the ALL flows query runs
 			setSelectedFlowId(0);
-			allFlowsRefetch();
 		}
 	}, [flow_id, isMeModeParam]);
 
@@ -51,14 +49,16 @@ const FlowsPage = () => {
 		data: singleFlowPeople,
 		isPending: singleFlowPending,
 		refetch: singleFlowRefetch,
-	} = usePeopleFlowQuery(selectedFlowId);
+	} = usePeopleFlowQuery(
+		selectedFlowId === 0 ? undefined : selectedFlowId,
+	);
 
 	// Getting people from ALL flows (only when selectedFlowId === 0)
 	const {
 		data: allFlowsPeople,
 		isPending: allFlowsPending,
 		refetch: allFlowsRefetch,
-	} = usePeopleFlowQuery();
+	} = usePeopleFlowQuery(undefined, undefined, { enabled: true });
 
 	const flowIds = useMemo(
 		() => [...new Set(allFlowsPeople?.map((p) => p.flow_id) || [])],
