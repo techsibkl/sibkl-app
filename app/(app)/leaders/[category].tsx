@@ -52,6 +52,46 @@ const CategoryResources = () => {
 			<Text className="p-6 text-red-500">Error loading resources</Text>
 		);
 
+	if (filteredResources.length === 0 && !searchQuery) {
+		return (
+			<SharedBody>
+				<SharedSearchBar
+					searchQuery={searchQuery}
+					onSearchChange={setSearchQuery}
+					placeholder="Search keywords..."
+				/>
+				<View className="flex-1 items-center justify-center px-6">
+					<Text className="text-gray-400 text-center text-base">
+						No content available
+					</Text>
+					<Text className="text-gray-500 text-center text-sm mt-2">
+						There are no resources in this category yet.
+					</Text>
+				</View>
+			</SharedBody>
+		);
+	}
+
+	if (filteredResources.length === 0 && searchQuery) {
+		return (
+			<SharedBody>
+				<SharedSearchBar
+					searchQuery={searchQuery}
+					onSearchChange={setSearchQuery}
+					placeholder="Search keywords..."
+				/>
+				<View className="flex-1 items-center justify-center px-6">
+					<Text className="text-gray-400 text-center text-base">
+						No results found
+					</Text>
+					<Text className="text-gray-500 text-center text-sm mt-2">
+						Try adjusting your search terms
+					</Text>
+				</View>
+			</SharedBody>
+		);
+	}
+
 	return (
 		<SharedBody>
 			<SharedSearchBar

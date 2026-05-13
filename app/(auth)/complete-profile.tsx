@@ -55,12 +55,17 @@ const Page = () => {
 		: undefined;
 	const activeClaimedPeopleId =
 		selectedProfile?.id ??
-		(Number.isFinite(claimedPeopleIdNumber) ? claimedPeopleIdNumber : undefined);
+		(Number.isFinite(claimedPeopleIdNumber)
+			? claimedPeopleIdNumber
+			: undefined);
 	const { data: selectedPerson, isPending } = useSinglePersonQuery(
 		activeClaimedPeopleId ?? -1,
 	);
 	const profileEmail =
-		pendingSignUp?.email || appUser?.email || authStore.firebaseUser?.email || "";
+		pendingSignUp?.email ||
+		appUser?.email ||
+		authStore.firebaseUser?.email ||
+		"";
 	const [submitAttempted, setSubmitAttempted] = useState(false);
 
 	const {
@@ -188,7 +193,7 @@ const Page = () => {
 	};
 
 	const fullName = watch("full_legal_name");
-
+	const REQUIRED_FIELDS = ["full_legal_name", "email", "phone"];
 	if (isPending) {
 		return (
 			<SharedBody>
@@ -241,8 +246,13 @@ const Page = () => {
 												onFieldComplete={
 													handleFieldComplete
 												}
-												disabled={
-													field.key === "email"
+												disabled={field.key === "email"}
+												placeholder={
+													REQUIRED_FIELDS.includes(
+														field.key,
+													)
+														? `${field.header}`
+														: `${field.header} (Optional)`
 												}
 											/>
 										))}
