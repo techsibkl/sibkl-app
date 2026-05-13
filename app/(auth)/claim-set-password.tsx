@@ -34,7 +34,9 @@ const Page = () => {
 
 	const router = useRouter();
 	const qc = useQueryClient();
-	const { full_email, id } = useLocalSearchParams();
+	const { full_email, id, channel } = useLocalSearchParams();
+
+	const isPhoneVerified = channel === "sms";
 
 	const {
 		control,
@@ -108,23 +110,40 @@ const Page = () => {
 				<Text className="text-3xl font-bold text-gray-700 mb-2">
 					Claim Account
 				</Text>
-				<Text className="font-regular text-gray-700 mb-8">
-					You&apos;re almost there! Enter your new password to claim your
-					account.
-				</Text>
+			<Text className="font-regular text-gray-700 mb-8">
+				{isPhoneVerified
+					? "You verified via phone. Enter the email you'd like to use for your account and set a password."
+					: "You're almost there! Enter your new password to claim your account."}
+			</Text>
 
-				<View className="gap-y-6">
-					{/* Email input */}
-					<View className="ml-[-2px]">
-						<FormField
-							name="email"
-							label="Claim Email (Verified)"
-							control={control}
-							errors={errors}
-							disabled
-							icon={<Mail size={20} color="#6b7280" />}
-						/>
-					</View>
+			<View className="gap-y-6">
+				{/* Email input */}
+				<View className="ml-[-2px]">
+					<FormField
+						name="email"
+						label={
+							isPhoneVerified
+								? "Account Email"
+								: "Claim Email (Verified)"
+						}
+						control={control}
+						errors={errors}
+						disabled={!isPhoneVerified}
+						rules={
+							isPhoneVerified
+								? {
+										required: "Email is required",
+										pattern: {
+											value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+											message:
+												"Please enter a valid email address",
+										},
+									}
+								: undefined
+						}
+						icon={<Mail size={20} color="#6b7280" />}
+					/>
+				</View>
 
 					{/* Password input */}
 					<View className="ml-[-2px]">

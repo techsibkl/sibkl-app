@@ -10,7 +10,7 @@ import {
 } from "@react-native-firebase/auth";
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { Mail, RefreshCw } from "lucide-react-native";
+import { Mail, RefreshCw, Smartphone } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
 	ActivityIndicator,
@@ -26,7 +26,7 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 const Page = () => {
 	const router = useRouter();
 	const claimStore = useClaimStore();
-	const { pendingSignUp } = useSignUpStore();
+	const { pendingSignUp, otpChannel } = useSignUpStore();
 	const authStore = useAuthStore();
 	const [otp, setOtp] = useState(["", "", "", "", "", ""]);
 	const [isLoading, setIsLoading] = useState(false);
@@ -35,6 +35,11 @@ const Page = () => {
 	const qc = useQueryClient();
 
 	const inputRefs = useRef<(TextInput | null)[]>([]);
+
+	const isSms = otpChannel === "sms";
+	const sentTo = isSms
+		? claimStore.selectedProfile?.phone
+		: claimStore.selectedProfile?.email ?? pendingSignUp?.email;
 
 	// Resend timer countdown
 	useEffect(() => {
@@ -62,7 +67,6 @@ const Page = () => {
 		newOtp[index] = value;
 		setOtp(newOtp);
 
-		// Auto-focus next input
 		if (value && index < 5) {
 			inputRefs.current[index + 1]?.focus();
 		}
@@ -80,12 +84,10 @@ const Page = () => {
 			Alert.alert("Invalid OTP", "Please enter a 6-digit code");
 			return;
 		}
-		console.log("Verifying OTP:", otpString);
 		setIsLoading(true);
 
 		try {
-			// If claimed selectedProfile, use its ID
-			const personId = claimStore.selectedProfile?.id || null;
+			const personId = claimStore.selectedProfile?.id ?? null;
 			const email = pendingSignUp?.email || null;
 			const result = await verifyOTP(personId, email, otpString);
 
@@ -99,18 +101,13 @@ const Page = () => {
 				return;
 			}
 
-			// create firebase account
-			const resEmail = result.data?.email.trim();
+			const resEmail = result.data?.email?.trim();
 
-			// get full person if selectedProfile is true
-			console.log("Selected profile", claimStore.selectedProfile);
 			if (claimStore.selectedProfile) {
-				// await fetchClaimedPerson(claimStore.selectedProfile.id);
 				router.push(
-					`/(auth)/claim-set-password?full_email=${resEmail}&id=${claimStore.selectedProfile.id}`,
+					`/(auth)/claim-set-password?full_email=${resEmail}&id=${claimStore.selectedProfile.id}&channel=${otpChannel}`,
 				);
 			} else {
-				// No claimed profile, proceed to complete profile
 				await createUserWithEmailAndPassword(
 					getAuth(),
 					resEmail,
@@ -119,7 +116,7 @@ const Page = () => {
 				router.push("/(auth)/complete-profile");
 			}
 		} catch (error: any) {
-			if (error.code == "auth/email-already-in-use") {
+			if (error.code === "auth/email-already-in-use") {
 				Alert.alert(
 					"Email Already In Use",
 					"The email is already in use by another account. Try logging in instead.",
@@ -135,29 +132,21 @@ const Page = () => {
 	const handleResendOTP = async () => {
 		if (!canResend) return;
 
+		setResendTimer(30);
+		setCanResend(false);
+
 		try {
-			// TODO: Implement resend OTP API call
-			console.log("[v0] Resending OTP to:", pendingSignUp?.email);
-
-			// Simulate API call
-			setResendTimer(30);
-			setCanResend(false);
-
 			if (claimStore.selectedProfile) {
-				await sendOTP(claimStore.selectedProfile.id, null);
+				await sendOTP(claimStore.selectedProfile.id, null, otpChannel);
 			} else {
-				if (!pendingSignUp || !pendingSignUp.email) {
-					console.error(
-						"[v0] OTP verification error:",
-						"no email found",
-					);
-					return;
-				}
-				await sendOTP(null, pendingSignUp.email);
+				if (!pendingSignUp?.email) return;
+				await sendOTP(null, pendingSignUp.email, "email");
 			}
 			Alert.alert(
-				"OTP Sent",
-				"A new verification code has been sent to your email.",
+				"Code Sent",
+				isSms
+					? "A new verification code has been sent to your phone."
+					: "A new verification code has been sent to your email.",
 			);
 		} catch (error) {
 			console.error("[v0] Resend OTP error:", error);
@@ -176,24 +165,30 @@ const Page = () => {
 		>
 			<SharedBody>
 				<View className="flex-1 px-6 py-8">
-					{/* Content */}
 					<View className="flex-1 justify-center items-center px-4">
-						{/* Email icon */}
+						{/* Channel icon */}
 						<View className="w-20 h-20 bg-primary-100 rounded-full items-center justify-center mb-4">
-							<Mail size={40} color={Colors.primary[700]} />
+							{isSms ? (
+								<Smartphone
+									size={40}
+									color={Colors.primary[700]}
+								/>
+							) : (
+								<Mail size={40} color={Colors.primary[700]} />
+							)}
 						</View>
-						{/* Title */}
+
 						<Text className="text-2xl font-bold text-text text-center mb-2">
 							Enter Verification Code
 						</Text>
 
-						{/* Description */}
 						<Text className="font-regular text-center mb-1">
-							We sent a 6-digit verification code to
+							{isSms
+								? "We sent a 6-digit code via SMS to"
+								: "We sent a 6-digit verification code to"}
 						</Text>
 						<Text className="font-semibold text-text mb-8">
-							{claimStore.selectedProfile?.email ||
-								pendingSignUp?.email}
+							{sentTo}
 						</Text>
 						<Text className="font-regular text-center mb-4">
 							Please enter the code below:
@@ -228,7 +223,7 @@ const Page = () => {
 
 						{/* Verify Button */}
 						<TouchableOpacity
-							className={`w-full py-4 rounded-[15px] items-center justify-center  bg-primary-600`}
+							className={`w-full py-4 rounded-[15px] items-center justify-center bg-primary-600`}
 							onPress={handleVerifyOTP}
 							disabled={otpString.length !== 6 || isLoading}
 						>

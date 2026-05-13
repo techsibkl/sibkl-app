@@ -1,3 +1,4 @@
+import { OtpChannel } from "@/services/OTP/otp.service";
 import { create } from "zustand";
 
 type PendingSignUp = {
@@ -6,11 +7,14 @@ type PendingSignUp = {
 };
 type SignUpState = {
   pendingSignUp: PendingSignUp | null;
-  // claimedPerson:
+  otpChannel: OtpChannel;
   setPendingSignUp: (data: PendingSignUp | null) => void;
+  setOtpChannel: (channel: OtpChannel) => void;
 };
 
 export const useSignUpStore = create<SignUpState>((set) => ({
   pendingSignUp: null,
+  otpChannel: "email",
   setPendingSignUp: (data) => set({ pendingSignUp: data }),
+  setOtpChannel: (channel) => set({ otpChannel: channel }),
 }));
