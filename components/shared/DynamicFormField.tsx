@@ -10,6 +10,7 @@ type DynamicFormFieldProps = {
 	onFieldUpdate?: (key: string, value: any) => void;
 	onFieldComplete?: (key: string, value: any) => void;
 	disabled?: boolean;
+	placeholder?: string;
 };
 
 // components/DynamicFormField.tsx
@@ -20,6 +21,7 @@ const DynamicFormField = ({
 	onFieldUpdate,
 	onFieldComplete,
 	disabled,
+	placeholder = `${field.header}`,
 }: DynamicFormFieldProps) => {
 	const InputComponent = resolveInputComponent(field);
 	const fieldKey = field.ori_key || field.key;
@@ -29,7 +31,7 @@ const DynamicFormField = ({
 			label={field.header}
 			control={control}
 			errors={errors}
-			placeholder={`${field.header}`}
+			placeholder={placeholder}
 			options={field.options} // Will be used by FormSelect
 			disabled={field.editable === false || disabled}
 			onChangeText={(value: any) => onFieldUpdate?.(fieldKey, value)}

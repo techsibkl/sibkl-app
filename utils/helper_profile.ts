@@ -122,21 +122,19 @@ export const validateCompleteProfile = (person: Partial<Person>) => {
 		errors.phone = "A valid phone number is required.";
 	}
 
-	if (!person.birth_date) {
-		errors.birth_date = "Birth date is required.";
-	}
+	// if (!person.birth_date) {
+	// 	errors.birth_date = "Birth date is required.";
+	// }
 
 	if (person.age !== undefined && person.age !== null) {
 		if (person.age < 0) {
 			errors.age = "Age cannot be less than 0";
 		}
-	} else {
-		errors.age = "Age is required.";
 	}
 
-	if (!person.age_group) {
-		errors.age_group = "Age group is required.";
-	}
+	// if (!person.age_group) {
+	// 	errors.age_group = "Age group is required.";
+	// }
 
 	return errors;
 };

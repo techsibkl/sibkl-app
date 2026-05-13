@@ -3,9 +3,11 @@ import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "expo-router";
 import {
 	CircleQuestionMark,
+	FileTextIcon,
 	LockKeyhole,
 	SquareArrowRight,
 	ThumbsUpIcon,
+	Trash2,
 } from "lucide-react-native";
 import React, { useState } from "react";
 import {
@@ -55,7 +57,7 @@ export default function SettingsScreen() {
 			icon: <CircleQuestionMark className="w-6 h-6 text-gray-400" />,
 			title: "FAQs",
 			subtitle: "Frequently asked questions",
-			onPress: () => router.push("/(app)/settings/faq/"),
+			onPress: () => router.push("/(app)/settings/faq"),
 		},
 		{
 			id: "changePassword",
@@ -63,6 +65,14 @@ export default function SettingsScreen() {
 			title: "Change password",
 			subtitle: "••••••••",
 			onPress: () => router.push("/(app)/settings/changePassword"),
+		},
+		{
+			id: "privacy",
+			icon: <FileTextIcon className="w-6 h-6 text-gray-400" />,
+			title: "Privacy Policy",
+			subtitle: "View our privacy policy",
+			onPress: () =>
+				Linking.openURL("https://sibklcms-prod.web.app/privacy"),
 		},
 		{
 			id: "feedback",
@@ -79,13 +89,20 @@ export default function SettingsScreen() {
 		// 	subtitle: "View our privacy policy",
 		// 	onPress: () => console.log("Privacy Policy pressed"),
 		// },
-
+		{
+			id: "deleteAccount",
+			icon: <Trash2 className="w-6 h-6 text-red-700" />,
+			title: "Delete account",
+			subtitle: "Permanently delete your account",
+			isDestructive: true,
+			onPress: () => router.push("/(app)/settings/delete-account" as any),
+		},
 		{
 			id: "logout",
 			icon: <SquareArrowRight className="w-6 h-6 text-red-700" />,
 			title: "Logout",
 			subtitle: "Sign out of your account",
-			isDestructive: true,
+			isDestructive: false,
 			onPress: handleLogout,
 		},
 	];
@@ -99,7 +116,10 @@ export default function SettingsScreen() {
 						key={option.id}
 						className="flex-row items-center py-4 "
 						onPress={option.onPress}
-						disabled={option.hasToggle}
+						disabled={
+							("hasToggle" in option &&
+								option.hasToggle) as boolean
+						}
 						activeOpacity={1} // 👈 prevents fading
 					>
 						{/* Icon */}
@@ -120,17 +140,29 @@ export default function SettingsScreen() {
 						</View>
 
 						{/* Right Side */}
-						{option.hasToggle ? (
+						{(("hasToggle" in option &&
+							option.hasToggle) as boolean) ? (
 							<Switch
 								className="mr-4"
-								value={option.toggleValue}
-								onValueChange={option.onToggle}
+								value={
+									("toggleValue" in option &&
+										option.toggleValue) as boolean
+								}
+								onValueChange={
+									("onToggle" in option &&
+										option.onToggle) as (
+										value: boolean,
+									) => void
+								}
 								trackColor={{
 									false: "#374151",
 									true: "#10B981",
 								}}
 								thumbColor={
-									option.toggleValue ? "#ffffff" : "#6b7280"
+									"toggleValue" in option &&
+									option.toggleValue
+										? "#ffffff"
+										: "#6b7280"
 								}
 							/>
 						) : (
