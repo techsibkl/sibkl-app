@@ -7,7 +7,7 @@ import { ReturnVal } from "@/utils/types/returnVal.types";
 export const fetchNotifications = async (): Promise<Notification[]> => {
 	const response = await secureFetch(`${apiEndpoints.notifications.getAll}`);
 	const json: ReturnVal = await response.json();
-	return json.data as Notification[];
+	return (json.data ?? []) as Notification[];
 };
 
 // Mark specific notifications as read
@@ -20,7 +20,7 @@ export const updateNotificationsAsRead = async (ids: number[]) => {
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({ ids }),
-		}
+		},
 	);
 	return await response.json();
 };
@@ -35,7 +35,7 @@ export const updateNotificationsAsClosed = async (ids: number[]) => {
 				"Content-Type": "application/json",
 			},
 			body: JSON.stringify({ ids }),
-		}
+		},
 	);
 	return await response.json();
 };

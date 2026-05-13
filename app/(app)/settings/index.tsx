@@ -20,7 +20,7 @@ import {
 } from "react-native";
 
 export default function SettingsScreen() {
-	const { signOut } = useAuthStore();
+	const { signOut, isGuest } = useAuthStore();
 	const router = useRouter();
 	const [darkTheme, setDarkTheme] = useState(true);
 
@@ -33,6 +33,10 @@ export default function SettingsScreen() {
 				onPress: async () => await signOut(),
 			},
 		]);
+	};
+
+	const handleLogin = () => {
+		router.replace("/(auth)/sign-in");
 	};
 
 	const settingsOptions = [
@@ -89,21 +93,34 @@ export default function SettingsScreen() {
 		// 	subtitle: "View our privacy policy",
 		// 	onPress: () => console.log("Privacy Policy pressed"),
 		// },
+		...(isGuest
+			? []
+			: [
+					{
+						id: "deleteAccount",
+						icon: <Trash2 className="w-6 h-6 text-red-700" />,
+						title: "Delete account",
+						subtitle: "Permanently delete your account",
+						isDestructive: true,
+						onPress: () =>
+							router.push(
+								"/(app)/settings/delete-account" as any,
+							),
+					},
+				]),
 		{
-			id: "deleteAccount",
-			icon: <Trash2 className="w-6 h-6 text-red-700" />,
-			title: "Delete account",
-			subtitle: "Permanently delete your account",
-			isDestructive: true,
-			onPress: () => router.push("/(app)/settings/delete-account" as any),
-		},
-		{
-			id: "logout",
-			icon: <SquareArrowRight className="w-6 h-6 text-red-700" />,
-			title: "Logout",
-			subtitle: "Sign out of your account",
-			isDestructive: false,
-			onPress: handleLogout,
+			id: isGuest ? "login" : "logout",
+			icon: (
+				<SquareArrowRight
+					className={`w-6 h-6 ${isGuest ? "text-blue-600" : "text-red-700"}`}
+				/>
+			),
+			title: isGuest ? "Login" : "Logout",
+			subtitle: isGuest
+				? "Sign in to your account"
+				: "Sign out of your account",
+			isDestructive: !isGuest,
+			onPress: isGuest ? handleLogin : handleLogout,
 		},
 	];
 

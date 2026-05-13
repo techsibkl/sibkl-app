@@ -7,11 +7,41 @@ import { Text, TouchableOpacity, View } from "react-native";
 
 const Greeting = () => {
 	const router = useRouter();
-	const { user } = useAuthStore();
+	const { user, isGuest } = useAuthStore();
 	const { data: currentPerson, isPending } = useSinglePersonQuery(
 		user?.person?.id ?? -1,
 	);
 
+	// Guest user greeting
+	if (isGuest) {
+		return (
+			<View className="w-full flex-row justify-between items-start">
+				<View className="col flex-1">
+					<Text
+						className="font-bold mb-1 text-text text-2xl pr-4"
+						numberOfLines={2}
+					>
+						Welcome, Guest!
+					</Text>
+					<Text className="text-text-secondary text-lg font-regular">
+						Browse announcements and resources 🙌
+					</Text>
+				</View>
+				<TouchableOpacity
+					onPress={() => router.push("/(app)/home/profile")}
+				>
+					{/* Guest avatar */}
+					<View className="w-14 h-14 rounded-full bg-gray-300 items-center justify-center">
+						<Text className="text-sm font-bold text-gray-600">
+							G
+						</Text>
+					</View>
+				</TouchableOpacity>
+			</View>
+		);
+	}
+
+	// Authenticated user greeting
 	return (
 		<View className="w-full flex-row justify-between items-start">
 			<View className="col flex-1">

@@ -11,11 +11,40 @@ import React from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 const ProfileViewPage = () => {
-	const { user } = useAuthStore();
+	const { user, isGuest } = useAuthStore();
 	const { data: person, isPending } = useSinglePersonQuery(
 		user?.person?.id ?? -1,
 	);
 	const router = useRouter();
+
+	// Guest user profile page
+	if (isGuest) {
+		return (
+			<SharedBody>
+				<View className="flex-1 justify-center items-center px-6">
+					<View className="w-24 h-24 rounded-full bg-gray-300 items-center justify-center mb-6">
+						<Text className="text-4xl font-bold text-gray-600">
+							G
+						</Text>
+					</View>
+					<Text className="text-2xl text-text font-bold mb-2">
+						Guest User
+					</Text>
+					<Text className="font-regular text-text-secondary text-center mb-8">
+						Sign in to access your profile and additional features
+					</Text>
+					<TouchableOpacity
+						onPress={() => router.replace("/(auth)/sign-in")}
+						className="bg-blue-600 px-6 py-3 rounded-lg"
+					>
+						<Text className="text-white font-semibold text-center">
+							Sign In
+						</Text>
+					</TouchableOpacity>
+				</View>
+			</SharedBody>
+		);
+	}
 
 	if (isPending || !person)
 		return (

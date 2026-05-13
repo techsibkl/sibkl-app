@@ -1,4 +1,5 @@
-import { getAuth, getIdToken } from "@react-native-firebase/auth"; // or "@react-native-firebase/auth" v22 modular style
+import { getAuth, getIdToken } from "@react-native-firebase/auth";
+import { useAuthStore } from "@/stores/authStore";
 
 export async function secureFetch(
 	input: RequestInfo,
@@ -7,13 +8,15 @@ export async function secureFetch(
 ) {
 	const auth = getAuth();
 	const user = auth.currentUser;
-	if (!user && !options.allowUnauthenticated)
+	const { isGuest } = useAuthStore.getState();
+
+	// Allow guest users to make requests, but don't require auth
+	if (!user && !isGuest && !options.allowUnauthenticated)
 		throw new Error("SecureFetch: User not signed in");
 
-	// New modular API: call getIdToken() as a function
+	// Only fetch token for authenticated users (not guests)
 	let token: string | undefined = undefined;
-	if (user) token = await getIdToken(user);
-	// const token = await user?.getIdToken(); // still a method call
+	if (user && !isGuest) token = await getIdToken(user);
 
 	const headers = {
 		...init.headers,

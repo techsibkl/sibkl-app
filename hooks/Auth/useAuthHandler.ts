@@ -27,6 +27,7 @@ export const handleAuthStateChange = async (
 			firebaseUser: null,
 			user: null,
 			isAuthenticated: false,
+			isGuest: false,
 			isLoading: false,
 			authLoaded: true,
 		});
@@ -71,6 +72,7 @@ export const handleAuthStateChange = async (
 			firebaseUser: firebaseUser,
 			user: appUser,
 			isAuthenticated: !!appUser.person, // only true if profile is complete
+			isGuest: false, // Clear guest state when user authenticates
 			isLoading: false,
 			authLoaded: true,
 			ability: ability,

@@ -6,5 +6,6 @@ export const useNotificationQuery = () => {
 	return useQuery<Notification[]>({
 		queryKey: ["notifications"],
 		queryFn: () => fetchNotifications(),
+		placeholderData: (prev) => prev ?? [],
 	});
 };
