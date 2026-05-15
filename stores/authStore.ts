@@ -20,17 +20,19 @@ export type AuthState = {
 	user: AppUser | null;
 	isLoading: boolean;
 	isAuthenticated: boolean;
+	isGuest: boolean;
 	authLoaded: boolean;
 	ability: AnyAbility;
 	setFirebaseUser: (firebaseUser: FirebaseAuthTypes.User | null) => void;
 	setUser: (user: AppUser | null) => void;
 	signIn: (
 		email: string,
-		password: string
+		password: string,
 	) => Promise<FirebaseAuthTypes.User | null | undefined>;
 	signUp: (
-		profileData: ProfileFormData
+		profileData: ProfileFormData,
 	) => Promise<FirebaseAuthTypes.User | null | undefined>;
+	guestLogin: () => void;
 	signOut: () => Promise<void>;
 	init: () => void;
 };
@@ -40,6 +42,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 	user: null,
 	isLoading: true,
 	isAuthenticated: false,
+	isGuest: false,
 	authLoaded: false,
 	ability: defineAbilityFor(<Person>{ id: 0, roles: [Role.NONE] }),
 
@@ -59,10 +62,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 			const res = await signInWithEmailAndPassword(
 				getAuth(),
 				email,
-				password
+				password,
 			);
 			set({ firebaseUser: res?.user });
-			set({ authLoaded: false });
+			set({ authLoaded: false, isGuest: false });
 			await handleAuthStateChange(res?.user ?? null, set);
 			return res?.user;
 		} catch (error: FirebaseAuthTypes.NativeFirebaseAuthError | any) {
@@ -76,7 +79,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 	// Register new account
 	signUp: async (profileData: Partial<Person>) => {
-		set({ authLoaded: false });
+		set({ authLoaded: false, isGuest: false });
 		try {
 			const { firebaseUser } = get();
 
@@ -89,7 +92,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 			if (!resCreate.success) {
 				throw new Error(
-					resCreate.message || "Account creation failed on backend"
+					resCreate.message || "Account creation failed on backend",
 				);
 			}
 
@@ -97,7 +100,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 			if (!resPerson.success || !resPerson.data) {
 				throw new Error(
-					"Could not find a person matching your credentials"
+					"Could not find a person matching your credentials",
 				);
 			}
 
@@ -124,16 +127,34 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 		}
 	},
 
+	// Guest login
+	guestLogin: () => {
+		set({
+			isGuest: true,
+			isAuthenticated: false,
+			firebaseUser: null,
+			user: null,
+			authLoaded: true,
+			ability: defineAbilityFor(<Person>{ id: 0, roles: [Role.NONE] }),
+			isLoading: false,
+		});
+	},
+
 	// Sign out
 	signOut: async () => {
 		await signOut(getAuth());
-		set({ firebaseUser: null, user: null, isAuthenticated: false });
+		set({
+			firebaseUser: null,
+			user: null,
+			isAuthenticated: false,
+			isGuest: false,
+		});
 	},
 
 	init: () => {
-		set({ authLoaded: false });
+		set({ authLoaded: false, isGuest: false });
 		onAuthStateChanged(getAuth(), async (firebaseUser) =>
-			handleAuthStateChange(firebaseUser, set)
+			handleAuthStateChange(firebaseUser, set),
 		);
 	},
 }));

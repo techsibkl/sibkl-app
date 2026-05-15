@@ -6,6 +6,8 @@ import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { useFilteredResources } from "@/hooks/Resource/useFilteredResources";
 import { useResourcesQuery } from "@/hooks/Resource/useResourceQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
+import { useAuthStore } from "@/stores/authStore";
+import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
 	ScrollView,
@@ -23,6 +25,8 @@ import { Grid3x2Icon, ListIcon } from "lucide-react-native";
 
 const LeadersPage = () => {
 	const { isDark } = useThemeColors();
+	const { isGuest } = useAuthStore();
+	const router = useRouter();
 	const { data: resources, isPending, isError } = useResourcesQuery();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [viewMode, setViewMode] = useState<"gallery" | "list">("gallery");
@@ -40,6 +44,32 @@ const LeadersPage = () => {
 			setViewMode("gallery");
 		}
 	}, [resource_id]);
+
+	// Guest users cannot access leaders page
+	if (isGuest) {
+		return (
+			<SharedBody>
+				<StatusBar
+					className="bg-background"
+					barStyle={isDark ? "light-content" : "dark-content"}
+				/>
+				<View className="flex-1 items-center justify-center px-6">
+					<Text className="text-2xl font-bold text-text mb-2">
+						Sign In Required
+					</Text>
+					<Text className="text-text-secondary text-center mb-6">
+						You need to sign in to access the Leaders section
+					</Text>
+					<TouchableOpacity
+						onPress={() => router.replace("/(auth)/sign-in")}
+						className="bg-blue-600 px-6 py-3 rounded-lg"
+					>
+						<Text className="text-white font-semibold">Sign In</Text>
+					</TouchableOpacity>
+				</View>
+			</SharedBody>
+		);
+	}
 
 	if (isError) {
 		return <Text>Error loading resources</Text>;

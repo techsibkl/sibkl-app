@@ -24,3 +24,14 @@ export const getPersonOfUid = async () => {
 	const json: ReturnVal = await response.json();
 	return json;
 };
+
+export const deleteAccount = async (): Promise<ReturnVal> => {
+	const response = await secureFetch(`${apiEndpoints.users.deleteAccount}`, {
+		method: "DELETE",
+		headers: {
+			"Content-Type": "application/json",
+		},
+	});
+	const json: ReturnVal = await response.json();
+	return json;
+};

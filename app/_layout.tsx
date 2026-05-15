@@ -96,7 +96,7 @@ async function registerAndGetToken(): Promise<string | null> {
 
 function RootLayoutNav() {
 	const router = useRouter();
-	const { firebaseUser, user, authLoaded, init } = useAuthStore();
+	const { firebaseUser, user, authLoaded, init, isGuest } = useAuthStore();
 
 	// Auth init
 	useEffect(() => {
@@ -107,6 +107,9 @@ function RootLayoutNav() {
 	useEffect(() => {
 		if (!authLoaded) {
 			router.replace("/(auth)/splash");
+		} else if (isGuest) {
+			// Guest users go straight to app
+			router.replace("/(app)/home");
 		} else if (!firebaseUser) {
 			router.replace("/(auth)/sign-in");
 		} else if (!user?.people_id) {
@@ -114,7 +117,7 @@ function RootLayoutNav() {
 		} else {
 			router.replace("/(app)/home");
 		}
-	}, [user, authLoaded, router, firebaseUser]);
+	}, [user, authLoaded, router, firebaseUser, isGuest]);
 
 	// Register + save token when user logs in
 	useEffect(() => {

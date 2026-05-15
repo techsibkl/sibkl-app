@@ -24,7 +24,7 @@ interface LoginFormData {
 }
 
 const Page = () => {
-	const { signIn } = useAuthStore();
+	const { signIn, guestLogin } = useAuthStore();
 
 	const [showPassword, setShowPassword] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
@@ -264,8 +264,8 @@ const Page = () => {
 						)}
 					</TouchableOpacity>
 
-					{/* Sign up link */}
-					<View className="items-center">
+					{/* Sign up and guest links */}
+					<View className="items-center gap-y-8 mt-2">
 						<Text className="font-regular text-gray-600 text-sm">
 							Dont have an account?{" "}
 							<Link href="/sign-up" asChild>
@@ -274,6 +274,18 @@ const Page = () => {
 								</Text>
 							</Link>
 						</Text>
+
+						{/* Guest mode text link */}
+						<TouchableOpacity
+							onPress={(): void => {
+								guestLogin();
+								router.replace("/(app)/home");
+							}}
+						>
+							<Text className="text-gray-600 underline font-semibold text-sm">
+								Continue as Guest
+							</Text>
+						</TouchableOpacity>
 					</View>
 				</View>
 			</View>

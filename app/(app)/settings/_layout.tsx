@@ -45,6 +45,15 @@ export default function Layout() {
 					},
 				})}
 			/>
+			<Stack.Screen
+				name="delete-account/index"
+				options={{
+					headerShown: true,
+					header() {
+						return <SharedHeader title="Delete Account" isPop />;
+					},
+				}}
+			/>
 		</Stack>
 	);
 }

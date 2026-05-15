@@ -104,7 +104,7 @@ const Page = () => {
 						<TextInput
 							className="font-regular flex-1 ml-3"
 							style={inputPadding}
-							placeholder="Search by name, email, or phone"
+							placeholder="Search by name"
 							value={nameQuery}
 							onChangeText={setNameQuery}
 							placeholderTextColor="#9ca3af"

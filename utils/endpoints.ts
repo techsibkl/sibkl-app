@@ -68,6 +68,7 @@ export const apiEndpoints = {
 		),
 		getPersonOfUid: _endpoint("users/get-person-of-uid"),
 		updateDeviceToken: _endpoint("users/update-device-token"),
+		deleteAccount: _endpoint("users/delete-account"),
 	},
 	templates: {
 		create: _endpoint("templates/create"),
