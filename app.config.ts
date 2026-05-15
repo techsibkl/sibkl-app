@@ -1,4 +1,5 @@
 import "dotenv/config";
+import packageJson from "./package.json";
 
 export default ({ config }: { config: any }) => ({
 	...config,
@@ -10,7 +11,7 @@ export default ({ config }: { config: any }) => ({
 				? "SIBKL App"
 				: "SIBKL (Staging)",
 		slug: "sibkl-app",
-		version: "2.0.0",
+		version: packageJson.version,
 		orientation: "portrait",
 		icon: "./assets/images/sibkl-app-icon.png",
 		scheme: "sibklapp",
