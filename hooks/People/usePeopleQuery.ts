@@ -25,8 +25,19 @@ export const usePeoplePaginatedQuery = (
 			fetchPeoplePaginated({ ...params, page: pageParam }),
 		initialPageParam: 1,
 		getNextPageParam: (lastPage) => {
-			const { page, total } = lastPage.meta;
-			return page < total ? page + 1 : undefined;
+			const { page, pageSize, total, totalPages } = lastPage.meta;
+			const lastPageNumber =
+				typeof totalPages === "number" && totalPages > 0
+					? totalPages
+					: typeof total === "number" &&
+						  typeof pageSize === "number" &&
+						  pageSize > 0
+						? Math.ceil(total / pageSize)
+						: undefined;
+			if (typeof page !== "number" || lastPageNumber === undefined) {
+				return undefined;
+			}
+			return page < lastPageNumber ? page + 1 : undefined;
 		},
 	});
 
