@@ -4,8 +4,9 @@ import { deleteAccount } from "@/services/Auth/auth.service";
 import { useAuthStore } from "@/stores/authStore";
 import {
 	deleteUser,
+	EmailAuthProvider,
 	getAuth,
-	signInWithEmailAndPassword,
+	reauthenticateWithCredential,
 } from "@react-native-firebase/auth";
 import { useRouter } from "expo-router";
 import { AlertTriangle, Eye, EyeOff, Lock, Mail } from "lucide-react-native";
@@ -70,20 +71,32 @@ export default function DeleteAccountScreen() {
 	const onSubmit = async (data: DeleteAccountFormData) => {
 		setIsLoading(true);
 		try {
-			// Re-authenticate user
-			const userCredential = await signInWithEmailAndPassword(
-				auth,
-				data.email,
-				data.password,
-			);
-
-			if (!userCredential.user) {
+			const currentUser = auth.currentUser;
+			if (!currentUser?.email) {
 				Alert.alert(
 					"Error",
-					"Failed to authenticate. Please try again.",
+					"Could not verify this account. Please sign in again.",
 				);
 				return;
 			}
+
+			const formEmail = data.email.trim().toLowerCase();
+			const accountEmail = currentUser.email.trim().toLowerCase();
+			if (formEmail !== accountEmail) {
+				Alert.alert(
+					"Wrong account",
+					"Enter the email address for the account you are signed in with.",
+				);
+				return;
+			}
+
+			// Re-authenticate the *current* user only — signInWithEmailAndPassword
+			// would switch sessions and could delete a different user's account.
+			const credential = EmailAuthProvider.credential(
+				currentUser.email,
+				data.password,
+			);
+			await reauthenticateWithCredential(currentUser, credential);
 
 			setStep("final");
 		} catch (error: any) {
