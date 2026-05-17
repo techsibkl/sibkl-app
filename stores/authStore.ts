@@ -152,7 +152,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 	},
 
 	init: () => {
-		set({ authLoaded: false, isGuest: false });
+		set({ authLoaded: false });
 		onAuthStateChanged(getAuth(), async (firebaseUser) =>
 			handleAuthStateChange(firebaseUser, set),
 		);
