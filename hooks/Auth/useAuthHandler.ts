@@ -23,14 +23,15 @@ export const handleAuthStateChange = async (
 	}
 ) => {
 	if (!firebaseUser) {
-		set({
+		// Guest mode also has no Firebase user; keep isGuest as-is.
+		set((state) => ({
 			firebaseUser: null,
 			user: null,
 			isAuthenticated: false,
-			isGuest: false,
+			isGuest: state.isGuest,
 			isLoading: false,
 			authLoaded: true,
-		});
+		}));
 		console.log("No firebase user");
 		return;
 	}
