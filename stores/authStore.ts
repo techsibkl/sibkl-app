@@ -66,7 +66,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 			);
 			set({ firebaseUser: res?.user });
 			set({ authLoaded: false, isGuest: false });
-			await handleAuthStateChange(res?.user ?? null, set);
+			await handleAuthStateChange(res?.user ?? null, set, get);
 			return res?.user;
 		} catch (error: FirebaseAuthTypes.NativeFirebaseAuthError | any) {
 			if (error.code === "auth/invalid-credential") {
@@ -152,9 +152,14 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 	},
 
 	init: () => {
-		set({ authLoaded: false, isGuest: false });
+		// If the user is browsing as a guest, keep isGuest — Firebase has no session
+		// and init() must not reset guest mode (e.g. when re-registering the listener).
+		set((state) => ({
+			authLoaded: false,
+			...(!state.isGuest ? { isGuest: false } : {}),
+		}));
 		onAuthStateChanged(getAuth(), async (firebaseUser) =>
-			handleAuthStateChange(firebaseUser, set),
+			handleAuthStateChange(firebaseUser, set, get),
 		);
 	},
 }));
