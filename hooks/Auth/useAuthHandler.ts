@@ -20,14 +20,18 @@ export const handleAuthStateChange = async (
 			state: AuthState | ((state: AuthState) => AuthState),
 			replace: true
 		): void;
-	}
+	},
+	get: () => AuthState,
 ) => {
 	if (!firebaseUser) {
+		// Guest mode uses no Firebase user; the auth listener still reports null.
+		// A delayed initial null callback after guestLogin() must not wipe isGuest.
+		const keepGuest = get().isGuest;
 		set({
 			firebaseUser: null,
 			user: null,
 			isAuthenticated: false,
-			isGuest: false,
+			isGuest: keepGuest,
 			isLoading: false,
 			authLoaded: true,
 		});
