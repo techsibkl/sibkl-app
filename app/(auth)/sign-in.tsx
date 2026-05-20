@@ -5,6 +5,7 @@ import React, { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
 	ActivityIndicator,
+	Alert,
 	ImageSourcePropType,
 	Platform,
 	Text,
@@ -277,9 +278,16 @@ const Page = () => {
 
 						{/* Guest mode text link */}
 						<TouchableOpacity
-							onPress={(): void => {
-								guestLogin();
-								router.replace("/(app)/home");
+							onPress={async (): Promise<void> => {
+								try {
+									await guestLogin();
+									router.replace("/(app)/home");
+								} catch {
+									Alert.alert(
+										"Error",
+										"Could not start guest mode. Please try again.",
+									);
+								}
 							}}
 						>
 							<Text className="text-gray-600 underline font-semibold text-sm">
