@@ -11,7 +11,7 @@ import React from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 const ProfileViewPage = () => {
-	const { user, isGuest } = useAuthStore();
+	const { user, isGuest, exitGuestMode } = useAuthStore();
 	const { data: person, isPending } = useSinglePersonQuery(
 		user?.person?.id ?? -1,
 	);
@@ -34,7 +34,10 @@ const ProfileViewPage = () => {
 						Sign in to access your profile and additional features
 					</Text>
 					<TouchableOpacity
-						onPress={() => router.replace("/(auth)/sign-in")}
+						onPress={() => {
+							exitGuestMode();
+							router.replace("/(auth)/sign-in");
+						}}
 						className="bg-blue-600 px-6 py-3 rounded-lg"
 					>
 						<Text className="text-white font-semibold text-center">

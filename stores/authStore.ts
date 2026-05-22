@@ -33,6 +33,8 @@ export type AuthState = {
 		profileData: ProfileFormData,
 	) => Promise<FirebaseAuthTypes.User | null | undefined>;
 	guestLogin: () => void;
+	/** Clears guest-only session so root routing can show sign-in (see _layout guest branch). */
+	exitGuestMode: () => void;
 	signOut: () => Promise<void>;
 	init: () => void;
 };
@@ -138,6 +140,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 			ability: defineAbilityFor(<Person>{ id: 0, roles: [Role.NONE] }),
 			isLoading: false,
 		});
+	},
+
+	exitGuestMode: () => {
+		set({ isGuest: false });
 	},
 
 	// Sign out

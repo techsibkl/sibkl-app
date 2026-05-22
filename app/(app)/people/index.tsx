@@ -12,7 +12,7 @@ import { StatusBar, Text, TouchableOpacity, View } from "react-native";
 
 const PeopleScreen = () => {
 	const { isDark } = useThemeColors();
-	const { isGuest } = useAuthStore();
+	const { isGuest, exitGuestMode } = useAuthStore();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [debouncedSearch, setDebouncedSearch] = useState("");
 
@@ -60,7 +60,10 @@ const PeopleScreen = () => {
 						features
 					</Text>
 					<TouchableOpacity
-						onPress={() => router.replace("/(auth)/sign-in")}
+						onPress={() => {
+							exitGuestMode();
+							router.replace("/(auth)/sign-in");
+						}}
 						className="bg-blue-600 px-6 py-3 rounded-lg"
 					>
 						<Text className="text-white font-semibold text-center">
