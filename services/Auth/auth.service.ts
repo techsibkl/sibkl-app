@@ -33,5 +33,11 @@ export const deleteAccount = async (): Promise<ReturnVal> => {
 		},
 	});
 	const json: ReturnVal = await response.json();
+	if (!json.success) {
+		throw {
+			status: json.status_code,
+			message: json.message || "Failed to delete account on the server",
+		};
+	}
 	return json;
 };
