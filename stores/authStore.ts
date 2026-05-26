@@ -14,6 +14,9 @@ import {
 } from "@react-native-firebase/auth";
 import { create } from "zustand";
 
+/** Unsubscribe from the previous listener when init() runs again (e.g. after profile completion). */
+let firebaseAuthUnsubscribe: (() => void) | null = null;
+
 // Example state with Zustand
 export type AuthState = {
 	firebaseUser: FirebaseAuthTypes.User | null;
@@ -116,6 +119,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 				isAuthenticated: true,
 				user: appUser,
 				authLoaded: true,
+				ability: defineAbilityFor(resPerson.data as Person),
 			});
 
 			return firebaseUser;
@@ -153,8 +157,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 	init: () => {
 		set({ authLoaded: false, isGuest: false });
-		onAuthStateChanged(getAuth(), async (firebaseUser) =>
-			handleAuthStateChange(firebaseUser, set),
+		firebaseAuthUnsubscribe?.();
+		firebaseAuthUnsubscribe = onAuthStateChanged(
+			getAuth(),
+			async (firebaseUser) => handleAuthStateChange(firebaseUser, set),
 		);
 	},
 }));
