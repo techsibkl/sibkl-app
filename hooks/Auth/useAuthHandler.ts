@@ -6,6 +6,13 @@ import { apiEndpoints } from "@/utils/endpoints";
 import { secureFetch } from "@/utils/secureFetch";
 import { FirebaseAuthTypes } from "@react-native-firebase/auth";
 
+/** While true, a null Firebase user is from `guestLogin` signing out — skip the usual unauthenticated reset so guest state can be applied after. */
+let guestModeFirebaseSignOut = false;
+
+export const setGuestModeFirebaseSignOut = (value: boolean) => {
+	guestModeFirebaseSignOut = value;
+};
+
 export const handleAuthStateChange = async (
 	firebaseUser: FirebaseAuthTypes.User | null,
 	set: {
@@ -14,20 +21,26 @@ export const handleAuthStateChange = async (
 				| AuthState
 				| Partial<AuthState>
 				| ((state: AuthState) => AuthState | Partial<AuthState>),
-			replace?: false
+			replace?: false,
 		): void;
 		(
 			state: AuthState | ((state: AuthState) => AuthState),
-			replace: true
+			replace: true,
 		): void;
-	}
+	},
+	get: () => AuthState,
 ) => {
 	if (!firebaseUser) {
+		if (guestModeFirebaseSignOut) {
+			return;
+		}
+		// Guest mode uses no Firebase user; the auth listener still reports null.
+		const keepGuest = get().isGuest;
 		set({
 			firebaseUser: null,
 			user: null,
 			isAuthenticated: false,
-			isGuest: false,
+			isGuest: keepGuest,
 			isLoading: false,
 			authLoaded: true,
 		});

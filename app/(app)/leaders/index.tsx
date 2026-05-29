@@ -25,7 +25,7 @@ import { Grid3x2Icon, ListIcon } from "lucide-react-native";
 
 const LeadersPage = () => {
 	const { isDark } = useThemeColors();
-	const { isGuest } = useAuthStore();
+	const { isGuest, exitGuestMode } = useAuthStore();
 	const router = useRouter();
 	const { data: resources, isPending, isError } = useResourcesQuery();
 	const [searchQuery, setSearchQuery] = useState("");
@@ -61,7 +61,10 @@ const LeadersPage = () => {
 						You need to sign in to access the Leaders section
 					</Text>
 					<TouchableOpacity
-						onPress={() => router.replace("/(auth)/sign-in")}
+						onPress={() => {
+							exitGuestMode();
+							router.replace("/(auth)/sign-in");
+						}}
 						className="bg-blue-600 px-6 py-3 rounded-lg"
 					>
 						<Text className="text-white font-semibold">Sign In</Text>
