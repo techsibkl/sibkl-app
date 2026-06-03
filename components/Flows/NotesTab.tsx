@@ -2,6 +2,7 @@ import NoteItem from "@/components/Notes/NoteItem";
 import { useNotesByPersonQuery } from "@/hooks/Note/useNotesQuery";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { createNote, deleteNote } from "@/services/Note/notes.service";
+import { getPeopleFlowPersonId } from "@/utils/helper_flows";
 import { useQueryClient } from "@tanstack/react-query";
 import { SendIcon } from "lucide-react-native";
 import React, { useState } from "react";
@@ -20,19 +21,28 @@ type NotesTabProps = {
 };
 
 const NotesTab = ({ personFlow }: NotesTabProps) => {
-	const personId = Number(personFlow.p__id);
+	const personId = getPeopleFlowPersonId(personFlow);
 	const queryClient = useQueryClient();
-	const { data: notes = [], isLoading } = useNotesByPersonQuery(personId);
+	const { data: notes = [], isLoading } = useNotesByPersonQuery(
+		personId ?? -1,
+	);
 	const [newNote, setNewNote] = useState<string>("");
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
 	const invalidateNotes = () => {
-		queryClient.invalidateQueries({ queryKey: ["notes", personId] });
+		if (personId !== null) {
+			queryClient.invalidateQueries({ queryKey: ["notes", personId] });
+		}
 	};
 
 	const handleCreateNote = async () => {
 		if (!newNote.trim()) {
 			Alert.alert("Error", "Please enter a note");
+			return;
+		}
+
+		if (personId === null) {
+			Alert.alert("Error", "Could not resolve person for this note.");
 			return;
 		}
 
@@ -91,6 +101,16 @@ const NotesTab = ({ personFlow }: NotesTabProps) => {
 			],
 		);
 	};
+
+	if (personId === null) {
+		return (
+			<View className="flex-1 items-center justify-center py-10">
+				<Text className="text-gray-400 text-sm">
+					Could not load notes for this person.
+				</Text>
+			</View>
+		);
+	}
 
 	if (isLoading) {
 		return (
