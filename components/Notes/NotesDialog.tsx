@@ -1,6 +1,7 @@
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { createNote } from "@/services/Note/notes.service";
 import { myToast } from "@/utils/helper";
+import { getPeopleFlowPersonId } from "@/utils/helper_flows";
 import React, { useState } from "react";
 import { Text, TextInput, View } from "react-native";
 import Toast from "react-native-toast-message";
@@ -22,8 +23,18 @@ const AddNoteDialog = ({
 
 	const handleSave = async () => {
 		setIsLoading(true);
+		const personId = getPeopleFlowPersonId(personFlow);
+		if (personId === null) {
+			Toast.show({
+				type: "error",
+				text1: "Could not resolve person for this note.",
+			});
+			setIsLoading(false);
+			return;
+		}
+
 		const res = await createNote(
-			personFlow.people_id!,
+			personId,
 			note,
 			personFlow.p__district_ids,
 		);
