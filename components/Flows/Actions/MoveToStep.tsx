@@ -1,5 +1,6 @@
 import { defaultFlowStatusAttrs } from "@/constants/const_flows";
 import { useChangeStepMutation } from "@/hooks/Flows/usePeopleFlowMutations";
+import { getPeopleFlowPersonId } from "@/utils/helper_flows";
 
 import { FlowStatus, FlowStep, StepAction } from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
@@ -78,10 +79,16 @@ const MoveToStepAction = ({ action, personFlow, steps, flow_id, onSuccess }: Pro
 
 		const targetStep = steps[option.key];
 
+		const personId = getPeopleFlowPersonId(personFlow);
+		if (personId === null) {
+			console.error("MoveToStep: missing person id on PeopleFlow", personFlow);
+			return;
+		}
+
 		changeStep(
 			{
 				flowId: flow_id,
-				peopleIds: [personFlow.people_id!],
+				peopleIds: [personId],
 				step_key: option.key,
 				step: targetStep as FlowStep,
 				districtId: personFlow.district_id,

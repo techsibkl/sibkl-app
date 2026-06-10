@@ -2,6 +2,7 @@ import NoteItem from "@/components/Notes/NoteItem";
 import { useNotesByPersonQuery } from "@/hooks/Note/useNotesQuery";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { createNote, deleteNote } from "@/services/Note/notes.service";
+import { getPeopleFlowPersonId } from "@/utils/helper_flows";
 import { useQueryClient } from "@tanstack/react-query";
 import { SendIcon } from "lucide-react-native";
 import React, { useState } from "react";
@@ -20,7 +21,7 @@ type NotesTabProps = {
 };
 
 const NotesTab = ({ personFlow }: NotesTabProps) => {
-	const personId = Number(personFlow.p__id);
+	const personId = getPeopleFlowPersonId(personFlow) ?? 0;
 	const queryClient = useQueryClient();
 	const { data: notes = [], isLoading } = useNotesByPersonQuery(personId);
 	const [newNote, setNewNote] = useState<string>("");
