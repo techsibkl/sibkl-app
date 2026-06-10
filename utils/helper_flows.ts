@@ -1,5 +1,12 @@
 import { defaultFlowStatusAttrs } from "@/constants/const_flows";
 import { FlowStatus, FlowStep } from "@/services/Flow/flow.types";
+import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
+
+/** Resolve person id from a PeopleFlow row (API uses p__id, not people_id). */
+export function getPeopleFlowPersonId(personFlow: PeopleFlow): number | null {
+	const personId = Number(personFlow.p__id ?? personFlow.people_id);
+	return Number.isFinite(personId) ? personId : null;
+}
 
 export function daysAgo(dateInput?: string | Date | null): string {
 	if (!dateInput) return "-";

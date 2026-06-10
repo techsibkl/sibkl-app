@@ -70,6 +70,16 @@ export default function DeleteAccountScreen() {
 	const onSubmit = async (data: DeleteAccountFormData) => {
 		setIsLoading(true);
 		try {
+			const enteredEmail = data.email.trim().toLowerCase();
+			const accountEmail = userEmail?.trim().toLowerCase();
+			if (accountEmail && enteredEmail !== accountEmail) {
+				Alert.alert(
+					"Email Mismatch",
+					"Please enter the email address for the account you are signed in with.",
+				);
+				return;
+			}
+
 			// Re-authenticate user
 			const userCredential = await signInWithEmailAndPassword(
 				auth,
@@ -124,10 +134,16 @@ export default function DeleteAccountScreen() {
 					onPress: async () => {
 						setIsLoading(true);
 						try {
-							// Call backend to delete user from database and Firebase
-							await deleteAccount();
+							// Call backend to delete user from database first
+							const result = await deleteAccount();
+							if (!result.success) {
+								throw new Error(
+									result.message ||
+										"Failed to delete account on server.",
+								);
+							}
 
-							// Delete Firebase auth user locally
+							// Delete Firebase auth user only after backend succeeds
 							const currentUser = auth.currentUser;
 							if (currentUser) {
 								await deleteUser(currentUser);
