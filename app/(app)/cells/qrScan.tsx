@@ -9,6 +9,7 @@ import {
   Platform,
   Pressable,
   StatusBar,
+  StyleSheet,
   Text,
   View,
 } from "react-native";
@@ -60,197 +61,171 @@ export default function QrScan() {
     setMessage("");
   };
 
-  // Calculate exact pixel positions for corners
   const windowLeft =
     screenSize.width > 0 ? (screenSize.width - WINDOW_SIZE) / 2 : 0;
   const windowTop =
     screenSize.height > 0 ? (screenSize.height - WINDOW_SIZE) / 2 : 0;
 
   return (
-    <View className="flex-1 bg-black" onLayout={handleLayout}>
+    <View style={styles.root} onLayout={handleLayout}>
       {Platform.OS === "android" && <StatusBar hidden />}
 
-      {/* Full screen camera */}
+      {/* Camera — must use StyleSheet.absoluteFillObject, not NativeWind inset-0 */}
       <CameraView
-        className="absolute inset-0"
+        style={StyleSheet.absoluteFillObject}
         facing="back"
         barcodeScannerSettings={{ barcodeTypes: "qr" }}
         onBarcodeScanned={scanState === "idle" ? handleScan : undefined}
       />
 
-      {/* Dark overlay cutout — 4 regions around the scan window */}
+      {/* Dark overlay — 4 exact regions around scan window */}
       {screenSize.width > 0 && (
-        <View className="absolute inset-0" pointerEvents="none">
+        <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
           {/* Top */}
           <View
-            style={{
-              position: "absolute",
-              top: 0,
-              left: 0,
-              right: 0,
-              height: windowTop,
-              backgroundColor: "rgba(0,0,0,0.65)",
-            }}
+            style={[
+              styles.overlay,
+              { top: 0, left: 0, right: 0, height: windowTop },
+            ]}
           />
           {/* Bottom */}
           <View
-            style={{
-              position: "absolute",
-              bottom: 0,
-              left: 0,
-              right: 0,
-              top: windowTop + WINDOW_SIZE,
-              backgroundColor: "rgba(0,0,0,0.65)",
-            }}
+            style={[
+              styles.overlay,
+              { top: windowTop + WINDOW_SIZE, left: 0, right: 0, bottom: 0 },
+            ]}
           />
           {/* Left */}
           <View
-            style={{
-              position: "absolute",
-              top: windowTop,
-              left: 0,
-              width: windowLeft,
-              height: WINDOW_SIZE,
-              backgroundColor: "rgba(0,0,0,0.65)",
-            }}
+            style={[
+              styles.overlay,
+              {
+                top: windowTop,
+                left: 0,
+                width: windowLeft,
+                height: WINDOW_SIZE,
+              },
+            ]}
           />
           {/* Right */}
           <View
-            style={{
-              position: "absolute",
-              top: windowTop,
-              right: 0,
-              width: windowLeft,
-              height: WINDOW_SIZE,
-              backgroundColor: "rgba(0,0,0,0.65)",
-            }}
+            style={[
+              styles.overlay,
+              {
+                top: windowTop,
+                right: 0,
+                width: windowLeft,
+                height: WINDOW_SIZE,
+              },
+            ]}
           />
         </View>
       )}
 
-      {/* Corner brackets — pixel perfect */}
+      {/* Corner brackets */}
       {screenSize.width > 0 && (
-        <View className="absolute inset-0" pointerEvents="none">
+        <View style={StyleSheet.absoluteFillObject} pointerEvents="none">
           {/* Top Left */}
           <View
-            style={{
-              position: "absolute",
-              top: windowTop,
-              left: windowLeft,
-              width: CORNER_SIZE,
-              height: CORNER_SIZE,
-              borderTopWidth: CORNER_THICKNESS,
-              borderLeftWidth: CORNER_THICKNESS,
-              borderColor: RED,
-              borderTopLeftRadius: 4,
-            }}
+            style={[
+              styles.corner,
+              {
+                top: windowTop,
+                left: windowLeft,
+                borderTopWidth: CORNER_THICKNESS,
+                borderLeftWidth: CORNER_THICKNESS,
+                borderTopLeftRadius: 4,
+              },
+            ]}
           />
           {/* Top Right */}
           <View
-            style={{
-              position: "absolute",
-              top: windowTop,
-              left: windowLeft + WINDOW_SIZE - CORNER_SIZE,
-              width: CORNER_SIZE,
-              height: CORNER_SIZE,
-              borderTopWidth: CORNER_THICKNESS,
-              borderRightWidth: CORNER_THICKNESS,
-              borderColor: RED,
-              borderTopRightRadius: 4,
-            }}
+            style={[
+              styles.corner,
+              {
+                top: windowTop,
+                left: windowLeft + WINDOW_SIZE - CORNER_SIZE,
+                borderTopWidth: CORNER_THICKNESS,
+                borderRightWidth: CORNER_THICKNESS,
+                borderTopRightRadius: 4,
+              },
+            ]}
           />
           {/* Bottom Left */}
           <View
-            style={{
-              position: "absolute",
-              top: windowTop + WINDOW_SIZE - CORNER_SIZE,
-              left: windowLeft,
-              width: CORNER_SIZE,
-              height: CORNER_SIZE,
-              borderBottomWidth: CORNER_THICKNESS,
-              borderLeftWidth: CORNER_THICKNESS,
-              borderColor: RED,
-              borderBottomLeftRadius: 4,
-            }}
+            style={[
+              styles.corner,
+              {
+                top: windowTop + WINDOW_SIZE - CORNER_SIZE,
+                left: windowLeft,
+                borderBottomWidth: CORNER_THICKNESS,
+                borderLeftWidth: CORNER_THICKNESS,
+                borderBottomLeftRadius: 4,
+              },
+            ]}
           />
           {/* Bottom Right */}
           <View
-            style={{
-              position: "absolute",
-              top: windowTop + WINDOW_SIZE - CORNER_SIZE,
-              left: windowLeft + WINDOW_SIZE - CORNER_SIZE,
-              width: CORNER_SIZE,
-              height: CORNER_SIZE,
-              borderBottomWidth: CORNER_THICKNESS,
-              borderRightWidth: CORNER_THICKNESS,
-              borderColor: RED,
-              borderBottomRightRadius: 4,
-            }}
+            style={[
+              styles.corner,
+              {
+                top: windowTop + WINDOW_SIZE - CORNER_SIZE,
+                left: windowLeft + WINDOW_SIZE - CORNER_SIZE,
+                borderBottomWidth: CORNER_THICKNESS,
+                borderRightWidth: CORNER_THICKNESS,
+                borderBottomRightRadius: 4,
+              },
+            ]}
           />
         </View>
       )}
 
       {/* Top bar */}
-      <SafeAreaView className="absolute top-0 left-0 right-0 flex-row items-center justify-between px-4 pt-2">
-        <Pressable
-          className="w-10 h-10 rounded-full bg-white/20 items-center justify-center"
-          onPress={() => router.back()}
-        >
-          <Text className="text-white text-base font-semibold">✕</Text>
+      <SafeAreaView style={styles.topBar}>
+        <Pressable style={styles.closeBtn} onPress={() => router.back()}>
+          <Text style={styles.closeBtnText}>✕</Text>
         </Pressable>
-        <Text className="text-white text-base font-bold tracking-wide">
-          Scan QR Code
-        </Text>
-        <View className="w-10" />
+        <Text style={styles.topTitle}>Scan QR Code</Text>
+        <View style={{ width: 40 }} />
       </SafeAreaView>
 
       {/* Bottom panel */}
-      <View className="absolute bottom-0 left-0 right-0 px-6 pb-12 pt-6 items-center gap-4">
+      <View style={styles.bottomPanel}>
         {scanState === "idle" && (
-          <Text className="text-white/70 text-sm text-center leading-5">
+          <Text style={styles.hint}>
             Point your camera at the session QR code
           </Text>
         )}
 
         {scanState === "loading" && (
-          <View className="bg-white rounded-2xl p-6 items-center gap-3 w-full">
+          <View style={styles.feedbackBox}>
             <ActivityIndicator color={RED} size="small" />
-            <Text className="text-sm font-medium text-gray-600">
-              Submitting attendance...
-            </Text>
+            <Text style={styles.feedbackText}>Submitting attendance...</Text>
           </View>
         )}
 
         {scanState === "success" && (
-          <View className="bg-white rounded-2xl p-6 items-center gap-3 w-full">
-            <View className="w-14 h-14 rounded-full border-2 border-green-500 bg-green-50 items-center justify-center">
-              <Text className="text-2xl">✓</Text>
+          <View style={styles.feedbackBox}>
+            <View style={[styles.feedbackIcon, { borderColor: "#22c55e" }]}>
+              <Text style={{ fontSize: 22 }}>✓</Text>
             </View>
-            <Text className="text-sm font-medium text-green-600 text-center leading-5">
+            <Text style={[styles.feedbackText, { color: "#22c55e" }]}>
               {message}
             </Text>
-            <Pressable
-              className="bg-red-600 rounded-xl py-3 px-8 mt-1"
-              onPress={() => router.back()}
-            >
-              <Text className="text-white font-bold text-base">Done</Text>
+            <Pressable style={styles.actionBtn} onPress={() => router.back()}>
+              <Text style={styles.actionBtnText}>Done</Text>
             </Pressable>
           </View>
         )}
 
         {scanState === "error" && (
-          <View className="bg-white rounded-2xl p-6 items-center gap-3 w-full">
-            <View className="w-14 h-14 rounded-full border-2 border-red-600 bg-red-50 items-center justify-center">
-              <Text className="text-2xl">✕</Text>
+          <View style={styles.feedbackBox}>
+            <View style={[styles.feedbackIcon, { borderColor: RED }]}>
+              <Text style={{ fontSize: 22 }}>✕</Text>
             </View>
-            <Text className="text-sm font-medium text-red-600 text-center leading-5">
-              {message}
-            </Text>
-            <Pressable
-              className="bg-red-600 rounded-xl py-3 px-8 mt-1"
-              onPress={handleReset}
-            >
-              <Text className="text-white font-bold text-base">Try Again</Text>
+            <Text style={[styles.feedbackText, { color: RED }]}>{message}</Text>
+            <Pressable style={styles.actionBtn} onPress={handleReset}>
+              <Text style={styles.actionBtnText}>Try Again</Text>
             </Pressable>
           </View>
         )}
@@ -258,3 +233,88 @@ export default function QrScan() {
     </View>
   );
 }
+
+const styles = StyleSheet.create({
+  root: { flex: 1, backgroundColor: "#000" },
+  overlay: { position: "absolute" },
+  corner: {
+    position: "absolute",
+    width: CORNER_SIZE,
+    height: CORNER_SIZE,
+    borderColor: RED,
+  },
+  topBar: {
+    position: "absolute",
+    top: 0,
+    left: 0,
+    right: 0,
+    flexDirection: "row",
+    alignItems: "center",
+    justifyContent: "space-between",
+    paddingHorizontal: 16,
+    paddingTop: 8,
+  },
+  closeBtn: {
+    width: 40,
+    height: 40,
+    borderRadius: 20,
+    backgroundColor: "rgba(255,255,255,0.2)",
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  closeBtnText: { color: "#fff", fontSize: 16, fontWeight: "600" },
+  topTitle: {
+    color: "#fff",
+    fontSize: 16,
+    fontWeight: "700",
+    letterSpacing: 0.3,
+  },
+  bottomPanel: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    paddingHorizontal: 24,
+    paddingBottom: 48,
+    paddingTop: 24,
+    alignItems: "center",
+    gap: 16,
+  },
+  hint: {
+    color: "rgba(255,255,255,0.7)",
+    fontSize: 14,
+    textAlign: "center",
+    lineHeight: 20,
+  },
+  feedbackBox: {
+    backgroundColor: "#fff",
+    borderRadius: 16,
+    padding: 24,
+    alignItems: "center",
+    gap: 12,
+    width: "100%",
+  },
+  feedbackIcon: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    borderWidth: 2,
+    alignItems: "center",
+    justifyContent: "center",
+  },
+  feedbackText: {
+    fontSize: 14,
+    fontWeight: "500",
+    textAlign: "center",
+    color: "#444",
+    lineHeight: 20,
+  },
+  actionBtn: {
+    backgroundColor: RED,
+    borderRadius: 10,
+    paddingVertical: 12,
+    paddingHorizontal: 32,
+    marginTop: 4,
+  },
+  actionBtnText: { color: "#fff", fontWeight: "700", fontSize: 15 },
+});

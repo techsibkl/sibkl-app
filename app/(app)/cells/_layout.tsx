@@ -31,6 +31,7 @@ export default function Layout() {
         options={() => ({
           headerShown: false,
           tabBarStyle: { display: "none" },
+          presentation: "fullScreenModal", // ← this hides the tab bar automatically
         })}
       />
       <Stack.Screen

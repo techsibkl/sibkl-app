@@ -4,6 +4,7 @@ import CellList from "@/components/Cells/CellList";
 import CreateSessionSheet from "@/components/Cells/CreateSessionSheet";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
+import { getFabActions } from "@/constants/cont_cells";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Cell } from "@/services/Cell/cell.types";
@@ -13,7 +14,7 @@ import React, {
   BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
 import { useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { StatusBar, Text, View } from "react-native";
 import { FAB, Portal, Provider } from "react-native-paper";
 
@@ -29,41 +30,6 @@ const CellsScreen = () => {
     .filter((cell) => cell.id && ledCells.map(Number).includes(Number(cell.id)))
     .map((cell) => ({ id: cell.id!, name: cell.cell_name! }));
 
-  const fabActions = [
-    ability.can("create", "CellSession") && {
-      icon: "calendar",
-      label: "New Session",
-      onPress: () => createSessionSheetModalRef.current?.present(),
-      color: "white",
-      style: { backgroundColor: "#d6361e" },
-    },
-    ability.can("create", "CellMembers") && {
-      icon: "account-plus",
-      label: "Add Member",
-      onPress: () => console.log("Add Member"),
-      color: "white",
-      style: { backgroundColor: "#d6361e" },
-    },
-    ability.can("read", "CellDetails") && {
-      icon: "camera",
-      label: "Mark Attendance",
-      onPress: () => router.push("/(app)/cells/scanner"),
-      color: "white",
-      style: { backgroundColor: "#d6361e" },
-    },
-    ability.can("read", "CellSession") && {
-      icon: "calendar-clock",
-      label: "View Sessions",
-      onPress: () =>
-        router.push({
-          pathname: "/(app)/cells/sessions",
-          params: { cell_id: ledCellsFormatted[0]?.id },
-        }),
-      color: "white",
-      style: { backgroundColor: "#d6361e" },
-    },
-  ].filter(Boolean);
-
   // ref
   const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
   // console.log("user:", user);
@@ -75,6 +41,18 @@ const CellsScreen = () => {
   // const filteredCells = (user?.person?.cells ?? []).filter((cell: Cell) =>
   // 	cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase())
   // );
+
+  useEffect(() => {
+    if (!person) return;
+    const cells = person.cells ?? [];
+
+    if (cells.length === 1) {
+      router.replace({
+        pathname: "/(app)/cells/profile/[id]",
+        params: { id: cells[0].id! },
+      });
+    }
+  }, [person]);
 
   if (!user)
     return (
@@ -112,7 +90,12 @@ const CellsScreen = () => {
               color="white"
               fabStyle={{ backgroundColor: "#d6361e" }} // Tailwind red-500
               visible
-              actions={fabActions}
+              actions={getFabActions({
+                ability: ability,
+                router: router,
+                createSessionSheetModalRef: createSessionSheetModalRef,
+                cellId: ledCellsFormatted[0]?.id,
+              })}
               onStateChange={({ open }) => setOpen(open)}
             />
             <CreateSessionSheet
