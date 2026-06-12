@@ -112,6 +112,13 @@ export function toLocalDate(str: string | null): Date | null {
 }
 
 /** Parsed into JSON.stringify(payload, dateReplacer) to preserve local datetime */
+export const formatLocalDate = (date: Date): string => {
+	const y = date.getFullYear();
+	const m = (date.getMonth() + 1).toString().padStart(2, "0");
+	const d = date.getDate().toString().padStart(2, "0");
+	return `${y}-${m}-${d}`;
+};
+
 export const dateReplacer = function (
 	this: Record<string, any>,
 	key: string,
@@ -120,10 +127,7 @@ export const dateReplacer = function (
 	if (this[key] instanceof Date) {
 		const date: Date = this[key];
 		if (isNaN(date.getTime())) return null;
-		const y = date.getFullYear();
-		const m = (date.getMonth() + 1).toString().padStart(2, "0");
-		const d = date.getDate().toString().padStart(2, "0");
-		return `${y}-${m}-${d}`; // format as 'YYYY-MM-DD'
+		return formatLocalDate(date);
 	}
 	return value;
 };

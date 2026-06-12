@@ -26,6 +26,7 @@ export const signInToCellSession = async (
 export const createCellSession = async (
   cellId: number,
   meetingDate: string,
+  force = false,
 ): Promise<{ insertedId: number }> => {
   const response = await secureFetch(apiEndpoints.cells.createSession(cellId), {
     method: "POST",
@@ -33,11 +34,16 @@ export const createCellSession = async (
     body: JSON.stringify({
       cell_id: cellId,
       meeting_date: meetingDate,
+      ...(force ? { force: true } : {}),
     }),
   });
   const json: ReturnVal = await response.json();
   if (!json.success) throw json;
-  return json.data;
+  const insertedId = json.data?.insertedId ?? json.data?.session_id;
+  if (insertedId == null) {
+    throw { ...json, message: json.message ?? "No session id returned from server" };
+  }
+  return { insertedId: Number(insertedId) };
 };
 
 export const fetchCellSessions = async (
@@ -45,7 +51,8 @@ export const fetchCellSessions = async (
 ): Promise<CellSession[]> => {
   const response = await secureFetch(apiEndpoints.cells.getSessions(cellId));
   const json: ReturnVal = await response.json();
-  return (json.data as CellSession[]) ?? []; // ← fallback to empty array
+  if (!json.success) throw json;
+  return (json.data as CellSession[]) ?? [];
 };
 
 export const fetchCellSessionById = async (
@@ -56,5 +63,6 @@ export const fetchCellSessionById = async (
     apiEndpoints.cells.getSessionById(cellId, sessionId),
   );
   const json: ReturnVal = await response.json();
+  if (!json.success) throw json;
   return json.data as CellSessionDetail;
 };

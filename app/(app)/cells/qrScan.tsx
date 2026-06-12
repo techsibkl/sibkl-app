@@ -2,7 +2,7 @@ import { useSignInToCellSessionMutation } from "@/hooks/CellAttendance/useCellAt
 import { useAuthStore } from "@/stores/authStore";
 import { CameraView } from "expo-camera";
 import { router, useLocalSearchParams } from "expo-router";
-import { useCallback, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import {
   ActivityIndicator,
   LayoutChangeEvent,
@@ -24,6 +24,7 @@ const RED = "#d6361e";
 
 export default function QrScan() {
   const [scanState, setScanState] = useState<ScanState>("idle");
+  const scanStateRef = useRef<ScanState>("idle");
   const [message, setMessage] = useState("");
   const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
 
@@ -40,23 +41,27 @@ export default function QrScan() {
 
   const handleScan = useCallback(
     async ({ data }: { data: string }) => {
-      if (scanState !== "idle" || !personId) return;
+      if (scanStateRef.current !== "idle" || !personId) return;
+      scanStateRef.current = "loading";
       setScanState("loading");
       try {
         await signIn({ attendanceId: data, peopleId: personId });
         setMessage("Attendance recorded successfully!");
+        scanStateRef.current = "success";
         setScanState("success");
       } catch (err: any) {
         setMessage(
           err?.message ?? "Failed to submit attendance. Please try again.",
         );
+        scanStateRef.current = "error";
         setScanState("error");
       }
     },
-    [scanState, personId, signIn],
+    [personId, signIn],
   );
 
   const handleReset = () => {
+    scanStateRef.current = "idle";
     setScanState("idle");
     setMessage("");
   };
