@@ -12,6 +12,7 @@ type TestCellCardProps = {
 	cell: Cell;
 	hasJoinedAnyCells?: boolean;
 	onJoin?: (cellId: number) => void;
+	onViewDetails?: (cell: Cell) => void;
 };
 
 /**
@@ -24,16 +25,16 @@ type TestCellCardProps = {
 export const TestCellCard: React.FC<TestCellCardProps> = ({ 
 	cell, 
 	hasJoinedAnyCells = false,
-	onJoin 
+	onJoin,
+	onViewDetails
 }) => {
 	const { isDark } = useThemeColors();
 	const router = useRouter();
 
 	const handleViewDetails = () => {
-		router.push({
-			pathname: "/(app)/cells/profile/[id]",
-			params: { id: cell.id! },
-		});
+		if (onViewDetails) {
+			onViewDetails(cell);
+		}
 	};
 
 	const handleJoinPress = () => {

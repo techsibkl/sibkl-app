@@ -22,7 +22,7 @@ import * as Device from "expo-device";
 import { useFonts } from "expo-font";
 import * as Notifications from "expo-notifications";
 import { Stack, useRouter } from "expo-router";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { Platform, StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider } from "react-native-paper";
@@ -190,8 +190,10 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={customNavigationTheme}>
         <PaperProvider theme={customLightTheme}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
           <RootLayoutNav />
           <StatusBar barStyle="dark-content" />
+          </GestureHandlerRootView>
         </PaperProvider>
       </ThemeProvider>
     </QueryClientProvider>
