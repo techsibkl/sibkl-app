@@ -4,7 +4,7 @@ import { ActivityIndicator, Text, TouchableOpacity } from "react-native";
 interface ActionButtonProps {
 	label: string;
 	onPress: () => void;
-	variant?: "primary" | "secondary" | "outline";
+	variant?: "primary" | "secondary" | "outline" | "ghost";
 	isLoading?: boolean;
 	size?: "sm" | "md";
 }
@@ -13,12 +13,14 @@ const variantStyles = {
 	primary: "bg-blue-500",
 	secondary: "bg-gray-200",
 	outline: "bg-transparent border border-gray-300",
+	ghost: "bg-blue-100/30 rounded-full",
 };
 
 const textColorMap = {
 	primary: "text-white",
 	secondary: "text-gray-700",
 	outline: "text-gray-700",
+	ghost: "text-blue-600",
 };
 
 const sizeStyles = {
@@ -41,7 +43,7 @@ export const ActionButton: React.FC<ActionButtonProps> = ({
 	<TouchableOpacity
 		onPress={onPress}
 		disabled={isLoading}
-		className={`rounded-lg items-center justify-center ${variantStyles[variant]} ${sizeStyles[size]}`}
+		className={`${variant === "ghost" ? "rounded-full" : "rounded-lg"} items-center justify-center ${variantStyles[variant]} ${sizeStyles[size]}`}
 	>
 		{isLoading ? (
 			<ActivityIndicator color={variant === "primary" ? "white" : "gray"} />

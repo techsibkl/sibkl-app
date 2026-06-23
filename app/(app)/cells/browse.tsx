@@ -40,14 +40,18 @@ const BrowseCellsScreen = () => {
 				.includes(searchQuery.toLowerCase())
 		);
 
-	const handleJoinCell = (cellId: number | undefined, cellName: string) => {
-		if (!cellId) return;
+	const hasJoinedAnyCells = joinedCells.length > 0 || userCellIds.length > 0;
 
+	const handleJoinCell = (cellId: number) => {
 		setJoinedCells([...joinedCells, cellId]);
 	};
 
 	const renderCellCard = ({ item: cell }: { item: Cell }) => (
-		<TestCellCard cell={cell} />
+		<TestCellCard 
+			cell={cell} 
+			hasJoinedAnyCells={hasJoinedAnyCells}
+			onJoin={handleJoinCell}
+		/>
 	);
 
 	if (!user)
@@ -60,15 +64,14 @@ const BrowseCellsScreen = () => {
 	return (
 		<SharedBody>
 			<StatusBar
-				className="bg-background dark:bg-background-dark"
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
 
-			<SharedSearchBar
-				searchQuery={searchQuery}
-				onSearchChange={setSearchQuery}
-				placeholder="Search groups..."
-			/>
+		<SharedSearchBar
+			searchQuery={searchQuery}
+			onSearchChange={setSearchQuery}
+			placeholder="Search groups..."
+		/>
 
 			{/* Content */}
 			<View className="flex-1">
@@ -85,14 +88,14 @@ const BrowseCellsScreen = () => {
 						</Text>
 					</View>
 				) : (
-				<FlatList
-					data={filteredCells}
-					keyExtractor={(item) => String(item.id)}
-					renderItem={renderCellCard}
-					scrollEnabled={true}
-					showsVerticalScrollIndicator={false}
-					contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 8 }}
-				/>
+					<FlatList
+						data={filteredCells}
+						keyExtractor={(item) => String(item.id)}
+						renderItem={renderCellCard}
+						scrollEnabled={true}
+						showsVerticalScrollIndicator={false}
+						contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
+					/>
 				)}
 			</View>
 		</SharedBody>
