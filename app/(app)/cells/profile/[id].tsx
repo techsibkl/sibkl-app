@@ -46,9 +46,9 @@ const CellProfileScreen = () => {
   const [open, setOpen] = useState(false);
   const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
 
-  const ledCells: number[] = person?.leader_of_cell_ids;
+  const ledCells: number[] | undefined = person?.leader_of_cell_ids;
   const ledCellsFormatted = (person?.cells ?? []) // ← use same source
-    .filter((cell) => cell.id && ledCells.map(Number).includes(Number(cell.id)))
+    .filter((cell) => cell.id && ledCells?.map(Number).includes(Number(cell.id)))
     .map((cell) => ({ id: cell.id!, name: cell.cell_name! }));
 
   const filteredMembers = (cell?.members ?? []).filter((member: Person) =>
