@@ -25,9 +25,9 @@ const CellsScreen = () => {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const router = useRouter();
-  const ledCells: number[] = person?.leader_of_cell_ids;
+  const ledCells: number[] | undefined = person?.leader_of_cell_ids;
   const ledCellsFormatted = (person?.cells ?? []) // ← use same source
-    .filter((cell) => cell.id && ledCells.map(Number).includes(Number(cell.id)))
+    .filter((cell) => cell.id && ledCells?.map(Number).includes(Number(cell.id)))
     .map((cell) => ({ id: cell.id!, name: cell.cell_name! }));
 
   // ref
@@ -42,17 +42,17 @@ const CellsScreen = () => {
   // 	cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase())
   // );
 
-  useEffect(() => {
-    if (!person) return;
-    const cells = person.cells ?? [];
+  // useEffect(() => {
+  //   if (!person) return;
+  //   const cells = person.cells ?? [];
 
-    if (cells.length === 1) {
-      router.replace({
-        pathname: "/(app)/cells/profile/[id]",
-        params: { id: cells[0].id! },
-      });
-    }
-  }, [person]);
+  //   if (cells.length === 1) {
+  //     router.replace({
+  //       pathname: "/(app)/cells/profile/[id]",
+  //       params: { id: cells[0].id! },
+  //     });
+  //   }
+  // }, [person]);
 
   if (!user)
     return (

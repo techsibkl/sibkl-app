@@ -45,9 +45,10 @@ export default function AppLayout() {
 			<Tabs.Screen
 				name="cells"
 				options={{
-					tabBarStyle: { display: "none" },
-					href: null, // hides it from tab bar
+					// tabBarStyle: { display: "none" },
+					// href: null, // hides it from tab bar
 					title: "Cells",
+					href: "/(app)/cells/browse",
 					tabBarIcon: ({ color, size, focused }) => (
 						<Circle
 							size={size}
@@ -61,6 +62,7 @@ export default function AppLayout() {
 			<Tabs.Screen
 				name="people"
 				options={{
+					// href: null,
 					title: "People",
 					tabBarIcon: ({ color, size, focused }) => (
 						<Users
