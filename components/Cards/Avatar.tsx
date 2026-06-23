@@ -35,8 +35,10 @@ export const Avatar: React.FC<AvatarProps> = ({
 
 	return (
 		<View
-			className={`${sizeMap[size]} rounded-full items-center justify-center ${
-				isDark ? "bg-slate-700" : "bg-gray-200"
+			className={`${sizeMap[size]} rounded-full items-center justify-center border ${
+				isDark 
+					? "bg-slate-700 border-slate-600" 
+					: "bg-gray-200 border-gray-300"
 			}`}
 		>
 			{imageUrl ? (

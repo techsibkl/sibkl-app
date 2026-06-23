@@ -1,50 +1,71 @@
 import React from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import { Text, View } from "react-native";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Cell } from "@/services/Cell/cell.types";
 import { useRouter } from "expo-router";
-import { Clock, MapPin, Users, ChevronRight } from "lucide-react-native";
+import { Clock, MapPin, Users } from "lucide-react-native";
 import { Avatar } from "./Avatar";
 import { InfoRow } from "./InfoRow";
+import { ActionButton } from "./ActionButton";
 
 type TestCellCardProps = {
 	cell: Cell;
+	hasJoinedAnyCells?: boolean;
+	onJoin?: (cellId: number) => void;
 };
 
 /**
- * TestCellCard: Card component for displaying user's own cells
- * Features same styling as CardCellGroup but with navigation behavior
+ * TestCellCard: Card component for displaying cells
+ * Features same styling as CardCellGroup with action button
  *
  * @example
- * <TestCellCard cell={cell} />
+ * <TestCellCard cell={cell} hasJoinedAnyCells={false} onJoin={handleJoin} />
  */
-export const TestCellCard: React.FC<TestCellCardProps> = ({ cell }) => {
+export const TestCellCard: React.FC<TestCellCardProps> = ({ 
+	cell, 
+	hasJoinedAnyCells = false,
+	onJoin 
+}) => {
 	const { isDark } = useThemeColors();
 	const router = useRouter();
 
-	const handlePress = () => {
+	const handleViewDetails = () => {
 		router.push({
 			pathname: "/(app)/cells/profile/[id]",
 			params: { id: cell.id! },
 		});
 	};
 
+	const handleJoinPress = () => {
+		if (onJoin && cell.id) {
+			onJoin(cell.id);
+		}
+	};
+
+	const infoRowCount = [
+		cell.meeting_day && cell.meeting_time,
+		cell.address,
+		cell.cell_leader_1_name
+	].filter(Boolean).length;
+	
+	const shouldCenterAvatar = infoRowCount >= 2;
+
 	return (
-		<TouchableOpacity
-			onPress={handlePress}
-			activeOpacity={0.8}
+		<View
 			className={`rounded-2xl p-3 mb-3 flex-row gap-3 ${
 				isDark
 					? "bg-slate-800 border border-slate-700"
 					: "bg-white border border-gray-200"
 			}`}
-			style={{ shadowColor: "#000", elevation: 2 }}
+			style={{ shadowColor: "#000", elevation: 0 }}
 		>
 			{/* Left: Avatar */}
-			<Avatar
-				initials={cell.cell_name?.charAt(0) ?? "?"}
-				size="md"
-			/>
+			<View className={shouldCenterAvatar ? "justify-center" : "justify-start"}>
+				<Avatar
+					initials={cell.cell_name?.charAt(0) ?? "?"}
+					size="md"
+				/>
+			</View>
 
 			{/* Middle: Content */}
 			<View className="flex-1">
@@ -100,10 +121,15 @@ export const TestCellCard: React.FC<TestCellCardProps> = ({ cell }) => {
 				</View>
 			</View>
 
-			{/* Right: Chevron */}
+			{/* Right: Action Button */}
 			<View className="justify-center">
-				<ChevronRight size={24} color="#999" />
+				<ActionButton
+					label={hasJoinedAnyCells ? "View Details" : "Join Cell"}
+					onPress={hasJoinedAnyCells ? handleViewDetails : handleJoinPress}
+					variant={hasJoinedAnyCells ? "ghost" : "outline"}
+					size="sm"
+				/>
 			</View>
-		</TouchableOpacity>
+		</View>
 	);
 };
