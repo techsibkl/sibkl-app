@@ -3,7 +3,7 @@
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { TestCellCard } from "@/components/Cards/testCellCard";
-import SharedModal from "@/components/shared/SharedModal";
+import CellDetailModal from "@/components/shared/CellDetailModal";
 import { useCellsQuery } from "@/hooks/Cell/useCellQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Cell } from "@/services/Cell/cell.types";
@@ -52,11 +52,8 @@ const BrowseCellsScreen = () => {
 	};
 
 	const handleViewDetails = (cell: Cell) => {
-		console.log("1. View Details pressed for:", cell.cell_name);
 		setSelectedCell(cell);
-		console.log("3. Selected cell state set");
 		setModalVisible(true);
-		console.log("✓ Modal visible set to true");
 	};
 
 	const renderCellCard = ({ item: cell }: { item: Cell }) => (
@@ -113,83 +110,11 @@ const BrowseCellsScreen = () => {
 				)}
 			</View>
 
-			<SharedModal
-				visible={modalVisible}
-				onClose={() => setModalVisible(false)}
-			>
-				{selectedCell && (
-					<ScrollView showsVerticalScrollIndicator={false} className="p-6">
-						{/* Header */}
-						<Text className={`text-2xl font-bold mb-6 ${isDark ? "text-white" : "text-gray-900"}`}>
-							{selectedCell.cell_name}
-						</Text>
-
-						{/* Description */}
-						{selectedCell.cell_description && (
-							<View className="mb-6">
-								<Text className={`text-sm font-semibold mb-2 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-									About
-								</Text>
-								<Text className={`text-base ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-									{selectedCell.cell_description}
-								</Text>
-							</View>
-						)}
-
-						{/* Meeting Schedule */}
-						<View className="mb-6 border-t border-gray-300 pt-6">
-							<Text className={`text-sm font-semibold mb-3 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-								Meeting Schedule
-							</Text>
-							{selectedCell.meeting_day && selectedCell.meeting_time && (
-								<View className="flex-row items-center mb-3">
-									<Clock size={18} color="#666" strokeWidth={1.5} />
-									<Text className={`ml-3 text-base ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-										{selectedCell.meeting_day}, {selectedCell.meeting_time}
-									</Text>
-								</View>
-							)}
-							{selectedCell.frequency && (
-								<Text className={`ml-6 text-base ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-									{selectedCell.frequency}
-								</Text>
-							)}
-						</View>
-
-						{/* Location */}
-						{selectedCell.address && (
-							<View className="mb-6 border-t border-gray-300 pt-6">
-								<Text className={`text-sm font-semibold mb-3 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-									Location
-								</Text>
-								<View className="flex-row items-start">
-									<MapPin size={18} color="#666" strokeWidth={1.5} />
-									<Text className={`ml-3 text-base flex-1 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-										{selectedCell.address}
-									</Text>
-								</View>
-							</View>
-						)}
-
-						{/* Leaders */}
-						<View className="mb-6 border-t border-gray-300 pt-6">
-							<Text className={`text-sm font-semibold mb-3 ${isDark ? "text-gray-300" : "text-gray-600"}`}>
-								Leaders
-							</Text>
-							{selectedCell.cell_leader_1_name && (
-								<Text className={`text-base mb-2 ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-									{selectedCell.cell_leader_1_name}
-								</Text>
-							)}
-							{selectedCell.cell_leader_2_name && (
-								<Text className={`text-base ${isDark ? "text-gray-200" : "text-gray-700"}`}>
-									{selectedCell.cell_leader_2_name}
-								</Text>
-							)}
-						</View>
-					</ScrollView>
-				)}
-			</SharedModal>
+		<CellDetailModal
+			visible={modalVisible}
+			onClose={() => setModalVisible(false)}
+			cell={selectedCell}
+		/>
 		</SharedBody>
 	);
 };
