@@ -1,4 +1,4 @@
-import React, { useRef, useEffect } from "react";
+import React, { useRef, useState, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,27 +10,22 @@ import {
   Image,
   Animated,
   PanResponder,
+  GestureResponderEvent,
+  PanResponderGestureState,
 } from "react-native";
-import {
-  ChevronUp,
-  Clock,
-  MapPin,
-  Users,
-  Calendar,
-  Tag,
-} from "lucide-react-native";
+import { Clock, MapPin, Users, Calendar, Tag } from "lucide-react-native";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 const ACCENT = "#d6361e";
 
-// Sheet sizing — these three numbers define the whole feel of the gesture.
-const PEEK_HEIGHT = SCREEN_HEIGHT * 0.4;
-const EXPANDED_HEIGHT = SCREEN_HEIGHT * 0.82;
+const PEEK_HEIGHT = SCREEN_HEIGHT * 0.42;
+const EXPANDED_HEIGHT = SCREEN_HEIGHT * 0.85;
 const CLOSE_THRESHOLD = PEEK_HEIGHT * 0.55;
 const SIDE_MARGIN = 10;
 const BOTTOM_MARGIN = 16;
+const DRAG_CAPTURE_SLOP = 6;
 
 interface CellDetailModalProps {
   visible: boolean;
@@ -42,10 +37,12 @@ const StatItem = ({
   icon,
   label,
   value,
+  caption,
 }: {
   icon: React.ReactNode;
   label: string;
   value?: string;
+  caption?: string;
 }) => {
   if (!value) return null;
   return (
@@ -55,6 +52,11 @@ const StatItem = ({
         {value}
       </Text>
       <Text style={styles.statLabel}>{label}</Text>
+      {caption && (
+        <Text style={styles.statCaption} numberOfLines={1}>
+          {caption}
+        </Text>
+      )}
     </View>
   );
 };
@@ -65,8 +67,17 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
   cell,
 }) => {
   const heightAnim = useRef(new Animated.Value(0)).current;
+  const stickyHeaderAnim = useRef(new Animated.Value(0)).current;
+
+  // Refs for gesture logic — always fresh, never stale
   const currentHeightRef = useRef(0);
   const dragStartHeight = useRef(PEEK_HEIGHT);
+  const scrollOffsetRef = useRef(0);
+  const isExpandedRef = useRef(false);
+
+  // State only for cosmetic updates (sticky header display)
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [showStickyHeader, setShowStickyHeader] = useState(false);
 
   useEffect(() => {
     const id = heightAnim.addListener(({ value }) => {
@@ -78,9 +89,21 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
   useEffect(() => {
     if (visible) {
       heightAnim.setValue(0);
+      currentHeightRef.current = 0;
+      scrollOffsetRef.current = 0;
+      dragStartHeight.current = PEEK_HEIGHT;
+      isExpandedRef.current = false;
+      setIsExpanded(false);
+      setShowStickyHeader(false);
+      stickyHeaderAnim.setValue(0);
       requestAnimationFrame(() => snapTo(PEEK_HEIGHT));
     }
   }, [visible]);
+
+  const markExpanded = (val: boolean) => {
+    isExpandedRef.current = val;
+    setIsExpanded(val);
+  };
 
   const snapTo = (target: number) => {
     Animated.spring(heightAnim, {
@@ -88,7 +111,11 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
       useNativeDriver: false,
       bounciness: 4,
       speed: 14,
-    }).start();
+    }).start(() => {
+      dragStartHeight.current = target;
+      currentHeightRef.current = target;
+      markExpanded(target >= EXPANDED_HEIGHT * 0.99);
+    });
   };
 
   const closeSheet = () => {
@@ -99,32 +126,72 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
     }).start(() => onClose());
   };
 
-  const panResponder = useRef(
+  const onDragMove = (
+    _: GestureResponderEvent,
+    gesture: PanResponderGestureState
+  ) => {
+    const newHeight = dragStartHeight.current - gesture.dy;
+    const clamped = Math.max(
+      CLOSE_THRESHOLD * 0.6,
+      Math.min(EXPANDED_HEIGHT, newHeight)
+    );
+    heightAnim.setValue(clamped);
+  };
+
+  const onDragRelease = (
+    _: GestureResponderEvent,
+    gesture: PanResponderGestureState
+  ) => {
+    const released = dragStartHeight.current - gesture.dy;
+    const midpoint = (PEEK_HEIGHT + EXPANDED_HEIGHT) / 2;
+
+    if (released < CLOSE_THRESHOLD) {
+      closeSheet();
+    } else if (released > midpoint) {
+      snapTo(EXPANDED_HEIGHT);
+    } else {
+      snapTo(PEEK_HEIGHT);
+    }
+  };
+
+  const headerPanResponder = useRef(
     PanResponder.create({
       onStartShouldSetPanResponder: () => true,
       onMoveShouldSetPanResponder: (_, g) =>
-        Math.abs(g.dy) > Math.abs(g.dx) && Math.abs(g.dy) > 4,
+        Math.abs(g.dy) > Math.abs(g.dx) && Math.abs(g.dy) > DRAG_CAPTURE_SLOP,
       onPanResponderGrant: () => {
         dragStartHeight.current = currentHeightRef.current;
       },
-      onPanResponderMove: (_, gesture) => {
-        const newHeight = dragStartHeight.current - gesture.dy;
-        const clamped = Math.max(
-          CLOSE_THRESHOLD * 0.6,
-          Math.min(EXPANDED_HEIGHT, newHeight)
-        );
-        heightAnim.setValue(clamped);
-      },
-      onPanResponderRelease: (_, gesture) => {
-        const released = dragStartHeight.current - gesture.dy;
-        if (released < CLOSE_THRESHOLD) {
-          closeSheet();
-        } else if (released > (PEEK_HEIGHT + EXPANDED_HEIGHT) / 2) {
-          snapTo(EXPANDED_HEIGHT);
-        } else {
-          snapTo(PEEK_HEIGHT);
+      onPanResponderMove: onDragMove,
+      onPanResponderRelease: onDragRelease,
+      onPanResponderTerminate: onDragRelease,
+    })
+  ).current;
+
+  // Capture-phase responder for content area — intercepts gestures
+  // BEFORE ScrollView claims them, allowing sheet to collapse
+  const contentPanResponder = useRef(
+    PanResponder.create({
+      onStartShouldSetPanResponderCapture: () => false,
+      onMoveShouldSetPanResponderCapture: (_, g) => {
+        const draggingDown = g.dy > DRAG_CAPTURE_SLOP;
+        const draggingUp = g.dy < -DRAG_CAPTURE_SLOP;
+        const atTop = scrollOffsetRef.current <= 0;
+
+        if (!isExpandedRef.current && (draggingDown || draggingUp)) {
+          return true;
         }
+        if (isExpandedRef.current && draggingDown && atTop) {
+          return true;
+        }
+        return false;
       },
+      onPanResponderGrant: () => {
+        dragStartHeight.current = currentHeightRef.current;
+      },
+      onPanResponderMove: onDragMove,
+      onPanResponderRelease: onDragRelease,
+      onPanResponderTerminate: onDragRelease,
     })
   ).current;
 
@@ -150,7 +217,6 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
       onRequestClose={closeSheet}
     >
       <View style={styles.overlay}>
-        {/* Backdrop — tap to dismiss */}
         <TouchableOpacity
           style={StyleSheet.absoluteFill}
           activeOpacity={1}
@@ -161,10 +227,12 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
           />
         </TouchableOpacity>
 
-        {/* Floating sheet */}
         <Animated.View style={[styles.sheet, { height: heightAnim }]}>
-          {/* Drag zone — handle, compact header, stat row. Always visible. */}
-          <View {...panResponder.panHandlers}>
+          {/* Header — always draggable */}
+          <View
+            {...headerPanResponder.panHandlers}
+            style={styles.headerContainer}
+          >
             <View style={styles.handleBar} />
 
             <View style={styles.headerRow}>
@@ -211,78 +279,134 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
             </View>
           </View>
 
-          {/* Scrollable detail content — fills in as the sheet expands */}
-          <ScrollView
-            style={styles.scroll}
-            contentContainerStyle={styles.scrollContent}
-            showsVerticalScrollIndicator={false}
-          >
-            {gallery.length > 1 && (
-              <ScrollView
-                horizontal
-                showsHorizontalScrollIndicator={false}
-                style={styles.gallery}
-                contentContainerStyle={{ paddingRight: 20 }}
+          {/* Content — wrapped in capture-phase responder */}
+          <View style={styles.scroll} {...contentPanResponder.panHandlers}>
+            <ScrollView
+              style={styles.scroll}
+              contentContainerStyle={styles.scrollContent}
+              showsVerticalScrollIndicator={false}
+              scrollEnabled
+              bounces={isExpanded}
+              onScroll={(e) => {
+                scrollOffsetRef.current = e.nativeEvent.contentOffset.y;
+                // Show sticky header when scrolled down
+                if (e.nativeEvent.contentOffset.y > 10) {
+                  setShowStickyHeader(true);
+                } else {
+                  setShowStickyHeader(false);
+                }
+              }}
+              scrollEventThrottle={16}
+            >
+              {gallery.length > 1 && (
+                <ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  style={styles.gallery}
+                  contentContainerStyle={{ paddingRight: 20 }}
+                >
+                  {gallery.slice(1).map((uri, i) => (
+                    <Image
+                      key={i}
+                      source={{ uri }}
+                      style={styles.galleryImage}
+                      resizeMode="cover"
+                    />
+                  ))}
+                </ScrollView>
+              )}
+
+              {(cell.cell_description || cell.frequency) && (
+                <View style={styles.summaryCard}>
+                  {cell.cell_description && (
+                    <View style={styles.summarySection}>
+                      <Text style={styles.summaryLabel}>About</Text>
+                      <Text style={styles.summaryContent}>
+                        {cell.cell_description}
+                      </Text>
+                    </View>
+                  )}
+
+                  {cell.cell_description && cell.frequency && (
+                    <View style={styles.summaryDivider} />
+                  )}
+
+                  {cell.frequency && (
+                    <View style={styles.summarySection}>
+                      <Text style={styles.summaryLabel}>Frequency</Text>
+                      <Text style={styles.summaryContent}>
+                        {cell.frequency}
+                      </Text>
+                    </View>
+                  )}
+                </View>
+              )}
+
+              {cell.address && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Location</Text>
+                  <View style={styles.infoRow}>
+                    <MapPin size={16} color={ACCENT} strokeWidth={2} />
+                    <Text style={[styles.sectionContent, { flex: 1 }]}>
+                      {cell.address}
+                    </Text>
+                  </View>
+                </View>
+              )}
+
+              {(cell.cell_leader_1_name || cell.cell_leader_2_name) && (
+                <View style={styles.section}>
+                  <Text style={styles.sectionTitle}>Leaders</Text>
+                  {[cell.cell_leader_1_name, cell.cell_leader_2_name]
+                    .filter(Boolean)
+                    .map((name, i) => (
+                      <View key={i} style={styles.leaderRow}>
+                        <View style={styles.avatar}>
+                          <Text style={styles.avatarInitial}>
+                            {name?.charAt(0)}
+                          </Text>
+                        </View>
+                        <Text style={styles.leaderName}>{name}</Text>
+                      </View>
+                    ))}
+                </View>
+              )}
+
+              <View style={{ height: 40 }} />
+            </ScrollView>
+          </View>
+
+          {/* Sticky header — appears when scrolling content */}
+          {showStickyHeader && (
+            <Animated.View
+              style={[styles.stickyHeader, { opacity: stickyHeaderAnim }]}
+            >
+              <View
+                style={{
+                  flexDirection: "row",
+                  alignItems: "center",
+                  justifyContent: "space-between",
+                  paddingHorizontal: 18,
+                  paddingVertical: 12,
+                }}
               >
-                {gallery.slice(1).map((uri, i) => (
-                  <Image
-                    key={i}
-                    source={{ uri }}
-                    style={styles.galleryImage}
-                    resizeMode="cover"
-                  />
-                ))}
-              </ScrollView>
-            )}
-
-            {cell.cell_description && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>About</Text>
-                <Text style={styles.sectionContent}>
-                  {cell.cell_description}
-                </Text>
-              </View>
-            )}
-
-            {cell.frequency && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Frequency</Text>
-                <Text style={styles.sectionContent}>{cell.frequency}</Text>
-              </View>
-            )}
-
-            {cell.address && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Location</Text>
-                <View style={styles.infoRow}>
-                  <MapPin size={16} color={ACCENT} strokeWidth={2} />
-                  <Text style={[styles.sectionContent, { flex: 1 }]}>
-                    {cell.address}
+                <View>
+                  <Text style={styles.stickyTitle} numberOfLines={1}>
+                    {cell?.cell_name}
                   </Text>
                 </View>
+                <TouchableOpacity style={styles.joinButton}>
+                  <Text style={styles.joinButtonText}>Join +</Text>
+                </TouchableOpacity>
               </View>
-            )}
-
-            {(cell.cell_leader_1_name || cell.cell_leader_2_name) && (
-              <View style={styles.section}>
-                <Text style={styles.sectionTitle}>Leaders</Text>
-                {[cell.cell_leader_1_name, cell.cell_leader_2_name]
-                  .filter(Boolean)
-                  .map((name, i) => (
-                    <View key={i} style={styles.leaderRow}>
-                      <View style={styles.avatar}>
-                        <Text style={styles.avatarInitial}>
-                          {name?.charAt(0)}
-                        </Text>
-                      </View>
-                      <Text style={styles.leaderName}>{name}</Text>
-                    </View>
-                  ))}
-              </View>
-            )}
-
-            <View style={{ height: 40 }} />
-          </ScrollView>
+              <View
+                style={{
+                  height: 1,
+                  backgroundColor: "#f0f0f1",
+                }}
+              />
+            </Animated.View>
+          )}
         </Animated.View>
       </View>
     </Modal>
@@ -318,6 +442,10 @@ const styles = StyleSheet.create({
     alignSelf: "center",
     marginTop: 10,
     marginBottom: 12,
+  },
+  headerContainer: {
+    backgroundColor: "#ffffff",
+    zIndex: 10,
   },
   headerRow: {
     flexDirection: "row",
@@ -376,6 +504,12 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.3,
   },
+  statCaption: {
+    fontSize: 9,
+    color: "#c2c2c6",
+    fontStyle: "italic",
+    marginTop: 1,
+  },
   scroll: {
     flex: 1,
   },
@@ -391,6 +525,32 @@ const styles = StyleSheet.create({
     height: 130,
     borderRadius: 12,
     marginRight: 12,
+  },
+  summaryCard: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: 16,
+    paddingHorizontal: 16,
+    marginTop: 4,
+  },
+  summarySection: {
+    paddingVertical: 14,
+  },
+  summaryLabel: {
+    fontSize: 11,
+    fontWeight: "700",
+    color: "#9ca3af",
+    textTransform: "uppercase",
+    letterSpacing: 0.4,
+    marginBottom: 6,
+  },
+  summaryContent: {
+    fontSize: 14,
+    color: "#3c3c43",
+    lineHeight: 20,
+  },
+  summaryDivider: {
+    height: 1,
+    backgroundColor: "#e5e5ea",
   },
   section: {
     marginTop: 22,
@@ -434,6 +594,22 @@ const styles = StyleSheet.create({
     fontSize: 14,
     color: "#1c1c1e",
     fontWeight: "500",
+  },
+  stickyHeader: {
+    position: "absolute",
+    bottom: 0,
+    left: 0,
+    right: 0,
+    backgroundColor: "#ffffff",
+    zIndex: 5,
+    borderTopWidth: 1,
+    borderTopColor: "#f0f0f1",
+  },
+  stickyTitle: {
+    fontSize: 16,
+    fontWeight: "700",
+    color: "#1c1c1e",
+    maxWidth: SCREEN_WIDTH * 0.7,
   },
   joinButton: {
     backgroundColor: "#007AFF",
