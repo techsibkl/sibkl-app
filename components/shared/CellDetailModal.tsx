@@ -74,6 +74,8 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
   const dragStartHeight = useRef(PEEK_HEIGHT);
   const scrollOffsetRef = useRef(0);
   const isExpandedRef = useRef(false);
+  const lastScrollOffsetRef = useRef(0);
+  const lastScrollTimeRef = useRef(0);
 
   // State only for cosmetic updates (sticky header display)
   const [isExpanded, setIsExpanded] = useState(false);
@@ -91,6 +93,8 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
       heightAnim.setValue(0);
       currentHeightRef.current = 0;
       scrollOffsetRef.current = 0;
+      lastScrollOffsetRef.current = 0;
+      lastScrollTimeRef.current = 0;
       dragStartHeight.current = PEEK_HEIGHT;
       isExpandedRef.current = false;
       setIsExpanded(false);
@@ -181,6 +185,7 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
         if (!isExpandedRef.current && (draggingDown || draggingUp)) {
           return true;
         }
+        // When fully expanded, dragging down while at top allows closing
         if (isExpandedRef.current && draggingDown && atTop) {
           return true;
         }
@@ -272,7 +277,7 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
               />
               <View style={styles.statDivider} />
               <StatItem
-                icon={<Tag size={16} color={ACCENT} strokeWidth={2} />}
+                icon={<Users size={16} color={ACCENT} strokeWidth={2} />}
                 label="AGE GROUP"
                 value={cell.age_group}
               />
@@ -288,9 +293,33 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
               scrollEnabled
               bounces={isExpanded}
               onScroll={(e) => {
-                scrollOffsetRef.current = e.nativeEvent.contentOffset.y;
+                const currentOffset = e.nativeEvent.contentOffset.y;
+                const now = Date.now();
+                scrollOffsetRef.current = currentOffset;
+
+                // Calculate scroll velocity
+                const timeDiff = now - lastScrollTimeRef.current;
+                if (timeDiff > 0) {
+                  const offsetDiff = currentOffset - lastScrollOffsetRef.current;
+                  const velocity = offsetDiff / timeDiff; // pixels per ms
+
+                  // Only allow momentum snap at the very top of the list
+                  if (currentOffset <= 0 && Math.abs(velocity) > 0.5) {
+                    if (velocity > 0.5 && !isExpandedRef.current) {
+                      // Scrolling down hard while NOT expanded -> expand
+                      snapTo(EXPANDED_HEIGHT);
+                    } else if (velocity < -0.5 && isExpandedRef.current) {
+                      // Scrolling up hard while expanded -> close
+                      snapTo(PEEK_HEIGHT);
+                    }
+                  }
+                }
+
+                lastScrollOffsetRef.current = currentOffset;
+                lastScrollTimeRef.current = now;
+
                 // Show sticky header when scrolled down
-                if (e.nativeEvent.contentOffset.y > 10) {
+                if (currentOffset > 10) {
                   setShowStickyHeader(true);
                 } else {
                   setShowStickyHeader(false);
