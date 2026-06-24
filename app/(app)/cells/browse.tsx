@@ -9,13 +9,16 @@ import { useThemeColors } from "@/hooks/useThemeColor";
 import { Cell } from "@/services/Cell/cell.types";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useAuthStore } from "@/stores/authStore";
-import React, { useState } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
 	FlatList,
 	StatusBar,
 	Text,
 	View,
 	ScrollView,
+	Pressable,
+	StyleSheet,
+	Animated,
 } from "react-native";
 import { MapPin, Clock, Users } from "lucide-react-native";
 
@@ -23,9 +26,11 @@ const BrowseCellsScreen = () => {
 	const { isDark } = useThemeColors();
 	const { user } = useAuthStore();
 	const [searchQuery, setSearchQuery] = useState("");
+	const [browseTab, setBrowseTab] = useState<"available" | "joined">("available");
 	const [joinedCells, setJoinedCells] = useState<number[]>([]);
 	const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
 	const [modalVisible, setModalVisible] = useState(false);
+	const underlinePosition = useRef(new Animated.Value(0)).current;
 
 	// Fetch all available cells
 	const { data: availableCells = [], isPending: cellsLoading } = useCellsQuery();
@@ -36,14 +41,32 @@ const BrowseCellsScreen = () => {
 	// Get user's current cell IDs
 	const userCellIds = (person?.cells ?? []).map((cell) => cell.id);
 
-	// Filter cells based on search query and exclude already joined
-	const filteredCells = (availableCells ?? [])
+	// Available cells (not joined yet)
+	const availableCellsFiltered = (availableCells ?? [])
 		.filter((cell: Cell) => !userCellIds?.includes(cell.id))
 		.filter((cell: Cell) =>
 			cell?.cell_name
 				?.toLowerCase()
 				.includes(searchQuery.toLowerCase())
 		);
+
+	// Joined cells
+	const joinedCellsList = (person?.cells ?? [])
+		.filter((cell: Cell) =>
+			cell?.cell_name
+				?.toLowerCase()
+				.includes(searchQuery.toLowerCase())
+		);
+
+	const filteredCells = browseTab === "available" ? availableCellsFiltered : joinedCellsList;
+
+	useEffect(() => {
+		Animated.timing(underlinePosition, {
+			toValue: browseTab === "available" ? 0 : 1,
+			duration: 300,
+			useNativeDriver: false,
+		}).start();
+	}, [browseTab]);
 
 	const hasJoinedAnyCells = joinedCells.length > 0 || userCellIds.length > 0;
 
@@ -78,13 +101,49 @@ const BrowseCellsScreen = () => {
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
 
-			<SharedSearchBar
-				searchQuery={searchQuery}
-				onSearchChange={setSearchQuery}
-				placeholder="Search groups..."
-			/>
+		<SharedSearchBar
+			searchQuery={searchQuery}
+			onSearchChange={setSearchQuery}
+			placeholder="Search groups..."
+		/>
 
-			{/* Content */}
+		{/* Premium Tab Navigation */}
+		<View style={styles.tabWrapper}>
+			<View style={styles.tabContainer}>
+				<Pressable 
+					onPress={() => setBrowseTab("available")}
+					style={[styles.tab, browseTab === "available" && styles.tabActive]}
+				>
+					<Text style={[styles.tabText, browseTab === "available" && styles.tabTextActive]}>
+						All
+					</Text>
+				</Pressable>
+				<Pressable 
+					onPress={() => setBrowseTab("joined")}
+					style={[styles.tab, browseTab === "joined" && styles.tabActive]}
+				>
+					<Text style={[styles.tabText, browseTab === "joined" && styles.tabTextActive]}>
+						My Cells
+					</Text>
+				</Pressable>
+			</View>
+			<Animated.View 
+				style={[
+					styles.underline,
+					browseTab === "available" ? { marginLeft: 16 } : { marginRight: 16 },
+					{
+						transform: [{
+							translateX: underlinePosition.interpolate({
+								inputRange: [0, 1],
+								outputRange: [0, 200],
+							})
+						}]
+					}
+				]} 
+			/>
+		</View>
+
+		{/* Content */}
 			<View className="flex-1">
 				{cellsLoading ? (
 					<View className="flex-1 items-center justify-center">
@@ -118,5 +177,42 @@ const BrowseCellsScreen = () => {
 		</SharedBody>
 	);
 };
+
+const styles = StyleSheet.create({
+	tabWrapper: {
+		borderBottomWidth: 1,
+		borderBottomColor: "#f3f4f6",
+	},
+	tabContainer: {
+		flexDirection: "row",
+		paddingHorizontal: 16,
+		paddingVertical: 0,
+	},
+	tab: {
+		flex: 1,
+		paddingVertical: 16,
+		paddingHorizontal: 12,
+		alignItems: "center",
+	},
+	tabActive: {
+		opacity: 1,
+	},
+	tabText: {
+		fontSize: 15,
+		fontWeight: "500",
+		color: "#9ca3af",
+		letterSpacing: -0.3,
+	},
+	tabTextActive: {
+		color: "#1f2937",
+		fontWeight: "600",
+	},
+	underline: {
+		height: 3,
+		width: "45%",
+		backgroundColor: "#d6361e",
+		borderRadius: 1.5,
+	},
+});
 
 export default BrowseCellsScreen;
