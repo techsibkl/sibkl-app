@@ -38,6 +38,9 @@ const BrowseCellsScreen = () => {
 	// Fetch user's current person data
 	const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
 
+	// Get leader cell IDs
+	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
+
 	// Get user's current cell IDs
 	const userCellIds = (person?.cells ?? []).map((cell) => cell.id);
 
@@ -169,11 +172,18 @@ const BrowseCellsScreen = () => {
 				)}
 			</View>
 
-		<CellDetailModal
-			visible={modalVisible}
-			onClose={() => setModalVisible(false)}
-			cell={selectedCell}
-		/>
+	<CellDetailModal
+		visible={modalVisible}
+		onClose={() => setModalVisible(false)}
+		cell={selectedCell}
+		isJoined={browseTab === "joined" || userCellIds?.includes(selectedCell?.id as any)}
+		isLeader={selectedCell?.id ? ledCells?.map(Number).includes(Number(selectedCell.id)) : false}
+		onManage={() => {
+			// Navigate to cell management screen
+			// You can update this path based on your routing structure
+			console.log("Manage cell:", selectedCell?.id);
+		}}
+	/>
 		</SharedBody>
 	);
 };

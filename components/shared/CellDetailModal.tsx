@@ -31,6 +31,9 @@ interface CellDetailModalProps {
   visible: boolean;
   onClose: () => void;
   cell: any;
+  isJoined?: boolean;
+  isLeader?: boolean;
+  onManage?: () => void;
 }
 
 const StatItem = ({
@@ -65,6 +68,9 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
   visible,
   onClose,
   cell,
+  isJoined = false,
+  isLeader = false,
+  onManage,
 }) => {
   const heightAnim = useRef(new Animated.Value(0)).current;
   const stickyHeaderAnim = useRef(new Animated.Value(0)).current;
@@ -258,9 +264,16 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
                   </Text>
                 )}
               </View>
-              <TouchableOpacity style={styles.joinButton}>
-                <Text style={styles.joinButtonText}>Join +</Text>
-              </TouchableOpacity>
+              {!isJoined && (
+                <TouchableOpacity style={styles.joinButton}>
+                  <Text style={styles.joinButtonText}>Join +</Text>
+                </TouchableOpacity>
+              )}
+              {isJoined && isLeader && (
+                <TouchableOpacity style={styles.joinButton} onPress={onManage}>
+                  <Text style={styles.joinButtonText}>Manage</Text>
+                </TouchableOpacity>
+              )}
             </View>
 
             <View style={styles.statRow}>
@@ -424,9 +437,16 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
                     {cell?.cell_name}
                   </Text>
                 </View>
-                <TouchableOpacity style={styles.joinButton}>
-                  <Text style={styles.joinButtonText}>Join +</Text>
-                </TouchableOpacity>
+                {!isJoined && (
+                  <TouchableOpacity style={styles.joinButton}>
+                    <Text style={styles.joinButtonText}>Join +</Text>
+                  </TouchableOpacity>
+                )}
+                {isJoined && isLeader && (
+                  <TouchableOpacity style={styles.joinButton} onPress={onManage}>
+                    <Text style={styles.joinButtonText}>Manage</Text>
+                  </TouchableOpacity>
+                )}
               </View>
               <View
                 style={{
