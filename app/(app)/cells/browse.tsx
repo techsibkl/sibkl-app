@@ -1,26 +1,25 @@
 "use client";
 
+import { TestCellCard } from "@/components/Cards/testCellCard";
+import CellCard from "@/components/Cells/CellCard";
+import CellDetailModal from "@/components/shared/CellDetailModal";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
-import { TestCellCard } from "@/components/Cards/testCellCard";
-import CellDetailModal from "@/components/shared/CellDetailModal";
 import { useCellsQuery } from "@/hooks/Cell/useCellQuery";
+import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Cell } from "@/services/Cell/cell.types";
-import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useAuthStore } from "@/stores/authStore";
-import React, { useState, useEffect, useRef } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-	FlatList,
-	StatusBar,
-	Text,
-	View,
-	ScrollView,
-	Pressable,
-	StyleSheet,
 	Animated,
+	FlatList,
+	Pressable,
+	StatusBar,
+	StyleSheet,
+	Text,
+	View
 } from "react-native";
-import { MapPin, Clock, Users } from "lucide-react-native";
 
 const BrowseCellsScreen = () => {
 	const { isDark } = useThemeColors();
@@ -82,14 +81,19 @@ const BrowseCellsScreen = () => {
 		setModalVisible(true);
 	};
 
-	const renderCellCard = ({ item: cell }: { item: Cell }) => (
-		<TestCellCard 
-			cell={cell} 
-			hasJoinedAnyCells={hasJoinedAnyCells}
-			onJoin={handleJoinCell}
-			onViewDetails={handleViewDetails}
-		/>
-	);
+	const renderCellCard = ({ item: cell }: { item: Cell }) => {
+		if (browseTab === "available") {
+			return (
+				<TestCellCard 
+					cell={cell} 
+					hasJoinedAnyCells={hasJoinedAnyCells}
+					onJoin={handleJoinCell}
+					onViewDetails={handleViewDetails}
+				/>
+			);
+		}
+		return <CellCard cell={cell} />;
+	};
 
 	if (!user)
 		return (

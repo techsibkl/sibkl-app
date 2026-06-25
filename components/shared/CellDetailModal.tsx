@@ -13,7 +13,7 @@ import {
   GestureResponderEvent,
   PanResponderGestureState,
 } from "react-native";
-import { Clock, MapPin, Users, Calendar, Tag } from "lucide-react-native";
+import { Clock, MapPin, Users, Calendar, Tag, Repeat } from "lucide-react-native";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -358,59 +358,59 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
                 </ScrollView>
               )}
 
-              {(cell.cell_description || cell.frequency) && (
-                <View style={styles.summaryCard}>
-                  {cell.cell_description && (
-                    <View style={styles.summarySection}>
-                      <Text style={styles.summaryLabel}>About</Text>
-                      <Text style={styles.summaryContent}>
-                        {cell.cell_description}
-                      </Text>
-                    </View>
-                  )}
-
-                  {cell.cell_description && cell.frequency && (
-                    <View style={styles.summaryDivider} />
-                  )}
-
-                  {cell.frequency && (
-                    <View style={styles.summarySection}>
-                      <Text style={styles.summaryLabel}>Frequency</Text>
-                      <Text style={styles.summaryContent}>
-                        {cell.frequency}
-                      </Text>
-                    </View>
-                  )}
-                </View>
-              )}
-
-              {cell.address && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Location</Text>
-                  <View style={styles.infoRow}>
-                    <MapPin size={16} color={ACCENT} strokeWidth={2} />
-                    <Text style={[styles.sectionContent, { flex: 1 }]}>
-                      {cell.address}
-                    </Text>
-                  </View>
-                </View>
-              )}
-
-              {(cell.cell_leader_1_name || cell.cell_leader_2_name) && (
-                <View style={styles.section}>
-                  <Text style={styles.sectionTitle}>Leaders</Text>
-                  {[cell.cell_leader_1_name, cell.cell_leader_2_name]
-                    .filter(Boolean)
-                    .map((name, i) => (
-                      <View key={i} style={styles.leaderRow}>
-                        <View style={styles.avatar}>
-                          <Text style={styles.avatarInitial}>
-                            {name?.charAt(0)}
-                          </Text>
-                        </View>
-                        <Text style={styles.leaderName}>{name}</Text>
+              {/* Unified Info Card */}
+              <View style={styles.infoGrid}>
+                {/* Row 1: Cell Leader (full width) */}
+                {(cell.cell_leader_1_name || cell.cell_leader_2_name) && (
+                  <View style={[styles.gridRow, styles.gridRowWithSpacing]}>
+                    <View style={styles.gridCellFull}>
+                      <View style={styles.gridLabelContainer}>
+                        <Users size={12} color={ACCENT} strokeWidth={1.5} />
+                        <Text style={styles.gridLabel}>Cell Leader</Text>
                       </View>
-                    ))}
+                      {[cell.cell_leader_1_name, cell.cell_leader_2_name]
+                        .filter(Boolean)
+                        .map((name, i) => (
+                          <Text key={i} style={styles.gridContent}>
+                            {name}
+                          </Text>
+                        ))}
+                    </View>
+                  </View>
+                )}
+
+                {/* Row 2: Location & Frequency */}
+                <View style={[styles.gridRow, styles.gridRowLast]}>
+                  {cell.address && (
+                    <View style={styles.gridCell}>
+                      <View style={styles.gridLabelContainer}>
+                        <MapPin size={12} color={ACCENT} strokeWidth={1.5} />
+                        <Text style={styles.gridLabel}>Location</Text>
+                      </View>
+                      <Text style={styles.gridContent} numberOfLines={2}>
+                        {cell.address}
+                      </Text>
+                    </View>
+                  )}
+                  {cell.frequency && (
+                    <View style={[styles.gridCell, styles.gridCellLast]}>
+                      <View style={styles.gridLabelContainer}>
+                        <Repeat size={12} color={ACCENT} strokeWidth={1.5} />
+                        <Text style={styles.gridLabel}>Frequency</Text>
+                      </View>
+                      <Text style={styles.gridContent}>{cell.frequency}</Text>
+                    </View>
+                  )}
+                </View>
+              </View>
+
+              {/* About Card */}
+              {cell.cell_description && (
+                <View style={styles.aboutCard}>
+                  <Text style={styles.aboutCardTitle}>About This Cell</Text>
+                  <Text style={styles.aboutCardContent}>
+                    {cell.cell_description}
+                  </Text>
                 </View>
               )}
 
@@ -564,10 +564,11 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     paddingHorizontal: 18,
-    paddingTop: 18,
+    paddingTop: 12,
+    paddingBottom: 20,
   },
   gallery: {
-    marginBottom: 8,
+    marginBottom: 16,
   },
   galleryImage: {
     width: SCREEN_WIDTH * 0.55,
@@ -670,6 +671,84 @@ const styles = StyleSheet.create({
     color: "white",
     fontSize: 13,
     fontWeight: "600",
+  },
+  infoGrid: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#f0f0f1",
+    overflow: "hidden",
+    marginBottom: 16,
+  },
+  gridRow: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f1",
+  },
+  gridRowLast: {
+    borderBottomWidth: 0,
+  },
+  gridRowWithSpacing: {
+    flexDirection: "row",
+    borderBottomWidth: 1,
+    borderBottomColor: "#f0f0f1",
+    paddingBottom: 12,
+    marginBottom: 12,
+  },
+  gridCell: {
+    flex: 1,
+    padding: 14,
+    borderRightWidth: 1,
+    borderRightColor: "#f0f0f1",
+  },
+  gridCellLast: {
+    borderRightWidth: 0,
+  },
+  gridCellFull: {
+    flex: 1,
+    padding: 14,
+    borderRightWidth: 0,
+  },
+  gridLabel: {
+    fontSize: 11,
+    fontWeight: "600",
+    color: "#9ca3af",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 8,
+  },
+  gridLabelContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    gap: 6,
+  },
+  gridContent: {
+    fontSize: 13,
+    fontWeight: "500",
+    color: "#1c1c1e",
+    lineHeight: 19,
+  },
+  aboutCard: {
+    backgroundColor: "#f8f9fa",
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: "#f0f0f1",
+    padding: 16,
+    marginTop: 4,
+  },
+  aboutCardTitle: {
+    fontSize: 12,
+    fontWeight: "600",
+    color: "#9ca3af",
+    textTransform: "uppercase",
+    letterSpacing: 0.3,
+    marginBottom: 10,
+  },
+  aboutCardContent: {
+    fontSize: 14,
+    fontWeight: "400",
+    color: "#1c1c1e",
+    lineHeight: 22,
   },
 });
 
