@@ -5,9 +5,10 @@ import CellCard from "@/components/Cells/CellCard";
 import CellDetailModal from "@/components/shared/CellDetailModal";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
-import { useCellsQuery } from "@/hooks/Cell/useCellQuery";
+import { useCellsPublicQuery} from "@/hooks/Cell/useCellQuery";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
+import { joinCell } from "@/services/Cell/cell.service";
 import { Cell } from "@/services/Cell/cell.types";
 import { useAuthStore } from "@/stores/authStore";
 import React, { useEffect, useRef, useState } from "react";
@@ -25,25 +26,34 @@ const CellsScreen = () => {
 	const { isDark } = useThemeColors();
 	const { user } = useAuthStore();
 	const [searchQuery, setSearchQuery] = useState("");
-	const [browseTab, setBrowseTab] = useState<"available" | "joined">("available");
+	const [browseTab, setBrowseTab] = useState<"available" | "joined">("joined");
 	const [joinedCells, setJoinedCells] = useState<number[]>([]);
 	const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
 	const [modalVisible, setModalVisible] = useState(false);
 	const underlinePosition = useRef(new Animated.Value(0)).current;
 
 	// Fetch all available cells
-	const { data: availableCells = [], isPending: cellsLoading } = useCellsQuery();
+	const { data: availableCells = [], isPending: cellsLoading } = useCellsPublicQuery();
 
 	// Fetch user's current person data
 	const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
-	console.log("person:", person);
 	// Get leader cell IDs
 	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
-	console.log("ledCells:", ledCells);
 	// Get user's current cell IDs
 	const userCellIds = (person?.cells ?? []).map((cell) => cell.id);
-	console.log("userCellIds:", userCellIds);
+	console.log("🔍 DEBUG - User Cell IDs:", userCellIds);
+	console.log("🔍 DEBUG - Person cells:", person?.cells?.map((c:any)=>({id:c.id,name:c.cell_name})));
+	
+	// #region agent log
+	fetch('http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'247e04'},body:JSON.stringify({sessionId:'247e04',location:'index.tsx:42',message:'Data loaded',data:{availableCellsCount:availableCells?.length,userCellIdsCount:userCellIds.length,personCellsCount:person?.cells?.length,browseTab},timestamp:Date.now(),runId:'debug1',hypothesisId:'A,B,C,D'})}).catch(()=>{});
+	// #endregion
+	
 	// Available cells (not joined yet)
+	// #region agent log
+	console.log("📦 All Available Cells from API:", availableCells?.map((c:any)=>({id:c.id,name:c.cell_name})));
+	fetch('http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'247e04'},body:JSON.stringify({sessionId:'247e04',location:'index.tsx:49',message:'Available cells before filter',data:{availableCells:availableCells?.map((c:any)=>({id:c.id,name:c.cell_name})),userCellIds,availableCellsCount:availableCells?.length},timestamp:Date.now(),runId:'debug1',hypothesisId:'A,B'})}).catch(()=>{});
+	// #endregion
+	
 	const availableCellsFiltered = (availableCells ?? [])
 		.filter((cell: Cell) => !userCellIds?.includes(cell.id))
 		.filter((cell: Cell) =>
@@ -51,6 +61,12 @@ const CellsScreen = () => {
 				?.toLowerCase()
 				.includes(searchQuery.toLowerCase())
 		);
+
+	console.log("✅ Cells AFTER filtering (not joined):", availableCellsFiltered?.map((c:any)=>({id:c.id,name:c.cell_name})));
+	
+	// #region agent log
+	fetch('http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'247e04'},body:JSON.stringify({sessionId:'247e04',location:'index.tsx:59',message:'Available cells after filter',data:{availableCellsFiltered:availableCellsFiltered?.map((c:any)=>({id:c.id,name:c.cell_name})),filteredCount:availableCellsFiltered.length,searchQuery},timestamp:Date.now(),runId:'debug1',hypothesisId:'A'})}).catch(()=>{});
+	// #endregion
 
 	// Joined cells
 	const joinedCellsList = (person?.cells ?? [])
@@ -60,7 +76,14 @@ const CellsScreen = () => {
 				.includes(searchQuery.toLowerCase())
 		);
 
+	console.log("👤 Your Joined Cells:", joinedCellsList?.map((c:any)=>({id:c.id,name:c.cell_name})));
+
 	const filteredCells = browseTab === "available" ? availableCellsFiltered : joinedCellsList;
+	console.log(`📋 Current Tab: "${browseTab}" | Showing ${filteredCells.length} cells`);
+	
+	// #region agent log
+	fetch('http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'247e04'},body:JSON.stringify({sessionId:'247e04',location:'index.tsx:60',message:'Filtered cells',data:{availableCellsFilteredCount:availableCellsFiltered.length,joinedCellsListCount:joinedCellsList.length,filteredCellsCount:filteredCells.length,browseTab,cellsLoading},timestamp:Date.now(),runId:'debug1',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
+	// #endregion
 
 	useEffect(() => {
 		Animated.timing(underlinePosition, {
@@ -72,9 +95,17 @@ const CellsScreen = () => {
 
 	const hasJoinedAnyCells = joinedCells.length > 0 || userCellIds.length > 0;
 
-	const handleJoinCell = (cellId: number) => {
-		setJoinedCells([...joinedCells, cellId]);
-	};
+	const handleJoinCell = async (cellId: number) => {
+		try {
+		  await joinCell(cellId);
+		  // Optionally update local state for immediate UI feedback
+		  setJoinedCells([...joinedCells, cellId]);
+		  // Or refetch the person data to sync with backend
+		} catch (error) {
+		  console.error("Failed to join cell:", error);
+		  // Show error toast to user
+		}
+	  };
 
 	const handleViewDetails = (cell: Cell) => {
 		setSelectedCell(cell);

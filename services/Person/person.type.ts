@@ -41,6 +41,7 @@ export type Person = {
 	member_id: string;
 	notes?: Note[]; // Relationship: A person can have multiple notes
 	roles: string[];
+	member_status?: "ACTIVE" | "PENDING" | "REJECTED";
 	cells: Cell[];
 	cell_ids: number[];
 	district_ids: number[];
