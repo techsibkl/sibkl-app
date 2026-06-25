@@ -1,3 +1,4 @@
+import React from "react";
 import SharedHeader from "@/components/shared/SharedHeader";
 import { Stack } from "expo-router";
 

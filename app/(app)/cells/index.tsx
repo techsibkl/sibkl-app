@@ -36,13 +36,13 @@ const CellsScreen = () => {
 
 	// Fetch user's current person data
 	const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
-
+	console.log("person:", person);
 	// Get leader cell IDs
 	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
-
+	console.log("ledCells:", ledCells);
 	// Get user's current cell IDs
 	const userCellIds = (person?.cells ?? []).map((cell) => cell.id);
-
+	console.log("userCellIds:", userCellIds);
 	// Available cells (not joined yet)
 	const availableCellsFiltered = (availableCells ?? [])
 		.filter((cell: Cell) => !userCellIds?.includes(cell.id))

@@ -20,7 +20,7 @@ const CellCard = ({ cell }: CellCardProps) => {
 			}}
 			onPress={() => router.push({
 				pathname: "/(app)/cells/profile/[id]",
-				params: { id: cell.id }
+				params: { id: cell.id! }
 			})}
 			activeOpacity={0.8}
 		>

@@ -48,7 +48,7 @@ export default function AppLayout() {
 				// tabBarStyle: { display: "none" },
 				// href: null, // hides it from tab bar
 				title: "Cells",
-				href: "/(app)/cells/",
+				href: "/(app)/cells",
 				tabBarIcon: ({ color, size, focused }) => (
 					<Circle
 						size={size}
