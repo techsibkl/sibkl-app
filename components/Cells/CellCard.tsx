@@ -18,7 +18,10 @@ const CellCard = ({ cell }: CellCardProps) => {
 				shadowRadius: 5, // Override the default blur
 				shadowOpacity: 0.05,
 			}}
-			onPress={() => router.push(`/cells/profile/${cell.id}`)}
+			onPress={() => router.push({
+				pathname: "/(app)/cells/profile/[id]",
+				params: { id: cell.id }
+			})}
 			activeOpacity={0.8}
 		>
 			<View className=" flex-row">

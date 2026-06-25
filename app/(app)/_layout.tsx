@@ -42,23 +42,23 @@ export default function AppLayout() {
 					),
 				}}
 			/>
-			<Tabs.Screen
-				name="cells"
-				options={{
-					// tabBarStyle: { display: "none" },
-					// href: null, // hides it from tab bar
-					title: "Cells",
-					href: "/(app)/cells/browse",
-					tabBarIcon: ({ color, size, focused }) => (
-						<Circle
-							size={size}
-							color={color}
-							strokeWidth={1}
-							fill={focused ? color : "none"}
-						/>
-					),
-				}}
-			/>
+		<Tabs.Screen
+			name="cells"
+			options={{
+				// tabBarStyle: { display: "none" },
+				// href: null, // hides it from tab bar
+				title: "Cells",
+				href: "/(app)/cells/",
+				tabBarIcon: ({ color, size, focused }) => (
+					<Circle
+						size={size}
+						color={color}
+						strokeWidth={1}
+						fill={focused ? color : "none"}
+					/>
+				),
+			}}
+		/>
 			<Tabs.Screen
 				name="people"
 				options={{
