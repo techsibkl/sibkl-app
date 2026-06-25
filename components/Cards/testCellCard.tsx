@@ -1,12 +1,12 @@
-import React from "react";
-import { Text, View } from "react-native";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { Cell } from "@/services/Cell/cell.types";
 import { useRouter } from "expo-router";
 import { Clock, MapPin, Users } from "lucide-react-native";
+import React from "react";
+import { Text, View } from "react-native";
+import { ActionButton } from "./ActionButton";
 import { Avatar } from "./Avatar";
 import { InfoRow } from "./InfoRow";
-import { ActionButton } from "./ActionButton";
 
 type TestCellCardProps = {
 	cell: Cell;
