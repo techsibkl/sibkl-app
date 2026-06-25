@@ -1,5 +1,6 @@
 "use client";
 
+import React from "react";
 import CreateSessionSheet from "@/components/Cells/CreateSessionSheet";
 import MembersList from "@/components/Cells/Profile/MembersList";
 import ComingSoon from "@/components/shared/ComingSoon";
@@ -8,6 +9,7 @@ import { getFabActions } from "@/constants/cont_cells";
 import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
+import { updateMemberStatus } from "@/services/Cell/cell.service";
 import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
 import {
@@ -32,18 +34,23 @@ const CellProfileScreen = () => {
   const { id } = useLocalSearchParams();
   const { user, ability } = useAuthStore();
   const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
+  console.log("person:", person);
   const {
     data: cell,
     isPending,
-    error,
+    error: queryError,
     isError,
   } = useSingleCellQuery(Number(id));
+  console.log("cell:", cell);
 
   const [activeTab, setActiveTab] = useState<
     "people" | "announcements" | "attendance"
   >("people");
   const [searchQuery, setSearchQuery] = useState("");
   const [open, setOpen] = useState(false);
+  const [memberStatuses, setMemberStatuses] = useState<Record<number, string>>({});
+  const [isUpdating, setIsUpdating] = useState<number | null>(null);
+  const [statusError, setStatusError] = useState<string | null>(null);
   const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
 
   const ledCells: number[] | undefined = person?.leader_of_cell_ids;
@@ -55,6 +62,49 @@ const CellProfileScreen = () => {
     member?.full_legal_name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
 
+  const isLeader = ledCells?.map(Number).includes(Number(id));
+  console.log("isLeader:", isLeader);
+  console.log("ledCells:", ledCells);
+  console.log("id:", id);
+
+  const handleAcceptMember = async (memberId: number) => {
+    try {
+      setIsUpdating(memberId);
+      setStatusError(null);
+
+      await updateMemberStatus(Number(id), memberId, "ACTIVE");
+
+      setMemberStatuses((prev) => ({
+        ...prev,
+        [memberId]: "ACTIVE",
+      }));
+    } catch (err: any) {
+      setStatusError(err.message || "Failed to accept member");
+      console.error("Accept member error:", err);
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
+  const handleRejectMember = async (memberId: number) => {
+    try {
+      setIsUpdating(memberId);
+      setStatusError(null);
+
+      await updateMemberStatus(Number(id), memberId, "REJECTED");
+
+      setMemberStatuses((prev) => ({
+        ...prev,
+        [memberId]: "REJECTED",
+      }));
+    } catch (err: any) {
+      setStatusError(err.message || "Failed to reject member");
+      console.error("Reject member error:", err);
+    } finally {
+      setIsUpdating(null);
+    }
+  };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "people":
@@ -63,6 +113,11 @@ const CellProfileScreen = () => {
             members={filteredMembers}
             searchQuery={searchQuery}
             onChangeText={setSearchQuery}
+            isLeader={isLeader}
+            memberStatuses={memberStatuses}
+            onAccept={handleAcceptMember}
+            onReject={handleRejectMember}
+            isUpdating={isUpdating}
           />
         );
       case "announcements":
@@ -84,8 +139,8 @@ const CellProfileScreen = () => {
     return (
       <SharedBody>
         <Text>Type of Id: {typeof id}</Text>
-        <Text>{error.message + "ID: " + id}</Text>
-        <Text>{error.name}</Text>
+        <Text>{queryError?.message + "ID: " + id}</Text>
+        <Text>{queryError?.name}</Text>
       </SharedBody>
     );
 
@@ -110,6 +165,12 @@ const CellProfileScreen = () => {
             {cell.members?.length === 1 ? "" : "s"}
           </Text>
         </View>
+
+        {statusError && (
+          <View className="bg-red-100 p-3 mx-3 rounded-lg mb-3">
+            <Text className="text-red-700 text-sm">{statusError}</Text>
+          </View>
+        )}
 
         <Text>{Array.isArray(cell.members)}</Text>
 

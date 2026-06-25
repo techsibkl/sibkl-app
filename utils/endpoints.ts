@@ -51,6 +51,8 @@ export const apiEndpoints = {
   },
   cells: {
     getAll: _endpoint("cells"),
+    getCellsPublic: _endpoint("cells/public"),
+    joinCell: (cellId: number | string) => _endpoint(`cells/${cellId}/join`),
     getById: (id: number | string) => _endpoint(`cells/${id}`),
     getSessions: (cellId: number | string) =>
       _endpoint(`cells/${cellId}/sessions`),
