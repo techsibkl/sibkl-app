@@ -716,11 +716,13 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.3,
     marginBottom: 8,
+    lineHeight: 12,
   },
   gridLabelContainer: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 6,
+    marginBottom: 8,
   },
   gridContent: {
     fontSize: 13,
