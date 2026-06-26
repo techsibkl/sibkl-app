@@ -34,13 +34,28 @@ const CellProfileScreen = () => {
   const { user, ability } = useAuthStore();
   const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
   console.log("person:", person);
+
+  const ledCells: number[] | undefined = person?.leader_of_cell_ids;
+  const isLeader = ledCells?.map(Number).includes(Number(id));
+  
+  // Only fetch from API if user is a leader
   const {
-    data: cell,
+    data: cellFromApi,
     isPending,
     error: queryError,
     isError,
-  } = useSingleCellQuery(Number(id));
+  } = useSingleCellQuery(isLeader ? Number(id) : -1);
+
+  // Get cell data from person's cells for regular members
+  const cellFromPerson = person?.cells?.find(c => c.id === Number(id));
+  
+  // Use API data for leaders, fallback to person data for members
+  const cell = isLeader ? cellFromApi : cellFromPerson;
+
   console.log("cell:", cell);
+  console.log("isLeader:", isLeader);
+  console.log("ledCells:", ledCells);
+  console.log("id:", id);
 
   const [activeTab, setActiveTab] = useState<
     "people" | "announcements" | "attendance"
@@ -52,19 +67,13 @@ const CellProfileScreen = () => {
   const [statusError, setStatusError] = useState<string | null>(null);
   const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
 
-  const ledCells: number[] | undefined = person?.leader_of_cell_ids;
-  const ledCellsFormatted = (person?.cells ?? []) // ← use same source
+  const ledCellsFormatted = (person?.cells ?? [])
     .filter((cell) => cell.id && ledCells?.map(Number).includes(Number(cell.id)))
     .map((cell) => ({ id: cell.id!, name: cell.cell_name! }));
 
   const filteredMembers = (cell?.members ?? []).filter((member: Person) =>
     member?.full_legal_name?.toLowerCase().includes(searchQuery.toLowerCase()),
   );
-
-  const isLeader = ledCells?.map(Number).includes(Number(id));
-  console.log("isLeader:", isLeader);
-  console.log("ledCells:", ledCells);
-  console.log("id:", id);
 
   const handleAcceptMember = async (memberId: number) => {
     try {
@@ -128,18 +137,25 @@ const CellProfileScreen = () => {
     }
   };
 
-  if (isPending)
+  if (isPending && isLeader)
     return (
       <SharedBody>
         <ActivityIndicator />
       </SharedBody>
     );
-  if (isError)
+  if (isError && isLeader)
     return (
       <SharedBody>
         <Text>Type of Id: {typeof id}</Text>
         <Text>{queryError?.message + "ID: " + id}</Text>
         <Text>{queryError?.name}</Text>
+      </SharedBody>
+    );
+
+  if (!cell)
+    return (
+      <SharedBody>
+        <Text>Cell not found</Text>
       </SharedBody>
     );
 
