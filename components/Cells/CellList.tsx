@@ -1,7 +1,7 @@
 import { Cell } from "@/services/Cell/cell.types";
 import { FlashList } from "@shopify/flash-list";
 import React from "react";
-import CellCard from "./CellCard";
+import MyCellCard from "./CellCard";
 import EmptyList from "./EmptyList";
 
 type CellListProps = {
@@ -18,7 +18,7 @@ const CellList = ({ cells }: CellListProps) => {
 			}}
 			ListEmptyComponent={<EmptyList />}
 			estimatedItemSize={100}
-			renderItem={({ item: cell }) => <CellCard cell={cell} />}
+			renderItem={({ item: cell }) => <MyCellCard cell={cell} />}
 		/>
 	);
 };

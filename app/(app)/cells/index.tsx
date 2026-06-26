@@ -1,11 +1,11 @@
 "use client";
 
-import { TestCellCard } from "@/components/Cards/testCellCard";
-import CellCard from "@/components/Cells/CellCard";
+import { AllCellCard } from "@/components/Cells/CellCard";
+import MyCellCard from "@/components/Cells/CellCard";
 import CellDetailModal from "@/components/shared/CellDetailModal";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
-import { useCellsPublicQuery} from "@/hooks/Cell/useCellQuery";
+import { useCellsPublicQuery } from "@/hooks/Cell/useCellQuery";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { joinCell } from "@/services/Cell/cell.service";
@@ -124,7 +124,7 @@ const CellsScreen = () => {
 	const renderCellCard = ({ item: cell }: { item: Cell }) => {
 		if (browseTab === "available") {
 			return (
-				<TestCellCard 
+				<AllCellCard 
 					cell={cell} 
 					hasJoinedAnyCells={hasJoinedAnyCells}
 					onJoin={handleJoinCell}
@@ -132,7 +132,7 @@ const CellsScreen = () => {
 				/>
 			);
 		}
-		return <CellCard cell={cell} />;
+		return <MyCellCard cell={cell} />;
 	};
 
 	if (!user)
