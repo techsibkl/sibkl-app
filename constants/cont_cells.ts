@@ -1,7 +1,10 @@
+import { FAB } from "react-native-paper";
 import { AnyAbility } from "@casl/ability";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Router } from "expo-router";
 import React from "react";
+
+type FABActionItem = React.ComponentProps<typeof FAB.Group>["actions"][number];
 
 type getFabActionsProps = {
   ability: AnyAbility;
@@ -16,7 +19,7 @@ export const getFabActions = ({
   createSessionSheetModalRef,
   cellId,
 }: getFabActionsProps) => {
-  return [
+  const actions: (FABActionItem | false)[] = [
     ability.can("create", "CellSession") && {
       icon: "calendar",
       label: "New Session",
@@ -49,5 +52,7 @@ export const getFabActions = ({
       color: "white",
       style: { backgroundColor: "#d6361e" },
     },
-  ].filter(Boolean);
+  ];
+
+  return actions.filter((action): action is FABActionItem => Boolean(action));
 };
