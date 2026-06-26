@@ -1,6 +1,5 @@
 "use client";
 
-import React from "react";
 import CreateSessionSheet from "@/components/Cells/CreateSessionSheet";
 import MembersList from "@/components/Cells/Profile/MembersList";
 import ComingSoon from "@/components/shared/ComingSoon";
@@ -17,7 +16,7 @@ import {
   BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,

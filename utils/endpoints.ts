@@ -62,6 +62,8 @@ export const apiEndpoints = {
       _endpoint(`cells/${cellId}/create-cell-session`),
     signInToSession: (cellId: number | string) =>
       _endpoint(`cells/${cellId}/sign-in-to-session`),
+    updateMemberStatus: (cellId: number | string) =>
+      _endpoint(`cells/${cellId}/member-status`),
   },
   resources: {
     getAll: _endpoint("resources"),
