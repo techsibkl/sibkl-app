@@ -108,12 +108,32 @@ const CellProfileScreen = () => {
     }
   };
 
+  // Remove member, not yet implemented
+  // const handleRemoveMember = async (memberId: number) => {
+  //   try {
+  //     setIsUpdating(memberId);
+  //     setStatusError(null);
+
+  //     await updateMemberStatus(Number(id), memberId, "REJECTED");
+
+  //     setMemberStatuses((prev) => ({
+  //       ...prev,
+  //       [memberId]: "REJECTED",
+  //     }));
+  //   } catch (err: any) {
+  //     setStatusError(err.message || "Failed to remove member");
+  //     console.error("Remove member error:", err);
+  //   } finally {
+  //     setIsUpdating(null);
+  //   }
+  // };
+
   const renderTabContent = () => {
     switch (activeTab) {
       case "people":
         return (
           <MembersList
-          members={isLeader ? filteredMembers : filteredMembers.filter((m) => (memberStatuses[m.id] || m.status || "ACTIVE") === "ACTIVE")}
+            members={isLeader ? filteredMembers : filteredMembers.filter((m) => (memberStatuses[m.id] || m.status || "ACTIVE") === "ACTIVE")}
             searchQuery={searchQuery}
             onChangeText={setSearchQuery}
             isLeader={isLeader}
@@ -121,6 +141,7 @@ const CellProfileScreen = () => {
             onAccept={handleAcceptMember}
             onReject={handleRejectMember}
             isUpdating={isUpdating}
+            onRemoveMember={handleRemoveMember}
           />
         );
       case "announcements":
