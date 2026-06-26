@@ -44,13 +44,13 @@ const CellProfileScreen = () => {
     isPending,
     error: queryError,
     isError,
-  } = useSingleCellQuery(isLeader ? Number(id) : -1);
+  } = useSingleCellQuery(Number(id));
 
   // Get cell data from person's cells for regular members
-  const cellFromPerson = person?.cells?.find(c => c.id === Number(id));
+  // const cellFromPerson = person?.cells?.find(c => c.id === Number(id));
   
   // Use API data for leaders, fallback to person data for members
-  const cell = isLeader ? cellFromApi : cellFromPerson;
+  const cell = cellFromApi;
 
   const [activeTab, setActiveTab] = useState<
     "people" | "announcements" | "attendance"
@@ -113,7 +113,7 @@ const CellProfileScreen = () => {
       case "people":
         return (
           <MembersList
-            members={filteredMembers}
+          members={isLeader ? filteredMembers : filteredMembers.filter((m) => (memberStatuses[m.id] || m.status || "ACTIVE") === "ACTIVE")}
             searchQuery={searchQuery}
             onChangeText={setSearchQuery}
             isLeader={isLeader}
