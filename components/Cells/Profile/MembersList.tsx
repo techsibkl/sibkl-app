@@ -13,6 +13,7 @@ type MembersListProps = {
 	onAccept?: (memberId: number) => void;
 	onReject?: (memberId: number) => void;
 	isUpdating?: number | null;
+	onRemoveMember?: (memberId: number) => void;
 };
 
 const MembersList = ({
@@ -24,6 +25,7 @@ const MembersList = ({
 	onAccept,
 	onReject,
 	isUpdating = null,
+	onRemoveMember,
 }: MembersListProps) => {
 	// Get status for a member
 	const getMemberStatus = (member: any) =>
@@ -58,6 +60,7 @@ const MembersList = ({
 						onAccept={onAccept}
 						onReject={onReject}
 						isUpdating={isUpdating === member.id}
+						onRemoveMember={onRemoveMember}
 					/>
 				))}
 			</View>
