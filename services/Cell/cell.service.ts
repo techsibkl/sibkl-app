@@ -46,31 +46,34 @@ import { Cell } from "./cell.types";
   };
 
   export type CellMemberStatusAction = "ACTIVE" | "PENDING" | "REJECTED";
-  
+  export type CellMemberAction = "approve" | "reject";
+
+  const getMemberAction = (status: CellMemberStatusAction): CellMemberAction => {
+    const actionMap: Record<CellMemberStatusAction, CellMemberAction> = {
+      "ACTIVE": "approve",
+      "REJECTED": "reject",
+      "PENDING": "approve"
+    };
+    return actionMap[status];
+  };
+
   export const updateMemberStatus = async (
     cellId: number,
     personId: number,
-    action: CellMemberStatusAction
+    status: CellMemberStatusAction
   ) => {
-    const response = await fetch(
-      `/api/cells/${cellId}/member-status`,
-      {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          person_id: personId,
-          action,
-        }),
-      }
+    const apiAction = getMemberAction(status);
+    const response = await secureFetch(`${apiEndpoints.cells.updateMemberStatus(cellId)}`, { 
+      method: "PUT",
+      headers: { "Content-Type": "application/json" }, 
+      body: JSON.stringify({ person_id: personId, action: apiAction }) },
     );
-  
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error?.message || "Failed to update member status");
+    const json: ReturnVal = await response.json();
+    if (!json.success) {
+      throw { 
+        status: json.status_code,
+        message: json.message };
     }
-  
-    return response.json();
+    return json.data;
   };
   
