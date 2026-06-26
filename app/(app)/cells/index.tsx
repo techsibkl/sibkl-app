@@ -54,7 +54,12 @@ const CellsScreen = () => {
 	fetch('http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'247e04'},body:JSON.stringify({sessionId:'247e04',location:'index.tsx:49',message:'Available cells before filter',data:{availableCells:availableCells?.map((c:any)=>({id:c.id,name:c.cell_name})),userCellIds,availableCellsCount:availableCells?.length},timestamp:Date.now(),runId:'debug1',hypothesisId:'A,B'})}).catch(()=>{});
 	// #endregion
 	
-	const availableCellsFiltered = (availableCells ?? [])
+	// Deduplicate Available Cells
+	const uniqueAvailableCells = Array.from(
+		new Map((availableCells ?? []).map(cell => [cell.id, cell])).values()
+	);
+
+	const availableCellsFiltered = uniqueAvailableCells
 		.filter((cell: Cell) => !userCellIds?.includes(cell.id))
 		.filter((cell: Cell) =>
 			cell?.cell_name
@@ -68,8 +73,12 @@ const CellsScreen = () => {
 	fetch('http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'247e04'},body:JSON.stringify({sessionId:'247e04',location:'index.tsx:59',message:'Available cells after filter',data:{availableCellsFiltered:availableCellsFiltered?.map((c:any)=>({id:c.id,name:c.cell_name})),filteredCount:availableCellsFiltered.length,searchQuery},timestamp:Date.now(),runId:'debug1',hypothesisId:'A'})}).catch(()=>{});
 	// #endregion
 
-	// Joined cells
-	const joinedCellsList = (person?.cells ?? [])
+	// Deduplicate Joined Cells
+	const uniqueJoinedCells = Array.from(
+		new Map((person?.cells ?? []).map(cell => [cell.id, cell])).values()
+	);
+
+	const joinedCellsList = uniqueJoinedCells
 		.filter((cell: Cell) =>
 			cell?.cell_name
 				?.toLowerCase()
