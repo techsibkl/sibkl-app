@@ -41,18 +41,6 @@ const CellsScreen = () => {
 	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
 	// Get user's current cell IDs
 	const userCellIds = (person?.cells ?? []).map((cell) => cell.id);
-	console.log("🔍 DEBUG - User Cell IDs:", userCellIds);
-	console.log("🔍 DEBUG - Person cells:", person?.cells?.map((c:any)=>({id:c.id,name:c.cell_name})));
-	
-	// #region agent log
-	fetch('http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'247e04'},body:JSON.stringify({sessionId:'247e04',location:'index.tsx:42',message:'Data loaded',data:{availableCellsCount:availableCells?.length,userCellIdsCount:userCellIds.length,personCellsCount:person?.cells?.length,browseTab},timestamp:Date.now(),runId:'debug1',hypothesisId:'A,B,C,D'})}).catch(()=>{});
-	// #endregion
-	
-	// Available cells (not joined yet)
-	// #region agent log
-	console.log("📦 All Available Cells from API:", availableCells?.map((c:any)=>({id:c.id,name:c.cell_name})));
-	fetch('http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'247e04'},body:JSON.stringify({sessionId:'247e04',location:'index.tsx:49',message:'Available cells before filter',data:{availableCells:availableCells?.map((c:any)=>({id:c.id,name:c.cell_name})),userCellIds,availableCellsCount:availableCells?.length},timestamp:Date.now(),runId:'debug1',hypothesisId:'A,B'})}).catch(()=>{});
-	// #endregion
 	
 	// Deduplicate Available Cells
 	const uniqueAvailableCells = Array.from(
@@ -67,11 +55,6 @@ const CellsScreen = () => {
 				.includes(searchQuery.toLowerCase())
 		);
 
-	console.log("✅ Cells AFTER filtering (not joined):", availableCellsFiltered?.map((c:any)=>({id:c.id,name:c.cell_name})));
-	
-	// #region agent log
-	fetch('http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'247e04'},body:JSON.stringify({sessionId:'247e04',location:'index.tsx:59',message:'Available cells after filter',data:{availableCellsFiltered:availableCellsFiltered?.map((c:any)=>({id:c.id,name:c.cell_name})),filteredCount:availableCellsFiltered.length,searchQuery},timestamp:Date.now(),runId:'debug1',hypothesisId:'A'})}).catch(()=>{});
-	// #endregion
 
 	// Deduplicate Joined Cells
 	const uniqueJoinedCells = Array.from(
@@ -85,12 +68,8 @@ const CellsScreen = () => {
 				.includes(searchQuery.toLowerCase())
 		);
 
-	console.log("👤 Your Joined Cells:", joinedCellsList?.map((c:any)=>({id:c.id,name:c.cell_name})));
-
 	const filteredCells = browseTab === "available" ? availableCellsFiltered : joinedCellsList;
-	console.log(`📋 Current Tab: "${browseTab}" | Showing ${filteredCells.length} cells`);
 	
-	// #region agent log
 	fetch('http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'247e04'},body:JSON.stringify({sessionId:'247e04',location:'index.tsx:60',message:'Filtered cells',data:{availableCellsFilteredCount:availableCellsFiltered.length,joinedCellsListCount:joinedCellsList.length,filteredCellsCount:filteredCells.length,browseTab,cellsLoading},timestamp:Date.now(),runId:'debug1',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
 	// #endregion
 
