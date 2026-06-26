@@ -1,6 +1,6 @@
+import { useThemeColors } from "@/hooks/useThemeColor";
 import React from "react";
 import { Image, Text, View } from "react-native";
-import { useThemeColors } from "@/hooks/useThemeColor";
 
 interface AvatarProps {
 	initials?: string;
