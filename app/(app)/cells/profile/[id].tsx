@@ -52,11 +52,6 @@ const CellProfileScreen = () => {
   // Use API data for leaders, fallback to person data for members
   const cell = isLeader ? cellFromApi : cellFromPerson;
 
-  console.log("cell:", cell);
-  console.log("isLeader:", isLeader);
-  console.log("ledCells:", ledCells);
-  console.log("id:", id);
-
   const [activeTab, setActiveTab] = useState<
     "people" | "announcements" | "attendance"
   >("people");
