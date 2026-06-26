@@ -1,4 +1,3 @@
-import { useThemeColors } from "@/hooks/useThemeColor";
 import { Cell } from "@/services/Cell/cell.types";
 import { useRouter } from "expo-router";
 import { ChevronRight, Clock, MapPin, Users } from "lucide-react-native";
@@ -74,7 +73,6 @@ export const AllCellCard: React.FC<AllCellCardProps> = ({
 	onJoin,
 	onViewDetails
 }) => {
-	const { isDark } = useThemeColors();
 	const router = useRouter();
 
 	const handleViewDetails = () => {
@@ -99,11 +97,7 @@ export const AllCellCard: React.FC<AllCellCardProps> = ({
 
 	return (
 		<View
-			className={`rounded-2xl p-3 mb-3 flex-row gap-3 ${
-				isDark
-					? "bg-slate-800 border border-slate-700"
-					: "bg-white border border-gray-200"
-			}`}
+			className={`rounded-2xl p-3 mb-3 flex-row gap-3 bg-white border border-gray-200`}
 			style={{ shadowColor: "#000", elevation: 0 }}
 		>
 			{/* Left: Avatar */}
@@ -116,14 +110,12 @@ export const AllCellCard: React.FC<AllCellCardProps> = ({
 
 			{/* Middle: Content */}
 			<View className="flex-1">
-				{/* Title */}
-				<Text
-					className={`text-sm font-bold mb-1 ${
-						isDark ? "text-white" : "text-gray-800"
-					}`}
-				>
-					{cell.cell_name}
-				</Text>
+			{/* Title */}
+			<Text
+				className="text-sm font-bold mb-1 text-gray-800"
+			>
+				{cell.cell_name}
+			</Text>
 
 				{/* Info Rows */}
 				<View className="gap-0.5">
