@@ -8,7 +8,7 @@ import { getFabActions } from "@/constants/cont_cells";
 import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
-import { updateMemberStatus } from "@/services/Cell/cell.service";
+import { removeCellMembers, updateMemberStatus } from "@/services/Cell/cell.service";
 import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
 import {
@@ -44,6 +44,7 @@ const CellProfileScreen = () => {
     isPending,
     error: queryError,
     isError,
+    refetch,
   } = useSingleCellQuery(Number(id));
 
   // Get cell data from person's cells for regular members
@@ -109,24 +110,26 @@ const CellProfileScreen = () => {
   };
 
   // Remove member, not yet implemented
-  // const handleRemoveMember = async (memberId: number) => {
-  //   try {
-  //     setIsUpdating(memberId);
-  //     setStatusError(null);
+  const handleRemoveMember = async (memberId: number) => {
+    try {
+      console.log("Removing member with ID:", memberId);
+      setIsUpdating(memberId);
+      setStatusError(null);
 
-  //     await updateMemberStatus(Number(id), memberId, "REJECTED");
+      await removeCellMembers(Number(id), [memberId], person?.id ?? -1);
 
-  //     setMemberStatuses((prev) => ({
-  //       ...prev,
-  //       [memberId]: "REJECTED",
-  //     }));
-  //   } catch (err: any) {
-  //     setStatusError(err.message || "Failed to remove member");
-  //     console.error("Remove member error:", err);
-  //   } finally {
-  //     setIsUpdating(null);
-  //   }
-  // };
+      console.log("Current user:", user);
+      console.log("User person ID:", user?.person?.id);
+      
+      // Refetch the cell data to update members list
+      await refetch();
+    } catch (err: any) {
+      setStatusError(err.message || "Failed to remove member");
+      console.error("Remove member error:", err);
+    } finally {
+      setIsUpdating(null);
+    }
+  };
 
   const renderTabContent = () => {
     switch (activeTab) {
