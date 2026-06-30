@@ -41,6 +41,9 @@ const CellsScreen = () => {
 	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
 	// Get user's current cell IDs
 	const userCellIds = (person?.cells ?? []).map((cell) => cell.id);
+	console.log("Person data:", person);
+	console.log("User cell IDs:", userCellIds);
+	console.log("Person.cells:", person?.cells);
 	
 	// Deduplicate Available Cells
 	const uniqueAvailableCells = Array.from(
@@ -80,6 +83,12 @@ const CellsScreen = () => {
 			useNativeDriver: false,
 		}).start();
 	}, [browseTab]);
+
+	useEffect(() => {
+		if (userCellIds.length === 0) {
+			setBrowseTab("available");
+		}
+	}, [userCellIds]);
 
 	const hasJoinedAnyCells = joinedCells.length > 0 || userCellIds.length > 0;
 
@@ -134,8 +143,9 @@ const CellsScreen = () => {
 		/>
 
 		{/* Premium Tab Navigation */}
-		<View style={styles.tabWrapper}>
-			<View style={styles.tabContainer}>
+		{userCellIds && userCellIds.length > 0 ? (
+			<View style={styles.tabWrapper}>
+				<View style={styles.tabContainer}>
 				<Pressable 
 					onPress={() => setBrowseTab("available")}
 					style={[styles.tab, browseTab === "available" && styles.tabActive]}
@@ -152,22 +162,27 @@ const CellsScreen = () => {
 						My Cells
 					</Text>
 				</Pressable>
+				</View>
+				<Animated.View 
+					style={[
+						styles.underline,
+						browseTab === "available" ? { marginLeft: 16 } : { marginRight: 16 },
+						{
+							transform: [{
+								translateX: underlinePosition.interpolate({
+									inputRange: [0, 1],
+									outputRange: [0, 200],
+								})
+							}]
+						}
+					]} 
+				/>
 			</View>
-			<Animated.View 
-				style={[
-					styles.underline,
-					browseTab === "available" ? { marginLeft: 16 } : { marginRight: 16 },
-					{
-						transform: [{
-							translateX: underlinePosition.interpolate({
-								inputRange: [0, 1],
-								outputRange: [0, 200],
-							})
-						}]
-					}
-				]} 
-			/>
-		</View>
+		):(
+			<View>
+				<Text>No cells found</Text>
+			</View>
+		)}
 
 		{/* Content */}
 			<View className="flex-1">
@@ -199,8 +214,8 @@ const CellsScreen = () => {
 		visible={modalVisible}
 		onClose={() => setModalVisible(false)}
 		cell={selectedCell}
-		isJoined={browseTab === "joined" || userCellIds?.includes(selectedCell?.id as any)}
-		isLeader={selectedCell?.id ? ledCells?.map(Number).includes(Number(selectedCell.id)) : false}
+		isJoined={browseTab === "joined" || Boolean(userCellIds?.includes(selectedCell?.id as any))}
+		isLeader={selectedCell?.id ? Boolean(ledCells?.map(Number).includes(Number(selectedCell.id))) : false}
 		onManage={() => {
 			// Navigate to cell management screen
 			// You can update this path based on your routing structure

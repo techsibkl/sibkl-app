@@ -64,6 +64,8 @@ export const apiEndpoints = {
       _endpoint(`cells/${cellId}/sign-in-to-session`),
     updateMemberStatus: (cellId: number | string) =>
       _endpoint(`cells/${cellId}/member-status`),
+    removeCellMembers: (cellId: number | string) =>
+      _endpoint(`cells/${cellId}/remove-members`),
   },
   resources: {
     getAll: _endpoint("resources"),

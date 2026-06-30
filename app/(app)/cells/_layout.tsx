@@ -19,15 +19,6 @@ export default function Layout() {
         }}
       />
       <Stack.Screen
-        name="browse"
-        options={{
-          headerShown: true,
-          header() {
-            return <SharedHeader title="Cells" />;
-          },
-        }}
-      />
-      <Stack.Screen
         name="profile/[id]"
         options={({ route }) => ({
           headerShown: true,

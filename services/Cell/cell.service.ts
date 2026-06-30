@@ -77,3 +77,23 @@ import { Cell } from "./cell.types";
     return json.data;
   };
   
+
+  export const removeCellMembers = async (
+    cellId: number,
+    memberIds: number[],
+    personId: number,
+  ) => {
+    const response = await secureFetch(`${apiEndpoints.cells.removeCellMembers(cellId)}`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ cell_id: cellId, people: memberIds, user: personId }) },
+    );
+    const json: ReturnVal = await response.json();
+    if (!json.success) {
+      throw {
+        status: json.status_code,
+        message: json.message
+      };
+    }
+    return json.data;
+  };
