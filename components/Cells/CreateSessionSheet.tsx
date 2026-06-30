@@ -1,10 +1,10 @@
 import { useCreateCellSessionMutation } from "@/hooks/CellAttendance/useCellAttendanceQuery";
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
-// import DateTimePicker from "@react-native-community/datetimepicker";
+import ConsistentPicker from "@/components/DatePickers/ConsistentPicker";
 import * as FileSystem from "expo-file-system";
 import { useRouter } from "expo-router";
 import * as Sharing from "expo-sharing";
-import { forwardRef, useMemo, useRef, useState } from "react";
+import React, { forwardRef, useMemo, useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -12,7 +12,6 @@ import {
   Text,
   View,
 } from "react-native";
-import CalendarPicker from "react-native-calendar-picker";
 import QRCode from "react-native-qrcode-svg";
 
 type CellOption = { id: number; name: string };
@@ -226,55 +225,6 @@ const CreateSessionSheet = forwardRef<
                     {errors.date}
                   </Text>
                 )}
-                {showPicker && (
-                  // <DateTimePicker
-                  //   value={date}
-                  //   mode="date"
-                  //   display="spinner"
-                  //   minimumDate={new Date()}
-                  //   onChange={handleDateChange}
-                  // />
-                  // <CalendarPicker onDateChange={handleDateChange} />
-                  <View className="gap-2">
-                    <Text className="text-xs font-bold text-gray-400 tracking-widest">
-                      DATE
-                    </Text>
-                    <Pressable
-                      className="flex-row justify-between items-center border-2 border-gray-200 rounded-xl py-3.5 px-4"
-                      onPress={() => setShowPicker((prev) => !prev)}
-                    >
-                      <Text
-                        className={`text-base font-medium ${date ? "text-gray-800" : "text-gray-400"}`}
-                      >
-                        {date ? date.toDateString() : "Select a date"}
-                      </Text>
-                      <Text className="text-lg">📅</Text>
-                    </Pressable>
-                    {errors.date && (
-                      <Text className="text-xs text-red-600 mt-1">
-                        {errors.date}
-                      </Text>
-                    )}
-                    {showPicker && (
-                      <View className="border-2 border-gray-100 rounded-xl overflow-hidden mt-1">
-                        <CalendarPicker
-                          onDateChange={handleDateChange}
-                          minDate={new Date()}
-                          selectedDayColor="#d6361e"
-                          selectedDayTextColor="#ffffff"
-                          todayBackgroundColor="#fff5f3"
-                          todayTextStyle={{ color: "#d6361e" }}
-                          textStyle={{ color: "#222" }}
-                          previousTitleStyle={{ color: "#d6361e" }}
-                          nextTitleStyle={{ color: "#d6361e" }}
-                          monthTitleStyle={{ fontWeight: "700", color: "#111" }}
-                          yearTitleStyle={{ fontWeight: "700", color: "#111" }}
-                          {...(date ? { selectedStartDate: date } : {})}
-                        />
-                      </View>
-                    )}
-                  </View>
-                )}
               </View>
 
               {/* Duplicate session warning */}
@@ -313,7 +263,7 @@ const CreateSessionSheet = forwardRef<
                 className={`bg-red-600 rounded-xl py-4 items-center mt-2 ${
                   isPending || ledCells.length === 0 ? "opacity-50" : ""
                 }`}
-                onPress={handleCreateSession}
+                onPress={() => handleCreateSession()}
                 disabled={isPending || ledCells.length === 0}
               >
                 {isPending ? (
@@ -419,6 +369,18 @@ const CreateSessionSheet = forwardRef<
           )}
         </ScrollView>
       </BottomSheetScrollView>
+
+      {/* DatePicker rendered OUTSIDE the ScrollView to avoid modal conflicts */}
+      <ConsistentPicker
+        open={showPicker}
+        date={date}
+        onConfirm={(selectedDate) => {
+          setDate(selectedDate);
+          setShowPicker(false);
+          setErrors((e) => ({ ...e, date: undefined }));
+        }}
+        onCancel={() => setShowPicker(false)}
+      />
     </BottomSheetModal>
   );
 });

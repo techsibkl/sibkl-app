@@ -1,9 +1,10 @@
 import SharedBody from "@/components/shared/SharedBody";
+import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import { useCellSessionsQuery } from "@/hooks/CellAttendance/useCellAttendanceQuery";
 import { CellSession } from "@/services/CellAttendance/cellAttendance.type";
 import { FlashList } from "@shopify/flash-list";
 import { useLocalSearchParams, useRouter } from "expo-router";
-import { useState } from "react";
+import React, { useState } from "react";
 import { ActivityIndicator, Pressable, Text, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
@@ -48,18 +49,7 @@ const SessionCard = ({
         }`}
       >
         <Text
-          className={`text-xl font-bold ${
-            isToday
-              ? "text-white"
-              : isUpcoming
-                ? "text-red-600"
-                : "text-gray-500"
-          }`}
-        >
-          {date.getDate()}
-        </Text>
-        <Text
-          className={`text-xs font-semibold tracking-widest ${
+          className={`text-xs font-semibold tracking-widest leading-none mb-0.5 ${
             isToday
               ? "text-white"
               : isUpcoming
@@ -68,6 +58,17 @@ const SessionCard = ({
           }`}
         >
           {date.toLocaleString("default", { month: "short" }).toUpperCase()}
+        </Text>
+        <Text
+          className={`text-xl font-bold leading-none ${
+            isToday
+              ? "text-white"
+              : isUpcoming
+                ? "text-red-600"
+                : "text-gray-500"
+          }`}
+        >
+          {date.getDate()}
         </Text>
       </View>
 
@@ -149,10 +150,13 @@ export default function SessionsScreen() {
 
   const {
     data: sessions,
-    isLoading,
-    isError,
+    isLoading: isSessionsLoading,
+    isError: isSessionsError,
     refetch,
   } = useCellSessionsQuery(cellId);
+  
+  const { data: cellData } = useSingleCellQuery(cellId);
+
   const [refreshing, setRefreshing] = useState(false);
 
   const handleRefresh = async () => {
@@ -161,7 +165,7 @@ export default function SessionsScreen() {
     setRefreshing(false);
   };
 
-  if (isLoading) {
+  if (isSessionsLoading) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-white">
         <ActivityIndicator color="#d6361e" size="large" />
@@ -169,7 +173,7 @@ export default function SessionsScreen() {
     );
   }
 
-  if (isError) {
+  if (isSessionsError) {
     return (
       <SafeAreaView className="flex-1 items-center justify-center bg-white">
         <Text className="text-red-600 text-base">Failed to load sessions.</Text>
@@ -223,7 +227,7 @@ export default function SessionsScreen() {
           <View className="mb-2">
             <View className="w-9 h-1 bg-red-600 rounded-full mb-3" />
             <Text className="text-3xl font-bold text-gray-900 tracking-tight">
-              Sessions
+              {cellData?.cell_name ? `${cellData.cell_name}'s Sessions` : "Sessions"}
             </Text>
             <Text className="text-sm text-gray-400 mt-1">
               {upcoming.length} upcoming · {past.length} past
