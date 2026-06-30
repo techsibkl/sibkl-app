@@ -5,7 +5,7 @@ import { FlashList } from "@shopify/flash-list";
 import * as FileSystem from "expo-file-system";
 import { useLocalSearchParams } from "expo-router";
 import * as Sharing from "expo-sharing";
-import { useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import {
   ActivityIndicator,
   Pressable,
@@ -120,7 +120,7 @@ export default function SessionDetailScreen() {
           </Text>
           <Text className="text-sm text-gray-400 mt-1">
             {isUpcoming
-              ? "Upcoming session"
+              ? "Upcoming"
               : `${attendanceRate}% attendance rate`}
           </Text>
         </View>

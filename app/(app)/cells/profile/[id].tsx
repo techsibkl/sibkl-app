@@ -244,6 +244,7 @@ const CellProfileScreen = () => {
               icon={open ? "close" : "plus"}
               color="white"
               fabStyle={{ backgroundColor: "#d6361e" }}
+              backdropColor="transparent"
               visible
               actions={getFabActions({
                 ability: ability,

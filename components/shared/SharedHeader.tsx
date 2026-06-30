@@ -26,10 +26,12 @@ const SharedHeader = ({ title, isPop, backFunc, child }: SharedHeaderProps) => {
 			{child ? (
 				<>{child}</>
 			) : (
-				<View className="flex flex-row gap-x-2 items-center">
+				<View className="flex flex-row items-center">
 					{/* If no pop & no back function given, won't display */}
 					{(isPop || backFunc) && (
 						<TouchableOpacity
+							className="absolute left-0 top-0 bottom-0 justify-center z-10 pr-6" // Absolute position so it doesn't push the title
+							hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
 							onPress={() => {
 								if (backFunc) {
 									console.log(
@@ -47,9 +49,13 @@ const SharedHeader = ({ title, isPop, backFunc, child }: SharedHeaderProps) => {
 							<ChevronLeft size={30} />
 						</TouchableOpacity>
 					)}
-					<Text className="text-2xl text-black font-bold">
-						{title}
-					</Text>
+					{!!title && (
+						<Text 
+                            className={`text-2xl text-black font-bold ${(isPop || backFunc) ? "ml-10" : ""}`}
+                        >
+							{title}
+						</Text>
+					)}
 				</View>
 			)}
 		</SafeAreaView>
