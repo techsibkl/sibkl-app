@@ -13,7 +13,7 @@ import {
   View,
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
-import { X } from "lucide-react-native";
+import { X, Calendar, CheckCircle } from "lucide-react-native";
 
 type CellOption = { id: number; name: string };
 
@@ -232,7 +232,7 @@ const CreateSessionSheet = forwardRef<
                   <Text className="text-base text-gray-800 font-medium">
                     {date ? date.toDateString() : "Select a date"}
                   </Text>
-                  <Text className="text-lg">📅</Text>
+                  <Calendar size={20} color="#6b7280" strokeWidth={2} />
                 </Pressable>
                 {errors.date && (
                   <Text className="text-xs text-red-600 mt-1">
@@ -293,7 +293,7 @@ const CreateSessionSheet = forwardRef<
             /* Success state */
             <View className="items-center px-6 pt-4 pb-10 gap-4">
               <View className="w-16 h-16 rounded-full bg-red-50 border-2 border-red-600 items-center justify-center">
-                <Text className="text-3xl text-red-600">✓</Text>
+                <CheckCircle size={32} color="#dc2626" strokeWidth={2} />
               </View>
               <Text className="text-2xl font-bold text-gray-900">
                 Session Created
