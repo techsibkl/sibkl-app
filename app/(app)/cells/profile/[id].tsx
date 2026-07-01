@@ -15,8 +15,8 @@ import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -66,6 +66,10 @@ const CellProfileScreen = () => {
   const ledCellsFormatted = (person?.cells ?? [])
     .filter((cell) => cell.id && ledCells?.map(Number).includes(Number(cell.id)))
     .map((cell) => ({ id: cell.id!, name: cell.cell_name! }));
+
+  useEffect(() => {
+    setOpen(false);
+  }, [activeTab]);
 
   const filteredMembers = (cell?.members ?? []).filter((member: Person) =>
     member?.full_legal_name?.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -148,9 +152,9 @@ const CellProfileScreen = () => {
           />
         );
       case "announcements":
-        return <ComingSoon description="Announcements coming soon" />;
+        return <ComingSoon description="Coming soon :>" />;
       case "attendance":
-        return <ComingSoon description="Attendance tracking coming soon" />;
+        return <ComingSoon description="Coming soon :>" />;
       default:
         return null;
     }
