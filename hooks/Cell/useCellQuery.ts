@@ -19,6 +19,7 @@ export const useCellsPublicQuery = () => {
   return useQuery<Cell[]>({
     queryKey: ["cells-scoped-fields"],
     queryFn: () => fetchCellsPublic(),
+    staleTime: 15 * 60 * 1000,           // 15 mins - cells don't change often
     retry: (failureCount, error: any) => {
       if (error?.status === 401 || error?.status === 403) {
         return false;
