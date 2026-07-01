@@ -33,7 +33,7 @@ const CellProfileScreen = () => {
   const { id } = useLocalSearchParams();
   const { user, ability } = useAuthStore();
   const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
-  console.log("person:", person);
+  // console.log("person:", person);
 
   const ledCells: number[] | undefined = person?.leader_of_cell_ids;
   const isLeader = ledCells?.map(Number).includes(Number(id));
@@ -118,8 +118,8 @@ const CellProfileScreen = () => {
 
       await removeCellMembers(Number(id), [memberId], person?.id ?? -1);
 
-      console.log("Current user:", user);
-      console.log("User person ID:", user?.person?.id);
+      // console.log("Current user:", user);
+      // console.log("User person ID:", user?.person?.id);
       
       // Refetch the cell data to update members list
       await refetch();
@@ -245,7 +245,12 @@ const CellProfileScreen = () => {
               color="white"
               fabStyle={{ backgroundColor: "#d6361e" }}
               backdropColor="transparent"
-              visible
+              visible={activeTab === "attendance"}
+              style={{
+                paddingBottom: 0, // Sometimes there's default padding you might want to remove
+                bottom: 10,       // Adjust this value to move it up or down (default is usually around 16)
+                right: 16,        // Adjust this to move it left or right
+              }}
               actions={getFabActions({
                 ability: ability,
                 router: router,

@@ -13,6 +13,7 @@ import {
   View,
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
+import { X } from "lucide-react-native";
 
 type CellOption = { id: number; name: string };
 
@@ -142,14 +143,27 @@ const CreateSessionSheet = forwardRef<
       <BottomSheetScrollView className="flex-1 bg-white">
         <ScrollView showsVerticalScrollIndicator={false}>
           {/* Header */}
-          <View className="px-6 pt-7 pb-5">
-            <View className="w-9 h-1 bg-red-600 rounded-full mb-3" />
-            <Text className="text-3xl font-bold text-gray-900 tracking-tight">
-              New Session
-            </Text>
-            <Text className="text-sm text-gray-400 mt-1">
-              Create an attendance session for your cell
-            </Text>
+          <View className="px-6 pt-7 pb-5 flex-row justify-between items-start">
+            <View>
+              <View className="w-9 h-1 bg-red-600 rounded-full mb-3" />
+              <Text className="text-3xl font-bold text-gray-900 tracking-tight">
+                New Session
+              </Text>
+              <Text className="text-sm text-gray-400 mt-1">
+                Create an attendance session for your cell
+              </Text>
+            </View>
+            <Pressable
+              onPress={() => {
+                if (ref && 'current' in ref) {
+                  ref.current?.dismiss();
+                }
+              }}
+              className="w-8 h-8 rounded-full bg-gray-100 items-center justify-center mt-2"
+              hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
+            >
+              <X size={18} color="#9ca3af" strokeWidth={2.5} />
+            </Pressable>
           </View>
 
           {!qrCodeValue ? (

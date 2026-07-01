@@ -11,6 +11,8 @@ import { useThemeColors } from "@/hooks/useThemeColor";
 import { joinCell } from "@/services/Cell/cell.service";
 import { Cell } from "@/services/Cell/cell.types";
 import { useAuthStore } from "@/stores/authStore";
+import { useQueryClient } from "@tanstack/react-query";
+import { FlashList } from "@shopify/flash-list";
 import React, { useEffect, useRef, useState } from "react";
 import {
 	Animated,
@@ -23,6 +25,7 @@ import {
 } from "react-native";
 
 const CellsScreen = () => {
+	const queryClient = useQueryClient();
 	const { isDark } = useThemeColors();
 	const { user } = useAuthStore();
 	const [searchQuery, setSearchQuery] = useState("");
@@ -41,9 +44,9 @@ const CellsScreen = () => {
 	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
 	// Get user's current cell IDs
 	const userCellIds = (person?.cells ?? []).map((cell) => cell.id);
-	console.log("Person data:", person);
-	console.log("User cell IDs:", userCellIds);
-	console.log("Person.cells:", person?.cells);
+	// console.log("Person data:", person);
+	// console.log("User cell IDs:", userCellIds);
+	// console.log("Person.cells:", person?.cells);
 	
 	// Deduplicate Available Cells
 	const uniqueAvailableCells = Array.from(
@@ -96,7 +99,9 @@ const CellsScreen = () => {
 		try {
 		  await joinCell(cellId);
 		  // Optionally update local state for immediate UI feedback
-		  setJoinedCells([...joinedCells, cellId]);
+		  queryClient.invalidateQueries({ 
+			queryKey: ["people", user?.person?.id] 
+		  });
 		  // Or refetch the person data to sync with backend
 		} catch (error) {
 		  console.error("Failed to join cell:", error);
@@ -198,16 +203,17 @@ const CellsScreen = () => {
 								: "No available groups to join"}
 						</Text>
 					</View>
-				) : (
-					<FlatList
-						data={filteredCells}
-						keyExtractor={(item) => String(item.id)}
-						renderItem={renderCellCard}
-						scrollEnabled={true}
-						showsVerticalScrollIndicator={false}
-						contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
-					/>
-				)}
+			) : (
+				<FlashList
+					data={filteredCells}
+					keyExtractor={(item) => String(item.id)}
+					renderItem={renderCellCard}
+					scrollEnabled={true}
+					showsVerticalScrollIndicator={false}
+					contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
+					estimatedItemSize={140}
+				/>
+			)}
 			</View>
 
 	<CellDetailModal

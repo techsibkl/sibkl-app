@@ -55,6 +55,7 @@ export const useSinglePersonQuery = (personId: number) => {
 			const res = await fetchPersonById(personId);
 			return res;
 		},
+		staleTime: 10 * 60 * 1000,         // 10 mins - user's cells/profile
 		retry: (failureCount, error: any) => {
 			if (
 				error?.status === 401 ||

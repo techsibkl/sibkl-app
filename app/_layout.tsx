@@ -30,7 +30,17 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import "../global.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 10 * 60 * 1000,        // 10 minutes - data is fresh for 10 mins
+      gcTime: 5 * 60 * 1000,            // 5 minutes - keep in memory for 5 mins
+      refetchOnWindowFocus: false,       // Don't refetch when app regains focus
+      refetchOnReconnect: true,       // Only refetch if data is stale when reconnecting
+      refetchOnMount: true,           // Only refetch if data is stale when component mounts
+    },
+  },
+});
 
 // ─── Module-level messaging instance ─────────────────────────────────────────
 const messagingInstance = getMessaging(getApp());
@@ -170,7 +180,6 @@ function RootLayoutNav() {
             name="qrScan"
             options={{
               headerShown: false,
-              tabBarStyle: { display: "none" }, // if using tab navigator
             }}
           />
       </Stack>
