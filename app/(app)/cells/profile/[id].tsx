@@ -7,6 +7,7 @@ import SharedBody from "@/components/shared/SharedBody";
 import { getFabActions } from "@/constants/cont_cells";
 import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
+import { useQueryClient } from "@tanstack/react-query";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { removeCellMembers, updateMemberStatus } from "@/services/Cell/cell.service";
 import { Person } from "@/services/Person/person.type";
@@ -33,6 +34,7 @@ const CellProfileScreen = () => {
   const { id } = useLocalSearchParams();
   const { user, ability } = useAuthStore();
   const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
+  const queryClient = useQueryClient();
   // console.log("person:", person);
 
   const ledCells: number[] | undefined = person?.leader_of_cell_ids;
@@ -122,19 +124,48 @@ const CellProfileScreen = () => {
 
       await removeCellMembers(Number(id), [memberId], person?.id ?? -1);
 
-      // console.log("Current user:", user);
-      // console.log("User person ID:", user?.person?.id);
+      // Invalidate all related queries
+      await queryClient.invalidateQueries({ 
+        queryKey: ["cells", Number(id)] 
+      }); // Refetch current cell
       
-      // Refetch the cell data to update members list
-      await refetch();
+      await queryClient.invalidateQueries({ 
+        queryKey: ["people", person?.id] 
+      }); // Refetch user's person data
+      
+      await queryClient.invalidateQueries({ 
+        queryKey: ["cells"] 
+      }); // Refetch led cells
+      
+      await queryClient.invalidateQueries({ 
+        queryKey: ["cells-scoped-fields"] 
+      }); // Refetch public cells
+      
+      await queryClient.invalidateQueries({ 
+        queryKey: ["people", person?.id] 
+      }); // Refetch each member's person data if needed
+      
+      // DEBUG: Log the updated members list after removal
+      console.log("✅ MEMBER REMOVED - Updated members list:", {
+        cellId: id,
+        totalMembers: cell?.members?.length,
+        members: cell?.members?.map(m => ({
+          id: m.id,
+          name: m.full_legal_name,
+          status: m.status
+        }))
+      });
+      
     } catch (err: any) {
       setStatusError(err.message || "Failed to remove member");
       console.error("Remove member error:", err);
     } finally {
+      console.log("Current user:", user);
+      console.log("User person ID:", user?.person?.id);
       setIsUpdating(null);
     }
   };
-
+  
   const renderTabContent = () => {
     switch (activeTab) {
       case "people":
