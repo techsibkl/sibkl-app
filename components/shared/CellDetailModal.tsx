@@ -1,19 +1,19 @@
-import React, { useRef, useState, useEffect } from "react";
+import { Calendar, Clock, MapPin, Repeat, Users } from "lucide-react-native";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  Modal,
-  Image,
-  Animated,
-  PanResponder,
-  GestureResponderEvent,
-  PanResponderGestureState,
+    Animated,
+    Dimensions,
+    GestureResponderEvent,
+    Image,
+    Modal,
+    PanResponder,
+    PanResponderGestureState,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { Clock, MapPin, Users, Calendar, Tag, Repeat } from "lucide-react-native";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SCREEN_HEIGHT = Dimensions.get("window").height;

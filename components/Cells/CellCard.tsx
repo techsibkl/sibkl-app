@@ -75,15 +75,9 @@ export const AllCellCard: React.FC<AllCellCardProps> = ({
 }) => {
 	const router = useRouter();
 
-	const handleViewDetails = () => {
+	const handleJoinPress = () => {
 		if (onViewDetails) {
 			onViewDetails(cell);
-		}
-	};
-
-	const handleJoinPress = () => {
-		if (onJoin && cell.id) {
-			onJoin(cell.id);
 		}
 	};
 
@@ -164,8 +158,8 @@ export const AllCellCard: React.FC<AllCellCardProps> = ({
 			<View className="justify-center">
 				<ActionButton
 					label={hasJoinedAnyCells ? "View Details" : "Join Cell"}
-					onPress={hasJoinedAnyCells ? handleViewDetails : handleJoinPress}
-					variant={hasJoinedAnyCells ? "ghost" : "outline"}
+					onPress={handleJoinPress}
+					variant="ghost"
 					size="sm"
 				/>
 			</View>

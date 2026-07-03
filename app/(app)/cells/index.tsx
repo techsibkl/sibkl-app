@@ -1,7 +1,6 @@
 "use client";
 
-import { AllCellCard } from "@/components/Cells/CellCard";
-import MyCellCard from "@/components/Cells/CellCard";
+import MyCellCard, { AllCellCard } from "@/components/Cells/CellCard";
 import CellDetailModal from "@/components/shared/CellDetailModal";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
@@ -11,12 +10,11 @@ import { useThemeColors } from "@/hooks/useThemeColor";
 import { joinCell } from "@/services/Cell/cell.service";
 import { Cell } from "@/services/Cell/cell.types";
 import { useAuthStore } from "@/stores/authStore";
-import { useQueryClient } from "@tanstack/react-query";
 import { FlashList } from "@shopify/flash-list";
+import { useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useRef, useState } from "react";
 import {
 	Animated,
-	FlatList,
 	Pressable,
 	StatusBar,
 	StyleSheet,
