@@ -86,7 +86,7 @@ import { Cell } from "./cell.types";
     const response = await secureFetch(`${apiEndpoints.cells.removeCellMembers(cellId)}`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ cell_id: cellId, people: memberIds, user: personId }) },
+        body: JSON.stringify({ cell_id: cellId, people: memberIds.map(id => ({ id })), user: personId }) },
     );
     const json: ReturnVal = await response.json();
     if (!json.success) {
