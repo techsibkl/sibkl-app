@@ -44,9 +44,9 @@ const CellsScreen = () => {
 	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
 	// Get user's current cell IDs
 	const userCellIds = (person?.cells ?? []).map((cell) => cell.id);
-	// console.log("Person data:", person);
-	// console.log("User cell IDs:", userCellIds);
-	// console.log("Person.cells:", person?.cells);
+	console.log("Person data:", person);
+	console.log("User cell IDs:", userCellIds);
+	console.log("Person.cells:", person?.cells);
 	
 	// Deduplicate Available Cells
 	const uniqueAvailableCells = Array.from(
@@ -78,6 +78,13 @@ const CellsScreen = () => {
 	
 	fetch('http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'247e04'},body:JSON.stringify({sessionId:'247e04',location:'index.tsx:60',message:'Filtered cells',data:{availableCellsFilteredCount:availableCellsFiltered.length,joinedCellsListCount:joinedCellsList.length,filteredCellsCount:filteredCells.length,browseTab,cellsLoading},timestamp:Date.now(),runId:'debug1',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
 	// #endregion
+	useEffect(() => {
+		if (userCellIds.length === 0) {
+			setBrowseTab("available");
+		} else {
+			setBrowseTab("joined");
+		}
+	}, []); // Empty dependency array - runs only once on mount
 
 	useEffect(() => {
 		Animated.timing(underlinePosition, {
@@ -87,11 +94,7 @@ const CellsScreen = () => {
 		}).start();
 	}, [browseTab]);
 
-	useEffect(() => {
-		if (userCellIds.length === 0) {
-			setBrowseTab("available");
-		}
-	}, [userCellIds]);
+	// Smart routing: Set initial tab based on whether user has cells
 
 	const hasJoinedAnyCells = joinedCells.length > 0 || userCellIds.length > 0;
 
@@ -147,53 +150,58 @@ const CellsScreen = () => {
 			placeholder="Search groups..."
 		/>
 
-		{/* Premium Tab Navigation */}
-		{userCellIds && userCellIds.length > 0 ? (
-			<View style={styles.tabWrapper}>
-				<View style={styles.tabContainer}>
-				<Pressable 
-					onPress={() => setBrowseTab("available")}
-					style={[styles.tab, browseTab === "available" && styles.tabActive]}
-				>
-					<Text style={[styles.tabText, browseTab === "available" && styles.tabTextActive]}>
-						All
-					</Text>
-				</Pressable>
-				<Pressable 
-					onPress={() => setBrowseTab("joined")}
-					style={[styles.tab, browseTab === "joined" && styles.tabActive]}
-				>
-					<Text style={[styles.tabText, browseTab === "joined" && styles.tabTextActive]}>
-						My Cells
-					</Text>
-				</Pressable>
-				</View>
-				<Animated.View 
-					style={[
-						styles.underline,
-						browseTab === "available" ? { marginLeft: 16 } : { marginRight: 16 },
-						{
-							transform: [{
-								translateX: underlinePosition.interpolate({
-									inputRange: [0, 1],
-									outputRange: [0, 200],
-								})
-							}]
-						}
-					]} 
-				/>
+		{/* Tab Navigation - Always Visible */}
+		<View style={styles.tabWrapper}>
+			<View style={styles.tabContainer}>
+			<Pressable 
+				onPress={() => setBrowseTab("available")}
+				style={[styles.tab, browseTab === "available" && styles.tabActive]}
+			>
+				<Text style={[styles.tabText, browseTab === "available" && styles.tabTextActive]}>
+					All
+				</Text>
+			</Pressable>
+			<Pressable 
+				onPress={() => setBrowseTab("joined")}
+				style={[styles.tab, browseTab === "joined" && styles.tabActive]}
+			>
+				<Text style={[styles.tabText, browseTab === "joined" && styles.tabTextActive]}>
+					My Cells
+				</Text>
+			</Pressable>
 			</View>
-		):(
-			<View>
-				<Text>No cells found</Text>
-			</View>
-		)}
+			<Animated.View 
+				style={[
+					styles.underline,
+					browseTab === "available" ? { marginLeft: 16 } : { marginRight: 16 },
+					{
+						transform: [{
+							translateX: underlinePosition.interpolate({
+								inputRange: [0, 1],
+								outputRange: [0, 200],
+							})
+						}]
+					}
+				]} 
+			/>
+		</View>
 
 		{/* Content */}
 			<View className="flex-1">
 				{cellsLoading ? (
 					<View className="flex-1 items-center justify-center">
 						<Text className="text-gray-500">Loading groups...</Text>
+					</View>
+				) : browseTab === "joined" && userCellIds.length === 0 ? (
+					<View className="flex-1 items-center justify-center px-6">
+						<Text className="text-center text-gray-500 text-lg mb-4">No Cells</Text>
+						<Text className="text-center text-gray-400 mb-6">You haven't joined any groups yet</Text>
+						<Pressable 
+							onPress={() => setBrowseTab("available")}
+							style={styles.joinButton}
+						>
+							<Text style={styles.joinButtonText}>Join One Now</Text>
+						</Pressable>
 					</View>
 				) : filteredCells.length === 0 ? (
 					<View className="flex-1 items-center justify-center px-6">
@@ -266,6 +274,18 @@ const styles = StyleSheet.create({
 		width: "45%",
 		backgroundColor: "#d6361e",
 		borderRadius: 1.5,
+	},
+	joinButton: {
+		backgroundColor: "#d6361e",
+		paddingVertical: 12,
+		paddingHorizontal: 24,
+		borderRadius: 8,
+	},
+	joinButtonText: {
+		color: "#ffffff",
+		fontSize: 16,
+		fontWeight: "600",
+		textAlign: "center",
 	},
 });
 
