@@ -31,6 +31,8 @@ const CellsScreen = () => {
 	const [joinedCells, setJoinedCells] = useState<number[]>([]);
 	const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
 	const [modalVisible, setModalVisible] = useState(false);
+	const [joiningCellId, setJoiningCellId] = useState<number | null>(null);
+	const [pendingCellIds, setPendingCellIds] = useState<number[]>([]);
 	const underlinePosition = useRef(new Animated.Value(0)).current;
 
 	// Fetch all available cells
@@ -98,17 +100,32 @@ const CellsScreen = () => {
 
 	const handleJoinCell = async (cellId: number) => {
 		try {
-		  await joinCell(cellId);
-		  // Optionally update local state for immediate UI feedback
-		  queryClient.invalidateQueries({ 
-			queryKey: ["people", user?.person?.id] 
-		  });
-		  // Or refetch the person data to sync with backend
+			setJoiningCellId(cellId);
+			await joinCell(cellId);
+			setPendingCellIds((prev) =>
+				prev.includes(cellId) ? prev : [...prev, cellId],
+			);
+			await queryClient.invalidateQueries({
+				queryKey: ["people", user?.person?.id],
+			});
 		} catch (error) {
-		  console.error("Failed to join cell:", error);
-		  // Show error toast to user
+			console.error("Failed to join cell:", error);
+		} finally {
+			setJoiningCellId(null);
 		}
-	  };
+	};
+
+	const selectedCellId = selectedCell?.id;
+	const selectedCellMembership = person?.cells?.find(
+		(c) => c.id === selectedCellId,
+	);
+	const isSelectedCellPending =
+		Boolean(selectedCellId && pendingCellIds.includes(selectedCellId)) ||
+		selectedCellMembership?.member_status === "PENDING";
+	const isSelectedCellJoined =
+		!isSelectedCellPending &&
+		(browseTab === "joined" ||
+			Boolean(userCellIds?.includes(selectedCellId as number)));
 
 	const handleViewDetails = (cell: Cell) => {
 		setSelectedCell(cell);
@@ -121,7 +138,6 @@ const CellsScreen = () => {
 				<AllCellCard 
 					cell={cell} 
 					hasJoinedAnyCells={hasJoinedAnyCells}
-					onJoin={handleJoinCell}
 					onViewDetails={handleViewDetails}
 				/>
 			);
@@ -226,11 +242,12 @@ const CellsScreen = () => {
 		visible={modalVisible}
 		onClose={() => setModalVisible(false)}
 		cell={selectedCell}
-		isJoined={browseTab === "joined" || Boolean(userCellIds?.includes(selectedCell?.id as any))}
-		isLeader={selectedCell?.id ? Boolean(ledCells?.map(Number).includes(Number(selectedCell.id))) : false}
+		isJoined={isSelectedCellJoined}
+		isPending={isSelectedCellPending}
+		isJoining={joiningCellId === selectedCellId}
+		isLeader={selectedCellId ? Boolean(ledCells?.map(Number).includes(Number(selectedCellId))) : false}
+		onJoin={handleJoinCell}
 		onManage={() => {
-			// Navigate to cell management screen
-			// You can update this path based on your routing structure
 			console.log("Manage cell:", selectedCell?.id);
 		}}
 	/>
