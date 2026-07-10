@@ -9,6 +9,7 @@ type MembersListProps = {
 	searchQuery: string;
 	onChangeText: (value: string) => void;
 	isLeader?: boolean;
+	currentPersonId?: number;
 	memberStatuses?: Record<number, string>;
 	onAccept?: (memberId: number) => void;
 	onReject?: (memberId: number) => void;
@@ -21,6 +22,7 @@ const MembersList = ({
 	searchQuery,
 	onChangeText,
 	isLeader = false,
+	currentPersonId,
 	memberStatuses = {},
 	onAccept,
 	onReject,
@@ -56,6 +58,7 @@ const MembersList = ({
 						key={member.id}
 						member={member}
 						isLeader={isLeader}
+						currentPersonId={currentPersonId}
 						memberStatuses={memberStatuses}
 						onAccept={onAccept}
 						onReject={onReject}
