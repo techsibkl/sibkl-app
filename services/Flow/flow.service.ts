@@ -78,7 +78,7 @@ export const updatePeopleFlowSingleCustomAttr = async (
 ): Promise<ReturnVal> => {
 	const payload = {
 		flowId: flowId,
-		personId: person.p__id,
+		personId: person.p__id ?? person.people_id,
 		personName: person.p__full_legal_name,
 		key: key,
 		value: value,
