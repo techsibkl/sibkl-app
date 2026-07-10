@@ -175,6 +175,7 @@ const CellProfileScreen = () => {
             searchQuery={searchQuery}
             onChangeText={setSearchQuery}
             isLeader={isLeader}
+            currentPersonId={person?.id}
             memberStatuses={memberStatuses}
             onAccept={handleAcceptMember}
             onReject={handleRejectMember}

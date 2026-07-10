@@ -33,6 +33,7 @@ interface MemberActionSheetProps {
   member: Person | null;
   cellId?: number;
   isLeader?: boolean;
+  currentPersonId?: number;
   onRemove?: (memberId: number) => void;
 }
 
@@ -42,6 +43,7 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
   member,
   cellId,
   isLeader = false,
+  currentPersonId,
   onRemove,
 }) => {
   const { isDark } = useThemeColors();
@@ -173,6 +175,11 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
   const secondaryTextColor = isDark ? "#d1d5db" : "#8e8e93";
   const actionBgColor = isDark ? "#374151" : "#f0f0f1";
 
+  const canRemoveMember =
+    isLeader &&
+    currentPersonId != null &&
+    member.id !== currentPersonId;
+
   return (
     <Modal
       animationType="none"
@@ -254,7 +261,7 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
               >
                 <MessageCircle size={20} color={ACCENT} strokeWidth={2} />
               </TouchableOpacity>
-              {isLeader && (
+              {canRemoveMember && (
                 <TouchableOpacity
                   style={[styles.actionButton, { backgroundColor: "#fee2e2" }]}
                   onPress={() => {

@@ -8,6 +8,7 @@ import MemberActionSheet from "./MemberActionSheet";
 type MemberRowProps = {
 	member: Person;
 	isLeader?: boolean;
+	currentPersonId?: number;
 	memberStatuses?: Record<number, string>;
 	onAccept?: (memberId: number) => void;
 	onReject?: (memberId: number) => void;
@@ -18,6 +19,7 @@ type MemberRowProps = {
 const MemberRow = ({ 
 	member, 
 	isLeader = false,
+	currentPersonId,
 	memberStatuses = {},
 	onAccept,
 	onReject,
@@ -28,6 +30,7 @@ const MemberRow = ({
 	const [modalVisible, setModalVisible] = useState(false);
 
 	const memberStatus = memberStatuses[member.id] || member.status || "ACTIVE";
+	const isCurrentUser = currentPersonId != null && member.id === currentPersonId;
 
 	const getStatusColor = () => {
 		switch (memberStatus) {
@@ -43,6 +46,7 @@ const MemberRow = ({
 	};
 
 	const handleMemberPress = () => {
+		if (isCurrentUser) return;
 		setModalVisible(true);
 	};
 
@@ -56,6 +60,8 @@ const MemberRow = ({
 				<TouchableOpacity
 					className="flex-1"
 					onPress={handleMemberPress}
+					disabled={isCurrentUser}
+					activeOpacity={isCurrentUser ? 1 : 0.2}
 				>
 					<View className="flex-row items-center gap-2">
 						<Text className="text-text font-semibold text-base">
@@ -111,6 +117,7 @@ const MemberRow = ({
 			member={member}
 			cellId={Number(id)}
 			isLeader={isLeader}
+			currentPersonId={currentPersonId}
 			onRemove={onRemoveMember}
 		/>
 		</>
