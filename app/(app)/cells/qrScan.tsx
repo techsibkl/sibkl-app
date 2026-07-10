@@ -29,8 +29,9 @@ export default function QrScan() {
 
   const personId = useAuthStore((state) => state.user?.person?.id);
   const { cell_id } = useLocalSearchParams<{ cell_id: string }>();
+  const cellId = Number(Array.isArray(cell_id) ? cell_id[0] : cell_id);
   const { mutateAsync: signIn } = useSignInToCellSessionMutation(
-    Number(cell_id ?? 0),
+    Number.isFinite(cellId) && cellId > 0 ? cellId : 0,
   );
 
   const handleLayout = (e: LayoutChangeEvent) => {
