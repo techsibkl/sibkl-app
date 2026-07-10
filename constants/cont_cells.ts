@@ -34,10 +34,14 @@ export const getFabActions = ({
       color: "white",
       style: { backgroundColor: "#d6361e" },
     },
-    ability.can("read", "CellDetails") && {
+    {
       icon: "camera",
       label: "Mark Attendance",
-      onPress: () => router.push("/(app)/cells/scanner"),
+      onPress: () =>
+        router.push({
+          pathname: "/(app)/cells/scanner",
+          params: { cell_id: String(cellId) },
+        }),
       color: "white",
       style: { backgroundColor: "#d6361e" },
     },

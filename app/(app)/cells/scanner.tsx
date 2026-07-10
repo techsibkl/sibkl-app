@@ -1,5 +1,5 @@
 import { useCameraPermissions } from "expo-camera";
-import { router } from "expo-router";
+import { router, useLocalSearchParams } from "expo-router";
 import { StatusBar } from "expo-status-bar";
 import { useEffect } from "react";
 import {
@@ -14,6 +14,7 @@ import { SafeAreaView } from "react-native-safe-area-context";
 const RED = "#d6361e";
 
 const ScannerPage = () => {
+  const { cell_id } = useLocalSearchParams<{ cell_id: string }>();
   const [permission, requestPermission] = useCameraPermissions();
   const isPermissionGranted = Boolean(permission?.granted);
   const isLoading = permission === null; // null = still checking
@@ -27,9 +28,13 @@ const ScannerPage = () => {
 
   // Auto-navigate if already granted
   useEffect(() => {
-    if (isPermissionGranted) {
-      router.replace("/(app)/cells/qrScan");
-    }
+    if (!isPermissionGranted) return;
+
+    const cellIdParam = Array.isArray(cell_id) ? cell_id[0] : cell_id;
+    router.replace({
+      pathname: "/(app)/cells/qrScan",
+      params: cellIdParam ? { cell_id: cellIdParam } : undefined,
+    });
   }, [isPermissionGranted]);
 
   return (

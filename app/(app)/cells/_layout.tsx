@@ -28,11 +28,17 @@ export default function Layout() {
         })}
       />
       <Stack.Screen
+        name="scanner"
+        options={() => ({
+          headerShown: false,
+        })}
+      />
+      <Stack.Screen
         name="qrScan"
         options={() => ({
           headerShown: false,
           tabBarStyle: { display: "none" },
-          presentation: "fullScreenModal", // ← this hides the tab bar automatically
+          presentation: "fullScreenModal",
         })}
       />
       <Stack.Screen

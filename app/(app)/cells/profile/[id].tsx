@@ -291,7 +291,7 @@ const CellProfileScreen = () => {
                 ability: ability,
                 router: router,
                 createSessionSheetModalRef: createSessionSheetModalRef,
-                cellId: ledCellsFormatted[0]?.id,
+                cellId: Number(id),
               })}
               onStateChange={({ open }) => setOpen(open)}
             />
