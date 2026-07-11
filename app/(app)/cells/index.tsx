@@ -1,7 +1,6 @@
 "use client";
 
-import { AllCellCard } from "@/components/Cells/CellCard";
-import MyCellCard from "@/components/Cells/CellCard";
+import MyCellCard, { AllCellCard } from "@/components/Cells/CellCard";
 import CellDetailModal from "@/components/shared/CellDetailModal";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
@@ -11,10 +10,11 @@ import { useThemeColors } from "@/hooks/useThemeColor";
 import { joinCell } from "@/services/Cell/cell.service";
 import { Cell } from "@/services/Cell/cell.types";
 import { useAuthStore } from "@/stores/authStore";
+import { FlashList } from "@shopify/flash-list";
+import { useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useRef, useState } from "react";
 import {
 	Animated,
-	FlatList,
 	Pressable,
 	StatusBar,
 	StyleSheet,
@@ -23,6 +23,7 @@ import {
 } from "react-native";
 
 const CellsScreen = () => {
+	const queryClient = useQueryClient();
 	const { isDark } = useThemeColors();
 	const { user } = useAuthStore();
 	const [searchQuery, setSearchQuery] = useState("");
@@ -30,6 +31,8 @@ const CellsScreen = () => {
 	const [joinedCells, setJoinedCells] = useState<number[]>([]);
 	const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
 	const [modalVisible, setModalVisible] = useState(false);
+	const [joiningCellId, setJoiningCellId] = useState<number | null>(null);
+	const [pendingCellIds, setPendingCellIds] = useState<number[]>([]);
 	const underlinePosition = useRef(new Animated.Value(0)).current;
 
 	// Fetch all available cells
@@ -41,6 +44,9 @@ const CellsScreen = () => {
 	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
 	// Get user's current cell IDs
 	const userCellIds = (person?.cells ?? []).map((cell) => cell.id);
+	console.log("Person data:", person);
+	console.log("User cell IDs:", userCellIds);
+	console.log("Person.cells:", person?.cells);
 	
 	// Deduplicate Available Cells
 	const uniqueAvailableCells = Array.from(
@@ -72,6 +78,13 @@ const CellsScreen = () => {
 	
 	fetch('http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'247e04'},body:JSON.stringify({sessionId:'247e04',location:'index.tsx:60',message:'Filtered cells',data:{availableCellsFilteredCount:availableCellsFiltered.length,joinedCellsListCount:joinedCellsList.length,filteredCellsCount:filteredCells.length,browseTab,cellsLoading},timestamp:Date.now(),runId:'debug1',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
 	// #endregion
+	useEffect(() => {
+		if (userCellIds.length === 0) {
+			setBrowseTab("available");
+		} else {
+			setBrowseTab("joined");
+		}
+	}, []); // Empty dependency array - runs only once on mount
 
 	useEffect(() => {
 		Animated.timing(underlinePosition, {
@@ -81,19 +94,38 @@ const CellsScreen = () => {
 		}).start();
 	}, [browseTab]);
 
+	// Smart routing: Set initial tab based on whether user has cells
+
 	const hasJoinedAnyCells = joinedCells.length > 0 || userCellIds.length > 0;
 
 	const handleJoinCell = async (cellId: number) => {
 		try {
-		  await joinCell(cellId);
-		  // Optionally update local state for immediate UI feedback
-		  setJoinedCells([...joinedCells, cellId]);
-		  // Or refetch the person data to sync with backend
+			setJoiningCellId(cellId);
+			await joinCell(cellId);
+			setPendingCellIds((prev) =>
+				prev.includes(cellId) ? prev : [...prev, cellId],
+			);
+			await queryClient.invalidateQueries({
+				queryKey: ["people", user?.person?.id],
+			});
 		} catch (error) {
-		  console.error("Failed to join cell:", error);
-		  // Show error toast to user
+			console.error("Failed to join cell:", error);
+		} finally {
+			setJoiningCellId(null);
 		}
-	  };
+	};
+
+	const selectedCellId = selectedCell?.id;
+	const selectedCellMembership = person?.cells?.find(
+		(c) => c.id === selectedCellId,
+	);
+	const isSelectedCellPending =
+		Boolean(selectedCellId && pendingCellIds.includes(selectedCellId)) ||
+		selectedCellMembership?.member_status === "PENDING";
+	const isSelectedCellJoined =
+		!isSelectedCellPending &&
+		(browseTab === "joined" ||
+			Boolean(userCellIds?.includes(selectedCellId as number)));
 
 	const handleViewDetails = (cell: Cell) => {
 		setSelectedCell(cell);
@@ -106,7 +138,6 @@ const CellsScreen = () => {
 				<AllCellCard 
 					cell={cell} 
 					hasJoinedAnyCells={hasJoinedAnyCells}
-					onJoin={handleJoinCell}
 					onViewDetails={handleViewDetails}
 				/>
 			);
@@ -133,25 +164,25 @@ const CellsScreen = () => {
 			placeholder="Search groups..."
 		/>
 
-		{/* Premium Tab Navigation */}
+		{/* Tab Navigation - Always Visible */}
 		<View style={styles.tabWrapper}>
 			<View style={styles.tabContainer}>
-				<Pressable 
-					onPress={() => setBrowseTab("available")}
-					style={[styles.tab, browseTab === "available" && styles.tabActive]}
-				>
-					<Text style={[styles.tabText, browseTab === "available" && styles.tabTextActive]}>
-						All
-					</Text>
-				</Pressable>
-				<Pressable 
-					onPress={() => setBrowseTab("joined")}
-					style={[styles.tab, browseTab === "joined" && styles.tabActive]}
-				>
-					<Text style={[styles.tabText, browseTab === "joined" && styles.tabTextActive]}>
-						My Cells
-					</Text>
-				</Pressable>
+			<Pressable 
+				onPress={() => setBrowseTab("available")}
+				style={[styles.tab, browseTab === "available" && styles.tabActive]}
+			>
+				<Text style={[styles.tabText, browseTab === "available" && styles.tabTextActive]}>
+					All
+				</Text>
+			</Pressable>
+			<Pressable 
+				onPress={() => setBrowseTab("joined")}
+				style={[styles.tab, browseTab === "joined" && styles.tabActive]}
+			>
+				<Text style={[styles.tabText, browseTab === "joined" && styles.tabTextActive]}>
+					My Cells
+				</Text>
+			</Pressable>
 			</View>
 			<Animated.View 
 				style={[
@@ -175,6 +206,17 @@ const CellsScreen = () => {
 					<View className="flex-1 items-center justify-center">
 						<Text className="text-gray-500">Loading groups...</Text>
 					</View>
+				) : browseTab === "joined" && userCellIds.length === 0 ? (
+					<View className="flex-1 items-center justify-center px-6">
+						<Text className="text-center text-gray-500 text-lg mb-4">No Cells</Text>
+						<Text className="text-center text-gray-400 mb-6">You haven't joined any groups yet</Text>
+						<Pressable 
+							onPress={() => setBrowseTab("available")}
+							style={styles.joinButton}
+						>
+							<Text style={styles.joinButtonText}>Join One Now</Text>
+						</Pressable>
+					</View>
 				) : filteredCells.length === 0 ? (
 					<View className="flex-1 items-center justify-center px-6">
 						<Text className="text-center text-gray-500">
@@ -183,27 +225,29 @@ const CellsScreen = () => {
 								: "No available groups to join"}
 						</Text>
 					</View>
-				) : (
-					<FlatList
-						data={filteredCells}
-						keyExtractor={(item) => String(item.id)}
-						renderItem={renderCellCard}
-						scrollEnabled={true}
-						showsVerticalScrollIndicator={false}
-						contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
-					/>
-				)}
+			) : (
+				<FlashList
+					data={filteredCells}
+					keyExtractor={(item) => String(item.id)}
+					renderItem={renderCellCard}
+					scrollEnabled={true}
+					showsVerticalScrollIndicator={false}
+					contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
+					estimatedItemSize={140}
+				/>
+			)}
 			</View>
 
 	<CellDetailModal
 		visible={modalVisible}
 		onClose={() => setModalVisible(false)}
 		cell={selectedCell}
-		isJoined={browseTab === "joined" || userCellIds?.includes(selectedCell?.id as any)}
-		isLeader={selectedCell?.id ? ledCells?.map(Number).includes(Number(selectedCell.id)) : false}
+		isJoined={isSelectedCellJoined}
+		isPending={isSelectedCellPending}
+		isJoining={joiningCellId === selectedCellId}
+		isLeader={selectedCellId ? Boolean(ledCells?.map(Number).includes(Number(selectedCellId))) : false}
+		onJoin={handleJoinCell}
 		onManage={() => {
-			// Navigate to cell management screen
-			// You can update this path based on your routing structure
 			console.log("Manage cell:", selectedCell?.id);
 		}}
 	/>
@@ -245,6 +289,18 @@ const styles = StyleSheet.create({
 		width: "45%",
 		backgroundColor: "#d6361e",
 		borderRadius: 1.5,
+	},
+	joinButton: {
+		backgroundColor: "#d6361e",
+		paddingVertical: 12,
+		paddingHorizontal: 24,
+		borderRadius: 8,
+	},
+	joinButtonText: {
+		color: "#ffffff",
+		fontSize: 16,
+		fontWeight: "600",
+		textAlign: "center",
 	},
 });
 

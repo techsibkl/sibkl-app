@@ -9,10 +9,12 @@ type MembersListProps = {
 	searchQuery: string;
 	onChangeText: (value: string) => void;
 	isLeader?: boolean;
+	currentPersonId?: number;
 	memberStatuses?: Record<number, string>;
 	onAccept?: (memberId: number) => void;
 	onReject?: (memberId: number) => void;
 	isUpdating?: number | null;
+	onRemoveMember?: (memberId: number) => void;
 };
 
 const MembersList = ({
@@ -20,10 +22,12 @@ const MembersList = ({
 	searchQuery,
 	onChangeText,
 	isLeader = false,
+	currentPersonId,
 	memberStatuses = {},
 	onAccept,
 	onReject,
 	isUpdating = null,
+	onRemoveMember,
 }: MembersListProps) => {
 	// Get status for a member
 	const getMemberStatus = (member: any) =>
@@ -54,10 +58,12 @@ const MembersList = ({
 						key={member.id}
 						member={member}
 						isLeader={isLeader}
+						currentPersonId={currentPersonId}
 						memberStatuses={memberStatuses}
 						onAccept={onAccept}
 						onReject={onReject}
 						isUpdating={isUpdating === member.id}
+						onRemoveMember={onRemoveMember}
 					/>
 				))}
 			</View>

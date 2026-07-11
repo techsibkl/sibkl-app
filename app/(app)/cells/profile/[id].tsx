@@ -7,16 +7,17 @@ import SharedBody from "@/components/shared/SharedBody";
 import { getFabActions } from "@/constants/cont_cells";
 import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
+import { useQueryClient } from "@tanstack/react-query";
 import { useThemeColors } from "@/hooks/useThemeColor";
-import { updateMemberStatus } from "@/services/Cell/cell.service";
+import { removeCellMembers, updateMemberStatus } from "@/services/Cell/cell.service";
 import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
-import { useLocalSearchParams, useRouter } from "expo-router";
-import React, { useRef, useState } from "react";
+import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -33,7 +34,8 @@ const CellProfileScreen = () => {
   const { id } = useLocalSearchParams();
   const { user, ability } = useAuthStore();
   const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
-  console.log("person:", person);
+  const queryClient = useQueryClient();
+  // console.log("person:", person);
 
   const ledCells: number[] | undefined = person?.leader_of_cell_ids;
   const isLeader = ledCells?.map(Number).includes(Number(id));
@@ -44,6 +46,7 @@ const CellProfileScreen = () => {
     isPending,
     error: queryError,
     isError,
+    refetch,
   } = useSingleCellQuery(Number(id));
 
   // Get cell data from person's cells for regular members
@@ -65,6 +68,10 @@ const CellProfileScreen = () => {
   const ledCellsFormatted = (person?.cells ?? [])
     .filter((cell) => cell.id && ledCells?.map(Number).includes(Number(cell.id)))
     .map((cell) => ({ id: cell.id!, name: cell.cell_name! }));
+
+  useEffect(() => {
+    setOpen(false);
+  }, [activeTab]);
 
   const filteredMembers = (cell?.members ?? []).filter((member: Person) =>
     member?.full_legal_name?.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -108,25 +115,78 @@ const CellProfileScreen = () => {
     }
   };
 
+  // Remove member, not yet implemented
+  const handleRemoveMember = async (memberId: number) => {
+    try {
+      console.log("Removing member with ID:", memberId);
+      setIsUpdating(memberId);
+      setStatusError(null);
+
+      await removeCellMembers(Number(id), [memberId], person?.id ?? -1);
+
+      // Invalidate all related queries
+      await queryClient.invalidateQueries({ 
+        queryKey: ["cells", Number(id)] 
+      }); // Refetch current cell
+      
+      await queryClient.invalidateQueries({ 
+        queryKey: ["people", person?.id] 
+      }); // Refetch user's person data
+      
+      await queryClient.invalidateQueries({ 
+        queryKey: ["cells"] 
+      }); // Refetch led cells
+      
+      await queryClient.invalidateQueries({ 
+        queryKey: ["cells-scoped-fields"] 
+      }); // Refetch public cells
+      
+      await queryClient.invalidateQueries({ 
+        queryKey: ["people", person?.id] 
+      }); // Refetch each member's person data if needed
+      
+      // DEBUG: Log the updated members list after removal
+      console.log("✅ MEMBER REMOVED - Updated members list:", {
+        cellId: id,
+        totalMembers: cell?.members?.length,
+        members: cell?.members?.map(m => ({
+          id: m.id,
+          name: m.full_legal_name,
+          status: m.status
+        }))
+      });
+      
+    } catch (err: any) {
+      setStatusError(err.message || "Failed to remove member");
+      console.error("Remove member error:", err);
+    } finally {
+      console.log("Current user:", user);
+      console.log("User person ID:", user?.person?.id);
+      setIsUpdating(null);
+    }
+  };
+  
   const renderTabContent = () => {
     switch (activeTab) {
       case "people":
         return (
           <MembersList
-          members={isLeader ? filteredMembers : filteredMembers.filter((m) => (memberStatuses[m.id] || m.status || "ACTIVE") === "ACTIVE")}
+            members={isLeader ? filteredMembers : filteredMembers.filter((m) => (memberStatuses[m.id] || m.status || "ACTIVE") === "ACTIVE")}
             searchQuery={searchQuery}
             onChangeText={setSearchQuery}
             isLeader={isLeader}
+            currentPersonId={person?.id}
             memberStatuses={memberStatuses}
             onAccept={handleAcceptMember}
             onReject={handleRejectMember}
             isUpdating={isUpdating}
+            onRemoveMember={handleRemoveMember}
           />
         );
       case "announcements":
-        return <ComingSoon description="Announcements coming soon" />;
+        return <ComingSoon description="Coming soon :>" />;
       case "attendance":
-        return <ComingSoon description="Attendance tracking coming soon" />;
+        return <ComingSoon description="Coming soon :>" />;
       default:
         return null;
     }
@@ -220,12 +280,18 @@ const CellProfileScreen = () => {
               icon={open ? "close" : "plus"}
               color="white"
               fabStyle={{ backgroundColor: "#d6361e" }}
-              visible
+              backdropColor="transparent"
+              visible={activeTab === "attendance"}
+              style={{
+                paddingBottom: 0, // Sometimes there's default padding you might want to remove
+                bottom: 10,       // Adjust this value to move it up or down (default is usually around 16)
+                right: 16,        // Adjust this to move it left or right
+              }}
               actions={getFabActions({
                 ability: ability,
                 router: router,
                 createSessionSheetModalRef: createSessionSheetModalRef,
-                cellId: ledCellsFormatted[0]?.id,
+                cellId: Number(id),
               })}
               onStateChange={({ open }) => setOpen(open)}
             />

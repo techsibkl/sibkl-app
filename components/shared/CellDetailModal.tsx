@@ -1,19 +1,19 @@
-import React, { useRef, useState, useEffect } from "react";
+import { Calendar, Clock, MapPin, Repeat, Users } from "lucide-react-native";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  Modal,
-  Image,
-  Animated,
-  PanResponder,
-  GestureResponderEvent,
-  PanResponderGestureState,
+    Animated,
+    Dimensions,
+    GestureResponderEvent,
+    Image,
+    Modal,
+    PanResponder,
+    PanResponderGestureState,
+    ScrollView,
+    StyleSheet,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
-import { Clock, MapPin, Users, Calendar, Tag, Repeat } from "lucide-react-native";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -32,7 +32,10 @@ interface CellDetailModalProps {
   onClose: () => void;
   cell: any;
   isJoined?: boolean;
+  isPending?: boolean;
+  isJoining?: boolean;
   isLeader?: boolean;
+  onJoin?: (cellId: number) => void;
   onManage?: () => void;
 }
 
@@ -69,7 +72,10 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
   onClose,
   cell,
   isJoined = false,
+  isPending = false,
+  isJoining = false,
   isLeader = false,
+  onJoin,
   onManage,
 }) => {
   const heightAnim = useRef(new Animated.Value(0)).current;
@@ -208,6 +214,37 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
 
   if (!cell) return null;
 
+  const renderJoinAction = () => {
+    if (isJoined && isLeader) {
+      return (
+        <TouchableOpacity style={styles.joinButton} onPress={onManage}>
+          <Text style={styles.joinButtonText}>Manage</Text>
+        </TouchableOpacity>
+      );
+    }
+    if (isPending) {
+      return (
+        <View style={[styles.joinButton, styles.pendingButton]}>
+          <Text style={styles.joinButtonText}>Pending</Text>
+        </View>
+      );
+    }
+    if (!isJoined) {
+      return (
+        <TouchableOpacity
+          style={[styles.joinButton, isJoining && styles.joinButtonDisabled]}
+          disabled={isJoining}
+          onPress={() => onJoin?.(cell.id)}
+        >
+          <Text style={styles.joinButtonText}>
+            {isJoining ? "Joining..." : "Join +"}
+          </Text>
+        </TouchableOpacity>
+      );
+    }
+    return null;
+  };
+
   const gallery: string[] = cell.images?.length
     ? cell.images
     : cell.image_url
@@ -264,16 +301,7 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
                   </Text>
                 )}
               </View>
-              {!isJoined && (
-                <TouchableOpacity style={styles.joinButton}>
-                  <Text style={styles.joinButtonText}>Join +</Text>
-                </TouchableOpacity>
-              )}
-              {isJoined && isLeader && (
-                <TouchableOpacity style={styles.joinButton} onPress={onManage}>
-                  <Text style={styles.joinButtonText}>Manage</Text>
-                </TouchableOpacity>
-              )}
+              {renderJoinAction()}
             </View>
 
             <View style={styles.statRow}>
@@ -437,16 +465,7 @@ const CellDetailModal: React.FC<CellDetailModalProps> = ({
                     {cell?.cell_name}
                   </Text>
                 </View>
-                {!isJoined && (
-                  <TouchableOpacity style={styles.joinButton}>
-                    <Text style={styles.joinButtonText}>Join +</Text>
-                  </TouchableOpacity>
-                )}
-                {isJoined && isLeader && (
-                  <TouchableOpacity style={styles.joinButton} onPress={onManage}>
-                    <Text style={styles.joinButtonText}>Manage</Text>
-                  </TouchableOpacity>
-                )}
+                {renderJoinAction()}
               </View>
               <View
                 style={{
@@ -667,6 +686,12 @@ const styles = StyleSheet.create({
     paddingVertical: 6,
     borderRadius: 8,
   },
+  joinButtonDisabled: {
+    opacity: 0.6,
+  },
+  pendingButton: {
+    backgroundColor: "#f59e0b",
+  },
   joinButtonText: {
     color: "white",
     fontSize: 13,
@@ -716,11 +741,13 @@ const styles = StyleSheet.create({
     textTransform: "uppercase",
     letterSpacing: 0.3,
     marginBottom: 8,
+    lineHeight: 12,
   },
   gridLabelContainer: {
     flexDirection: "row",
-    alignItems: "center",
+    alignItems: "flex-start",
     gap: 6,
+    marginBottom: 8,
   },
   gridContent: {
     fontSize: 13,

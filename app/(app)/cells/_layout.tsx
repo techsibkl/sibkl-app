@@ -1,6 +1,6 @@
-import React from "react";
 import SharedHeader from "@/components/shared/SharedHeader";
 import { Stack } from "expo-router";
+import React from "react";
 
 export const unstable_settings = {
   initialRouteName: "index",
@@ -19,15 +19,6 @@ export default function Layout() {
         }}
       />
       <Stack.Screen
-        name="browse"
-        options={{
-          headerShown: true,
-          header() {
-            return <SharedHeader title="Cells" />;
-          },
-        }}
-      />
-      <Stack.Screen
         name="profile/[id]"
         options={({ route }) => ({
           headerShown: true,
@@ -37,11 +28,17 @@ export default function Layout() {
         })}
       />
       <Stack.Screen
+        name="scanner"
+        options={() => ({
+          headerShown: false,
+        })}
+      />
+      <Stack.Screen
         name="qrScan"
         options={() => ({
           headerShown: false,
           tabBarStyle: { display: "none" },
-          presentation: "fullScreenModal", // ← this hides the tab bar automatically
+          presentation: "fullScreenModal",
         })}
       />
       <Stack.Screen
