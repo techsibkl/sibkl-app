@@ -1,17 +1,29 @@
 import SharedBody from "@/components/shared/SharedBody";
+import AnalyticsPanel from "@/components/Cells/Analytics/AnalyticsPanel";
 import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
-import { useCellSessionsQuery } from "@/hooks/CellAttendance/useCellAttendanceQuery";
+import {
+  useCellAttendanceStatsQuery,
+  useCellSessionsQuery,
+} from "@/hooks/CellAttendance/useCellAttendanceQuery";
 import { CellSession } from "@/services/CellAttendance/cellAttendance.type";
 import { FlashList } from "@shopify/flash-list";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useState } from "react";
-import { ActivityIndicator, Pressable, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import {
+  ActivityIndicator,
+  Pressable,
+  RefreshControl,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 
 const TODAY = new Date(new Date().setHours(0, 0, 0, 0));
 
 const isUpcomingOrLive = (session: CellSession) =>
   new Date(session.meeting_date) >= TODAY;
+
+type SessionsViewTab = "sessions" | "analytics";
 
 type SectionItem =
   | { type: "header"; label: string }
@@ -38,7 +50,6 @@ const SessionCard = ({
       className="flex-row items-center bg-white rounded-2xl p-4 border border-gray-100 gap-3 mb-2"
       style={{ elevation: 2 }}
     >
-      {/* Date badge */}
       <View
         className={`w-12 h-14 rounded-xl items-center justify-center ${
           isToday
@@ -72,7 +83,6 @@ const SessionCard = ({
         </Text>
       </View>
 
-      {/* Body */}
       <View className="flex-1 gap-1">
         <View className="flex-row items-center gap-2 flex-wrap">
           <Text className="text-base font-bold text-gray-900">
@@ -107,7 +117,6 @@ const SessionCard = ({
           })}
         </Text>
 
-        {/* Attendance bar for past sessions */}
         {!isUpcoming && (
           <View className="flex-row items-center gap-2 mt-1">
             <View className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
@@ -122,7 +131,6 @@ const SessionCard = ({
           </View>
         )}
 
-        {/* Attendee count for upcoming */}
         {isToday && session.attendee_count > 0 && (
           <Text className="text-xs text-red-600 font-semibold mt-0.5">
             {session.attendee_count} checked in so far
@@ -143,43 +151,80 @@ const SectionHeader = ({ label }: { label: string }) => (
   </View>
 );
 
+const ViewTabs = ({
+  activeTab,
+  onChange,
+}: {
+  activeTab: SessionsViewTab;
+  onChange: (tab: SessionsViewTab) => void;
+}) => (
+  <View className="flex-row bg-gray-100 rounded-xl p-1 mt-4">
+    {(["sessions", "analytics"] as const).map((tab) => {
+      const isActive = activeTab === tab;
+      return (
+        <Pressable
+          key={tab}
+          onPress={() => onChange(tab)}
+          className={`flex-1 items-center rounded-lg py-2.5 ${
+            isActive ? "bg-white" : ""
+          }`}
+          style={
+            isActive
+              ? {
+                  shadowColor: "#000",
+                  shadowOpacity: 0.08,
+                  shadowRadius: 4,
+                  shadowOffset: { width: 0, height: 1 },
+                  elevation: 2,
+                }
+              : undefined
+          }
+        >
+          <Text
+            className={`text-sm font-semibold capitalize ${
+              isActive ? "text-gray-900" : "text-gray-500"
+            }`}
+          >
+            {tab}
+          </Text>
+        </Pressable>
+      );
+    })}
+  </View>
+);
+
 export default function SessionsScreen() {
   const { cell_id } = useLocalSearchParams<{ cell_id: string }>();
   const cellId = Number(cell_id);
   const router = useRouter();
+  const [activeTab, setActiveTab] = useState<SessionsViewTab>("sessions");
+  const [refreshing, setRefreshing] = useState(false);
 
   const {
     data: sessions,
     isLoading: isSessionsLoading,
     isError: isSessionsError,
-    refetch,
+    refetch: refetchSessions,
   } = useCellSessionsQuery(cellId);
-  
-  const { data: cellData } = useSingleCellQuery(cellId);
 
-  const [refreshing, setRefreshing] = useState(false);
+  const {
+    data: attendanceStats,
+    isLoading: isAnalyticsLoading,
+    isError: isAnalyticsError,
+    refetch: refetchAnalytics,
+  } = useCellAttendanceStatsQuery(cellId, activeTab === "analytics");
+
+  const { data: cellData } = useSingleCellQuery(cellId);
 
   const handleRefresh = async () => {
     setRefreshing(true);
-    await refetch();
+    if (activeTab === "analytics") {
+      await Promise.all([refetchAnalytics(), refetchSessions()]);
+    } else {
+      await refetchSessions();
+    }
     setRefreshing(false);
   };
-
-  if (isSessionsLoading) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-white">
-        <ActivityIndicator color="#d6361e" size="large" />
-      </SafeAreaView>
-    );
-  }
-
-  if (isSessionsError) {
-    return (
-      <SafeAreaView className="flex-1 items-center justify-center bg-white">
-        <Text className="text-red-600 text-base">Failed to load sessions.</Text>
-      </SafeAreaView>
-    );
-  }
 
   const upcoming = (sessions ?? [])
     .filter(isUpcomingOrLive)
@@ -195,7 +240,6 @@ export default function SessionsScreen() {
         new Date(b.meeting_date).getTime() - new Date(a.meeting_date).getTime(),
     );
 
-  // Build flat list with section headers interspersed
   const listData: SectionItem[] = [
     ...(upcoming.length > 0
       ? [
@@ -211,6 +255,89 @@ export default function SessionsScreen() {
       : []),
   ];
 
+  const header = (
+    <View className="mb-2">
+      <View className="w-9 h-1 bg-red-600 rounded-full mb-3" />
+      <Text className="text-3xl font-bold text-gray-900 tracking-tight">
+        {activeTab === "analytics"
+          ? cellData?.cell_name
+            ? `${cellData.cell_name}'s Analytics`
+            : "Cell Analytics"
+          : cellData?.cell_name
+            ? `${cellData.cell_name}'s Sessions`
+            : "Sessions"}
+      </Text>
+      <Text className="text-sm text-gray-400 mt-1">
+        {activeTab === "analytics"
+          ? "Attendance overview for this cell"
+          : `${upcoming.length} upcoming · ${past.length} past`}
+      </Text>
+      <ViewTabs activeTab={activeTab} onChange={setActiveTab} />
+    </View>
+  );
+
+  if (activeTab === "analytics") {
+    return (
+      <SharedBody>
+        <ScrollView
+          contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
+          refreshControl={
+            <RefreshControl refreshing={refreshing} onRefresh={handleRefresh} />
+          }
+        >
+          {header}
+          <View className="mt-4">
+            {isAnalyticsLoading || isSessionsLoading ? (
+              <View className="items-center py-16">
+                <ActivityIndicator color="#d6361e" size="large" />
+              </View>
+            ) : isAnalyticsError ? (
+              <View className="items-center py-16 px-4">
+                <Text className="text-red-600 text-base text-center">
+                  Failed to load attendance analytics.
+                </Text>
+              </View>
+            ) : (
+              <AnalyticsPanel
+                stats={attendanceStats ?? []}
+                sessions={sessions ?? []}
+                members={cellData?.members ?? []}
+              />
+            )}
+          </View>
+        </ScrollView>
+      </SharedBody>
+    );
+  }
+
+  if (isSessionsLoading) {
+    return (
+      <SharedBody>
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+          {header}
+          <View className="items-center py-16">
+            <ActivityIndicator color="#d6361e" size="large" />
+          </View>
+        </ScrollView>
+      </SharedBody>
+    );
+  }
+
+  if (isSessionsError) {
+    return (
+      <SharedBody>
+        <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40 }}>
+          {header}
+          <View className="items-center py-16">
+            <Text className="text-red-600 text-base">
+              Failed to load sessions.
+            </Text>
+          </View>
+        </ScrollView>
+      </SharedBody>
+    );
+  }
+
   return (
     <SharedBody>
       <FlashList
@@ -223,17 +350,7 @@ export default function SessionsScreen() {
         }
         getItemType={(item) => item.type}
         contentContainerStyle={{ padding: 16, paddingBottom: 40 }}
-        ListHeaderComponent={
-          <View className="mb-2">
-            <View className="w-9 h-1 bg-red-600 rounded-full mb-3" />
-            <Text className="text-3xl font-bold text-gray-900 tracking-tight">
-              {cellData?.cell_name ? `${cellData.cell_name}'s Sessions` : "Sessions"}
-            </Text>
-            <Text className="text-sm text-gray-400 mt-1">
-              {upcoming.length} upcoming · {past.length} past
-            </Text>
-          </View>
-        }
+        ListHeaderComponent={header}
         ListEmptyComponent={
           <View className="items-center pt-16 gap-2">
             <Text className="text-gray-400 text-base">No sessions yet.</Text>

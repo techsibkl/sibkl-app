@@ -1,3 +1,5 @@
+export type CellSessionStatus = "open" | "closed";
+
 export type CellSession = {
   id: number;
   cell_id: number;
@@ -6,7 +8,10 @@ export type CellSession = {
   created_at: string;
   updated_at: string;
   attendee_count: number;
+  member_count?: number;
+  guest_count?: number;
   total_members: number;
+  status?: CellSessionStatus;
 };
 
 export type CellSessionAttendee = {
@@ -21,4 +26,13 @@ export type CellSessionAttendee = {
 
 export type CellSessionDetail = CellSession & {
   attendees: CellSessionAttendee[];
+};
+
+export type CellAttendanceStat = {
+  cell_id: number;
+  people_id: number;
+  full_legal_name: string;
+  sessions_attended: number;
+  total_sessions: number;
+  attendance_rate: number;
 };

@@ -1,5 +1,6 @@
 import {
   createCellSession,
+  fetchCellAttendanceStats,
   fetchCellSessionById,
   fetchCellSessions,
   signInToCellSession,
@@ -11,6 +12,21 @@ export const useCellSessionsQuery = (cellId: number) => {
     queryKey: ["cell-sessions", cellId],
     queryFn: () => fetchCellSessions(cellId),
     enabled: !!cellId,
+    retry: (failureCount, error: any) => {
+      if (error?.status === 401 || error?.status === 403) return false;
+      return failureCount < 3;
+    },
+  });
+};
+
+export const useCellAttendanceStatsQuery = (
+  cellId: number,
+  enabled = true,
+) => {
+  return useQuery({
+    queryKey: ["cell-attendance-stats", cellId],
+    queryFn: () => fetchCellAttendanceStats(cellId),
+    enabled: !!cellId && enabled,
     retry: (failureCount, error: any) => {
       if (error?.status === 401 || error?.status === 403) return false;
       return failureCount < 3;
