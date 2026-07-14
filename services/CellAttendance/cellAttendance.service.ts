@@ -1,7 +1,11 @@
 import { apiEndpoints } from "@/utils/endpoints";
 import { secureFetch } from "@/utils/secureFetch";
 import { ReturnVal } from "@/utils/types/returnVal.types";
-import { CellSession, CellSessionDetail } from "./cellAttendance.type";
+import {
+  CellAttendanceStat,
+  CellSession,
+  CellSessionDetail,
+} from "./cellAttendance.type";
 
 export const signInToCellSession = async (
   cellId: number,
@@ -45,7 +49,16 @@ export const fetchCellSessions = async (
 ): Promise<CellSession[]> => {
   const response = await secureFetch(apiEndpoints.cells.getSessions(cellId));
   const json: ReturnVal = await response.json();
-  return (json.data as CellSession[]) ?? []; // ← fallback to empty array
+  if (!json.success) throw json;
+  const rows = Array.isArray(json.data) ? json.data : [];
+  return rows.map((item: CellSession) => ({
+    ...item,
+    attendee_count: Number(item.attendee_count ?? 0),
+    member_count: Number(item.member_count ?? 0),
+    guest_count: Number(item.guest_count ?? 0),
+    total_members: Number(item.total_members ?? 0),
+    status: item.status ?? "open",
+  }));
 };
 
 export const fetchCellSessionById = async (
@@ -57,4 +70,23 @@ export const fetchCellSessionById = async (
   );
   const json: ReturnVal = await response.json();
   return json.data as CellSessionDetail;
+};
+
+export const fetchCellAttendanceStats = async (
+  cellId: number,
+): Promise<CellAttendanceStat[]> => {
+  const response = await secureFetch(
+    apiEndpoints.cells.getAttendanceStats(cellId),
+  );
+  const json: ReturnVal = await response.json();
+  if (!json.success) throw json;
+  const rows = Array.isArray(json.data) ? json.data : [];
+  return rows.map((item: CellAttendanceStat) => ({
+    cell_id: Number(item.cell_id),
+    people_id: Number(item.people_id),
+    full_legal_name: item.full_legal_name ?? "",
+    sessions_attended: Number(item.sessions_attended ?? 0),
+    total_sessions: Number(item.total_sessions ?? 0),
+    attendance_rate: Number(item.attendance_rate ?? 0),
+  }));
 };

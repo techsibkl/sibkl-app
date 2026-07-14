@@ -58,6 +58,12 @@ export const apiEndpoints = {
       _endpoint(`cells/${cellId}/sessions`),
     getSessionById: (cellId: number | string, sessionId: number | string) =>
       _endpoint(`cells/${cellId}/sessions/${sessionId}`),
+    getAttendanceStats: (cellId: number | string) =>
+      _endpoint(`cells/${cellId}/attendance/stats`),
+    getAttendanceStatsByPerson: (
+      cellId: number | string,
+      peopleId: number | string,
+    ) => _endpoint(`cells/${cellId}/attendance/stats/${peopleId}`),
     createSession: (cellId: number | string) =>
       _endpoint(`cells/${cellId}/create-cell-session`),
     signInToSession: (cellId: number | string) =>
