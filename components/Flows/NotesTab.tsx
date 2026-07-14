@@ -20,7 +20,7 @@ type NotesTabProps = {
 };
 
 const NotesTab = ({ personFlow }: NotesTabProps) => {
-	const personId = Number(personFlow.p__id);
+	const personId = Number(personFlow.p__id ?? personFlow.people_id);
 	const queryClient = useQueryClient();
 	const { data: notes = [], isLoading } = useNotesByPersonQuery(personId);
 	const [newNote, setNewNote] = useState<string>("");
