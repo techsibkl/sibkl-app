@@ -11,7 +11,7 @@ type NoteItemProps = {
 
 const NoteItem = ({ note, onDelete }: NoteItemProps) => {
 	return (
-		<View className="rounded-lg p-3 py-4 border-l-4 border-blue-500 bg-card shadow-md">
+		<View className="rounded-lg p-3 py-4 border-l-4 border-blue-500 bg-card shadow-sm">
 			<View className="flex-row justify-between items-start gap-2">
 				<View className="flex-1">
 					<Text className="text-xs text-gray-400 mb-2">

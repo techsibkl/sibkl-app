@@ -30,6 +30,21 @@ export interface AssignDistrictPayload {
 	};
 }
 
+export interface AssignCellPayload {
+	people: Array<{
+		id: number;
+		full_legal_name: string;
+	}>;
+	flow?: {
+		id: number;
+		title?: string;
+	};
+	cell?: {
+		id: number;
+		cell_name?: string;
+	};
+}
+
 export const assignPersonToFlow = async (
 	payload: AssignPersonPayload,
 ): Promise<ReturnVal> => {
@@ -48,6 +63,20 @@ export const assignDistrictToFlow = async (
 	payload: AssignDistrictPayload,
 ): Promise<ReturnVal> => {
 	const response = await secureFetch(`${apiEndpoints.assign?.district}`, {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+		},
+		body: JSON.stringify(payload),
+	});
+
+	return response.json();
+};
+
+export const assignCellToFlow = async (
+	payload: AssignCellPayload,
+): Promise<ReturnVal> => {
+	const response = await secureFetch(`${apiEndpoints.assign?.cell}`, {
 		method: "POST",
 		headers: {
 			"Content-Type": "application/json",

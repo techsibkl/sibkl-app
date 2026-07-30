@@ -1,4 +1,8 @@
-import { assignPersonToFlow } from "@/services/Flow/assign.service";
+import {
+	assignCellToFlow,
+	assignDistrictToFlow,
+	assignPersonToFlow,
+} from "@/services/Flow/assign.service";
 import { updateStep } from "@/services/Flow/flow.service";
 import { FlowStep } from "@/services/Flow/flow.types";
 import { myToast } from "@/utils/helper";
@@ -30,30 +34,49 @@ export const useAssignMutation = (flowId: number) => {
 	});
 };
 
-// export const useAssignDistrictMutation = (flow?: Flow) => {
-//   const peopleStore = usePeopleStore();
-//   const qc = useQueryClient();
+export const useAssignDistrictMutation = (flowId: number) => {
+	const qc = useQueryClient();
 
-//   return useMutation({
-//     mutationFn: (payload: { people: Person[]; flow?: Flow; district?: District }) =>
-//       peopleStore.assignDistrict(payload),
-//     onSuccess: (_, variables) => {
-//       qc.invalidateQueries({ queryKey: ["peopleFlow", variables.flow?.id] });
-//     }
-//   });
-// };
+	return useMutation({
+		mutationFn: (payload: {
+			people: Array<{ id: number; full_legal_name: string }>;
+			flow?: { id: number; title?: string };
+			district?: { id: number; name: string };
+		}) => assignDistrictToFlow(payload),
+		onSuccess: (res, variables) => {
+			qc.invalidateQueries({ queryKey: ["peopleFlow", flowId] });
+			qc.invalidateQueries({ queryKey: ["peopleFlow", "all"] });
+			if (variables.people) {
+				variables.people.forEach((person) => {
+					qc.invalidateQueries({ queryKey: ["people", person.id] });
+				});
+			}
+			Toast.show(myToast(res));
+		},
+	});
+};
 
-// /**
-//  * Deprecated, use `useChangeStatusMutation` instead
-//  */
-// export const useCompleteMutation = () => {
-//   const peopleStore = usePeopleStore();
+export const useAssignCellMutation = (flowId: number) => {
+	const qc = useQueryClient();
 
-//   return useMutation({
-//     mutationFn: (payload: { flowId: number; peopleIds: number[]; completedAttrMap: AttrMap[] }) =>
-//       peopleStore.completePeopleInFlow(payload.flowId, payload.peopleIds, payload.completedAttrMap)
-//   });
-// };
+	return useMutation({
+		mutationFn: (payload: {
+			people: Array<{ id: number; full_legal_name: string }>;
+			flow?: { id: number; title?: string };
+			cell?: { id: number; cell_name?: string };
+		}) => assignCellToFlow(payload),
+		onSuccess: (res, variables) => {
+			qc.invalidateQueries({ queryKey: ["peopleFlow", flowId] });
+			qc.invalidateQueries({ queryKey: ["peopleFlow", "all"] });
+			if (variables.people) {
+				variables.people.forEach((person) => {
+					qc.invalidateQueries({ queryKey: ["people", person.id] });
+				});
+			}
+			Toast.show(myToast(res));
+		},
+	});
+};
 
 export const useChangeStepMutation = () => {
 	const qc = useQueryClient();
@@ -74,7 +97,6 @@ export const useChangeStepMutation = () => {
 				payload.districtId,
 			),
 		onSuccess: (res, variables) => {
-			// Targeted: only invalidate this flow + the "all flows" assigned-to-me list
 			qc.invalidateQueries({ queryKey: ["peopleFlow", variables?.flowId] });
 			qc.invalidateQueries({ queryKey: ["peopleFlow", "all"] });
 			variables?.peopleIds.forEach((id) => {
@@ -84,24 +106,3 @@ export const useChangeStepMutation = () => {
 		},
 	});
 };
-
-// export const useAddPeopleToFlowMutation = () => {
-//   const peopleStore = usePeopleStore();
-
-//   return useMutation({
-//     mutationFn: (payload: { flowId: number; districtId: number; peopleIds: number[] }) =>
-//       peopleStore.addPeopleToFlow(payload.flowId, payload.districtId, payload.peopleIds)
-//   });
-// };
-
-// export const useImportPersonToFlowMutation = (flowId: number, completed: boolean) => {
-//   const peopleStore = usePeopleStore();
-//   const qc = useQueryClient();
-
-//   return useMutation({
-//     mutationFn: (payload: { processedData: any; flowId: number }) => peopleStore.importPeopleToFlow(payload),
-//     onSuccess: () => {
-//       qc.invalidateQueries({ queryKey: ["peopleFlow", flowId] });
-//     }
-//   });
-// };

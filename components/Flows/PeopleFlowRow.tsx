@@ -14,7 +14,9 @@ import { getInitials } from "@/utils/helper_profile";
 import {
 	ChevronRightIcon,
 	CircleDashedIcon,
+	CircleIcon,
 	FunnelIcon,
+	MapPinIcon,
 	UserIcon,
 } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
@@ -145,9 +147,8 @@ const PeopleFlowRowComponent = ({
 								</View>
 							)}
 
-							{/* Assignee + last assigned */}
-							{(effectiveAssignee ||
-								personFlow.last_assigned_at) && (
+							{/* Assignee + Cell row */}
+							{(effectiveAssignee || personFlow.cell_name) && (
 								<View className="flex-row items-center gap-x-1 flex-wrap">
 									{effectiveAssignee && (
 										<>
@@ -164,19 +165,38 @@ const PeopleFlowRowComponent = ({
 										</>
 									)}
 									{effectiveAssignee &&
-										personFlow.last_assigned_at && (
+										personFlow.cell_name && (
 											<Text className="text-xs text-gray-300">
 												·
 											</Text>
 										)}
-									{personFlow.last_assigned_at && (
-										<Text className="text-xs text-gray-400 italic">
-											assigned{" "}
-											{daysAgo(
-												personFlow.last_assigned_at,
-											)}
-										</Text>
+									{personFlow.cell_name && (
+										<>
+											<CircleIcon
+												size={10}
+												color="#9ca3af"
+											/>
+											<Text
+												className="text-xs text-gray-400"
+												numberOfLines={1}
+											>
+												{personFlow.cell_name}
+											</Text>
+										</>
 									)}
+								</View>
+							)}
+
+							{/* District row */}
+							{personFlow.district_name && (
+								<View className="flex-row items-center gap-x-1">
+									<MapPinIcon size={10} color="#9ca3af" />
+									<Text
+										className="text-xs text-gray-400"
+										numberOfLines={1}
+									>
+										{personFlow.district_name}
+									</Text>
 								</View>
 							)}
 						</View>

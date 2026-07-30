@@ -38,6 +38,14 @@ export const apiEndpoints = {
 	assign: {
 		person: _endpoint("assign/person"),
 		district: _endpoint("assign/district"),
+		cell: _endpoint("assign/cell"),
+	},
+	districts: {
+		getAll: _endpoint("districts"),
+		getCellsByDistrictId: (id: number | string) =>
+			_endpoint(`districts/cells/${id}`),
+		getPeopleByDistrictId: (id: number | string) =>
+			_endpoint(`districts/people/${id}`),
 	},
 	flows: {
 		create: _endpoint("flows/create"),
