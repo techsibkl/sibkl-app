@@ -55,7 +55,7 @@ const SharedButton = ({
 		<TouchableOpacity
 			onPress={onPress}
 			disabled={disabled || isLoading}
-			className={`px-4 py-2 rounded-lg ${getVariantStyles()} ${className}`}
+			className={`px-4 py-3 rounded-lg flex-row items-center justify-center ${getVariantStyles()} ${className}`}
 			activeOpacity={0.7}
 		>
 			{isLoading ? (
@@ -64,7 +64,7 @@ const SharedButton = ({
 					color={variant === "outline" ? "#3B82F6" : "#fff"}
 				/>
 			) : (
-				<Text className={`font-medium ${getTextStyles()}`}>
+				<Text className={`font-semibold text-center ${getTextStyles()}`}>
 					{title}
 				</Text>
 			)}
