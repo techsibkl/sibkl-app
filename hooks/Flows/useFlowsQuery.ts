@@ -40,9 +40,23 @@ export const usePeopleFlowQuery = (flowId?: number, assigneeId?: number) => {
 			"assignee",
 			assigneeId ?? "none",
 		],
-
 		queryFn: () => fetchPeopleFlow(flowId, assigneeId),
 		placeholderData: <PeopleFlow[]>[],
+		staleTime: 3 * 60 * 1000,
 		enabled: !!flowId || !!assigneeId,
+	});
+};
+
+/**
+ * Fetches all PeopleFlow records accessible to the current user via CASL scope.
+ * No client-provided filters — the backend applies role-based scoping automatically.
+ * Client-side filtering (district / cell / me) is applied on top of this cached result.
+ */
+export const usePeopleFlowAllQuery = () => {
+	return useQuery<PeopleFlow[]>({
+		queryKey: ["peopleFlow", "accessible"],
+		queryFn: () => fetchPeopleFlow(),
+		placeholderData: <PeopleFlow[]>[],
+		staleTime: 3 * 60 * 1000,
 	});
 };

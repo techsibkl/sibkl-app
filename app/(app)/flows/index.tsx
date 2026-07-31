@@ -1,64 +1,80 @@
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import React, { useEffect, useMemo, useState } from "react";
-import { StatusBar, TouchableOpacity, View } from "react-native";
+import { StatusBar, Text, View } from "react-native";
 
+import AssignmentFilterToggle, {
+	AssignmentFilter,
+} from "@/components/Flows/AssignmentFilterToggle";
 import FlowSelector from "@/components/Flows/FlowSelect";
-import PeopleFlowList from "@/components/Flows/PeopleFlowAssignedList";
+import PeopleFlowList, {
+	FlowListItem,
+} from "@/components/Flows/PeopleFlowAssignedList";
 import SortButton from "@/components/Flows/SortButton";
 import FlowStatusTabs from "@/components/Flows/StatusTabs";
 import SharedBody from "@/components/shared/SharedBody";
-import { useFlowsQuery, usePeopleFlowQuery } from "@/hooks/Flows/useFlowsQuery";
+import {
+	useFlowsQuery,
+	usePeopleFlowAllQuery,
+	usePeopleFlowQuery,
+} from "@/hooks/Flows/useFlowsQuery";
 import {
 	FlowSortKey,
 	FlowSortOrder,
 	FlowStatus,
 } from "@/services/Flow/flow.types";
+import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { useAuthStore } from "@/stores/authStore";
 import { useLocalSearchParams } from "expo-router";
-import { CheckIcon } from "lucide-react-native";
-import { Text } from "react-native";
 
 const FlowsPage = () => {
 	const { user } = useAuthStore();
+	const person = user?.person;
+
 	const [searchQuery, setSearchQuery] = useState("");
-	const [isMeMode, setIsMeMode] = useState(false);
+	const [assignmentFilter, setAssignmentFilter] =
+		useState<AssignmentFilter>(null);
 	const [selectedStatus, setSelectedStatus] = useState<FlowStatus | null>(
 		null,
 	);
 	const [sortKey, setSortKey] = useState<FlowSortKey | null>(null);
 	const [sortOrder, setSortOrder] = useState<FlowSortOrder>("desc");
-
-	// This is for single selected flow list
 	const [selectedFlowId, setSelectedFlowId] = useState<number>(0);
-	const { flow_id, isMeMode: isMeModeParam } = useLocalSearchParams<{
+
+	const { flow_id, assignmentFilter: filterParam } = useLocalSearchParams<{
 		flow_id?: string;
-		isMeMode?: string;
+		assignmentFilter?: string;
 	}>();
 
 	useEffect(() => {
 		if (flow_id) {
 			setSelectedFlowId(Number(flow_id));
-			setIsMeMode(isMeModeParam === "true");
+			if (
+				filterParam === "district" ||
+				filterParam === "cell" ||
+				filterParam === "me"
+			) {
+				setAssignmentFilter(filterParam);
+			}
 		}
-	}, [flow_id, isMeModeParam]);
+	}, [flow_id, filterParam]);
 
-	// Getting people assigned to me from SINGLE selected flow (or all flows if selectedFlowId is 0)
+	// Single-flow query (used when a specific flow is selected)
 	const {
 		data: singleFlowPeople,
 		isPending: singleFlowPending,
 		refetch: singleFlowRefetch,
 	} = usePeopleFlowQuery(selectedFlowId);
 
-	// Getting people assigned to me from ALL flows
+	// All-accessible query — one call, backend CASL-scoped; all filters applied client-side
 	const {
-		data: peopleFlow,
+		data: allPeople,
 		isPending: allPeoplePending,
-		refetch,
-	} = usePeopleFlowQuery(undefined, user?.person?.id);
+		refetch: allPeopleRefetch,
+	} = usePeopleFlowAllQuery();
 
 	const flowIds = useMemo(
-		() => [...new Set(peopleFlow?.map((p) => p.flow_id) || [])],
-		[peopleFlow],
+		() => [...new Set(allPeople?.map((p) => p.flow_id) || [])],
+		[allPeople],
 	);
 
 	const {
@@ -67,37 +83,68 @@ const FlowsPage = () => {
 		refetch: flowRefetch,
 	} = useFlowsQuery(flowIds as number[]);
 
-	const allPending = useMemo(() => {
-		return singleFlowPending || allPeoplePending || flowsPending;
-	}, [singleFlowPending, allPeoplePending, flowsPending]);
+	const allPending = useMemo(
+		() => singleFlowPending || allPeoplePending || flowsPending,
+		[singleFlowPending, allPeoplePending, flowsPending],
+	);
 
-	// Pre-status-filter list (search + me mode applied) — fed into the tab counts
+	// Derived identity sets for client-side filtering/sectioning
+	const personId = person?.id;
+	const districtIds = useMemo(
+		() => [
+			...(person?.pastor_district_ids ?? []),
+			...(person?.admin_district_ids ?? []),
+		],
+		[person?.pastor_district_ids, person?.admin_district_ids],
+	);
+	const cellIds = useMemo(
+		() => [
+			...(person?.leader_of_cell_ids ?? []),
+			...(person?.core_of_cell_ids ?? []),
+		],
+		[person?.leader_of_cell_ids, person?.core_of_cell_ids],
+	);
+
+	// Pre-status-filter list (search + assignment filter applied) — fed into the tab counts
 	const preFilteredPeopleFlow = useMemo(() => {
-		let list =
-			selectedFlowId === 0
-				? (peopleFlow ?? [])
-				: (singleFlowPeople ?? []);
+		let list: PeopleFlow[] =
+			selectedFlowId === 0 ? (allPeople ?? []) : (singleFlowPeople ?? []);
 
-		list = list.filter(
-			(person) =>
-				person?.p__full_legal_name
-					?.toLowerCase()
-					.includes(searchQuery.toLowerCase()) ||
-				person?.p__phone?.includes(searchQuery),
-		);
+		if (searchQuery) {
+			const q = searchQuery.toLowerCase();
+			list = list.filter(
+				(p) =>
+					p?.p__full_legal_name?.toLowerCase().includes(q) ||
+					p?.p__phone?.includes(searchQuery),
+			);
+		}
 
-		if (isMeMode) {
-			list = list.filter((p) => p.assignee_id === user?.person?.id);
+		if (assignmentFilter === "me") {
+			list = list.filter((p) => p.assignee_id === personId);
+		} else if (assignmentFilter === "cell") {
+			list = list.filter(
+				(p) =>
+					p.assigned_cell_id != null &&
+					cellIds.includes(p.assigned_cell_id),
+			);
+		} else if (assignmentFilter === "district") {
+			list = list.filter(
+				(p) =>
+					p.district_id != null &&
+					districtIds.includes(p.district_id),
+			);
 		}
 
 		return list;
 	}, [
 		selectedFlowId,
-		peopleFlow,
+		allPeople,
 		singleFlowPeople,
 		searchQuery,
-		isMeMode,
-		user?.person?.id,
+		assignmentFilter,
+		personId,
+		cellIds,
+		districtIds,
 	]);
 
 	// Final list — status tab + sort applied on top
@@ -120,6 +167,68 @@ const FlowsPage = () => {
 		return list;
 	}, [preFilteredPeopleFlow, selectedStatus, sortKey, sortOrder]);
 
+	// Build flat list data — with section headers when in ALL FLOWS + no filter
+	const listData = useMemo<FlowListItem[]>(() => {
+		const groups: Record<
+			"district" | "cell" | "me" | "others",
+			PeopleFlow[]
+		> = {
+			district: [],
+			cell: [],
+			me: [],
+			others: [],
+		};
+
+		for (const item of effectivePeopleFlow) {
+			if (item.assignee_id === personId) {
+				groups.me.push(item);
+			} else if (
+				item.assigned_cell_id != null &&
+				cellIds.includes(item.assigned_cell_id)
+			) {
+				groups.cell.push(item);
+			} else if (
+				item.district_id != null &&
+				districtIds.includes(item.district_id)
+			) {
+				groups.district.push(item);
+			} else {
+				groups.others.push(item);
+			}
+		}
+
+		const result: FlowListItem[] = [];
+		const sectionDefs: Array<{ title: string; key: keyof typeof groups }> =
+			[
+				{ title: "Assigned to my District", key: "district" },
+				{ title: "Assigned to my Cell", key: "cell" },
+				{ title: "Assigned to Me", key: "me" },
+				{ title: "Others", key: "others" },
+			];
+
+		for (const { title, key } of sectionDefs) {
+			const items = groups[key];
+			if (items.length > 0) {
+				result.push({
+					kind: "header",
+					title: `${title} (${items.length})`,
+				});
+				for (const item of items) {
+					result.push({ kind: "row", data: item });
+				}
+			}
+		}
+
+		return result;
+	}, [
+		effectivePeopleFlow,
+		assignmentFilter,
+		selectedFlowId,
+		personId,
+		cellIds,
+		districtIds,
+	]);
+
 	const handleSortChange = (key: FlowSortKey, order: FlowSortOrder) => {
 		setSortKey(key);
 		setSortOrder(order);
@@ -129,8 +238,13 @@ const FlowsPage = () => {
 		setSortKey(null);
 		setSortOrder("desc");
 	};
+
 	const refresh = async () => {
-		selectedFlowId === 0 ? await refetch() : await singleFlowRefetch();
+		if (selectedFlowId === 0) {
+			await allPeopleRefetch();
+		} else {
+			await singleFlowRefetch();
+		}
 		flowRefetch();
 	};
 
@@ -153,34 +267,32 @@ const FlowsPage = () => {
 					onClear={handleSortClear}
 				/>
 			</View>
-			<View className="flex-row w-full justify-between gap-2 items-center px-4 mt-4">
-				<FlowSelector
-					flows={flows ?? []}
-					selectedFlowId={selectedFlowId}
-					onSelect={setSelectedFlowId}
-				/>
-				<>
-					{selectedFlowId !== 0 && (
-						<TouchableOpacity
-							onPress={() => setIsMeMode((prev) => !prev)}
-							className={`flex flex-row items-center justify-center gap-2 px-4 py-3 rounded-[15px] border ${isMeMode ? "bg-blue-500 border-blue-500" : "bg-transparent border-blue-300"}`}
-							activeOpacity={0.7}
-						>
-							<View>
-								<Text
-									className={`text-sm font-semibold ${isMeMode ? "text-white" : "text-blue-300"}`}
-								>
-									{"Assigned to Me"}
-								</Text>
-							</View>
 
-							{isMeMode && <CheckIcon color={"#fff"} size={16} />}
-						</TouchableOpacity>
-					)}
-				</>
+			{/* Flow selector + assignment filter */}
+			<View className="flex-row gap-2 px-4 mt-4 min-h-[60px]">
+				<View className="flex-1 gap-1 h-full">
+					<Text className="text-xs text-text-secondary ml-1">
+						Selected flow
+					</Text>
+					<FlowSelector
+						flows={flows ?? []}
+						selectedFlowId={selectedFlowId}
+						onSelect={setSelectedFlowId}
+					/>
+				</View>
+				<View className="flex-1 gap-1 h-full ">
+					<Text className="text-xs text-text-secondary ml-1">
+						Assigned to:
+					</Text>
+					<AssignmentFilterToggle
+						value={assignmentFilter}
+						onChange={setAssignmentFilter}
+						roles={person?.roles}
+					/>
+				</View>
 			</View>
 
-			{/* Status tab bar — counts reflect search + me-mode filter */}
+			{/* Status tab bar — counts reflect search + assignment filter */}
 			<FlowStatusTabs
 				peopleFlow={preFilteredPeopleFlow}
 				selectedStatus={selectedStatus}
@@ -189,7 +301,7 @@ const FlowsPage = () => {
 
 			<PeopleFlowList
 				key={flows?.map((f) => f.id).toString()}
-				peopleFlow={effectivePeopleFlow}
+				listData={listData}
 				flows={flows}
 				selectedFlowId={selectedFlowId}
 				onRefresh={refresh}

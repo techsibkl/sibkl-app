@@ -74,7 +74,7 @@ const PeopleFlowRowComponent = ({
 				onPress={() => setModalVisible(true)}
 				activeOpacity={0.6}
 			>
-				<View className="flex-col py-4 border-b border-border-secondary">
+				<View className="flex-col px-4 py-4 border-b border-border-secondary">
 					{/* Top row: status badge + last contacted */}
 					<View className="flex-row justify-between items-center mb-3">
 						<View

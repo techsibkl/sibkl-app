@@ -20,7 +20,7 @@ const FlowSelector = ({ flows, selectedFlowId, onSelect }: Props) => {
 					value={selectedFlowId}
 					onChange={(v) => onSelect(v)}
 					options={[
-						{ label: "ALL (assigned to me)", value: 0 },
+						{ label: "ALL FLOWS", value: 0 },
 						...flows.map((f) => ({
 							label: f.title,
 							value: f.id,

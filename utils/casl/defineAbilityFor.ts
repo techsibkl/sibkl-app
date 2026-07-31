@@ -102,6 +102,10 @@ export function defineAbilityFor(person: Person): AnyAbility {
 				cell_ids: { $in: person.leader_of_cell_ids },
 			});
 
+			can(["read", "update", "assign"], "PeopleFlow", {
+				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
+			});
+
 			can(["read", "update"], "CellDetails", {
 				cell_ids: { $in: person.leader_of_cell_ids },
 			});
@@ -122,6 +126,11 @@ export function defineAbilityFor(person: Person): AnyAbility {
 			can(["create", "read", "delete"], "PeopleProfileNotes", {
 				cell_ids: { $in: person.core_of_cell_ids },
 			});
+
+			can(["read", "update", "assign"], "PeopleFlow", {
+				cell_ids: { $in: person.core_of_cell_ids ?? [] },
+			});
+
 			can(["read"], "CellDetails", {
 				cell_ids: { $in: person.core_of_cell_ids },
 			});
