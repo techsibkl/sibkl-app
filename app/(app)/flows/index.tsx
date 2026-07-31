@@ -217,6 +217,7 @@ const FlowsPage = () => {
 				result.push({
 					kind: "header",
 					title: `${title} (${items.length})`,
+					sectionKey: key,
 				});
 				for (const item of items) {
 					result.push({ kind: "row", data: item });
