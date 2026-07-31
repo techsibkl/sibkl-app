@@ -72,26 +72,26 @@ const ChangeFieldAction = ({ action, personFlow, custom_attr }: Props) => {
 					<Text
 						className={`font-bold ${done ? "text-green-700" : "text-gray-800"}`}
 					>
-						{title}
+						{'Update "' + title + '"'}
 					</Text>
 					<Text
-						className={`text-sm mt-1 ${done ? "text-green-600" : "text-gray-500"}`}
+						className={`text-xs mt-1 max-lines-1 italic ${done ? "text-green-600" : "text-gray-500"}`}
 					>
-						{"Set answer to"}
+						{"Current: " +
+							(currentValue
+								? displayDateAsStr(currentValue)
+								: "Not set")}
+					</Text>
+					<Text
+						className={`text-sm  ${done ? "text-green-600" : "text-gray-500"}`}
+					>
+						{"Change to"}
 						{" > "}
 						<Text
 							className={`font-medium ${done ? "text-green-700" : "text-gray-700"}`}
 						>
 							{displayValue}
 						</Text>
-					</Text>
-					<Text
-						className={`text-xs max-lines-1 italic ${done ? "text-green-600" : "text-gray-500"}`}
-					>
-						{"Current: " +
-							(currentValue
-								? displayDateAsStr(currentValue)
-								: "Not set")}
 					</Text>
 				</View>
 

@@ -19,6 +19,7 @@ import {
 	CircleDashedIcon,
 	CircleIcon,
 	GitBranchIcon,
+	InfoIcon,
 	MapPinIcon,
 	PhoneIcon,
 	UserIcon,
@@ -402,22 +403,57 @@ const PeopleFlowDialog = ({
 
 				{/* Tab Content */}
 				{activeTab === "action" ? (
-					<View className="gap-y-2 flex flex-col w-full px-6 mt-5">
-						{step?.actions?.map((action, i) => {
-							const Component = ActionComponents[action.type];
-							if (!Component) return null;
-							return (
-								<Component
-									key={i}
-									action={action}
-									personFlow={personFlow}
-									custom_attr={custom_attr}
-									steps={steps}
-									flow_id={flow_id}
-									onSuccess={onDismiss}
+					<View className="gap-y-4 flex flex-col w-full px-6 mt-5">
+						{step?.actions && step.actions.length > 0 ? (
+							<>
+								{/* Info Box */}
+								<View className="flex-row gap-3 p-4 rounded-lg bg-gray-50 border border-gray-200">
+									<InfoIcon
+										size={16}
+										color="#6b7280"
+										className="mt-0.5"
+									/>
+									<Text className="flex-1 text-xs text-gray-600 leading-5">
+										Actions are set by your admin to guide
+										your follow-up process. Once completed
+										all preset actions, change the person
+										status if necessary.
+									</Text>
+								</View>
+								{/* Actions */}
+								{step.actions.map((action, i) => {
+									const Component =
+										ActionComponents[action.type];
+									if (!Component) return null;
+									return (
+										<View key={i}>
+											<Text className="text-xs font-semibold text-gray-500 mb-2">
+												Action {i + 1}
+											</Text>
+											<Component
+												action={action}
+												personFlow={personFlow}
+												custom_attr={custom_attr}
+												steps={steps}
+												flow_id={flow_id}
+												onSuccess={onDismiss}
+											/>
+										</View>
+									);
+								})}
+							</>
+						) : (
+							<View className="flex-row gap-3 p-4 rounded-lg bg-blue-50 border border-blue-200">
+								<InfoIcon
+									size={16}
+									color="#3b82f6"
+									className="mt-0.5"
 								/>
-							);
-						})}
+								<Text className="flex-1 text-xs text-blue-600 leading-5">
+									No actions to complete for this step.
+								</Text>
+							</View>
+						)}
 					</View>
 				) : (
 					<NotesTab personFlow={personFlow} />
