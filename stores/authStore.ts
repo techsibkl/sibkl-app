@@ -14,6 +14,8 @@ import {
 } from "@react-native-firebase/auth";
 import { create } from "zustand";
 
+let authUnsubscribe: (() => void) | null = null;
+
 // Example state with Zustand
 export type AuthState = {
 	firebaseUser: FirebaseAuthTypes.User | null;
@@ -108,7 +110,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 			const appUser: AppUser = {
 				uid: firebaseUser.uid,
 				email: firebaseUser.email ?? "",
-				people_id: resPerson.data.people_id,
+				people_id: resPerson.data.id,
 				person: resPerson.data as Person,
 			};
 
@@ -153,7 +155,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 	init: () => {
 		set({ authLoaded: false, isGuest: false });
-		onAuthStateChanged(getAuth(), async (firebaseUser) =>
+		authUnsubscribe?.();
+		authUnsubscribe = onAuthStateChanged(getAuth(), async (firebaseUser) =>
 			handleAuthStateChange(firebaseUser, set),
 		);
 	},
