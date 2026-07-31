@@ -1,3 +1,5 @@
+import HelpDialog from "@/components/shared/HelpDialog";
+import SharedModal from "@/components/shared/SharedModal";
 import { defaultFlowStatusAttrs } from "@/constants/const_flows";
 import { useChangeStepMutation } from "@/hooks/Flows/usePeopleFlowMutations";
 
@@ -7,10 +9,17 @@ import {
 	ChevronDownIcon,
 	ChevronUpIcon,
 	CircleDashedIcon,
+	HelpCircle,
 	StepForwardIcon,
 } from "lucide-react-native";
 import React, { useState } from "react";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import {
+	ActivityIndicator,
+	Pressable,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
 
 type Props = {
 	action: StepAction;
@@ -59,8 +68,15 @@ const buildGroupedSteps = (steps: {
 	return Object.values(grouped).filter((g) => g.length > 0);
 };
 
-const MoveToStepAction = ({ action, personFlow, steps, flow_id, onSuccess }: Props) => {
+const MoveToStepAction = ({
+	action,
+	personFlow,
+	steps,
+	flow_id,
+	onSuccess,
+}: Props) => {
 	const [open, setOpen] = useState(false);
+	const [helpVisible, setHelpVisible] = useState(false);
 	const { mutate: changeStep, isPending } = useChangeStepMutation();
 
 	const suggestedStep = action.value ? steps[action.value as string] : null;
@@ -93,24 +109,36 @@ const MoveToStepAction = ({ action, personFlow, steps, flow_id, onSuccess }: Pro
 
 	return (
 		<View>
-			{/* Main row */}
 			<TouchableOpacity
 				activeOpacity={0.7}
 				onPress={() => setOpen((prev) => !prev)}
-				className="flex-row items-center gap-3 bg-white p-4 rounded-xl border border-border"
+				className="flex-1 flex-row items-center gap-3 bg-white p-4 rounded-xl border border-border"
 			>
 				<View className="p-2 rounded-full bg-purple-100">
 					<StepForwardIcon size={18} color="#512da8" />
 				</View>
 
 				<View className="flex-1">
-					<Text className="text-gray-800 font-bold">
-						Move to step
-					</Text>
-					<Text className="text-gray-500 text-sm mt-0.5">
+					<View className="flex-row items-center">
+						<Text className="text-gray-800 font-bold">
+							Move to another step
+						</Text>
+						<Pressable
+							onPress={() => setHelpVisible(true)}
+							className="p-2"
+						>
+							<HelpCircle size={12} color="#9ca3af" />
+						</Pressable>
+					</View>
+					{currentStep && (
+						<Text className="text-gray-400 text-xs">
+							Current step: {currentStep.label}
+						</Text>
+					)}
+					<Text className="text-gray-500 text-sm">
 						{suggestedStep ? (
 							<>
-								Suggested:{" "}
+								Suggest to move to:{" "}
 								<Text className="font-medium text-gray-700">
 									{suggestedStep.label}
 								</Text>
@@ -119,11 +147,6 @@ const MoveToStepAction = ({ action, personFlow, steps, flow_id, onSuccess }: Pro
 							"Select a step"
 						)}
 					</Text>
-					{currentStep && (
-						<Text className="text-gray-400 text-xs mt-0.5">
-							Current: {currentStep.label}
-						</Text>
-					)}
 				</View>
 
 				{isPending ? (
@@ -183,7 +206,7 @@ const MoveToStepAction = ({ action, personFlow, steps, flow_id, onSuccess }: Pro
 													: "#374151",
 											}}
 										>
-											{option.label}
+											{'Move to "' + option.label + '"'}
 										</Text>
 
 										{/* Badges */}
@@ -220,6 +243,17 @@ const MoveToStepAction = ({ action, personFlow, steps, flow_id, onSuccess }: Pro
 					))}
 				</View>
 			)}
+
+			{/* Help Modal */}
+			<SharedModal
+				visible={helpVisible}
+				onClose={() => setHelpVisible(false)}
+			>
+				<HelpDialog
+					title="Move to another step"
+					description="Once completed preset actions, moving this person to another step will change its status in your list. (i.e. Not Started, In Progress, Success, Failed). Each step has a different set of preset actions to guide the follow-up process."
+				/>
+			</SharedModal>
 		</View>
 	);
 };

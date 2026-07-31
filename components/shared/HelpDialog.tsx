@@ -1,3 +1,4 @@
+import { HelpCircle } from "lucide-react-native";
 import React from "react";
 import { ScrollView, Text, View } from "react-native";
 
@@ -9,7 +10,10 @@ type HelpDialogProps = {
 const HelpDialog = ({ title, description }: HelpDialogProps) => {
 	return (
 		<ScrollView className="p-6">
-			<Text className="text-lg font-bold text-text mb-4">{title}</Text>
+			<View className="flex-row items-center gap-2 mb-2">
+				<HelpCircle size={18} color="#9ca3af" />
+				<Text className="text-lg font-bold">{title}</Text>
+			</View>
 			<Text className="text-sm text-text-secondary leading-6">
 				{description}
 			</Text>
