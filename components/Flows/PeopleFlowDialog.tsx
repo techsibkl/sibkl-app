@@ -1,7 +1,11 @@
 import toastConfig from "@/config/toastConfig";
 import { ActionComponents } from "@/constants/const_flows";
 import { useAssignMutation } from "@/hooks/Flows/usePeopleFlowMutations";
-import { FlowStep, SingleCustomAttr } from "@/services/Flow/flow.types";
+import {
+	FlowStep,
+	SingleCustomAttr,
+	StepAction,
+} from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { fetchPeoplePaginated } from "@/services/Person/person.service";
 import { Person } from "@/services/Person/person.type";
@@ -431,7 +435,9 @@ const PeopleFlowDialog = ({
 												Action {i + 1}
 											</Text>
 											<Component
-												action={action}
+												action={
+													action as unknown as StepAction
+												}
 												personFlow={personFlow}
 												custom_attr={custom_attr}
 												steps={steps}
