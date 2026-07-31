@@ -1,6 +1,6 @@
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import React, { useEffect, useMemo, useState } from "react";
-import { StatusBar, Text, View } from "react-native";
+import { Pressable, StatusBar, Text, View } from "react-native";
 
 import AssignmentFilterToggle, {
 	AssignmentFilter,
@@ -11,7 +11,9 @@ import PeopleFlowList, {
 } from "@/components/Flows/PeopleFlowAssignedList";
 import SortButton from "@/components/Flows/SortButton";
 import FlowStatusTabs from "@/components/Flows/StatusTabs";
+import HelpDialog from "@/components/shared/HelpDialog";
 import SharedBody from "@/components/shared/SharedBody";
+import SharedModal from "@/components/shared/SharedModal";
 import {
 	useFlowsQuery,
 	usePeopleFlowAllQuery,
@@ -25,6 +27,7 @@ import {
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { useAuthStore } from "@/stores/authStore";
 import { useLocalSearchParams } from "expo-router";
+import { HelpCircle } from "lucide-react-native";
 
 const FlowsPage = () => {
 	const { user } = useAuthStore();
@@ -39,6 +42,8 @@ const FlowsPage = () => {
 	const [sortKey, setSortKey] = useState<FlowSortKey | null>(null);
 	const [sortOrder, setSortOrder] = useState<FlowSortOrder>("desc");
 	const [selectedFlowId, setSelectedFlowId] = useState<number>(0);
+	const [flowHelpVisible, setFlowHelpVisible] = useState(false);
+	const [filterHelpVisible, setFilterHelpVisible] = useState(false);
 
 	const { flow_id, assignmentFilter: filterParam } = useLocalSearchParams<{
 		flow_id?: string;
@@ -270,20 +275,38 @@ const FlowsPage = () => {
 
 			{/* Flow selector + assignment filter */}
 			<View className="flex-row gap-2 px-4 mt-4 min-h-[60px]">
+				{/* Select people flow with help */}
 				<View className="flex-1 gap-1 h-full">
-					<Text className="text-xs text-text-secondary ml-1">
-						Selected flow
-					</Text>
+					<View className="flex-row items-center ml-1">
+						<Text className="text-xs text-text-secondary">
+							Select people flow:
+						</Text>
+						<Pressable
+							onPress={() => setFlowHelpVisible(true)}
+							className="ml-1"
+						>
+							<HelpCircle size={14} color="#9CA3AF" />
+						</Pressable>
+					</View>
 					<FlowSelector
 						flows={flows ?? []}
 						selectedFlowId={selectedFlowId}
 						onSelect={setSelectedFlowId}
 					/>
 				</View>
-				<View className="flex-1 gap-1 h-full ">
-					<Text className="text-xs text-text-secondary ml-1">
-						Assigned to:
-					</Text>
+				{/* Switch filter view with help */}
+				<View className="flex-1 gap-1 h-full">
+					<View className="flex-row items-center ml-1">
+						<Text className="text-xs text-text-secondary">
+							Switch filter view:
+						</Text>
+						<Pressable
+							onPress={() => setFilterHelpVisible(true)}
+							className="ml-1"
+						>
+							<HelpCircle size={14} color="#9CA3AF" />
+						</Pressable>
+					</View>
 					<AssignmentFilterToggle
 						value={assignmentFilter}
 						onChange={setAssignmentFilter}
@@ -307,6 +330,27 @@ const FlowsPage = () => {
 				onRefresh={refresh}
 				isPending={allPending}
 			/>
+
+			{/* Help Modals */}
+			<SharedModal
+				visible={flowHelpVisible}
+				onClose={() => setFlowHelpVisible(false)}
+			>
+				<HelpDialog
+					title="Select People Flow"
+					description="Choose a specific flow to view people in that flow, or select 'All Flows' to see people across all flows. Each flow represents a form or path that people are channeled through."
+				/>
+			</SharedModal>
+
+			<SharedModal
+				visible={filterHelpVisible}
+				onClose={() => setFilterHelpVisible(false)}
+			>
+				<HelpDialog
+					title="Switch Filter View"
+					description="Filter your list based on assignment scope: 'All' shows everyone, 'My District' shows people assigned to your district, 'My Cell' shows people assigned to your cell, and 'Me' shows only people assigned directly to you."
+				/>
+			</SharedModal>
 		</SharedBody>
 	);
 };
