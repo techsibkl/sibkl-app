@@ -69,7 +69,7 @@ export function AppPicker<T>({
 	return (
 		<>
 			<Pressable
-				className="w-full py-4"
+				className="w-full h-full justify-center py-2"
 				disabled={disabled}
 				onPress={() => {
 					setLocalValue(value ?? null);

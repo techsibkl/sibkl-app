@@ -12,6 +12,9 @@ export interface PeopleFlow extends PrefixedPerson {
 	assignee_id?: number; // Foreign key to people.id
 	assignee_name?: string; // Name of the assignee
 	district_id?: number; // Foreign key to district.id
+	district_name?: string; // Name of the assigned district
+	assigned_cell_id?: number; // Foreign key to cells.id
+	cell_name?: string; // Name of the assigned cell
 	assignee?: string; // Optional, person responsible for the flow
 	remarks?: string; // Optional notes
 	custom_attr?: Record<string, any>; // JSON object
