@@ -1,5 +1,9 @@
 import toastConfig from "@/config/toastConfig";
 import { ActionComponents } from "@/constants/const_flows";
+import {
+	usePeopleFlowAllQuery,
+	usePeopleFlowQuery,
+} from "@/hooks/Flows/useFlowsQuery";
 import { useAssignMutation } from "@/hooks/Flows/usePeopleFlowMutations";
 import {
 	FlowStep,
@@ -12,7 +16,10 @@ import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
 import { Role } from "@/utils/casl/defineAbilityFor";
 import { daysAgo, formatPhone } from "@/utils/helper";
-import { daysAgoTextColorNative } from "@/utils/helper_flows";
+import {
+	daysAgoTextColorNative,
+	getStepStatusStyleNative,
+} from "@/utils/helper_flows";
 import { getAvatarColors, getInitials } from "@/utils/helper_profile";
 import { subject } from "@casl/ability";
 import Clipboard from "@react-native-clipboard/clipboard";
@@ -59,14 +66,14 @@ type PeopleFlowDialogProps = {
 
 const PeopleFlowDialog = ({
 	onDismiss,
-	personFlow,
-	step,
+	personFlow: personFlowProp,
+	step: stepProp,
 	steps,
 	flow_id,
 	flow_title,
 	assignee_name,
 	custom_attr,
-	colors,
+	colors: colorsProp,
 	flow_district_id,
 }: PeopleFlowDialogProps) => {
 	const [activeTab, setActiveTab] = useState<"action" | "notes">("action");
@@ -75,6 +82,37 @@ const PeopleFlowDialog = ({
 		useState(false);
 	const [showAssignMenu, setShowAssignMenu] = useState(false);
 
+	const router = useRouter();
+	const { ability, user } = useAuthStore();
+
+	// Subscribe to both caches so field/step mutations refresh this open dialog
+	// whether the user is on a selected flow or ALL FLOWS.
+	const { data: singleFlowPeople } = usePeopleFlowQuery(flow_id);
+	const { data: allPeople } = usePeopleFlowAllQuery();
+
+	const personFlow = useMemo(() => {
+		const match = (p: PeopleFlow) =>
+			p.people_id === personFlowProp.people_id &&
+			(p.flow_id ?? flow_id) === (personFlowProp.flow_id ?? flow_id);
+
+		return (
+			singleFlowPeople?.find(match) ??
+			allPeople?.find(match) ??
+			personFlowProp
+		);
+	}, [singleFlowPeople, allPeople, personFlowProp, flow_id]);
+
+	const step = useMemo(() => {
+		const key = personFlow.step_key ?? "not_started";
+		return steps?.[key] ?? stepProp ?? null;
+	}, [personFlow.step_key, steps, stepProp]);
+
+	const colors = useMemo(
+		() =>
+			getStepStatusStyleNative(personFlow.step_key, steps) ?? colorsProp,
+		[personFlow.step_key, steps, colorsProp],
+	);
+
 	const avatarColors = getAvatarColors(personFlow.status);
 	const initials = getInitials(personFlow.p__full_legal_name);
 	const effectiveAssignee =
@@ -82,8 +120,6 @@ const PeopleFlowDialog = ({
 		personFlow.assignee_name ??
 		personFlow.last_contacted_by_name ??
 		null;
-	const router = useRouter();
-	const { ability, user } = useAuthStore();
 
 	// CASL + role derived permission flags
 	const { canAssign, canAssignDistrict, canAssignCell } = useMemo(() => {
@@ -114,14 +150,24 @@ const PeopleFlowDialog = ({
 		const canAssign = ability.can(
 			"assign",
 			subject("PeopleFlow", {
-				district_id: flow_district_id,
+				district_id: personFlow.district_id,
 				flow_district_id: flow_district_id,
+				cell_ids: personFlow.assigned_cell_id
+					? [personFlow.assigned_cell_id]
+					: undefined,
 				assignee_id: personFlow.assignee_id,
 			}),
 		);
 
 		return { canAssign, canAssignDistrict, canAssignCell };
-	}, [ability, user?.person, flow_district_id, personFlow.assignee_id]);
+	}, [
+		ability,
+		user?.person,
+		flow_district_id,
+		personFlow.district_id,
+		personFlow.assignee_id,
+		personFlow.assigned_cell_id,
+	]);
 
 	// Derive how many assign options are available
 	const assignOptionCount =
@@ -442,6 +488,9 @@ const PeopleFlowDialog = ({
 												custom_attr={custom_attr}
 												steps={steps}
 												flow_id={flow_id}
+												flow_district_id={
+													flow_district_id
+												}
 												onSuccess={onDismiss}
 											/>
 										</View>

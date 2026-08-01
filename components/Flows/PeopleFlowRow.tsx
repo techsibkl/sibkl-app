@@ -30,6 +30,8 @@ type PeopleFlowRowProps = {
 	flow_title?: string;
 	steps: { [key: string]: FlowStep };
 	custom_attr: { [key: string]: SingleCustomAttr };
+	/** Owning district of the Flow definition (used for CASL `flow_district_id`) */
+	flow_district_id?: number;
 };
 
 // Map defaultFlowStatusAttrs color strings → avatar bg/icon hex values
@@ -51,6 +53,7 @@ const PeopleFlowRowComponent = ({
 	flow_title,
 	steps,
 	custom_attr,
+	flow_district_id,
 }: PeopleFlowRowProps) => {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [noteDialogVisible, setNoteDialogVisible] = useState(false);
@@ -222,9 +225,10 @@ const PeopleFlowRowComponent = ({
 					step={_step}
 					steps={steps}
 					flow_id={personFlow.flow_id!}
+					flow_title={flow_title}
 					custom_attr={custom_attr}
 					colors={colors}
-					flow_district_id={personFlow.district_id}
+					flow_district_id={flow_district_id}
 				/>
 			</SharedModal>
 

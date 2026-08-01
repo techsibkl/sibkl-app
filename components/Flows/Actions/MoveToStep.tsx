@@ -5,6 +5,8 @@ import { useChangeStepMutation } from "@/hooks/Flows/usePeopleFlowMutations";
 
 import { FlowStatus, FlowStep, StepAction } from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
+import { useAuthStore } from "@/stores/authStore";
+import { subject } from "@casl/ability";
 import {
 	ChevronDownIcon,
 	ChevronUpIcon,
@@ -12,9 +14,10 @@ import {
 	HelpCircle,
 	StepForwardIcon,
 } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import {
 	ActivityIndicator,
+	Alert,
 	Pressable,
 	Text,
 	TouchableOpacity,
@@ -26,6 +29,7 @@ type Props = {
 	personFlow: PeopleFlow;
 	steps: { [key: string]: FlowStep };
 	flow_id: number;
+	flow_district_id?: number;
 	onSuccess?: () => void;
 };
 
@@ -44,6 +48,10 @@ type StepOption = {
 	status: FlowStatus;
 	color: string;
 };
+
+const isCompletedStatus = (status: FlowStatus) =>
+	status === FlowStatus.COMPLETED_SUCCESS ||
+	status === FlowStatus.COMPLETED_FAIL;
 
 const buildGroupedSteps = (steps: {
 	[key: string]: FlowStep;
@@ -73,11 +81,24 @@ const MoveToStepAction = ({
 	personFlow,
 	steps,
 	flow_id,
+	flow_district_id,
 	onSuccess,
 }: Props) => {
 	const [open, setOpen] = useState(false);
 	const [helpVisible, setHelpVisible] = useState(false);
 	const { mutate: changeStep, isPending } = useChangeStepMutation();
+	const { ability } = useAuthStore();
+
+	const canComplete = useMemo(
+		() =>
+			ability.can(
+				"complete",
+				subject("PeopleFlow", {
+					flow_district_id: flow_district_id,
+				}),
+			),
+		[ability, flow_district_id],
+	);
 
 	const suggestedStep = action.value ? steps[action.value as string] : null;
 	const effectiveStepKey = personFlow.step_key ?? "not_started";
@@ -85,6 +106,14 @@ const MoveToStepAction = ({
 	const groupedSteps = buildGroupedSteps(steps);
 
 	const handleSelect = (option: StepOption) => {
+		if (isCompletedStatus(option.status) && !canComplete) {
+			Alert.alert(
+				"Permission required",
+				"You do not have permission to mark this person as completed. Please contact a district admin or pastor.",
+			);
+			return;
+		}
+
 		// Skip if already on this step
 		const isSameStep = option.key === effectiveStepKey;
 		if (isSameStep) {
@@ -161,6 +190,15 @@ const MoveToStepAction = ({
 			{/* Inline dropdown */}
 			{open && (
 				<View className="mt-1 bg-white border border-border rounded-xl overflow-hidden">
+					{!canComplete && (
+						<View className="mx-3 mt-3 mb-1 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200">
+							<Text className="text-xs text-amber-700 leading-4">
+								Completed steps are locked. Only district admins
+								or pastors can move someone to Success or
+								Failed.
+							</Text>
+						</View>
+					)}
 					{groupedSteps.map((group, gi) => (
 						<View key={gi}>
 							{/* Group divider (except first) */}
@@ -174,17 +212,22 @@ const MoveToStepAction = ({
 								const isCurrentStep =
 									option.key === effectiveStepKey;
 								const isSuggested = option.key === action.value;
+								const isLocked =
+									isCompletedStatus(option.status) &&
+									!canComplete;
 
 								return (
 									<TouchableOpacity
 										key={option.key}
 										onPress={() => handleSelect(option)}
-										activeOpacity={0.7}
+										activeOpacity={isLocked ? 1 : 0.7}
 										className="flex-row items-center gap-3 px-4 py-3"
 										style={
 											isCurrentStep
 												? { backgroundColor: hex.bg }
-												: undefined
+												: isLocked
+													? { opacity: 0.4 }
+													: undefined
 										}
 									>
 										{/* Status dot */}
@@ -201,9 +244,11 @@ const MoveToStepAction = ({
 										<Text
 											className="flex-1 text-sm font-medium"
 											style={{
-												color: isCurrentStep
-													? hex.text
-													: "#374151",
+												color: isLocked
+													? "#9ca3af"
+													: isCurrentStep
+														? hex.text
+														: "#374151",
 											}}
 										>
 											{'Move to "' + option.label + '"'}
@@ -211,7 +256,14 @@ const MoveToStepAction = ({
 
 										{/* Badges */}
 										<View className="flex-row gap-1.5 items-center">
-											{isSuggested && (
+											{isLocked && (
+												<View className="px-2 py-0.5 rounded-full bg-gray-100">
+													<Text className="text-[10px] font-semibold text-gray-400">
+														No access
+													</Text>
+												</View>
+											)}
+											{isSuggested && !isLocked && (
 												<View
 													className="px-2 py-0.5 rounded-full"
 													style={{

@@ -30,7 +30,7 @@ import { useLocalSearchParams } from "expo-router";
 import { HelpCircle } from "lucide-react-native";
 
 const FlowsPage = () => {
-	const { user } = useAuthStore();
+	const { user, ability } = useAuthStore();
 	const person = user?.person;
 
 	const [searchQuery, setSearchQuery] = useState("");
@@ -93,22 +93,43 @@ const FlowsPage = () => {
 		[singleFlowPending, allPeoplePending, flowsPending],
 	);
 
-	// Derived identity sets for client-side filtering/sectioning
-	const personId = person?.id;
+	// Derived identity sets for client-side filtering/sectioning.
+	// .map(Number) guards against the common JSON string/number type mismatch.
+	const personId = person?.id != null ? Number(person.id) : undefined;
 	const districtIds = useMemo(
-		() => [
-			...(person?.pastor_district_ids ?? []),
-			...(person?.admin_district_ids ?? []),
-		],
+		() =>
+			[
+				...(person?.pastor_district_ids ?? []),
+				...(person?.admin_district_ids ?? []),
+			].map(Number),
 		[person?.pastor_district_ids, person?.admin_district_ids],
 	);
 	const cellIds = useMemo(
-		() => [
-			...(person?.leader_of_cell_ids ?? []),
-			...(person?.core_of_cell_ids ?? []),
-		],
+		() =>
+			[
+				...(person?.leader_of_cell_ids ?? []),
+				...(person?.core_of_cell_ids ?? []),
+			].map(Number),
 		[person?.leader_of_cell_ids, person?.core_of_cell_ids],
 	);
+
+	// Returns true if the current user can access this PeopleFlow record via their cell.
+	// Primary: direct cellIds lookup (fast).
+	// Fallback: CASL ability check — covers the case where leader_of_cell_ids isn't
+	// populated in the auth-store person but the ability rules were built correctly.
+	const isInMyCell = (cellId: number | null | undefined): boolean => {
+		if (cellId == null) return false;
+		const n = Number(cellId);
+		if (cellIds.includes(n)) return true;
+		return false;
+	};
+
+	const isInMyDistrict = (districtId: number | null | undefined): boolean => {
+		if (districtId == null) return false;
+		const n = Number(districtId);
+		if (districtIds.includes(n)) return true;
+		return false;
+	};
 
 	// Pre-status-filter list (search + assignment filter applied) — fed into the tab counts
 	const preFilteredPeopleFlow = useMemo(() => {
@@ -125,19 +146,11 @@ const FlowsPage = () => {
 		}
 
 		if (assignmentFilter === "me") {
-			list = list.filter((p) => p.assignee_id === personId);
+			list = list.filter((p) => Number(p.assignee_id) === personId);
 		} else if (assignmentFilter === "cell") {
-			list = list.filter(
-				(p) =>
-					p.assigned_cell_id != null &&
-					cellIds.includes(p.assigned_cell_id),
-			);
+			list = list.filter((p) => isInMyCell(p.assigned_cell_id));
 		} else if (assignmentFilter === "district") {
-			list = list.filter(
-				(p) =>
-					p.district_id != null &&
-					districtIds.includes(p.district_id),
-			);
+			list = list.filter((p) => isInMyDistrict(p.district_id));
 		}
 
 		return list;
@@ -150,6 +163,7 @@ const FlowsPage = () => {
 		personId,
 		cellIds,
 		districtIds,
+		ability,
 	]);
 
 	// Final list — status tab + sort applied on top
@@ -185,17 +199,11 @@ const FlowsPage = () => {
 		};
 
 		for (const item of effectivePeopleFlow) {
-			if (item.assignee_id === personId) {
+			if (Number(item.assignee_id) === personId) {
 				groups.me.push(item);
-			} else if (
-				item.assigned_cell_id != null &&
-				cellIds.includes(item.assigned_cell_id)
-			) {
+			} else if (isInMyCell(item.assigned_cell_id)) {
 				groups.cell.push(item);
-			} else if (
-				item.district_id != null &&
-				districtIds.includes(item.district_id)
-			) {
+			} else if (isInMyDistrict(item.district_id)) {
 				groups.district.push(item);
 			} else {
 				groups.others.push(item);
@@ -233,6 +241,7 @@ const FlowsPage = () => {
 		personId,
 		cellIds,
 		districtIds,
+		ability,
 	]);
 
 	const handleSortChange = (key: FlowSortKey, order: FlowSortOrder) => {

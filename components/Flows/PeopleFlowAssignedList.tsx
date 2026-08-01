@@ -114,6 +114,7 @@ const PeopleFlowList = ({
 					flow_title={selectedFlowId == 0 ? flow.title : undefined}
 					steps={flow.steps}
 					custom_attr={flow.custom_attr}
+					flow_district_id={flow.district_id}
 				/>
 			)) || <SkeletonPeopleRow />
 		);

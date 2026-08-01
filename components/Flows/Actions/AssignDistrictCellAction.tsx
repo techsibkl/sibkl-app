@@ -4,11 +4,12 @@ import { StepAction } from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import {
 	ArrowRight,
+	CheckCircleIcon,
 	CircleIcon,
 	HelpCircle,
 	MapPinIcon,
 } from "lucide-react-native";
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Pressable, Text, TouchableOpacity, View } from "react-native";
 import AssignDistrictCellDialog from "../Assign/AssignDistrictCellDialog";
 
@@ -17,6 +18,19 @@ type Props = {
 	personFlow: PeopleFlow;
 	flow_id: number;
 	onSuccess?: () => void;
+};
+
+const isAssignmentComplete = (
+	scope: string,
+	personFlow: PeopleFlow,
+): boolean => {
+	if (scope === "district") {
+		return !!personFlow.district_name;
+	}
+	if (scope === "cell") {
+		return !!personFlow.cell_name;
+	}
+	return !!personFlow.district_name || !!personFlow.cell_name;
 };
 
 const AssignDistrictCellAction = ({
@@ -39,21 +53,37 @@ const AssignDistrictCellAction = ({
 				? "Cell"
 				: "District / Cell";
 
+	const done = useMemo(
+		() => isAssignmentComplete(scope, personFlow),
+		[scope, personFlow],
+	);
+
 	return (
 		<View>
 			<View className="flex-row items-center gap-2">
 				<TouchableOpacity
 					activeOpacity={0.7}
 					onPress={() => setDialogVisible(true)}
-					className="flex-1 flex-row items-center gap-3 bg-white p-4 rounded-xl border border-border"
+					className={`flex-1 flex-row items-center gap-3 p-4 rounded-xl border ${
+						done
+							? "bg-green-50 border-green-200"
+							: "bg-white border-border"
+					}`}
 				>
-					<View className="p-2 rounded-full bg-blue-100">
-						<CircleIcon size={18} color="#1d4ed8" />
+					<View
+						className={`p-2 rounded-full ${done ? "bg-green-100" : "bg-blue-100"}`}
+					>
+						<CircleIcon
+							size={18}
+							color={done ? "#16a34a" : "#1d4ed8"}
+						/>
 					</View>
 
 					<View className="flex-1 gap-0.5">
 						<View className="flex-row items-center">
-							<Text className="text-gray-800 font-bold">
+							<Text
+								className={`font-bold ${done ? "text-green-700" : "text-gray-800"}`}
+							>
 								Assign {scopeLabel}
 							</Text>
 							<Pressable
@@ -66,32 +96,50 @@ const AssignDistrictCellAction = ({
 						<View className="flex-row flex-wrap gap-x-3 gap-y-0.5 ">
 							{personFlow.district_name ? (
 								<View className="flex-row items-center gap-1">
-									<MapPinIcon size={11} color="#9ca3af" />
-									<Text className="text-xs text-gray-400">
+									<MapPinIcon
+										size={11}
+										color={done ? "#16a34a" : "#9ca3af"}
+									/>
+									<Text
+										className={`text-xs ${done ? "text-green-600" : "text-gray-400"}`}
+									>
 										{personFlow.district_name}
 									</Text>
 								</View>
 							) : showDistrictTab ? (
-								<Text className="text-xs text-gray-400 italic">
+								<Text
+									className={`text-xs italic ${done ? "text-green-600" : "text-gray-400"}`}
+								>
 									No district assigned
 								</Text>
 							) : null}
 							{personFlow.cell_name ? (
 								<View className="flex-row items-center gap-1">
-									<CircleIcon size={11} color="#9ca3af" />
-									<Text className="text-xs text-gray-400">
+									<CircleIcon
+										size={11}
+										color={done ? "#16a34a" : "#9ca3af"}
+									/>
+									<Text
+										className={`text-xs ${done ? "text-green-600" : "text-gray-400"}`}
+									>
 										{personFlow.cell_name}
 									</Text>
 								</View>
 							) : showCellTab ? (
-								<Text className="text-xs text-gray-400 italic">
+								<Text
+									className={`text-xs italic ${done ? "text-green-600" : "text-gray-400"}`}
+								>
 									No cell assigned
 								</Text>
 							) : null}
 						</View>
 					</View>
 
-					<ArrowRight size={18} />
+					{done ? (
+						<CheckCircleIcon size={18} color="#16a34a" />
+					) : (
+						<ArrowRight size={18} />
+					)}
 				</TouchableOpacity>
 			</View>
 

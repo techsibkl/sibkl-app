@@ -1,8 +1,8 @@
 import { Person } from "@/services/Person/person.type";
 import {
-  AbilityBuilder,
-  type AnyAbility,
-  createMongoAbility,
+	AbilityBuilder,
+	type AnyAbility,
+	createMongoAbility,
 } from "@casl/ability";
 
 export enum Role {
@@ -53,6 +53,13 @@ export function defineAbilityFor(person: Person): AnyAbility {
 		can("read", "Resource", {
 			role_group_ids: { $in: person.role_group_ids ?? [] },
 		});
+		can("join", "Cell");
+		can("read", "CellDetails", {
+			cell_ids: { $in: person.cell_ids ?? [] },
+		});
+		can("read", "CellMembers", {
+			cell_ids: { $in: person.cell_ids ?? [] },
+		});
 
 		if (
 			!person ||
@@ -65,11 +72,12 @@ export function defineAbilityFor(person: Person): AnyAbility {
 		}
 
 		// default permissions that apply to anyone with a valid role
-		// (this is where you can add any extra “base” rules that should
+		// (this is where you can add any extra "base" rules that should
 		// be granted to every authenticated user regardless of what
 		// specific role(s) they have)
 		if (person?.roles && person.roles.length > 0) {
 			can("read", "PeopleScoped");
+			can("read", "CellScoped");
 			can("read", "PeopleProfile", {
 				status: "ARCHIVED",
 			});
@@ -108,11 +116,11 @@ export function defineAbilityFor(person: Person): AnyAbility {
 				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});
 
-			can(["create", "read", "delete"], "PeopleProfileNotes", {
+			can(["read", "update", "assign"], "PeopleFlow", {
 				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});
 
-			can(["read", "update", "assign"], "PeopleFlow", {
+			can(["create", "read", "delete"], "PeopleProfileNotes", {
 				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});
 
@@ -128,16 +136,13 @@ export function defineAbilityFor(person: Person): AnyAbility {
 				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});
 
-      can(["create", "read", "update"], "CellSession", {
-        cell_id: { $in: person.leader_of_cell_ids },
-      });
+			can(["create", "read", "update"], "CellSession", {
+				cell_id: { $in: person.leader_of_cell_ids },
+			});
 		}
 
 		if (person?.roles?.includes(Role.CELL_CORE)) {
 			can(["read", "update"], "PeopleProfile", {
-				cell_ids: { $in: person.core_of_cell_ids ?? [] },
-			});
-			can(["create", "read", "delete"], "PeopleProfileNotes", {
 				cell_ids: { $in: person.core_of_cell_ids ?? [] },
 			});
 
@@ -145,6 +150,9 @@ export function defineAbilityFor(person: Person): AnyAbility {
 				cell_ids: { $in: person.core_of_cell_ids ?? [] },
 			});
 
+			can(["create", "read", "delete"], "PeopleProfileNotes", {
+				cell_ids: { $in: person.core_of_cell_ids ?? [] },
+			});
 			can(["read"], "CellDetails", {
 				cell_ids: { $in: person.core_of_cell_ids ?? [] },
 			});
