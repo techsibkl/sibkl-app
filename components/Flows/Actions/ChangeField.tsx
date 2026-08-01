@@ -42,9 +42,7 @@ const ChangeFieldAction = ({ action, personFlow, custom_attr }: Props) => {
 	const currentValue = personFlow.custom_attr?.[action.source];
 	const displayValue = action.value
 		? displayDateAsStr(String(action.value))
-		: currentValue
-			? displayDateAsStr(String(currentValue))
-			: "Edit";
+		: "Edit";
 
 	return (
 		<>

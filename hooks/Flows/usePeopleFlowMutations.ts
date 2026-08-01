@@ -20,8 +20,8 @@ export const useAssignMutation = (flowId: number) => {
 			assigneeName?: string;
 		}) => assignPersonToFlow(payload),
 		onSuccess: (res, variables) => {
-			qc.invalidateQueries({ queryKey: ["peopleFlow", flowId] });
-			qc.invalidateQueries({ queryKey: ["peopleFlow", "all"] });
+			// Prefix match covers ["peopleFlow", flowId, ...], ["peopleFlow", "accessible"], etc.
+			qc.invalidateQueries({ queryKey: ["peopleFlow"] });
 			if (variables.people) {
 				variables.people.forEach((person) => {
 					qc.invalidateQueries({
@@ -44,8 +44,7 @@ export const useAssignDistrictMutation = (flowId: number) => {
 			district?: { id: number; name: string };
 		}) => assignDistrictToFlow(payload),
 		onSuccess: (res, variables) => {
-			qc.invalidateQueries({ queryKey: ["peopleFlow", flowId] });
-			qc.invalidateQueries({ queryKey: ["peopleFlow", "all"] });
+			qc.invalidateQueries({ queryKey: ["peopleFlow"] });
 			if (variables.people) {
 				variables.people.forEach((person) => {
 					qc.invalidateQueries({ queryKey: ["people", person.id] });
@@ -66,8 +65,7 @@ export const useAssignCellMutation = (flowId: number) => {
 			cell?: { id: number; cell_name?: string };
 		}) => assignCellToFlow(payload),
 		onSuccess: (res, variables) => {
-			qc.invalidateQueries({ queryKey: ["peopleFlow", flowId] });
-			qc.invalidateQueries({ queryKey: ["peopleFlow", "all"] });
+			qc.invalidateQueries({ queryKey: ["peopleFlow"] });
 			if (variables.people) {
 				variables.people.forEach((person) => {
 					qc.invalidateQueries({ queryKey: ["people", person.id] });
@@ -97,8 +95,7 @@ export const useChangeStepMutation = () => {
 				payload.districtId,
 			),
 		onSuccess: (res, variables) => {
-			qc.invalidateQueries({ queryKey: ["peopleFlow", variables?.flowId] });
-			qc.invalidateQueries({ queryKey: ["peopleFlow", "all"] });
+			qc.invalidateQueries({ queryKey: ["peopleFlow"] });
 			variables?.peopleIds.forEach((id) => {
 				qc.invalidateQueries({ queryKey: ["people", id] });
 			});

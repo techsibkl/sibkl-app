@@ -6,7 +6,12 @@ import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { fetchPeoplePaginated } from "@/services/Person/person.service";
 import { Person } from "@/services/Person/person.type";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowRight, HelpCircle, UserRoundCheck } from "lucide-react-native";
+import {
+	ArrowRight,
+	CheckCircleIcon,
+	HelpCircle,
+	UserRoundCheck,
+} from "lucide-react-native";
 import React, { useMemo, useState } from "react";
 import {
 	ActivityIndicator,
@@ -46,6 +51,11 @@ const AssignPersonAction = ({ personFlow, flow_id, onSuccess }: Props) => {
 		[people, personFlow.assignee_id],
 	);
 
+	const done = useMemo(
+		() => !!personFlow.assignee_id && !!personFlow.assignee_name,
+		[personFlow.assignee_id, personFlow.assignee_name],
+	);
+
 	const handleAssign = (person: Person) => {
 		assignPerson(
 			{
@@ -69,15 +79,26 @@ const AssignPersonAction = ({ personFlow, flow_id, onSuccess }: Props) => {
 				<TouchableOpacity
 					activeOpacity={0.7}
 					onPress={() => setDialogVisible(true)}
-					className="flex-1 flex-row items-center gap-3 bg-white p-4 rounded-xl border border-border"
+					className={`flex-1 flex-row items-center gap-3 p-4 rounded-xl border ${
+						done
+							? "bg-green-50 border-green-200"
+							: "bg-white border-border"
+					}`}
 				>
-					<View className="p-2 rounded-full bg-green-100">
-						<UserRoundCheck size={18} color="#15803d" />
+					<View
+						className={`p-2 rounded-full ${done ? "bg-green-100" : "bg-green-100"}`}
+					>
+						<UserRoundCheck
+							size={18}
+							color={done ? "#16a34a" : "#15803d"}
+						/>
 					</View>
 
 					<View className="flex-1 gap-0.5">
 						<View className="flex-row items-center">
-							<Text className="text-gray-800 font-bold">
+							<Text
+								className={`font-bold ${done ? "text-green-700" : "text-gray-800"}`}
+							>
 								Assign Follow-Up Person
 							</Text>
 							<Pressable
@@ -88,7 +109,7 @@ const AssignPersonAction = ({ personFlow, flow_id, onSuccess }: Props) => {
 							</Pressable>
 						</View>
 						<Text
-							className="text-xs text-gray-400"
+							className={`text-xs ${done ? "text-green-600" : "text-gray-400"}`}
 							numberOfLines={1}
 						>
 							{personFlow.assignee_name
@@ -99,6 +120,8 @@ const AssignPersonAction = ({ personFlow, flow_id, onSuccess }: Props) => {
 
 					{isPending ? (
 						<ActivityIndicator size="small" color="#9ca3af" />
+					) : done ? (
+						<CheckCircleIcon size={18} color="#16a34a" />
 					) : (
 						<ArrowRight size={18} />
 					)}

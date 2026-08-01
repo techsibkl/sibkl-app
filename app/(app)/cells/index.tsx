@@ -19,7 +19,7 @@ import {
 	StatusBar,
 	StyleSheet,
 	Text,
-	View
+	View,
 } from "react-native";
 
 const CellsScreen = () => {
@@ -27,7 +27,9 @@ const CellsScreen = () => {
 	const { isDark } = useThemeColors();
 	const { user } = useAuthStore();
 	const [searchQuery, setSearchQuery] = useState("");
-	const [browseTab, setBrowseTab] = useState<"available" | "joined">("joined");
+	const [browseTab, setBrowseTab] = useState<"available" | "joined">(
+		"joined",
+	);
 	const [joinedCells, setJoinedCells] = useState<number[]>([]);
 	const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -36,7 +38,8 @@ const CellsScreen = () => {
 	const underlinePosition = useRef(new Animated.Value(0)).current;
 
 	// Fetch all available cells
-	const { data: availableCells = [], isPending: cellsLoading } = useCellsPublicQuery();
+	const { data: availableCells = [], isPending: cellsLoading } =
+		useCellsPublicQuery();
 
 	// Fetch user's current person data
 	const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
@@ -44,39 +47,52 @@ const CellsScreen = () => {
 	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
 	// Get user's current cell IDs
 	const userCellIds = (person?.cells ?? []).map((cell) => cell.id);
-	console.log("Person data:", person);
-	console.log("User cell IDs:", userCellIds);
-	console.log("Person.cells:", person?.cells);
-	
+
 	// Deduplicate Available Cells
 	const uniqueAvailableCells = Array.from(
-		new Map((availableCells ?? []).map(cell => [cell.id, cell])).values()
+		new Map((availableCells ?? []).map((cell) => [cell.id, cell])).values(),
 	);
 
 	const availableCellsFiltered = uniqueAvailableCells
 		.filter((cell: Cell) => !userCellIds?.includes(cell.id))
 		.filter((cell: Cell) =>
-			cell?.cell_name
-				?.toLowerCase()
-				.includes(searchQuery.toLowerCase())
+			cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase()),
 		);
-
 
 	// Deduplicate Joined Cells
 	const uniqueJoinedCells = Array.from(
-		new Map((person?.cells ?? []).map(cell => [cell.id, cell])).values()
+		new Map((person?.cells ?? []).map((cell) => [cell.id, cell])).values(),
 	);
 
-	const joinedCellsList = uniqueJoinedCells
-		.filter((cell: Cell) =>
-			cell?.cell_name
-				?.toLowerCase()
-				.includes(searchQuery.toLowerCase())
-		);
+	const joinedCellsList = uniqueJoinedCells.filter((cell: Cell) =>
+		cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase()),
+	);
 
-	const filteredCells = browseTab === "available" ? availableCellsFiltered : joinedCellsList;
-	
-	fetch('http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826',{method:'POST',headers:{'Content-Type':'application/json','X-Debug-Session-Id':'247e04'},body:JSON.stringify({sessionId:'247e04',location:'index.tsx:60',message:'Filtered cells',data:{availableCellsFilteredCount:availableCellsFiltered.length,joinedCellsListCount:joinedCellsList.length,filteredCellsCount:filteredCells.length,browseTab,cellsLoading},timestamp:Date.now(),runId:'debug1',hypothesisId:'A,B,C,D,E'})}).catch(()=>{});
+	const filteredCells =
+		browseTab === "available" ? availableCellsFiltered : joinedCellsList;
+
+	fetch("http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			"X-Debug-Session-Id": "247e04",
+		},
+		body: JSON.stringify({
+			sessionId: "247e04",
+			location: "index.tsx:60",
+			message: "Filtered cells",
+			data: {
+				availableCellsFilteredCount: availableCellsFiltered.length,
+				joinedCellsListCount: joinedCellsList.length,
+				filteredCellsCount: filteredCells.length,
+				browseTab,
+				cellsLoading,
+			},
+			timestamp: Date.now(),
+			runId: "debug1",
+			hypothesisId: "A,B,C,D,E",
+		}),
+	}).catch(() => {});
 	// #endregion
 	useEffect(() => {
 		if (userCellIds.length === 0) {
@@ -121,7 +137,7 @@ const CellsScreen = () => {
 	);
 	const isSelectedCellPending =
 		Boolean(selectedCellId && pendingCellIds.includes(selectedCellId)) ||
-		selectedCellMembership?.member_status === "PENDING";
+		selectedCellMembership?.status === "PENDING";
 	const isSelectedCellJoined =
 		!isSelectedCellPending &&
 		(browseTab === "joined" ||
@@ -135,8 +151,8 @@ const CellsScreen = () => {
 	const renderCellCard = ({ item: cell }: { item: Cell }) => {
 		if (browseTab === "available") {
 			return (
-				<AllCellCard 
-					cell={cell} 
+				<AllCellCard
+					cell={cell}
 					hasJoinedAnyCells={hasJoinedAnyCells}
 					onViewDetails={handleViewDetails}
 				/>
@@ -154,53 +170,72 @@ const CellsScreen = () => {
 
 	return (
 		<SharedBody>
-			<StatusBar
-				barStyle={isDark ? "light-content" : "dark-content"}
+			<StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+
+			<SharedSearchBar
+				searchQuery={searchQuery}
+				onSearchChange={setSearchQuery}
+				placeholder="Search groups..."
 			/>
 
-		<SharedSearchBar
-			searchQuery={searchQuery}
-			onSearchChange={setSearchQuery}
-			placeholder="Search groups..."
-		/>
-
-		{/* Tab Navigation - Always Visible */}
-		<View style={styles.tabWrapper}>
-			<View style={styles.tabContainer}>
-			<Pressable 
-				onPress={() => setBrowseTab("available")}
-				style={[styles.tab, browseTab === "available" && styles.tabActive]}
-			>
-				<Text style={[styles.tabText, browseTab === "available" && styles.tabTextActive]}>
-					All
-				</Text>
-			</Pressable>
-			<Pressable 
-				onPress={() => setBrowseTab("joined")}
-				style={[styles.tab, browseTab === "joined" && styles.tabActive]}
-			>
-				<Text style={[styles.tabText, browseTab === "joined" && styles.tabTextActive]}>
-					My Cells
-				</Text>
-			</Pressable>
+			{/* Tab Navigation - Always Visible */}
+			<View style={styles.tabWrapper}>
+				<View style={styles.tabContainer}>
+					<Pressable
+						onPress={() => setBrowseTab("available")}
+						style={[
+							styles.tab,
+							browseTab === "available" && styles.tabActive,
+						]}
+					>
+						<Text
+							style={[
+								styles.tabText,
+								browseTab === "available" &&
+									styles.tabTextActive,
+							]}
+						>
+							All
+						</Text>
+					</Pressable>
+					<Pressable
+						onPress={() => setBrowseTab("joined")}
+						style={[
+							styles.tab,
+							browseTab === "joined" && styles.tabActive,
+						]}
+					>
+						<Text
+							style={[
+								styles.tabText,
+								browseTab === "joined" && styles.tabTextActive,
+							]}
+						>
+							My Cells
+						</Text>
+					</Pressable>
+				</View>
+				<Animated.View
+					style={[
+						styles.underline,
+						browseTab === "available"
+							? { marginLeft: 16 }
+							: { marginRight: 16 },
+						{
+							transform: [
+								{
+									translateX: underlinePosition.interpolate({
+										inputRange: [0, 1],
+										outputRange: [0, 200],
+									}),
+								},
+							],
+						},
+					]}
+				/>
 			</View>
-			<Animated.View 
-				style={[
-					styles.underline,
-					browseTab === "available" ? { marginLeft: 16 } : { marginRight: 16 },
-					{
-						transform: [{
-							translateX: underlinePosition.interpolate({
-								inputRange: [0, 1],
-								outputRange: [0, 200],
-							})
-						}]
-					}
-				]} 
-			/>
-		</View>
 
-		{/* Content */}
+			{/* Content */}
 			<View className="flex-1">
 				{cellsLoading ? (
 					<View className="flex-1 items-center justify-center">
@@ -208,13 +243,19 @@ const CellsScreen = () => {
 					</View>
 				) : browseTab === "joined" && userCellIds.length === 0 ? (
 					<View className="flex-1 items-center justify-center px-6">
-						<Text className="text-center text-gray-500 text-lg mb-4">No Cells</Text>
-						<Text className="text-center text-gray-400 mb-6">You haven't joined any groups yet</Text>
-						<Pressable 
+						<Text className="text-center text-gray-500 text-lg mb-4">
+							No Cells
+						</Text>
+						<Text className="text-center text-gray-400 mb-6">
+							You haven't joined any groups yet
+						</Text>
+						<Pressable
 							onPress={() => setBrowseTab("available")}
 							style={styles.joinButton}
 						>
-							<Text style={styles.joinButtonText}>Join One Now</Text>
+							<Text style={styles.joinButtonText}>
+								Join One Now
+							</Text>
 						</Pressable>
 					</View>
 				) : filteredCells.length === 0 ? (
@@ -225,32 +266,43 @@ const CellsScreen = () => {
 								: "No available groups to join"}
 						</Text>
 					</View>
-			) : (
-				<FlashList
-					data={filteredCells}
-					keyExtractor={(item) => String(item.id)}
-					renderItem={renderCellCard}
-					scrollEnabled={true}
-					showsVerticalScrollIndicator={false}
-					contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
-					estimatedItemSize={140}
-				/>
-			)}
+				) : (
+					<FlashList
+						data={filteredCells}
+						keyExtractor={(item) => String(item.id)}
+						renderItem={renderCellCard}
+						scrollEnabled={true}
+						showsVerticalScrollIndicator={false}
+						contentContainerStyle={{
+							paddingHorizontal: 16,
+							paddingVertical: 16,
+						}}
+						estimatedItemSize={140}
+					/>
+				)}
 			</View>
 
-	<CellDetailModal
-		visible={modalVisible}
-		onClose={() => setModalVisible(false)}
-		cell={selectedCell}
-		isJoined={isSelectedCellJoined}
-		isPending={isSelectedCellPending}
-		isJoining={joiningCellId === selectedCellId}
-		isLeader={selectedCellId ? Boolean(ledCells?.map(Number).includes(Number(selectedCellId))) : false}
-		onJoin={handleJoinCell}
-		onManage={() => {
-			console.log("Manage cell:", selectedCell?.id);
-		}}
-	/>
+			<CellDetailModal
+				visible={modalVisible}
+				onClose={() => setModalVisible(false)}
+				cell={selectedCell}
+				isJoined={isSelectedCellJoined}
+				isPending={isSelectedCellPending}
+				isJoining={joiningCellId === selectedCellId}
+				isLeader={
+					selectedCellId
+						? Boolean(
+								ledCells
+									?.map(Number)
+									.includes(Number(selectedCellId)),
+							)
+						: false
+				}
+				onJoin={handleJoinCell}
+				onManage={() => {
+					console.log("Manage cell:", selectedCell?.id);
+				}}
+			/>
 		</SharedBody>
 	);
 };
