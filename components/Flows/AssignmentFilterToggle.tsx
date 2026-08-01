@@ -53,7 +53,6 @@ const AssignmentFilterToggle = ({ value, onChange, roles = [] }: Props) => {
 			onPress={() => onChange(next.value)}
 			activeOpacity={0.7}
 			className={`flex-1 flex-row items-center gap-2 px-4 border ${value === null ? "border-border" : "border-blue-300"} rounded-[15px] bg-white`}
-			style={{ height: 52 }}
 		>
 			<Text
 				className={`flex-1 font-medium text-md ${value === null ? "text-blue-300" : "text-blue-500"}`}
