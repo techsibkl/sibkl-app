@@ -1,23 +1,33 @@
 "use client";
 
+import AttendanceTabContent from "@/components/Cells/Attendance/AttendanceTabContent";
 import CreateSessionSheet from "@/components/Cells/CreateSessionSheet";
 import MembersList from "@/components/Cells/Profile/MembersList";
 import ComingSoon from "@/components/shared/ComingSoon";
 import SharedBody from "@/components/shared/SharedBody";
 import { getFabActions } from "@/constants/cont_cells";
 import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
+import {
+  useCellAttendanceStatsQuery,
+  useCellSessionsQuery,
+  usePersonCellAttendanceStatsQuery,
+  usePersonSessionAttendanceQuery,
+} from "@/hooks/CellAttendance/useCellAttendanceQuery";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
-import { useQueryClient } from "@tanstack/react-query";
 import { useThemeColors } from "@/hooks/useThemeColor";
-import { removeCellMembers, updateMemberStatus } from "@/services/Cell/cell.service";
+import {
+  removeCellMembers,
+  updateMemberStatus,
+} from "@/services/Cell/cell.service";
 import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
 import {
   BottomSheetModal,
   BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
-import { useLocalSearchParams, useRouter, useFocusEffect } from "expo-router";
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { useLocalSearchParams, useRouter } from "expo-router";
+import React, { useEffect, useRef, useState } from "react";
 import {
   ActivityIndicator,
   ScrollView,
@@ -29,281 +39,354 @@ import {
 import { FAB, Portal, Provider } from "react-native-paper";
 
 const CellProfileScreen = () => {
-  const router = useRouter();
-  const { isDark } = useThemeColors();
-  const { id } = useLocalSearchParams();
-  const { user, ability } = useAuthStore();
-  const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
-  const queryClient = useQueryClient();
-  // console.log("person:", person);
+	const router = useRouter();
+	const { isDark } = useThemeColors();
+	const { id } = useLocalSearchParams();
+	const { user, ability } = useAuthStore();
+	const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
+	const queryClient = useQueryClient();
+	// console.log("person:", person);
 
-  const ledCells: number[] | undefined = person?.leader_of_cell_ids;
-  const isLeader = ledCells?.map(Number).includes(Number(id));
-  
-  // Only fetch from API if user is a leader
-  const {
-    data: cellFromApi,
-    isPending,
-    error: queryError,
-    isError,
-    refetch,
-  } = useSingleCellQuery(Number(id));
+	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
+	const isLeader = ledCells?.map(Number).includes(Number(id));
 
-  // Get cell data from person's cells for regular members
-  // const cellFromPerson = person?.cells?.find(c => c.id === Number(id));
-  
-  // Use API data for leaders, fallback to person data for members
-  const cell = cellFromApi;
+	// Initialize state early so it can be used in queries
+	const [activeTab, setActiveTab] = useState<
+		"people" | "announcements" | "attendance"
+	>("people");
+	const [searchQuery, setSearchQuery] = useState("");
+	const [open, setOpen] = useState(false);
+	const [memberStatuses, setMemberStatuses] = useState<
+		Record<number, string>
+	>({});
+	const [isUpdating, setIsUpdating] = useState<number | null>(null);
+	const [statusError, setStatusError] = useState<string | null>(null);
+	const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
 
-  const [activeTab, setActiveTab] = useState<
-    "people" | "announcements" | "attendance"
-  >("people");
-  const [searchQuery, setSearchQuery] = useState("");
-  const [open, setOpen] = useState(false);
-  const [memberStatuses, setMemberStatuses] = useState<Record<number, string>>({});
-  const [isUpdating, setIsUpdating] = useState<number | null>(null);
-  const [statusError, setStatusError] = useState<string | null>(null);
-  const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
+	// Only fetch from API if user is a leader
+	const {
+		data: cellFromApi,
+		isPending,
+		error: queryError,
+		isError,
+		refetch,
+	} = useSingleCellQuery(Number(id));
 
-  const ledCellsFormatted = (person?.cells ?? [])
-    .filter((cell) => cell.id && ledCells?.map(Number).includes(Number(cell.id)))
-    .map((cell) => ({ id: cell.id!, name: cell.cell_name! }));
+	// Fetch cell sessions
+	const { data: sessions = [], isPending: isSessionsPending } =
+		useCellSessionsQuery(Number(id));
 
-  useEffect(() => {
-    setOpen(false);
-  }, [activeTab]);
+	// Fetch attendance stats for all members (for leaders)
+	const {
+		data: memberAttendanceStats = [],
+		isPending: isMemberStatsPending,
+	} = useCellAttendanceStatsQuery(Number(id), isLeader ?? false);
 
-  const filteredMembers = (cell?.members ?? []).filter((member: Person) =>
-    member?.full_legal_name?.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
+	// Fetch current user's attendance stats
+	const { data: myAttendanceStats, isPending: isMyAttendanceStatsPending } =
+		usePersonCellAttendanceStatsQuery(
+			Number(id),
+			person?.id ?? -1,
+			activeTab === "attendance",
+		);
 
-  const handleAcceptMember = async (memberId: number) => {
-    try {
-      setIsUpdating(memberId);
-      setStatusError(null);
+	// Fetch current user's session-by-session attendance
+	const {
+		data: mySessionAttendance = {},
+		isPending: isSessionAttendancePending,
+	} = usePersonSessionAttendanceQuery(
+		Number(id),
+		sessions,
+		person?.id ?? -1,
+		activeTab === "attendance",
+	);
 
-      await updateMemberStatus(Number(id), memberId, "ACTIVE");
+	// Get cell data from person's cells for regular members
+	// const cellFromPerson = person?.cells?.find(c => c.id === Number(id));
 
-      setMemberStatuses((prev) => ({
-        ...prev,
-        [memberId]: "ACTIVE",
-      }));
-    } catch (err: any) {
-      setStatusError(err.message || "Failed to accept member");
-      console.error("Accept member error:", err);
-    } finally {
-      setIsUpdating(null);
-    }
-  };
+	// Use API data for leaders, fallback to person data for members
+	const cell = cellFromApi;
 
-  const handleRejectMember = async (memberId: number) => {
-    try {
-      setIsUpdating(memberId);
-      setStatusError(null);
+	const ledCellsFormatted = (person?.cells ?? [])
+		.filter(
+			(cell) =>
+				cell.id && ledCells?.map(Number).includes(Number(cell.id)),
+		)
+		.map((cell) => ({ id: cell.id!, name: cell.cell_name! }));
 
-      await updateMemberStatus(Number(id), memberId, "REJECTED");
+	useEffect(() => {
+		setOpen(false);
+	}, [activeTab]);
 
-      setMemberStatuses((prev) => ({
-        ...prev,
-        [memberId]: "REJECTED",
-      }));
-    } catch (err: any) {
-      setStatusError(err.message || "Failed to reject member");
-      console.error("Reject member error:", err);
-    } finally {
-      setIsUpdating(null);
-    }
-  };
+	const filteredMembers = (cell?.members ?? []).filter((member: Person) =>
+		member?.full_legal_name
+			?.toLowerCase()
+			.includes(searchQuery.toLowerCase()),
+	);
 
-  // Remove member, not yet implemented
-  const handleRemoveMember = async (memberId: number) => {
-    try {
-      console.log("Removing member with ID:", memberId);
-      setIsUpdating(memberId);
-      setStatusError(null);
+	const handleAcceptMember = async (memberId: number) => {
+		try {
+			setIsUpdating(memberId);
+			setStatusError(null);
 
-      await removeCellMembers(Number(id), [memberId], person?.id ?? -1);
+			await updateMemberStatus(Number(id), memberId, "ACTIVE");
 
-      // Invalidate all related queries
-      await queryClient.invalidateQueries({ 
-        queryKey: ["cells", Number(id)] 
-      }); // Refetch current cell
-      
-      await queryClient.invalidateQueries({ 
-        queryKey: ["people", person?.id] 
-      }); // Refetch user's person data
-      
-      await queryClient.invalidateQueries({ 
-        queryKey: ["cells"] 
-      }); // Refetch led cells
-      
-      await queryClient.invalidateQueries({ 
-        queryKey: ["cells-scoped-fields"] 
-      }); // Refetch public cells
-      
-      await queryClient.invalidateQueries({ 
-        queryKey: ["people", person?.id] 
-      }); // Refetch each member's person data if needed
-      
-      // DEBUG: Log the updated members list after removal
-      console.log("✅ MEMBER REMOVED - Updated members list:", {
-        cellId: id,
-        totalMembers: cell?.members?.length,
-        members: cell?.members?.map(m => ({
-          id: m.id,
-          name: m.full_legal_name,
-          status: m.status
-        }))
-      });
-      
-    } catch (err: any) {
-      setStatusError(err.message || "Failed to remove member");
-      console.error("Remove member error:", err);
-    } finally {
-      console.log("Current user:", user);
-      console.log("User person ID:", user?.person?.id);
-      setIsUpdating(null);
-    }
-  };
-  
-  const renderTabContent = () => {
-    switch (activeTab) {
-      case "people":
-        return (
-          <MembersList
-            members={isLeader ? filteredMembers : filteredMembers.filter((m) => (memberStatuses[m.id] || m.status || "ACTIVE") === "ACTIVE")}
-            searchQuery={searchQuery}
-            onChangeText={setSearchQuery}
-            isLeader={isLeader}
-            currentPersonId={person?.id}
-            memberStatuses={memberStatuses}
-            onAccept={handleAcceptMember}
-            onReject={handleRejectMember}
-            isUpdating={isUpdating}
-            onRemoveMember={handleRemoveMember}
-          />
-        );
-      case "announcements":
-        return <ComingSoon description="Coming soon :>" />;
-      case "attendance":
-        return <ComingSoon description="Coming soon :>" />;
-      default:
-        return null;
-    }
-  };
+			setMemberStatuses((prev) => ({
+				...prev,
+				[memberId]: "ACTIVE",
+			}));
+		} catch (err: any) {
+			setStatusError(err.message || "Failed to accept member");
+			console.error("Accept member error:", err);
+		} finally {
+			setIsUpdating(null);
+		}
+	};
 
-  if (isPending && isLeader)
-    return (
-      <SharedBody>
-        <ActivityIndicator />
-      </SharedBody>
-    );
-  if (isError && isLeader)
-    return (
-      <SharedBody>
-        <Text>Type of Id: {typeof id}</Text>
-        <Text>{queryError?.message + "ID: " + id}</Text>
-        <Text>{queryError?.name}</Text>
-      </SharedBody>
-    );
+	const handleRejectMember = async (memberId: number) => {
+		try {
+			setIsUpdating(memberId);
+			setStatusError(null);
 
-  if (!cell)
-    return (
-      <SharedBody>
-        <Text>Cell not found</Text>
-      </SharedBody>
-    );
+			await updateMemberStatus(Number(id), memberId, "REJECTED");
 
-  return (
-    <SharedBody>
-      <StatusBar
-        className="bg-background"
-        barStyle={isDark ? "light-content" : "dark-content"}
-      />
+			setMemberStatuses((prev) => ({
+				...prev,
+				[memberId]: "REJECTED",
+			}));
+		} catch (err: any) {
+			setStatusError(err.message || "Failed to reject member");
+			console.error("Reject member error:", err);
+		} finally {
+			setIsUpdating(null);
+		}
+	};
 
-      <ScrollView>
-        {/* Cell info section */}
-        <View className="items-center py-8">
-          <View className="w-24 h-24 bg-gray-800 rounded-full items-center justify-center mb-6">
-            <Text className="text-white text-2xl font-bold">tc</Text>
-          </View>
-          <Text className="text-text text-2xl font-bold text-center mb-2">
-            {cell.cell_name}
-          </Text>
-          <Text className="text-text-secondary text-base">
-            Cell • {cell.members?.length} member
-            {cell.members?.length === 1 ? "" : "s"}
-          </Text>
-        </View>
+	// Remove member, not yet implemented
+	const handleRemoveMember = async (memberId: number) => {
+		try {
+			console.log("Removing member with ID:", memberId);
+			setIsUpdating(memberId);
+			setStatusError(null);
 
-        {statusError && (
-          <View className="bg-red-100 p-3 mx-3 rounded-lg mb-3">
-            <Text className="text-red-700 text-sm">{statusError}</Text>
-          </View>
-        )}
+			await removeCellMembers(Number(id), [memberId], person?.id ?? -1);
 
-        <Text>{Array.isArray(cell.members)}</Text>
+			// Invalidate all related queries
+			await queryClient.invalidateQueries({
+				queryKey: ["cells", Number(id)],
+			}); // Refetch current cell
 
-        {/* Tab bar */}
-        <View className="flex-row mx-6 mb-6">
-          {["people", "announcements", "attendance"].map((tab) => (
-            <TouchableOpacity
-              key={tab}
-              className={`flex-1 py-3 ${
-                tab === "people"
-                  ? "rounded-l-lg border border-border"
-                  : tab === "attendance"
-                    ? "rounded-r-lg border border-border"
-                    : " border-t border-b border-border"
-              } ${activeTab === tab ? "bg-background" : "bg-background-secondary"}`}
-              onPress={() => setActiveTab(tab as typeof activeTab)}
-            >
-              <Text
-                className={`text-center text-sm text-nowrap font-medium ${
-                  activeTab === tab ? "text-text" : "text-text-secondary"
-                }`}
-              >
-                {tab.charAt(0).toUpperCase() + tab.slice(1)}
-              </Text>
-            </TouchableOpacity>
-          ))}
-        </View>
+			await queryClient.invalidateQueries({
+				queryKey: ["people", person?.id],
+			}); // Refetch user's person data
 
-        {renderTabContent()}
-      </ScrollView>
+			await queryClient.invalidateQueries({
+				queryKey: ["cells"],
+			}); // Refetch led cells
 
-      <BottomSheetModalProvider>
-        <Provider>
-          <Portal>
-            <FAB.Group
-              open={open}
-              icon={open ? "close" : "plus"}
-              color="white"
-              fabStyle={{ backgroundColor: "#d6361e" }}
-              backdropColor="transparent"
-              visible={activeTab === "attendance"}
-              style={{
-                paddingBottom: 0, // Sometimes there's default padding you might want to remove
-                bottom: 10,       // Adjust this value to move it up or down (default is usually around 16)
-                right: 16,        // Adjust this to move it left or right
-              }}
-              actions={getFabActions({
-                ability: ability,
-                router: router,
-                createSessionSheetModalRef: createSessionSheetModalRef,
-                cellId: Number(id),
-              })}
-              onStateChange={({ open }) => setOpen(open)}
-            />
-            <CreateSessionSheet
-              ref={createSessionSheetModalRef}
-              ledCells={ledCellsFormatted}
-            />
-          </Portal>
-        </Provider>
-      </BottomSheetModalProvider>
-    </SharedBody>
-  );
+			await queryClient.invalidateQueries({
+				queryKey: ["cells-scoped-fields"],
+			}); // Refetch public cells
+
+			await queryClient.invalidateQueries({
+				queryKey: ["people", person?.id],
+			}); // Refetch each member's person data if needed
+
+			// DEBUG: Log the updated members list after removal
+			console.log("✅ MEMBER REMOVED - Updated members list:", {
+				cellId: id,
+				totalMembers: cell?.members?.length,
+				members: cell?.members?.map((m) => ({
+					id: m.id,
+					name: m.full_legal_name,
+					status: m.status,
+				})),
+			});
+		} catch (err: any) {
+			setStatusError(err.message || "Failed to remove member");
+			console.error("Remove member error:", err);
+		} finally {
+			console.log("Current user:", user);
+			console.log("User person ID:", user?.person?.id);
+			setIsUpdating(null);
+		}
+	};
+
+	const renderTabContent = () => {
+		switch (activeTab) {
+			case "people":
+				return (
+					<MembersList
+						members={
+							isLeader
+								? filteredMembers
+								: filteredMembers.filter(
+										(m) =>
+											(memberStatuses[m.id] ||
+												m.status ||
+												"ACTIVE") === "ACTIVE",
+									)
+						}
+						searchQuery={searchQuery}
+						onChangeText={setSearchQuery}
+						isLeader={isLeader}
+						currentPersonId={person?.id}
+						memberStatuses={memberStatuses}
+						onAccept={handleAcceptMember}
+						onReject={handleRejectMember}
+						isUpdating={isUpdating}
+						onRemoveMember={handleRemoveMember}
+					/>
+				);
+			case "announcements":
+				return <ComingSoon description="Coming soon :>" />;
+			case "attendance":
+				return (
+					<AttendanceTabContent
+						cellId={Number(id)}
+						sessions={sessions}
+						isLeader={isLeader ?? false}
+						currentPersonId={person?.id}
+						memberStats={memberAttendanceStats}
+						sessionStats={
+							myAttendanceStats ? [myAttendanceStats] : []
+						}
+						mySessionAttendance={mySessionAttendance}
+						members={cell?.members ?? []}
+						isLoadingSessions={isSessionsPending}
+						isLoadingPersonStats={
+							isMyAttendanceStatsPending ||
+							isMemberStatsPending ||
+							isSessionAttendancePending
+						}
+					/>
+				);
+			default:
+				return null;
+		}
+	};
+
+	if (isPending && isLeader)
+		return (
+			<SharedBody>
+				<ActivityIndicator />
+			</SharedBody>
+		);
+	if (isError && isLeader)
+		return (
+			<SharedBody>
+				<Text>Type of Id: {typeof id}</Text>
+				<Text>{queryError?.message + "ID: " + id}</Text>
+				<Text>{queryError?.name}</Text>
+			</SharedBody>
+		);
+
+	if (!cell)
+		return (
+			<SharedBody>
+				<Text>Cell not found</Text>
+			</SharedBody>
+		);
+
+	return (
+		<SharedBody>
+			<StatusBar
+				className="bg-background"
+				barStyle={isDark ? "light-content" : "dark-content"}
+			/>
+
+			<ScrollView>
+				{/* Cell info section */}
+				<View className="items-center py-8">
+					<View className="w-24 h-24 bg-gray-800 rounded-full items-center justify-center mb-6">
+						<Text className="text-white text-2xl font-bold">
+							tc
+						</Text>
+					</View>
+					<Text className="text-text text-2xl font-bold text-center mb-2">
+						{cell.cell_name}
+					</Text>
+					<Text className="text-text-secondary text-base">
+						Cell • {cell.members?.length} member
+						{cell.members?.length === 1 ? "" : "s"}
+					</Text>
+				</View>
+
+				{statusError && (
+					<View className="bg-red-100 p-3 mx-3 rounded-lg mb-3">
+						<Text className="text-red-700 text-sm">
+							{statusError}
+						</Text>
+					</View>
+				)}
+
+				<Text>{Array.isArray(cell.members)}</Text>
+
+				{/* Tab bar */}
+				<View className="flex-row mx-6 mb-6">
+					{["people", "announcements", "attendance"].map((tab) => (
+						<TouchableOpacity
+							key={tab}
+							className={`flex-1 py-3 ${
+								tab === "people"
+									? "rounded-l-lg border border-border"
+									: tab === "attendance"
+										? "rounded-r-lg border border-border"
+										: " border-t border-b border-border"
+							} ${activeTab === tab ? "bg-background" : "bg-background-secondary"}`}
+							onPress={() =>
+								setActiveTab(tab as typeof activeTab)
+							}
+						>
+							<Text
+								className={`text-center text-sm text-nowrap font-medium ${
+									activeTab === tab
+										? "text-text"
+										: "text-text-secondary"
+								}`}
+							>
+								{tab.charAt(0).toUpperCase() + tab.slice(1)}
+							</Text>
+						</TouchableOpacity>
+					))}
+				</View>
+
+				{renderTabContent()}
+			</ScrollView>
+
+			<BottomSheetModalProvider>
+				<Provider>
+					<Portal>
+						<FAB.Group
+							open={open}
+							icon={open ? "close" : "plus"}
+							color="white"
+							fabStyle={{ backgroundColor: "#d6361e" }}
+							backdropColor="transparent"
+							visible
+							style={{
+								paddingBottom: 0, // Sometimes there's default padding you might want to remove
+								bottom: 10, // Adjust this value to move it up or down (default is usually around 16)
+								right: 16, // Adjust this to move it left or right
+							}}
+							actions={getFabActions({
+								ability: ability,
+								router: router,
+								createSessionSheetModalRef:
+									createSessionSheetModalRef,
+								cellId: Number(id),
+							})}
+							onStateChange={({ open }) => setOpen(open)}
+						/>
+						<CreateSessionSheet
+							ref={createSessionSheetModalRef}
+							ledCells={ledCellsFormatted}
+						/>
+					</Portal>
+				</Provider>
+			</BottomSheetModalProvider>
+		</SharedBody>
+	);
 };
 
 export default CellProfileScreen;

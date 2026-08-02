@@ -14,7 +14,7 @@ import {
 } from "react-native";
 import { Phone, MessageCircle, Trash2 } from "lucide-react-native";
 import { Person } from "@/services/Person/person.type";
-import { useThemeColors } from "@/hooks/useThemeColor";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -46,7 +46,6 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
   currentPersonId,
   onRemove,
 }) => {
-  const { isDark } = useThemeColors();
   const heightAnim = useRef(new Animated.Value(0)).current;
 
   const currentHeightRef = useRef(0);
@@ -54,6 +53,7 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
   const isExpandedRef = useRef(false);
 
   const [isExpanded, setIsExpanded] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   useEffect(() => {
     const id = heightAnim.addListener(({ value }) => {
@@ -164,16 +164,22 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
     }
   };
 
-  const handleSMS = () => {
+  const handleWhatsApp = () => {
     if (member.phone) {
-      Linking.openURL(`sms:${member.phone}`);
+      const phoneNumber = member.phone.replace(/\D/g, "");
+      Linking.openURL(`https://wa.me/${phoneNumber}`);
     }
   };
 
-  const bgColor = isDark ? "#1f2937" : "#ffffff";
-  const textColor = isDark ? "#f3f4f6" : "#1c1c1e";
-  const secondaryTextColor = isDark ? "#d1d5db" : "#8e8e93";
-  const actionBgColor = isDark ? "#374151" : "#f0f0f1";
+  const handleRemove = async () => {
+    onRemove?.(member.id);
+    closeSheet();
+  };
+
+  const bgColor = "#ffffff";
+  const textColor = "#1c1c1e";
+  const secondaryTextColor = "#8e8e93";
+  const actionBgColor = "#f0f0f1";
 
   const canRemoveMember =
     isLeader &&
@@ -257,17 +263,14 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
               </TouchableOpacity>
               <TouchableOpacity
                 style={[styles.actionButton, { backgroundColor: actionBgColor }]}
-                onPress={handleSMS}
+                onPress={handleWhatsApp}
               >
                 <MessageCircle size={20} color={ACCENT} strokeWidth={2} />
               </TouchableOpacity>
               {canRemoveMember && (
                 <TouchableOpacity
                   style={[styles.actionButton, { backgroundColor: "#fee2e2" }]}
-                  onPress={() => {
-                    onRemove?.(member.id);
-                    closeSheet();
-                  }}
+                  onPress={() => setShowConfirmDialog(true)}
                 >
                   <Trash2 size={20} color="#dc2626" strokeWidth={2} />
                 </TouchableOpacity>
@@ -276,6 +279,17 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
           </View>
         </Animated.View>
       </View>
+
+      <ConfirmDialog
+        visible={showConfirmDialog}
+        onClose={() => setShowConfirmDialog(false)}
+        title="Remove Member"
+        description={`Are you sure you want to remove ${member.full_legal_name || member.preferred_name} from this cell?`}
+        actionText="Remove"
+        cancelText="Cancel"
+        onConfirm={handleRemove}
+        isDestructive
+      />
     </Modal>
   );
 };
