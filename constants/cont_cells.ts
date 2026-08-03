@@ -7,7 +7,7 @@ type getFabActionsProps = {
   ability: AnyAbility;
   router: Router;
   createSessionSheetModalRef: React.RefObject<BottomSheetModal | null>;
-  cellId: number;
+  cellId?: number;
 };
 
 export const getFabActions = ({
@@ -31,14 +31,20 @@ export const getFabActions = ({
       color: "white",
       style: { backgroundColor: "#d6361e" },
     },
-    ability.can("read", "CellDetails") && {
+    ability.can("read", "CellDetails") &&
+      cellId && {
       icon: "camera",
       label: "Mark Attendance",
-      onPress: () => router.push("/(app)/cells/scanner"),
+      onPress: () =>
+        router.push({
+          pathname: "/(app)/cells/scanner",
+          params: { cell_id: cellId },
+        }),
       color: "white",
       style: { backgroundColor: "#d6361e" },
     },
-    ability.can("read", "CellSession") && {
+    ability.can("read", "CellSession") &&
+      cellId && {
       icon: "calendar-clock",
       label: "View Sessions",
       onPress: () =>
