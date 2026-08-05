@@ -64,7 +64,7 @@ export const FormField = ({
 						<TextInput
 							ref={ref}
 							style={inputPadding}
-							className={`font-regular flex-1 ${disabled ? `text-gray-400` : `text-text`}`}
+							className={`font-regular flex-1 ${disabled ? `text-gray-400` : `text-gray-600`}`}
 							placeholder={placeholder}
 							placeholderTextColor="#9ca3af"
 							onBlur={() => {

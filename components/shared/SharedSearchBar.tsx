@@ -27,7 +27,7 @@ export const SharedSearchBar: React.FC<SharedSearchBarProps> = ({
 			<View className={className}>
 				<Search size={20} color={iconColor} />
 				<TextInput
-					className="w-full ml-2"
+					className="w-full ml-2 text-text"
 					style={inputPaddingComfort}
 					numberOfLines={1}
 					placeholder={placeholder}

@@ -1,6 +1,12 @@
 import { Cell } from "@/services/Cell/cell.types";
 import { useRouter } from "expo-router";
-import { ChevronRight, Clock, MapPin, Users } from "lucide-react-native";
+import {
+	ChevronRight,
+	CircleIcon,
+	Clock,
+	MapPin,
+	Users,
+} from "lucide-react-native";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { ActionButton } from "../Cards/ActionButton";
@@ -21,17 +27,19 @@ const MyCellCard = ({ cell }: CellCardProps) => {
 				shadowRadius: 5,
 				shadowOpacity: 0.05,
 			}}
-			onPress={() => router.push({
-				pathname: "/(app)/cells/profile/[id]",
-				params: { id: cell.id! }
-			})}
+			onPress={() =>
+				router.push({
+					pathname: "/(app)/cells/profile/[id]",
+					params: { id: cell.id! },
+				})
+			}
 			activeOpacity={0.8}
 		>
 			<View className=" flex-row">
 				<View className="flex-1 space-y-3">
 					<View className="flex-row items-center justify-center flex-1 ">
 						<View className="w-12 h-12 rounded-full justify-center items-center mr-4 bg-primary-500">
-							<Users size={24} color="white" />
+							<CircleIcon size={24} color="white" />
 						</View>
 						<View className="flex-1">
 							<Text className="text-lg font-semibold text-text mb-1">
@@ -67,11 +75,11 @@ type AllCellCardProps = {
  * @example
  * <AllCellCard cell={cell} hasJoinedAnyCells={false} onJoin={handleJoin} />
  */
-export const AllCellCard: React.FC<AllCellCardProps> = ({ 
-	cell, 
+export const AllCellCard: React.FC<AllCellCardProps> = ({
+	cell,
 	hasJoinedAnyCells = false,
 	onJoin,
-	onViewDetails
+	onViewDetails,
 }) => {
 	const router = useRouter();
 
@@ -84,9 +92,9 @@ export const AllCellCard: React.FC<AllCellCardProps> = ({
 	const infoRowCount = [
 		cell.meeting_day && cell.meeting_time,
 		cell.address,
-		cell.cell_leader_1_name
+		cell.cell_leader_1_name,
 	].filter(Boolean).length;
-	
+
 	const shouldCenterAvatar = infoRowCount >= 2;
 
 	return (
@@ -95,21 +103,20 @@ export const AllCellCard: React.FC<AllCellCardProps> = ({
 			style={{ shadowColor: "#000", elevation: 0 }}
 		>
 			{/* Left: Avatar */}
-			<View className={shouldCenterAvatar ? "justify-center" : "justify-start"}>
-				<Avatar
-					initials={cell.cell_name?.charAt(0) ?? "?"}
-					size="md"
-				/>
+			<View
+				className={
+					shouldCenterAvatar ? "justify-center" : "justify-start"
+				}
+			>
+				<Avatar initials={cell.cell_name?.charAt(0) ?? "?"} size="md" />
 			</View>
 
 			{/* Middle: Content */}
 			<View className="flex-1">
-			{/* Title */}
-			<Text
-				className="text-sm font-bold mb-1 text-gray-800"
-			>
-				{cell.cell_name}
-			</Text>
+				{/* Title */}
+				<Text className="text-sm font-bold mb-1 text-gray-800">
+					{cell.cell_name}
+				</Text>
 
 				{/* Info Rows */}
 				<View className="gap-0.5">

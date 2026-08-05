@@ -29,7 +29,7 @@ const PeopleRowComponent = ({ person, isMe }: PeopleRowProps) => {
 		>
 			{/* Color-coded avatar with initials */}
 			<View className="w-11 h-11 rounded-full bg-gray-200 items-center justify-center">
-				<Text className="text-sm font-bold">
+				<Text className="text-sm font-bold text-text">
 					{getInitials(person.full_legal_name)}
 				</Text>
 			</View>
