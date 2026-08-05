@@ -1,13 +1,11 @@
-import { Search } from "lucide-react-native";
-import React from "react";
-import { ScrollView, Text, TextInput, View } from "react-native";
-import AddMemberButton from "./AddMemberButton";
+import { ChevronDownIcon, ChevronUpIcon } from "lucide-react-native";
+import React, { useState } from "react";
+import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import MemberRow from "./MemberRow";
 
 type MembersListProps = {
 	members: any[];
 	searchQuery: string;
-	onChangeText: (value: string) => void;
 	isLeader?: boolean;
 	currentPersonId?: number;
 	memberStatuses?: Record<number, string>;
@@ -17,10 +15,11 @@ type MembersListProps = {
 	onRemoveMember?: (memberId: number) => void;
 };
 
+type SectionKey = "PENDING" | "ACTIVE" | "REJECTED";
+
 const MembersList = ({
 	members,
 	searchQuery,
-	onChangeText,
 	isLeader = false,
 	currentPersonId,
 	memberStatuses = {},
@@ -29,6 +28,14 @@ const MembersList = ({
 	isUpdating = null,
 	onRemoveMember,
 }: MembersListProps) => {
+	const [expandedSections, setExpandedSections] = useState<
+		Record<SectionKey, boolean>
+	>({
+		PENDING: true,
+		ACTIVE: true,
+		REJECTED: false,
+	});
+
 	// Get status for a member
 	const getMemberStatus = (member: any) =>
 		memberStatuses[member.id] || member.status || "ACTIVE";
@@ -40,34 +47,86 @@ const MembersList = ({
 		REJECTED: members.filter((m) => getMemberStatus(m) === "REJECTED"),
 	};
 
-	// Render section with header and members
-	const renderSection = (
-		title: string,
-		membersList: any[],
-		count: number
-	) => {
-		if (membersList.length === 0) return null;
+	// Filter members based on search query
+	const filteredMembers = {
+		PENDING: groupedMembers.PENDING.filter(
+			(m) =>
+				m.full_legal_name
+					?.toLowerCase()
+					.includes(searchQuery.toLowerCase()) ||
+				m.phone?.toLowerCase().includes(searchQuery.toLowerCase()),
+		),
+		ACTIVE: groupedMembers.ACTIVE.filter(
+			(m) =>
+				m.full_legal_name
+					?.toLowerCase()
+					.includes(searchQuery.toLowerCase()) ||
+				m.phone?.toLowerCase().includes(searchQuery.toLowerCase()),
+		),
+		REJECTED: groupedMembers.REJECTED.filter(
+			(m) =>
+				m.full_legal_name
+					?.toLowerCase()
+					.includes(searchQuery.toLowerCase()) ||
+				m.phone?.toLowerCase().includes(searchQuery.toLowerCase()),
+		),
+	};
+
+	const toggleSection = (sectionKey: SectionKey) => {
+		setExpandedSections((prev) => ({
+			...prev,
+			[sectionKey]: !prev[sectionKey],
+		}));
+	};
+
+	const SectionHeader = ({
+		title,
+		count,
+		sectionKey,
+	}: {
+		title: string;
+		count: number;
+		sectionKey: SectionKey;
+	}) => {
+		const isExpanded = expandedSections[sectionKey];
 
 		return (
-			<View key={title}>
-				<Text className="text-gray-300 text-xs font-semibold px-4 py-1 mt-2">
-					· {title} ({count})
+			<TouchableOpacity
+				onPress={() => toggleSection(sectionKey)}
+				activeOpacity={0.7}
+				className="mt-0 px-6 py-4 bg-gray-100 flex-row items-center justify-between"
+			>
+				<Text className="text-xs font-bold uppercase tracking-wider text-gray-700 flex-1">
+					{title} ({count})
 				</Text>
-				{membersList.map((member) => (
-					<MemberRow
-						key={member.id}
-						member={member}
-						isLeader={isLeader}
-						currentPersonId={currentPersonId}
-						memberStatuses={memberStatuses}
-						onAccept={onAccept}
-						onReject={onReject}
-						isUpdating={isUpdating === member.id}
-						onRemoveMember={onRemoveMember}
-					/>
-				))}
-			</View>
+				{isExpanded ? (
+					<ChevronUpIcon size={16} color="#4b5563" />
+				) : (
+					<ChevronDownIcon size={16} color="#4b5563" />
+				)}
+			</TouchableOpacity>
 		);
+	};
+
+	const renderMembersList = (
+		membersList: any[],
+		filteredList: any[],
+		sectionKey: SectionKey,
+	) => {
+		const displayList = searchQuery ? filteredList : membersList;
+		return displayList.map((member) => (
+			<MemberRow
+				key={member.id}
+				member={member}
+				isLeader={isLeader}
+				currentPersonId={currentPersonId}
+				memberStatuses={memberStatuses}
+				onAccept={onAccept}
+				onReject={onReject}
+				isUpdating={isUpdating === member.id}
+				onRemoveMember={onRemoveMember}
+			/>
+		));
 	};
 
 	return (
@@ -75,30 +134,56 @@ const MembersList = ({
 			<ScrollView
 				contentContainerStyle={{
 					paddingBottom: 40,
-					paddingHorizontal: 0,
 				}}
 			>
-				{/* Search bar */}
-				<View className="px-4 mb-2 flex-row items-center rounded-xl bg-white border border-border">
-					<Search size={20} color="#999" />
-					<TextInput
-						className="flex-1 text-text-secondary text-base"
-						placeholder="Search members..."
-						placeholderTextColor="#999"
-						value={searchQuery}
-						onChangeText={onChangeText}
-					/>
-				</View>
-
-				{/* Add Member Button */}
-				{/* <View className="px-4 mb-2">
-					<AddMemberButton />
-				</View> */}
-
 				{/* Sections */}
-				{renderSection("PENDING", groupedMembers.PENDING, groupedMembers.PENDING.length)}
-				{renderSection("ACTIVE", groupedMembers.ACTIVE, groupedMembers.ACTIVE.length)}
-				{renderSection("REJECTED", groupedMembers.REJECTED, groupedMembers.REJECTED.length)}
+				{groupedMembers.PENDING.length > 0 && (
+					<View>
+						<SectionHeader
+							title="Pending"
+							count={groupedMembers.PENDING.length}
+							sectionKey="PENDING"
+						/>
+						{expandedSections.PENDING &&
+							renderMembersList(
+								groupedMembers.PENDING,
+								filteredMembers.PENDING,
+								"PENDING",
+							)}
+					</View>
+				)}
+
+				{groupedMembers.ACTIVE.length > 0 && (
+					<View>
+						<SectionHeader
+							title="Active"
+							count={groupedMembers.ACTIVE.length}
+							sectionKey="ACTIVE"
+						/>
+						{expandedSections.ACTIVE &&
+							renderMembersList(
+								groupedMembers.ACTIVE,
+								filteredMembers.ACTIVE,
+								"ACTIVE",
+							)}
+					</View>
+				)}
+
+				{groupedMembers.REJECTED.length > 0 && (
+					<View>
+						<SectionHeader
+							title="Rejected"
+							count={groupedMembers.REJECTED.length}
+							sectionKey="REJECTED"
+						/>
+						{expandedSections.REJECTED &&
+							renderMembersList(
+								groupedMembers.REJECTED,
+								filteredMembers.REJECTED,
+								"REJECTED",
+							)}
+					</View>
+				)}
 
 				{/* No members message */}
 				{members.length === 0 && (

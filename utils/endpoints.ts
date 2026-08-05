@@ -21,6 +21,7 @@ export const apiEndpoints = {
 	people: {
 		getAll: _endpoint("people"),
 		getScoped: _endpoint("people/scoped"),
+		getScopedMasked: _endpoint("people/scoped-masked"),
 		getPaginated: _endpoint("people/paginated"),
 		getById: (id: number | string) => _endpoint(`people/${id}`),
 		geteWithNoUid: _endpoint(`people/with-no-uid`),
@@ -81,10 +82,16 @@ export const apiEndpoints = {
 			_endpoint(`cells/${cellId}/create-cell-session`),
 		signInToSession: (cellId: number | string) =>
 			_endpoint(`cells/${cellId}/sign-in-to-session`),
+		manualSignIn: (cellId: number | string) =>
+			_endpoint(`cells/${cellId}/manual-sign-in`),
+		removeAttendee: (cellId: number | string) =>
+			_endpoint(`cells/${cellId}/remove-attendee`),
 		updateMemberStatus: (cellId: number | string) =>
 			_endpoint(`cells/${cellId}/member-status`),
 		removeCellMembers: (cellId: number | string) =>
 			_endpoint(`cells/${cellId}/remove-members`),
+		addMembers: (cellId: number | string) =>
+			_endpoint(`cells/${cellId}/add-members`),
 	},
 	resources: {
 		getAll: _endpoint("resources"),

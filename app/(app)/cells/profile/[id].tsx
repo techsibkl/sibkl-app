@@ -1,42 +1,53 @@
 "use client";
 
+import EmptyList from "@/components/Announcement/EmptyList";
 import AttendanceTabContent from "@/components/Cells/Attendance/AttendanceTabContent";
 import CreateSessionSheet from "@/components/Cells/CreateSessionSheet";
+import AddMembersSheet from "@/components/Cells/Profile/AddMembersSheet";
 import MembersList from "@/components/Cells/Profile/MembersList";
-import ComingSoon from "@/components/shared/ComingSoon";
+import SearchMembersModal from "@/components/Cells/Profile/SearchMembersModal";
 import SharedBody from "@/components/shared/SharedBody";
 import { getFabActions } from "@/constants/cont_cells";
 import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import {
-  useCellAttendanceStatsQuery,
-  useCellSessionsQuery,
-  usePersonCellAttendanceStatsQuery,
-  usePersonSessionAttendanceQuery,
+	useCellAttendanceStatsQuery,
+	useCellSessionsQuery,
+	usePersonCellAttendanceStatsQuery,
+	usePersonSessionAttendanceQuery,
 } from "@/hooks/CellAttendance/useCellAttendanceQuery";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import {
-  removeCellMembers,
-  updateMemberStatus,
+	removeCellMembers,
+	updateMemberStatus,
 } from "@/services/Cell/cell.service";
 import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
+import { myToast } from "@/utils/helper";
+import { getInitials } from "@/utils/helper_profile";
 import {
-  BottomSheetModal,
-  BottomSheetModalProvider,
+	BottomSheetModal,
+	BottomSheetModalProvider,
 } from "@gorhom/bottom-sheet";
 import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
+import {
+	CalendarClockIcon,
+	ScanQrCodeIcon,
+	SearchIcon,
+	UserPlusIcon,
+} from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  ScrollView,
-  StatusBar,
-  Text,
-  TouchableOpacity,
-  View,
+	ActivityIndicator,
+	ScrollView,
+	StatusBar,
+	Text,
+	TouchableOpacity,
+	View,
 } from "react-native";
 import { FAB, Portal, Provider } from "react-native-paper";
+import Toast from "react-native-toast-message";
 
 const CellProfileScreen = () => {
 	const router = useRouter();
@@ -62,6 +73,8 @@ const CellProfileScreen = () => {
 	const [isUpdating, setIsUpdating] = useState<number | null>(null);
 	const [statusError, setStatusError] = useState<string | null>(null);
 	const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
+	const searchMembersSheetRef = useRef<BottomSheetModal>(null);
+	const addMembersSheetRef = useRef<BottomSheetModal>(null);
 
 	// Only fetch from API if user is a leader
 	const {
@@ -106,6 +119,9 @@ const CellProfileScreen = () => {
 
 	// Use API data for leaders, fallback to person data for members
 	const cell = cellFromApi;
+	const activeCellMembers = cell?.members?.filter(
+		(member: Person) => member.status === "ACTIVE",
+	);
 
 	const ledCellsFormatted = (person?.cells ?? [])
 		.filter(
@@ -171,43 +187,19 @@ const CellProfileScreen = () => {
 
 			await removeCellMembers(Number(id), [memberId], person?.id ?? -1);
 
-			// Invalidate all related queries
-			await queryClient.invalidateQueries({
-				queryKey: ["cells", Number(id)],
-			}); // Refetch current cell
-
-			await queryClient.invalidateQueries({
+			queryClient.invalidateQueries({
 				queryKey: ["people", person?.id],
-			}); // Refetch user's person data
-
-			await queryClient.invalidateQueries({
-				queryKey: ["cells"],
-			}); // Refetch led cells
-
-			await queryClient.invalidateQueries({
-				queryKey: ["cells-scoped-fields"],
-			}); // Refetch public cells
-
-			await queryClient.invalidateQueries({
-				queryKey: ["people", person?.id],
-			}); // Refetch each member's person data if needed
-
-			// DEBUG: Log the updated members list after removal
-			console.log("✅ MEMBER REMOVED - Updated members list:", {
-				cellId: id,
-				totalMembers: cell?.members?.length,
-				members: cell?.members?.map((m) => ({
-					id: m.id,
-					name: m.full_legal_name,
-					status: m.status,
-				})),
 			});
 		} catch (err: any) {
 			setStatusError(err.message || "Failed to remove member");
 			console.error("Remove member error:", err);
 		} finally {
-			console.log("Current user:", user);
-			console.log("User person ID:", user?.person?.id);
+			Toast.show(
+				myToast({
+					success: true,
+					message: `${cell?.members?.find((m) => m.id === memberId)?.full_legal_name} removed from cell`,
+				}),
+			);
 			setIsUpdating(null);
 		}
 	};
@@ -216,30 +208,30 @@ const CellProfileScreen = () => {
 		switch (activeTab) {
 			case "people":
 				return (
-					<MembersList
-						members={
-							isLeader
-								? filteredMembers
-								: filteredMembers.filter(
-										(m) =>
-											(memberStatuses[m.id] ||
-												m.status ||
-												"ACTIVE") === "ACTIVE",
-									)
-						}
-						searchQuery={searchQuery}
-						onChangeText={setSearchQuery}
-						isLeader={isLeader}
-						currentPersonId={person?.id}
-						memberStatuses={memberStatuses}
-						onAccept={handleAcceptMember}
-						onReject={handleRejectMember}
-						isUpdating={isUpdating}
-						onRemoveMember={handleRemoveMember}
-					/>
+					<View className="px-2">
+						<MembersList
+							members={
+								isLeader
+									? filteredMembers
+									: filteredMembers.filter(
+											(m) =>
+												(memberStatuses[m.id] ||
+													m.status ||
+													"ACTIVE") === "ACTIVE",
+										)
+							}
+							searchQuery={searchQuery}
+							isLeader={isLeader}
+							currentPersonId={person?.id}
+							memberStatuses={memberStatuses}
+							onAccept={handleAcceptMember}
+							onReject={handleRejectMember}
+							isUpdating={isUpdating}
+							onRemoveMember={handleRemoveMember}
+						/>
+					</View>
 				);
-			case "announcements":
-				return <ComingSoon description="Coming soon :>" />;
+
 			case "attendance":
 				return (
 					<AttendanceTabContent
@@ -261,6 +253,8 @@ const CellProfileScreen = () => {
 						}
 					/>
 				);
+			case "announcements":
+				return <EmptyList />;
 			default:
 				return null;
 		}
@@ -294,67 +288,126 @@ const CellProfileScreen = () => {
 				className="bg-background"
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
-
-			<ScrollView>
-				{/* Cell info section */}
-				<View className="items-center py-8">
-					<View className="w-24 h-24 bg-gray-800 rounded-full items-center justify-center mb-6">
-						<Text className="text-white text-2xl font-bold">
-							tc
-						</Text>
-					</View>
-					<Text className="text-text text-2xl font-bold text-center mb-2">
-						{cell.cell_name}
-					</Text>
-					<Text className="text-text-secondary text-base">
-						Cell • {cell.members?.length} member
-						{cell.members?.length === 1 ? "" : "s"}
-					</Text>
-				</View>
-
-				{statusError && (
-					<View className="bg-red-100 p-3 mx-3 rounded-lg mb-3">
-						<Text className="text-red-700 text-sm">
-							{statusError}
-						</Text>
-					</View>
-				)}
-
-				<Text>{Array.isArray(cell.members)}</Text>
-
-				{/* Tab bar */}
-				<View className="flex-row mx-6 mb-6">
-					{["people", "announcements", "attendance"].map((tab) => (
-						<TouchableOpacity
-							key={tab}
-							className={`flex-1 py-3 ${
-								tab === "people"
-									? "rounded-l-lg border border-border"
-									: tab === "attendance"
-										? "rounded-r-lg border border-border"
-										: " border-t border-b border-border"
-							} ${activeTab === tab ? "bg-background" : "bg-background-secondary"}`}
-							onPress={() =>
-								setActiveTab(tab as typeof activeTab)
-							}
-						>
-							<Text
-								className={`text-center text-sm text-nowrap font-medium ${
-									activeTab === tab
-										? "text-text"
-										: "text-text-secondary"
-								}`}
-							>
-								{tab.charAt(0).toUpperCase() + tab.slice(1)}
-							</Text>
-						</TouchableOpacity>
-					))}
-				</View>
-
-				{renderTabContent()}
-			</ScrollView>
-
 			<BottomSheetModalProvider>
+				<ScrollView>
+					{/* Cell info section */}
+					<View className="items-center py-6">
+						<View className="mb-4 w-24 h-24 rounded-full bg-gray-200 items-center justify-center">
+							<Text className="text-2xl font-bold text-text">
+								{getInitials(cell.cell_name ?? "")}
+							</Text>
+						</View>
+						<Text className="text-text text-2xl font-bold text-center mb-2">
+							{cell.cell_name}
+						</Text>
+						<Text className="text-text-secondary text-base">
+							Cell • {activeCellMembers?.length} member
+							{activeCellMembers?.length === 1 ? "" : "s"}
+						</Text>
+					</View>
+
+					{statusError && (
+						<View className="bg-red-100 p-3 mx-3 rounded-lg mb-3">
+							<Text className="text-red-700 text-sm">
+								{statusError}
+							</Text>
+						</View>
+					)}
+
+					{/* Action Buttons */}
+					<View className="flex-row justify-center gap-2 w-full max-w-[90%] mx-6 mb-6">
+						{/* Scan QR - available to all */}
+						<TouchableOpacity
+							onPress={() =>
+								router.push({
+									pathname: "/(app)/cells/scanner",
+									params: { cell_id: String(id) },
+								})
+							}
+							className="bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5"
+						>
+							<ScanQrCodeIcon size={25} color="#1e40af" />
+							<Text className="text-text text-sm">Scan</Text>
+						</TouchableOpacity>
+
+						{/* Search Members - available to all */}
+						<TouchableOpacity
+							onPress={() =>
+								searchMembersSheetRef.current?.present()
+							}
+							className="bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5"
+						>
+							<SearchIcon size={25} color="#1e40af" />
+							<Text className="text-text text-sm ">Search</Text>
+						</TouchableOpacity>
+
+						{/* View Sessions - for leaders and core only */}
+						{isLeader && ability.can("read", "CellSession") && (
+							<TouchableOpacity
+								onPress={() =>
+									router.push({
+										pathname: "/(app)/cells/sessions",
+										params: { cell_id: String(id) },
+									})
+								}
+								className="bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5"
+							>
+								<CalendarClockIcon size={25} color="#1e40af" />
+								<Text className="text-text text-sm">
+									Sessions
+								</Text>
+							</TouchableOpacity>
+						)}
+
+						{/* Add Members - for leaders and core only */}
+						{isLeader && ability.can("create", "CellMembers") && (
+							<TouchableOpacity
+								onPress={() =>
+									addMembersSheetRef.current?.present()
+								}
+								className="bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5"
+							>
+								<UserPlusIcon size={25} color="#1e40af" />
+								<Text className="text-text text-sm">Add</Text>
+							</TouchableOpacity>
+						)}
+					</View>
+
+					{/* Tab bar */}
+					<View className="flex-row mx-6 mb-2">
+						{["people", "attendance", "announcements"].map(
+							(tab, index) => (
+								<TouchableOpacity
+									key={tab}
+									className={`flex-1 py-3 ${
+										index === 0
+											? "rounded-l-lg border border-border"
+											: index === 2
+												? "rounded-r-lg border border-border"
+												: " border-t border-b border-border"
+									} ${activeTab === tab ? "bg-background" : "bg-background-secondary"}`}
+									onPress={() =>
+										setActiveTab(tab as typeof activeTab)
+									}
+								>
+									<Text
+										className={`text-center text-sm text-nowrap font-medium ${
+											activeTab === tab
+												? "text-text"
+												: "text-text-secondary"
+										}`}
+									>
+										{tab.charAt(0).toUpperCase() +
+											tab.slice(1)}
+									</Text>
+								</TouchableOpacity>
+							),
+						)}
+					</View>
+
+					{renderTabContent()}
+				</ScrollView>
+
 				<Provider>
 					<Portal>
 						<FAB.Group
@@ -382,9 +435,31 @@ const CellProfileScreen = () => {
 							ref={createSessionSheetModalRef}
 							ledCells={ledCellsFormatted}
 						/>
+
+						{/* Search Members Modal */}
+						<SearchMembersModal
+							ref={searchMembersSheetRef}
+							members={filteredMembers}
+							memberStatuses={memberStatuses}
+							isLeader={isLeader ?? false}
+							currentPersonId={person?.id}
+							isUpdating={isUpdating}
+							onAccept={handleAcceptMember}
+							onReject={handleRejectMember}
+							onRemoveMember={handleRemoveMember}
+						/>
+
+						{/* Add Members Sheet */}
+						<AddMembersSheet
+							ref={addMembersSheetRef}
+							cellId={Number(id)}
+							currentMembers={cell?.members ?? []}
+							onSuccess={() => {}}
+						/>
 					</Portal>
 				</Provider>
 			</BottomSheetModalProvider>
+			<Toast />
 		</SharedBody>
 	);
 };

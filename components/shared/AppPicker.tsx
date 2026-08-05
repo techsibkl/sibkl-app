@@ -42,6 +42,7 @@ export function AppPicker<T>({
 		return (
 			<Picker
 				enabled={!disabled}
+				mode="dropdown"
 				selectedValue={value}
 				onValueChange={(v) => {
 					onChange(v);
@@ -53,7 +54,7 @@ export function AppPicker<T>({
 						key={i === 0 ? "__placeholder__" : String(opt.value)}
 						label={opt.label}
 						value={opt.value}
-						color={i === 0 ? "#9ca3af" : "#111827"}
+						color="#6b7280"
 					/>
 				))}
 			</Picker>

@@ -2,18 +2,19 @@ import {
 	fetchPeople,
 	fetchPeoplePaginated,
 	fetchPeopleScopedFields,
+	fetchPeopleScopedMaskedFields,
 	fetchPersonById,
 } from "@/services/Person/person.service";
-import { Person } from "@/services/Person/person.type";
+import { MaskedPerson, Person } from "@/services/Person/person.type";
 import { PeoplePaginatedParams } from "@/types/PeoplePaginated.type";
 import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { useMemo } from "react";
 
 export const usePeopleQuery = () => {
-  return useQuery<Person[]>({
-    queryKey: ["people"],
-    queryFn: () => fetchPeople(),
-  });
+	return useQuery<Person[]>({
+		queryKey: ["people"],
+		queryFn: () => fetchPeople(),
+	});
 };
 
 export const usePeoplePaginatedQuery = (
@@ -55,7 +56,7 @@ export const useSinglePersonQuery = (personId: number) => {
 			const res = await fetchPersonById(personId);
 			return res;
 		},
-		staleTime: 10 * 60 * 1000,         // 10 mins - user's cells/profile
+		staleTime: 10 * 60 * 1000, // 10 mins - user's cells/profile
 		retry: (failureCount, error: any) => {
 			if (
 				error?.status === 401 ||
@@ -70,12 +71,19 @@ export const useSinglePersonQuery = (personId: number) => {
 };
 
 export const usePeopleScopedFieldsQuery = () => {
-  return useQuery<Person[]>({
-    queryKey: ["people_scoped"],
-    queryFn: () => fetchPeopleScopedFields(),
-    // Don't refetch on window focus — table state is user-driven
-    refetchOnWindowFocus: false,
-    // Keep previous page data visible while next page loads (no flicker)
-    placeholderData: (prev) => prev,
-  });
+	return useQuery<Person[]>({
+		queryKey: ["people_scoped"],
+		queryFn: () => fetchPeopleScopedFields(),
+		// Don't refetch on window focus — table state is user-driven
+		refetchOnWindowFocus: false,
+		// Keep previous page data visible while next page loads (no flicker)
+		placeholderData: (prev) => prev,
+	});
+};
+
+export const usePeopleScopedMaskedFieldsQuery = () => {
+	return useQuery<MaskedPerson[]>({
+		queryKey: ["people_scoped_masked"],
+		queryFn: () => fetchPeopleScopedMaskedFields(),
+	});
 };

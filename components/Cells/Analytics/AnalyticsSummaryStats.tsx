@@ -3,9 +3,11 @@ import { Text, View } from "react-native";
 
 type Props = {
   averageMemberOverallPercent: number;
+  averageMemberPerSessionCount: number;
   averageMemberPerSessionPercent: number;
   totalGuests: number;
   totalSessions: number;
+  totalMembers: number;
 };
 
 const StatCard = ({
@@ -28,9 +30,11 @@ const StatCard = ({
 
 export default function AnalyticsSummaryStats({
   averageMemberOverallPercent,
+  averageMemberPerSessionCount,
   averageMemberPerSessionPercent,
   totalGuests,
   totalSessions,
+  totalMembers,
 }: Props) {
   return (
     <View className="flex-row flex-wrap gap-3">
@@ -41,14 +45,14 @@ export default function AnalyticsSummaryStats({
         valueClassName="text-blue-600"
       />
       <StatCard
-        label="Avg Members Overall"
-        value={`${averageMemberOverallPercent}%`}
-        hint="across all members"
+        label="Total Members"
+        value={String(totalMembers)}
+        hint="in this cell"
         valueClassName="text-green-600"
       />
       <StatCard
         label="Avg Members / Session"
-        value={`${averageMemberPerSessionPercent}%`}
+        value={`${averageMemberPerSessionCount} (${averageMemberPerSessionPercent}%)`}
         hint="of total members"
         valueClassName="text-emerald-600"
       />

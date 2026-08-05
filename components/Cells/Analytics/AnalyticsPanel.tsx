@@ -40,12 +40,22 @@ export default function AnalyticsPanel({
     [stats],
   );
 
-  const averageMemberPerSessionPercent = useMemo(() => {
+  const averageMemberPerSessionData = useMemo(() => {
     const attendedSessions = sessions.filter(
       (session) => Number(session.member_count ?? 0) > 0,
     );
-    return toPercent(average(attendedSessions.map(getMemberRate)));
-  }, [sessions]);
+    if (attendedSessions.length === 0) {
+      return { count: 0, percent: 0 };
+    }
+
+    const avgAttendanceRate = average(attendedSessions.map(getMemberRate));
+    const totalMembers = members.length > 0 ? members.length : stats.length;
+
+    return {
+      count: Math.round(avgAttendanceRate * totalMembers),
+      percent: toPercent(avgAttendanceRate),
+    };
+  }, [sessions, members, stats]);
 
   const totalGuests = useMemo(
     () =>
@@ -64,13 +74,17 @@ export default function AnalyticsPanel({
     return map;
   }, [members]);
 
+  const totalMembers = members.length > 0 ? members.length : stats.length;
+
   return (
     <View className="gap-5">
       <AnalyticsSummaryStats
         averageMemberOverallPercent={averageMemberOverallPercent}
-        averageMemberPerSessionPercent={averageMemberPerSessionPercent}
+        averageMemberPerSessionCount={averageMemberPerSessionData.count}
+        averageMemberPerSessionPercent={averageMemberPerSessionData.percent}
         totalGuests={totalGuests}
         totalSessions={sessions.length}
+        totalMembers={totalMembers}
       />
 
       <AttendanceTrendChart sessions={sessions} />

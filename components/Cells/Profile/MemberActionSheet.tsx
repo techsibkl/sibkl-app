@@ -1,20 +1,21 @@
-import React, { useRef, useState, useEffect } from "react";
+import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import { Person } from "@/services/Person/person.type";
+import { router } from "expo-router";
+import { MessageCircle, Phone, Trash2, User } from "lucide-react-native";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  View,
+  Animated,
+  Dimensions,
+  GestureResponderEvent,
+  Linking,
+  Modal,
+  PanResponder,
+  PanResponderGestureState,
+  StyleSheet,
   Text,
   TouchableOpacity,
-  StyleSheet,
-  Dimensions,
-  Modal,
-  Animated,
-  PanResponder,
-  GestureResponderEvent,
-  PanResponderGestureState,
-  Linking,
+  View,
 } from "react-native";
-import { Phone, MessageCircle, Trash2 } from "lucide-react-native";
-import { Person } from "@/services/Person/person.type";
-import ConfirmDialog from "@/components/shared/ConfirmDialog";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
 const SCREEN_HEIGHT = Dimensions.get("window").height;
@@ -28,347 +29,396 @@ const BOTTOM_MARGIN = 16;
 const DRAG_CAPTURE_SLOP = 6;
 
 interface MemberActionSheetProps {
-  visible: boolean;
-  onClose: () => void;
-  member: Person | null;
-  cellId?: number;
-  isLeader?: boolean;
-  currentPersonId?: number;
-  onRemove?: (memberId: number) => void;
+	visible: boolean;
+	onClose: () => void;
+	member: Person | null;
+	cellId?: number;
+	isLeader?: boolean;
+	currentPersonId?: number;
+	onRemove?: (memberId: number) => void;
 }
 
 const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
-  visible,
-  onClose,
-  member,
-  cellId,
-  isLeader = false,
-  currentPersonId,
-  onRemove,
+	visible,
+	onClose,
+	member,
+	cellId,
+	isLeader = false,
+	currentPersonId,
+	onRemove,
 }) => {
-  const heightAnim = useRef(new Animated.Value(0)).current;
+	const heightAnim = useRef(new Animated.Value(0)).current;
 
-  const currentHeightRef = useRef(0);
-  const dragStartHeight = useRef(PEEK_HEIGHT);
-  const isExpandedRef = useRef(false);
+	const currentHeightRef = useRef(0);
+	const dragStartHeight = useRef(PEEK_HEIGHT);
+	const isExpandedRef = useRef(false);
 
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+	const [isExpanded, setIsExpanded] = useState(false);
+	const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
-  useEffect(() => {
-    const id = heightAnim.addListener(({ value }) => {
-      currentHeightRef.current = value;
-    });
-    return () => heightAnim.removeListener(id);
-  }, [heightAnim]);
+	useEffect(() => {
+		const id = heightAnim.addListener(({ value }) => {
+			currentHeightRef.current = value;
+		});
+		return () => heightAnim.removeListener(id);
+	}, [heightAnim]);
 
-  useEffect(() => {
-    if (visible) {
-      heightAnim.setValue(0);
-      currentHeightRef.current = 0;
-      dragStartHeight.current = PEEK_HEIGHT;
-      isExpandedRef.current = false;
-      setIsExpanded(false);
-      requestAnimationFrame(() => snapTo(PEEK_HEIGHT));
-    }
-  }, [visible]);
+	useEffect(() => {
+		if (visible) {
+			heightAnim.setValue(0);
+			currentHeightRef.current = 0;
+			dragStartHeight.current = PEEK_HEIGHT;
+			isExpandedRef.current = false;
+			setIsExpanded(false);
+			requestAnimationFrame(() => snapTo(PEEK_HEIGHT));
+		}
+	}, [visible]);
 
-  const markExpanded = (val: boolean) => {
-    isExpandedRef.current = val;
-    setIsExpanded(val);
-  };
+	const markExpanded = (val: boolean) => {
+		isExpandedRef.current = val;
+		setIsExpanded(val);
+	};
 
-  const snapTo = (target: number) => {
-    Animated.spring(heightAnim, {
-      toValue: target,
-      useNativeDriver: false,
-      bounciness: 4,
-      speed: 14,
-    }).start(() => {
-      dragStartHeight.current = target;
-      currentHeightRef.current = target;
-      markExpanded(target >= EXPANDED_HEIGHT * 0.95);
-    });
-  };
+	const snapTo = (target: number) => {
+		Animated.spring(heightAnim, {
+			toValue: target,
+			useNativeDriver: false,
+			bounciness: 4,
+			speed: 14,
+		}).start(() => {
+			dragStartHeight.current = target;
+			currentHeightRef.current = target;
+			markExpanded(target >= EXPANDED_HEIGHT * 0.95);
+		});
+	};
 
-  const closeSheet = () => {
-    Animated.timing(heightAnim, {
-      toValue: 0,
-      duration: 200,
-      useNativeDriver: false,
-    }).start(() => onClose());
-  };
+	const closeSheet = () => {
+		Animated.timing(heightAnim, {
+			toValue: 0,
+			duration: 200,
+			useNativeDriver: false,
+		}).start(() => onClose());
+	};
 
-  const onDragMove = (
-    _: GestureResponderEvent,
-    gesture: PanResponderGestureState
-  ) => {
-    const newHeight = dragStartHeight.current - gesture.dy;
-    const clamped = Math.max(
-      CLOSE_THRESHOLD * 0.6,
-      Math.min(EXPANDED_HEIGHT, newHeight)
-    );
-    heightAnim.setValue(clamped);
-  };
+	const onDragMove = (
+		_: GestureResponderEvent,
+		gesture: PanResponderGestureState,
+	) => {
+		const newHeight = dragStartHeight.current - gesture.dy;
+		const clamped = Math.max(
+			CLOSE_THRESHOLD * 0.6,
+			Math.min(EXPANDED_HEIGHT, newHeight),
+		);
+		heightAnim.setValue(clamped);
+	};
 
-  const onDragRelease = (
-    _: GestureResponderEvent,
-    gesture: PanResponderGestureState
-  ) => {
-    const released = dragStartHeight.current - gesture.dy;
-    const midpoint = (PEEK_HEIGHT + EXPANDED_HEIGHT) / 2;
+	const onDragRelease = (
+		_: GestureResponderEvent,
+		gesture: PanResponderGestureState,
+	) => {
+		const released = dragStartHeight.current - gesture.dy;
+		const midpoint = (PEEK_HEIGHT + EXPANDED_HEIGHT) / 2;
 
-    if (released < CLOSE_THRESHOLD) {
-      closeSheet();
-    } else if (released > midpoint) {
-      snapTo(EXPANDED_HEIGHT);
-    } else {
-      snapTo(PEEK_HEIGHT);
-    }
-  };
+		if (released < CLOSE_THRESHOLD) {
+			closeSheet();
+		} else if (released > midpoint) {
+			snapTo(EXPANDED_HEIGHT);
+		} else {
+			snapTo(PEEK_HEIGHT);
+		}
+	};
 
-  const headerPanResponder = useRef(
-    PanResponder.create({
-      onStartShouldSetPanResponder: () => true,
-      onMoveShouldSetPanResponder: (_, g) =>
-        Math.abs(g.dy) > Math.abs(g.dx) && Math.abs(g.dy) > DRAG_CAPTURE_SLOP,
-      onPanResponderGrant: () => {
-        dragStartHeight.current = currentHeightRef.current;
-      },
-      onPanResponderMove: onDragMove,
-      onPanResponderRelease: onDragRelease,
-      onPanResponderTerminate: onDragRelease,
-    })
-  ).current;
+	const headerPanResponder = useRef(
+		PanResponder.create({
+			onStartShouldSetPanResponder: () => true,
+			onMoveShouldSetPanResponder: (_, g) =>
+				Math.abs(g.dy) > Math.abs(g.dx) &&
+				Math.abs(g.dy) > DRAG_CAPTURE_SLOP,
+			onPanResponderGrant: () => {
+				dragStartHeight.current = currentHeightRef.current;
+			},
+			onPanResponderMove: onDragMove,
+			onPanResponderRelease: onDragRelease,
+			onPanResponderTerminate: onDragRelease,
+		}),
+	).current;
 
-  if (!member) return null;
+	if (!member) return null;
 
-  const backdropOpacity = heightAnim.interpolate({
-    inputRange: [0, PEEK_HEIGHT],
-    outputRange: [0, 1],
-    extrapolate: "clamp",
-  });
+	const backdropOpacity = heightAnim.interpolate({
+		inputRange: [0, PEEK_HEIGHT],
+		outputRange: [0, 1],
+		extrapolate: "clamp",
+	});
 
-  const getInitials = (name: string) => {
-    return name
-      .split(" ")
-      .map((n) => n[0])
-      .join("")
-      .toUpperCase()
-      .slice(0, 2);
-  };
+	const getInitials = (name: string) => {
+		return name
+			.split(" ")
+			.map((n) => n[0])
+			.join("")
+			.toUpperCase()
+			.slice(0, 2);
+	};
 
-  const handleCall = () => {
-    if (member.phone) {
-      Linking.openURL(`tel:${member.phone}`);
-    }
-  };
+	const handleCall = () => {
+		if (member.phone) {
+			Linking.openURL(`tel:${member.phone}`);
+		}
+	};
 
-  const handleWhatsApp = () => {
-    if (member.phone) {
-      const phoneNumber = member.phone.replace(/\D/g, "");
-      Linking.openURL(`https://wa.me/${phoneNumber}`);
-    }
-  };
+	const handleWhatsApp = () => {
+		if (member.phone) {
+			const phoneNumber = member.phone.replace(/\D/g, "");
+			Linking.openURL(`https://wa.me/${phoneNumber}`);
+		}
+	};
 
-  const handleRemove = async () => {
-    onRemove?.(member.id);
-    closeSheet();
-  };
+	const handleRemove = async () => {
+		onRemove?.(member.id);
+		closeSheet();
+	};
 
-  const bgColor = "#ffffff";
-  const textColor = "#1c1c1e";
-  const secondaryTextColor = "#8e8e93";
-  const actionBgColor = "#f0f0f1";
+	const bgColor = "#ffffff";
+	const textColor = "#1c1c1e";
+	const secondaryTextColor = "#8e8e93";
+	const actionBgColor = "#f0f0f1";
 
-  const canRemoveMember =
-    isLeader &&
-    currentPersonId != null &&
-    member.id !== currentPersonId;
+	const canRemoveMember =
+		isLeader && currentPersonId != null && member.id !== currentPersonId;
 
-  return (
-    <Modal
-      animationType="none"
-      transparent
-      visible={visible}
-      onRequestClose={closeSheet}
-    >
-      <View style={styles.overlay}>
-        <TouchableOpacity
-          style={StyleSheet.absoluteFill}
-          activeOpacity={1}
-          onPress={closeSheet}
-        >
-          <Animated.View
-            style={[styles.backdrop, { opacity: backdropOpacity }]}
-          />
-        </TouchableOpacity>
+	return (
+		<Modal
+			animationType="none"
+			transparent
+			visible={visible}
+			onRequestClose={closeSheet}
+		>
+			<View style={styles.overlay}>
+				<TouchableOpacity
+					style={StyleSheet.absoluteFill}
+					activeOpacity={1}
+					onPress={closeSheet}
+				>
+					<Animated.View
+						style={[styles.backdrop, { opacity: backdropOpacity }]}
+					/>
+				</TouchableOpacity>
 
-        <Animated.View
-          style={[
-            styles.sheet,
-            { height: heightAnim, backgroundColor: bgColor },
-          ]}
-        >
-          {/* Header — draggable */}
-          <View
-            {...headerPanResponder.panHandlers}
-            style={[styles.headerContainer, { backgroundColor: bgColor }]}
-          >
-            <View style={styles.handleBar} />
+				<Animated.View
+					style={[
+						styles.sheet,
+						{ height: heightAnim, backgroundColor: bgColor },
+					]}
+				>
+					{/* Header — draggable */}
+					<View
+						{...headerPanResponder.panHandlers}
+						style={[
+							styles.headerContainer,
+							{ backgroundColor: bgColor },
+						]}
+					>
+						<View style={styles.handleBar} />
 
-            {/* Avatar and Basic Info */}
-            <View style={styles.content}>
-              <View
-                style={[
-                  styles.avatar,
-                  { backgroundColor: ACCENT + "20" },
-                ]}
-              >
-                <Text
-                  style={[
-                    styles.avatarText,
-                    { color: ACCENT },
-                  ]}
-                >
-                  {getInitials(member.full_legal_name || member.preferred_name || "?")}
-                </Text>
-              </View>
+						{/* Avatar and Basic Info */}
+						<View style={styles.content}>
+							<View
+								style={[
+									styles.avatar,
+									{ backgroundColor: ACCENT + "20" },
+								]}
+							>
+								<Text
+									style={[
+										styles.avatarText,
+										{ color: ACCENT },
+									]}
+								>
+									{getInitials(
+										member.full_legal_name ||
+											member.preferred_name ||
+											"?",
+									)}
+								</Text>
+							</View>
 
-              <View style={styles.infoSection}>
-                <Text
-                  style={[styles.nameText, { color: textColor }]}
-                  numberOfLines={1}
-                >
-                  {member.full_legal_name || member.preferred_name}
-                </Text>
-                {member.phone && (
-                  <Text
-                    style={[styles.phoneText, { color: secondaryTextColor }]}
-                    numberOfLines={1}
-                  >
-                    {member.phone}
-                  </Text>
-                )}
-              </View>
-            </View>
+							<View style={styles.infoSection}>
+								<Text
+									style={[
+										styles.nameText,
+										{ color: textColor },
+									]}
+									numberOfLines={1}
+								>
+									{member.full_legal_name}
+								</Text>
+								{member.phone && (
+									<Text
+										style={[
+											styles.phoneText,
+											{ color: secondaryTextColor },
+										]}
+										numberOfLines={1}
+									>
+										{member.phone}
+									</Text>
+								)}
+							</View>
+						</View>
 
-            {/* Action Buttons */}
-            <View style={styles.buttonsRow}>
-              <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: actionBgColor }]}
-                onPress={handleCall}
-              >
-                <Phone size={20} color={ACCENT} strokeWidth={2} />
-              </TouchableOpacity>
-              <TouchableOpacity
-                style={[styles.actionButton, { backgroundColor: actionBgColor }]}
-                onPress={handleWhatsApp}
-              >
-                <MessageCircle size={20} color={ACCENT} strokeWidth={2} />
-              </TouchableOpacity>
-              {canRemoveMember && (
-                <TouchableOpacity
-                  style={[styles.actionButton, { backgroundColor: "#fee2e2" }]}
-                  onPress={() => setShowConfirmDialog(true)}
-                >
-                  <Trash2 size={20} color="#dc2626" strokeWidth={2} />
-                </TouchableOpacity>
-              )}
-            </View>
-          </View>
-        </Animated.View>
-      </View>
+						{/* Action Buttons */}
+						<View style={styles.buttonsRow}>
+							<TouchableOpacity
+								style={[
+									styles.actionButton,
+									{ backgroundColor: actionBgColor },
+								]}
+								onPress={() => {
+									closeSheet();
+									router.push(`/(app)/profile/${member.id}`);
+								}}
+							>
+								<User
+									size={20}
+									color={ACCENT}
+									strokeWidth={2}
+								/>
+							</TouchableOpacity>
+							<TouchableOpacity
+								style={[
+									styles.actionButton,
+									{ backgroundColor: actionBgColor },
+								]}
+								onPress={handleCall}
+							>
+								<Phone
+									size={20}
+									color={ACCENT}
+									strokeWidth={2}
+								/>
+							</TouchableOpacity>
+							<TouchableOpacity
+								style={[
+									styles.actionButton,
+									{ backgroundColor: actionBgColor },
+								]}
+								onPress={handleWhatsApp}
+							>
+								<MessageCircle
+									size={20}
+									color={ACCENT}
+									strokeWidth={2}
+								/>
+							</TouchableOpacity>
+							{canRemoveMember && (
+								<TouchableOpacity
+									style={[
+										styles.actionButton,
+										{ backgroundColor: "#fee2e2" },
+									]}
+									onPress={() => setShowConfirmDialog(true)}
+								>
+									<Trash2
+										size={20}
+										color="#dc2626"
+										strokeWidth={2}
+									/>
+								</TouchableOpacity>
+							)}
+						</View>
+					</View>
+				</Animated.View>
+			</View>
 
-      <ConfirmDialog
-        visible={showConfirmDialog}
-        onClose={() => setShowConfirmDialog(false)}
-        title="Remove Member"
-        description={`Are you sure you want to remove ${member.full_legal_name || member.preferred_name} from this cell?`}
-        actionText="Remove"
-        cancelText="Cancel"
-        onConfirm={handleRemove}
-        isDestructive
-      />
-    </Modal>
-  );
+			<ConfirmDialog
+				visible={showConfirmDialog}
+				onClose={() => setShowConfirmDialog(false)}
+				title="Remove Member"
+				description={`Are you sure you want to remove ${member.full_legal_name || member.preferred_name} from this cell?`}
+				actionText="Remove"
+				cancelText="Cancel"
+				onConfirm={handleRemove}
+				isDestructive
+			/>
+		</Modal>
+	);
 };
 
 const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: "flex-end",
-  },
-  backdrop: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.45)",
-  },
-  sheet: {
-    marginHorizontal: SIDE_MARGIN,
-    marginBottom: BOTTOM_MARGIN,
-    borderRadius: 28,
-    overflow: "hidden",
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 16,
-    elevation: 10,
-  },
-  handleBar: {
-    width: 36,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: "#e0e0e3",
-    alignSelf: "center",
-    marginTop: 10,
-    marginBottom: 16,
-  },
-  headerContainer: {
-    zIndex: 10,
-  },
-  content: {
-    flexDirection: "row",
-    alignItems: "center",
-    paddingHorizontal: 18,
-    paddingBottom: 16,
-    gap: 14,
-  },
-  avatar: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    alignItems: "center",
-    justifyContent: "center",
-    flexShrink: 0,
-  },
-  avatarText: {
-    fontSize: 24,
-    fontWeight: "700",
-  },
-  infoSection: {
-    flex: 1,
-  },
-  nameText: {
-    fontSize: 18,
-    fontWeight: "700",
-    marginBottom: 4,
-  },
-  phoneText: {
-    fontSize: 13,
-  },
-  buttonsRow: {
-    flexDirection: "row",
-    gap: 10,
-    paddingHorizontal: 18,
-    paddingBottom: 16,
-  },
-  actionButton: {
-    width: 50,
-    height: 50,
-    borderRadius: 25,
-    alignItems: "center",
-    justifyContent: "center",
-  },
+	overlay: {
+		flex: 1,
+		justifyContent: "flex-end",
+	},
+	backdrop: {
+		flex: 1,
+		backgroundColor: "rgba(0,0,0,0.45)",
+	},
+	sheet: {
+		marginHorizontal: SIDE_MARGIN,
+		marginBottom: BOTTOM_MARGIN,
+		borderRadius: 28,
+		overflow: "hidden",
+		shadowColor: "#000",
+		shadowOffset: { width: 0, height: 4 },
+		shadowOpacity: 0.2,
+		shadowRadius: 16,
+		elevation: 10,
+	},
+	handleBar: {
+		width: 36,
+		height: 4,
+		borderRadius: 2,
+		backgroundColor: "#e0e0e3",
+		alignSelf: "center",
+		marginTop: 10,
+		marginBottom: 16,
+	},
+	headerContainer: {
+		zIndex: 10,
+	},
+	content: {
+		flexDirection: "row",
+		alignItems: "center",
+		paddingHorizontal: 18,
+		paddingBottom: 16,
+		gap: 14,
+	},
+	avatar: {
+		width: 64,
+		height: 64,
+		borderRadius: 32,
+		alignItems: "center",
+		justifyContent: "center",
+		flexShrink: 0,
+	},
+	avatarText: {
+		fontSize: 24,
+		fontWeight: "700",
+	},
+	infoSection: {
+		flex: 1,
+	},
+	nameText: {
+		fontSize: 18,
+		fontWeight: "700",
+		marginBottom: 4,
+	},
+	phoneText: {
+		fontSize: 13,
+	},
+	buttonsRow: {
+		flexDirection: "row",
+		gap: 10,
+		paddingHorizontal: 18,
+		paddingBottom: 16,
+	},
+	actionButton: {
+		width: 50,
+		height: 50,
+		borderRadius: 25,
+		alignItems: "center",
+		justifyContent: "center",
+	},
 });
 
 export default MemberActionSheet;
