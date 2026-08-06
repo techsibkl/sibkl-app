@@ -3,7 +3,7 @@ import { dateReplacer, formatObjStrToDate } from "@/utils/helper";
 import { secureFetch } from "@/utils/secureFetch";
 import { ReturnVal } from "@/utils/types/returnVal.types";
 import { Flow, FlowStep } from "./flow.types";
-import { PeopleFlow } from "./peopleFlow.type";
+import { PeopleFlow, getPeopleFlowPersonId } from "./peopleFlow.type";
 
 export async function fetchFlows(
 	flowIds?: number[],
@@ -78,7 +78,7 @@ export const updatePeopleFlowSingleCustomAttr = async (
 ): Promise<ReturnVal> => {
 	const payload = {
 		flowId: flowId,
-		personId: person.p__id,
+		personId: getPeopleFlowPersonId(person),
 		personName: person.p__full_legal_name,
 		key: key,
 		value: value,
