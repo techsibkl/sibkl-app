@@ -10,12 +10,15 @@ import { useThemeColors } from "@/hooks/useThemeColor";
 import { joinCell } from "@/services/Cell/cell.service";
 import { Cell } from "@/services/Cell/cell.types";
 import { useAuthStore } from "@/stores/authStore";
+import { myToast } from "@/utils/helper";
 import { FlashList } from "@shopify/flash-list";
 import { useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useRef, useState } from "react";
+import Toast from "react-native-toast-message";
 import {
 	Animated,
 	Pressable,
+	RefreshControl,
 	StatusBar,
 	StyleSheet,
 	Text,
@@ -35,14 +38,15 @@ const CellsScreen = () => {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [joiningCellId, setJoiningCellId] = useState<number | null>(null);
 	const [pendingCellIds, setPendingCellIds] = useState<number[]>([]);
+	const [isRefreshing, setIsRefreshing] = useState(false);
 	const underlinePosition = useRef(new Animated.Value(0)).current;
 
 	// Fetch all available cells
-	const { data: availableCells = [], isPending: cellsLoading } =
+	const { data: availableCells = [], isPending: cellsLoading, refetch: refetchAvailableCells } =
 		useCellsPublicQuery();
 
 	// Fetch user's current person data
-	const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
+	const { data: person, refetch: refetchPerson } = useSinglePersonQuery(user?.person?.id ?? -1);
 	// Get leader cell IDs
 	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
 	// Get user's current cell IDs
@@ -124,10 +128,39 @@ const CellsScreen = () => {
 			await queryClient.invalidateQueries({
 				queryKey: ["people", user?.person?.id],
 			});
+			
+			// Show toast notification
+			const cellName = availableCells.find((c) => c.id === cellId)?.cell_name;
+			Toast.show(
+				myToast({
+					success: true,
+					message: `Join request sent to ${cellName}`,
+				}),
+			);
 		} catch (error) {
 			console.error("Failed to join cell:", error);
+			Toast.show(
+				myToast({
+					success: false,
+					message: "Failed to send join request",
+				}),
+			);
 		} finally {
 			setJoiningCellId(null);
+		}
+	};
+
+	const handleRefresh = async () => {
+		setIsRefreshing(true);
+		try {
+			await Promise.all([
+				refetchAvailableCells(),
+				refetchPerson(),
+			]);
+		} catch (err) {
+			console.error("Refresh error:", err);
+		} finally {
+			setIsRefreshing(false);
 		}
 	};
 
@@ -278,6 +311,14 @@ const CellsScreen = () => {
 							paddingVertical: 16,
 						}}
 						estimatedItemSize={140}
+						refreshControl={
+							<RefreshControl
+								refreshing={isRefreshing}
+								onRefresh={handleRefresh}
+								colors={["#d6361e"]}
+								tintColor="#d6361e"
+							/>
+						}
 					/>
 				)}
 			</View>

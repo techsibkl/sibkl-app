@@ -1,4 +1,4 @@
-import { addCellMembers } from "@/services/Cell/cell.service";
+import { addCellMembers, toggleCoreMember } from "@/services/Cell/cell.service";
 import { Cell } from "@/services/Cell/cell.types";
 import {
   fetchCellAttendanceStats,
@@ -93,6 +93,25 @@ export const useAddCellMembersMutation = (cellId: number) => {
 				return {
 					...oldData,
 					members: res.data,
+				};
+			});
+		},
+	});
+};
+
+export const useToggleCoreMemberMutation = (cellId: number) => {
+	const qc = useQueryClient();
+
+	return useMutation({
+		mutationFn: (payload: { memberIds: number[]; isCore: boolean }) =>
+			toggleCoreMember(cellId, payload.memberIds, payload.isCore),
+		onSuccess: (res) => {
+			qc.setQueryData(["cells", cellId], (oldData: Cell) => {
+				if (!oldData) return oldData;
+
+				return {
+					...oldData,
+					members: res,
 				};
 			});
 		},

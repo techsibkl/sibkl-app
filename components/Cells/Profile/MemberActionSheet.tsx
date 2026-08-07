@@ -1,20 +1,26 @@
 import ConfirmDialog from "@/components/shared/ConfirmDialog";
+import { useToggleCoreMemberMutation } from "@/hooks/CellAttendance/useCellAttendanceQuery";
 import { Person } from "@/services/Person/person.type";
 import { router } from "expo-router";
-import { MessageCircle, Phone, Trash2, User } from "lucide-react-native";
+import {
+	MessageCircle,
+	Phone,
+	StarIcon,
+	Trash2,
+	User,
+} from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
-  Animated,
-  Dimensions,
-  GestureResponderEvent,
-  Linking,
-  Modal,
-  PanResponder,
-  PanResponderGestureState,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
+	Animated,
+	Dimensions,
+	GestureResponderEvent,
+	Linking,
+	Modal,
+	PanResponder,
+	PanResponderGestureState,
+	Text,
+	TouchableOpacity,
+	View,
 } from "react-native";
 
 const SCREEN_WIDTH = Dimensions.get("window").width;
@@ -36,6 +42,7 @@ interface MemberActionSheetProps {
 	isLeader?: boolean;
 	currentPersonId?: number;
 	onRemove?: (memberId: number) => void;
+	onCoreToggled?: () => void;
 }
 
 const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
@@ -46,6 +53,7 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
 	isLeader = false,
 	currentPersonId,
 	onRemove,
+	onCoreToggled,
 }) => {
 	const heightAnim = useRef(new Animated.Value(0)).current;
 
@@ -55,6 +63,9 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
 
 	const [isExpanded, setIsExpanded] = useState(false);
 	const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+	const [showCoreConfirmDialog, setShowCoreConfirmDialog] = useState(false);
+	const { mutateAsync: toggleCore, isPending: isToggling } =
+		useToggleCoreMemberMutation(cellId ?? 0);
 
 	useEffect(() => {
 		const id = heightAnim.addListener(({ value }) => {
@@ -178,12 +189,29 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
 		closeSheet();
 	};
 
-	const bgColor = "#ffffff";
-	const textColor = "#1c1c1e";
-	const secondaryTextColor = "#8e8e93";
-	const actionBgColor = "#f0f0f1";
+	const handleToggleCore = async () => {
+		if (!cellId || !member) return;
+		try {
+			const newIsCore = !member.is_core;
+			await toggleCore({
+				memberIds: [member.id],
+				isCore: newIsCore,
+			});
+			onCoreToggled?.();
+			closeSheet();
+		} catch (error) {
+			console.error("Error toggling core status:", error);
+		}
+	};
+
+	const handleConfirmToggleCore = () => {
+		setShowCoreConfirmDialog(false);
+		handleToggleCore();
+	};
 
 	const canRemoveMember =
+		isLeader && currentPersonId != null && member.id !== currentPersonId;
+	const canToggleCore =
 		isLeader && currentPersonId != null && member.id !== currentPersonId;
 
 	return (
@@ -193,46 +221,53 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
 			visible={visible}
 			onRequestClose={closeSheet}
 		>
-			<View style={styles.overlay}>
+			<View className="flex-1 justify-end">
 				<TouchableOpacity
-					style={StyleSheet.absoluteFill}
+					className="absolute inset-0"
 					activeOpacity={1}
 					onPress={closeSheet}
+					style={{ zIndex: 1 }}
 				>
 					<Animated.View
-						style={[styles.backdrop, { opacity: backdropOpacity }]}
+						style={[
+							{
+								flex: 1,
+								backgroundColor: "rgba(0,0,0,0.45)",
+								opacity: backdropOpacity,
+							},
+						]}
 					/>
 				</TouchableOpacity>
 
 				<Animated.View
-					style={[
-						styles.sheet,
-						{ height: heightAnim, backgroundColor: bgColor },
-					]}
+					className="mx-[10px] mb-4 rounded-[28px] overflow-hidden shadow-lg"
+					style={{
+						height: heightAnim,
+						backgroundColor: "#fff",
+						shadowColor: "#000",
+						shadowOffset: { width: 0, height: 4 },
+						shadowOpacity: 0.2,
+						shadowRadius: 16,
+						elevation: 10,
+						zIndex: 10,
+					}}
 				>
 					{/* Header — draggable */}
 					<View
 						{...headerPanResponder.panHandlers}
-						style={[
-							styles.headerContainer,
-							{ backgroundColor: bgColor },
-						]}
+						className="z-10 bg-white"
 					>
-						<View style={styles.handleBar} />
+						<View className="w-9 h-1 rounded bg-[#e0e0e3] self-center mt-2.5 mb-4" />
 
 						{/* Avatar and Basic Info */}
-						<View style={styles.content}>
+						<View className="flex-row items-center px-4 pb-4 gap-3.5">
 							<View
-								style={[
-									styles.avatar,
-									{ backgroundColor: ACCENT + "20" },
-								]}
+								className="w-16 h-16 rounded-full items-center justify-center"
+								style={{ backgroundColor: ACCENT + "20" }}
 							>
 								<Text
-									style={[
-										styles.avatarText,
-										{ color: ACCENT },
-									]}
+									className="text-2xl font-bold"
+									style={{ color: ACCENT }}
 								>
 									{getInitials(
 										member.full_legal_name ||
@@ -242,22 +277,16 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
 								</Text>
 							</View>
 
-							<View style={styles.infoSection}>
+							<View className="flex-1">
 								<Text
-									style={[
-										styles.nameText,
-										{ color: textColor },
-									]}
+									className="text-[18px] font-bold mb-1 text-[#1c1c1e]"
 									numberOfLines={1}
 								>
 									{member.full_legal_name}
 								</Text>
 								{member.phone && (
 									<Text
-										style={[
-											styles.phoneText,
-											{ color: secondaryTextColor },
-										]}
+										className="text-[13px] text-[#8e8e93]"
 										numberOfLines={1}
 									>
 										{member.phone}
@@ -266,63 +295,90 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
 							</View>
 						</View>
 
-						{/* Action Buttons */}
-						<View style={styles.buttonsRow}>
+						{/* Action Buttons, 2+1+2 grid style */}
+						<View className="flex-row items-stretch px-4 gap-2 pb-4">
+							{/* Profile */}
 							<TouchableOpacity
-								style={[
-									styles.actionButton,
-									{ backgroundColor: actionBgColor },
-								]}
+								className="flex-1 p-1 aspect-square items-center justify-center bg-[#f0f0f1] rounded-2xl"
 								onPress={() => {
 									closeSheet();
-									router.push(`/(app)/profile/${member.id}`);
+									router.push({
+										pathname: "/(app)/profile/[id]",
+										params: {
+											id: member.id,
+											backPath: `/(app)/cells/profile/${cellId}`,
+										},
+									});
 								}}
 							>
-								<User
-									size={20}
-									color={ACCENT}
-									strokeWidth={2}
-								/>
+								<User size={22} strokeWidth={2} />
+								<Text className="text-xs font-medium mt-1 text-text">
+									Profile
+								</Text>
 							</TouchableOpacity>
+							{/* Call */}
 							<TouchableOpacity
-								style={[
-									styles.actionButton,
-									{ backgroundColor: actionBgColor },
-								]}
+								className="flex-1 p-1 aspect-square items-center justify-center bg-[#f0f0f1] rounded-2xl"
 								onPress={handleCall}
 							>
-								<Phone
-									size={20}
-									color={ACCENT}
-									strokeWidth={2}
-								/>
+								<Phone size={22} strokeWidth={2} />
+								<Text className="text-xs font-medium mt-1 text-text">
+									Call
+								</Text>
 							</TouchableOpacity>
+							{/* WhatsApp */}
 							<TouchableOpacity
-								style={[
-									styles.actionButton,
-									{ backgroundColor: actionBgColor },
-								]}
+								className="flex-1 p-1 aspect-square items-center justify-center bg-[#f0f0f1] rounded-2xl"
 								onPress={handleWhatsApp}
 							>
-								<MessageCircle
-									size={20}
-									color={ACCENT}
-									strokeWidth={2}
-								/>
+								<MessageCircle size={22} strokeWidth={2} />
+								<Text className="text-xs font-medium mt-1 text-text">
+									Text
+								</Text>
 							</TouchableOpacity>
+							{/* Core Toggle Button */}
+							{canToggleCore && (
+								<TouchableOpacity
+									onPress={() =>
+										setShowCoreConfirmDialog(true)
+									}
+									disabled={isToggling}
+									activeOpacity={isToggling ? 1 : 0.6}
+									className={
+										"flex-1 p-1 aspect-square items-center justify-center rounded-2xl bg-amber-100 " +
+										(isToggling ? " opacity-50" : "")
+									}
+								>
+									<StarIcon
+										size={25}
+										color={"#d97706"}
+										strokeWidth={2}
+									/>
+									<Text
+										className={
+											"text-xs font-semibold text-center mt-1 text-amber-700"
+										}
+									>
+										{member?.is_core
+											? "Remove\nCore"
+											: "Make\nCore"}
+									</Text>
+								</TouchableOpacity>
+							)}
+							{/* Remove */}
 							{canRemoveMember && (
 								<TouchableOpacity
-									style={[
-										styles.actionButton,
-										{ backgroundColor: "#fee2e2" },
-									]}
+									className="flex-1 p-1 aspect-square items-center justify-center bg-[#fee2e2] rounded-2xl"
 									onPress={() => setShowConfirmDialog(true)}
 								>
 									<Trash2
-										size={20}
+										size={22}
 										color="#dc2626"
 										strokeWidth={2}
 									/>
+									<Text className="text-xs text-[#dc2626] font-medium mt-1">
+										Remove
+									</Text>
 								</TouchableOpacity>
 							)}
 						</View>
@@ -334,91 +390,36 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
 				visible={showConfirmDialog}
 				onClose={() => setShowConfirmDialog(false)}
 				title="Remove Member"
-				description={`Are you sure you want to remove ${member.full_legal_name || member.preferred_name} from this cell?`}
+				description={`Are you sure you want to remove ${
+					member.full_legal_name || member.preferred_name
+				} from this cell?`}
 				actionText="Remove"
 				cancelText="Cancel"
 				onConfirm={handleRemove}
 				isDestructive
 			/>
+
+			<ConfirmDialog
+				visible={showCoreConfirmDialog}
+				onClose={() => setShowCoreConfirmDialog(false)}
+				title={
+					member?.is_core ? "Remove Core Status" : "Make Core Member"
+				}
+				description={
+					member?.is_core
+						? `Are you sure you want to remove ${
+								member.full_legal_name || member.preferred_name
+							} as a core member?`
+						: `Are you sure you want to make ${
+								member.full_legal_name || member.preferred_name
+							} a core member?`
+				}
+				actionText={member?.is_core ? "Remove Core" : "Make Core"}
+				cancelText="Cancel"
+				onConfirm={handleConfirmToggleCore}
+			/>
 		</Modal>
 	);
 };
-
-const styles = StyleSheet.create({
-	overlay: {
-		flex: 1,
-		justifyContent: "flex-end",
-	},
-	backdrop: {
-		flex: 1,
-		backgroundColor: "rgba(0,0,0,0.45)",
-	},
-	sheet: {
-		marginHorizontal: SIDE_MARGIN,
-		marginBottom: BOTTOM_MARGIN,
-		borderRadius: 28,
-		overflow: "hidden",
-		shadowColor: "#000",
-		shadowOffset: { width: 0, height: 4 },
-		shadowOpacity: 0.2,
-		shadowRadius: 16,
-		elevation: 10,
-	},
-	handleBar: {
-		width: 36,
-		height: 4,
-		borderRadius: 2,
-		backgroundColor: "#e0e0e3",
-		alignSelf: "center",
-		marginTop: 10,
-		marginBottom: 16,
-	},
-	headerContainer: {
-		zIndex: 10,
-	},
-	content: {
-		flexDirection: "row",
-		alignItems: "center",
-		paddingHorizontal: 18,
-		paddingBottom: 16,
-		gap: 14,
-	},
-	avatar: {
-		width: 64,
-		height: 64,
-		borderRadius: 32,
-		alignItems: "center",
-		justifyContent: "center",
-		flexShrink: 0,
-	},
-	avatarText: {
-		fontSize: 24,
-		fontWeight: "700",
-	},
-	infoSection: {
-		flex: 1,
-	},
-	nameText: {
-		fontSize: 18,
-		fontWeight: "700",
-		marginBottom: 4,
-	},
-	phoneText: {
-		fontSize: 13,
-	},
-	buttonsRow: {
-		flexDirection: "row",
-		gap: 10,
-		paddingHorizontal: 18,
-		paddingBottom: 16,
-	},
-	actionButton: {
-		width: 50,
-		height: 50,
-		borderRadius: 25,
-		alignItems: "center",
-		justifyContent: "center",
-	},
-});
 
 export default MemberActionSheet;

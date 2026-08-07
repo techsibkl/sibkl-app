@@ -7,7 +7,8 @@ import AddMembersSheet from "@/components/Cells/Profile/AddMembersSheet";
 import MembersList from "@/components/Cells/Profile/MembersList";
 import SearchMembersModal from "@/components/Cells/Profile/SearchMembersModal";
 import SharedBody from "@/components/shared/SharedBody";
-import { getFabActions } from "@/constants/cont_cells";
+import SkeletonCellProfile from "@/components/shared/Skeleton/SkeletonCellProfile";
+// import { getFabActions } from "@/constants/cont_cells";
 import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import {
 	useCellAttendanceStatsQuery,
@@ -39,14 +40,14 @@ import {
 } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
-	ActivityIndicator,
+	RefreshControl,
 	ScrollView,
 	StatusBar,
 	Text,
 	TouchableOpacity,
 	View,
 } from "react-native";
-import { FAB, Portal, Provider } from "react-native-paper";
+import { Portal, Provider } from "react-native-paper";
 import Toast from "react-native-toast-message";
 
 const CellProfileScreen = () => {
@@ -72,6 +73,7 @@ const CellProfileScreen = () => {
 	>({});
 	const [isUpdating, setIsUpdating] = useState<number | null>(null);
 	const [statusError, setStatusError] = useState<string | null>(null);
+	const [isRefreshing, setIsRefreshing] = useState(false);
 	const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
 	const searchMembersSheetRef = useRef<BottomSheetModal>(null);
 	const addMembersSheetRef = useRef<BottomSheetModal>(null);
@@ -151,11 +153,48 @@ const CellProfileScreen = () => {
 				...prev,
 				[memberId]: "ACTIVE",
 			}));
+
+			// Invalidate cell query to refresh member list
+			queryClient.invalidateQueries({
+				queryKey: ["cells", Number(id)],
+			});
+
+			// Show success toast
+			const memberName = cell?.members?.find(
+				(m) => m.id === memberId,
+			)?.full_legal_name;
+			Toast.show(
+				myToast({
+					success: true,
+					message: `${memberName} has been accepted`,
+				}),
+			);
 		} catch (err: any) {
 			setStatusError(err.message || "Failed to accept member");
 			console.error("Accept member error:", err);
+			Toast.show(
+				myToast({
+					success: false,
+					message: err.message || "Failed to accept member",
+				}),
+			);
 		} finally {
 			setIsUpdating(null);
+		}
+	};
+
+	const handleOnRefresh = async () => {
+		setIsRefreshing(true);
+		try {
+			await refetch();
+			// Also invalidate related queries
+			queryClient.invalidateQueries({
+				queryKey: ["cell-sessions", Number(id)],
+			});
+		} catch (err) {
+			console.error("Refresh error:", err);
+		} finally {
+			setIsRefreshing(false);
 		}
 	};
 
@@ -228,6 +267,9 @@ const CellProfileScreen = () => {
 							onReject={handleRejectMember}
 							isUpdating={isUpdating}
 							onRemoveMember={handleRemoveMember}
+							onCoreToggled={() => refetch()}
+							cellLeader1Id={cell?.cell_leader_1}
+							cellLeader2Id={cell?.cell_leader_2}
 						/>
 					</View>
 				);
@@ -263,7 +305,7 @@ const CellProfileScreen = () => {
 	if (isPending && isLeader)
 		return (
 			<SharedBody>
-				<ActivityIndicator />
+				<SkeletonCellProfile />
 			</SharedBody>
 		);
 	if (isError && isLeader)
@@ -289,7 +331,16 @@ const CellProfileScreen = () => {
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
 			<BottomSheetModalProvider>
-				<ScrollView>
+				<ScrollView
+					refreshControl={
+						<RefreshControl
+							refreshing={isRefreshing}
+							onRefresh={handleOnRefresh}
+							colors={["#d6361e"]}
+							tintColor="#d6361e"
+						/>
+					}
+				>
 					{/* Cell info section */}
 					<View className="items-center py-6">
 						<View className="mb-4 w-24 h-24 rounded-full bg-gray-200 items-center justify-center">
@@ -410,7 +461,7 @@ const CellProfileScreen = () => {
 
 				<Provider>
 					<Portal>
-						<FAB.Group
+						{/* <FAB.Group
 							open={open}
 							icon={open ? "close" : "plus"}
 							color="white"
@@ -430,7 +481,7 @@ const CellProfileScreen = () => {
 								cellId: Number(id),
 							})}
 							onStateChange={({ open }) => setOpen(open)}
-						/>
+						/> */}
 						<CreateSessionSheet
 							ref={createSessionSheetModalRef}
 							ledCells={ledCellsFormatted}

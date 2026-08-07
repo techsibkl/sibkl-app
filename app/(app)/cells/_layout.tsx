@@ -1,5 +1,5 @@
 import SharedHeader from "@/components/shared/SharedHeader";
-import { Stack } from "expo-router";
+import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 
 export const unstable_settings = {
@@ -7,6 +7,9 @@ export const unstable_settings = {
 };
 
 export default function Layout() {
+  const { backPath } = useLocalSearchParams<{ backPath?: string }>();
+  const router = useRouter();
+
   return (
     <Stack>
       <Stack.Screen
@@ -23,7 +26,17 @@ export default function Layout() {
         options={({ route }) => ({
           headerShown: true,
           header() {
-            return <SharedHeader title="Cell Info" isPop />;
+            return (
+              <SharedHeader
+                title="Cell Info"
+                isPop
+                backFunc={() => {
+                  backPath
+                    ? router.replace(backPath as any)
+                    : router.back();
+                }}
+              />
+            );
           },
         })}
       />

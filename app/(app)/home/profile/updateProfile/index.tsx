@@ -197,7 +197,7 @@ const UpdateProfilePage = () => {
 							className="w-20 h-20 rounded-xl"
 							resizeMode="contain"
 						/>
-						<Text className="text-2xl font-bold">
+						<Text className="text-2xl font-bold text-text">
 							{full_legal_name}
 						</Text>
 						<Text className="font-regular text-text-secondary text-center">
@@ -214,7 +214,7 @@ const UpdateProfilePage = () => {
 							)
 							.map(([section, fields]) => (
 								<View key={section} className="mb-12">
-									<Text className="ml-1 pb-2 text-lg font-semibold">
+									<Text className="ml-1 pb-2 text-lg font-semibold text-text">
 										{section}
 									</Text>
 

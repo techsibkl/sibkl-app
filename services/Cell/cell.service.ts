@@ -128,3 +128,30 @@ export const addCellMembers = async (cellId: number, people: Person[]) => {
 
 	return json;
 };
+
+export const toggleCoreMember = async (
+	cellId: number,
+	memberIds: number[],
+	isCore: boolean,
+) => {
+	const response = await secureFetch(
+		`${apiEndpoints.cells.toggleCore(cellId)}`,
+		{
+			method: "POST",
+			headers: { "Content-Type": "application/json" },
+			body: JSON.stringify({
+				cell_id: cellId,
+				people: memberIds.map((id) => ({ person_id: id })),
+				is_core: isCore,
+			}),
+		},
+	);
+	const json: ReturnVal = await response.json();
+	if (!json.success) {
+		throw {
+			status: json.status_code,
+			message: json.message,
+		};
+	}
+	return json.data;
+};

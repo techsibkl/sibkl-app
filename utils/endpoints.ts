@@ -92,6 +92,8 @@ export const apiEndpoints = {
 			_endpoint(`cells/${cellId}/remove-members`),
 		addMembers: (cellId: number | string) =>
 			_endpoint(`cells/${cellId}/add-members`),
+		toggleCore: (cellId: number | string) =>
+			_endpoint(`cells/${cellId}/toggle-core`),
 	},
 	resources: {
 		getAll: _endpoint("resources"),

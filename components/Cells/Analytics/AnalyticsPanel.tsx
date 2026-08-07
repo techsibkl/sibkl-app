@@ -1,11 +1,13 @@
 import AnalyticsSummaryStats from "@/components/Cells/Analytics/AnalyticsSummaryStats";
 import AttendanceTrendChart from "@/components/Cells/Analytics/AttendanceTrendChart";
 import MemberAttendanceCard from "@/components/Cells/Analytics/MemberAttendanceCard";
+import SessionCard from "@/components/Cells/SessionCard";
 import {
   CellAttendanceStat,
   CellSession,
 } from "@/services/CellAttendance/cellAttendance.type";
 import { Person } from "@/services/Person/person.type";
+import { useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import { Text, View } from "react-native";
 
@@ -13,6 +15,7 @@ type Props = {
   stats: CellAttendanceStat[];
   sessions: CellSession[];
   members?: Person[];
+  cellId?: number;
 };
 
 const average = (values: number[]) => {
@@ -34,7 +37,9 @@ export default function AnalyticsPanel({
   stats,
   sessions,
   members = [],
+  cellId,
 }: Props) {
+  const router = useRouter();
   const averageMemberOverallPercent = useMemo(
     () => toPercent(average(stats.map((stat) => Number(stat.attendance_rate ?? 0)))),
     [stats],
@@ -108,6 +113,39 @@ export default function AnalyticsPanel({
               key={stat.people_id}
               stat={stat}
               isCore={memberCoreById.get(stat.people_id) ?? false}
+              cellId={cellId}
+            />
+          ))
+        )}
+      </View>
+
+      <View>
+        <View className="flex-row items-center justify-between mb-2">
+          <Text className="text-sm font-semibold text-gray-900">Sessions</Text>
+          <Text className="text-xs text-gray-400">{sessions.length}</Text>
+        </View>
+        <View className="h-px bg-gray-100 mb-3" />
+
+        {sessions.length === 0 ? (
+          <View className="items-center py-8">
+            <Text className="text-sm text-gray-400">
+              No sessions yet
+            </Text>
+          </View>
+        ) : (
+          sessions.map((session) => (
+            <SessionCard
+              key={session.id}
+              session={session}
+              onPress={() =>
+                router.push({
+                  pathname: "/(app)/cells/sessions/[sessionId]",
+                  params: {
+                    cellId: String(cellId),
+                    sessionId: String(session.id),
+                  },
+                })
+              }
             />
           ))
         )}

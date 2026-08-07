@@ -386,6 +386,7 @@ export default function AttendanceTabContent({
 									stats={memberStats}
 									sessions={filteredSessions}
 									members={members}
+									cellId={cellId}
 								/>
 							</View>
 						)}
