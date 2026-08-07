@@ -1,6 +1,6 @@
-import { Picker } from "@react-native-picker/picker";
+import { CheckIcon, ChevronDownIcon } from "lucide-react-native";
 import React, { useState } from "react";
-import { Modal, Platform, Pressable, Text, View } from "react-native";
+import { Modal, Pressable, ScrollView, Text, View } from "react-native";
 
 export type PickerOption<T> = {
 	label: string;
@@ -13,8 +13,8 @@ type Props<T> = {
 	onChange: (value: T) => void;
 	disabled?: boolean;
 	renderTrigger?: (label: string, isPlaceholder: boolean) => React.ReactNode;
-	onAfterChange?: (value: T) => void; // onChangeText — fires on select
-	onClose?: (value: T) => void; // onBlur — fires on dismiss
+	onAfterChange?: (value: T) => void;
+	onClose?: (value: T) => void;
 	showPlaceholder?: boolean;
 };
 export function AppPicker<T>({
@@ -38,33 +38,17 @@ export function AppPicker<T>({
 		? [{ label: placeholder, value: null as unknown as T }, ...options]
 		: options;
 
-	if (Platform.OS === "android") {
-		return (
-			<Picker
-				enabled={!disabled}
-				mode="dropdown"
-				selectedValue={value}
-				onValueChange={(v) => {
-					onChange(v);
-					onClose?.(v);
-				}}
-			>
-				{allOptions.map((opt, i) => (
-					<Picker.Item
-						key={i === 0 ? "__placeholder__" : String(opt.value)}
-						label={opt.label}
-						value={opt.value}
-						color="#6b7280"
-					/>
-				))}
-			</Picker>
-		);
-	}
-
 	const handleDone = () => {
 		onChange(localValue as T);
 		setOpen(false);
 		onClose?.(localValue as T);
+	};
+
+	const handleSelectOption = (optionValue: T) => {
+		setLocalValue(optionValue);
+		onChange(optionValue);
+		setOpen(false);
+		onClose?.(optionValue);
 	};
 
 	return (
@@ -77,39 +61,86 @@ export function AppPicker<T>({
 					setOpen(true);
 				}}
 			>
-				{renderTrigger?.(selectedLabel, isPlaceholder)}
+				{renderTrigger ? (
+					renderTrigger(selectedLabel, isPlaceholder)
+				) : (
+					<View className="flex-row items-center justify-between px-3 py-2 rounded-lg border border-border bg-white">
+						<Text
+							className={`flex-1 text-base ${
+								isPlaceholder
+									? "text-text-secondary"
+									: "text-text"
+							}`}
+						>
+							{isPlaceholder ? placeholder : selectedLabel}
+						</Text>
+						<ChevronDownIcon size={20} color="#6b7280" />
+					</View>
+				)}
 			</Pressable>
 
-			<Modal visible={open} transparent animationType="slide">
-				<Pressable className="flex-1 justify-end bg-black/30">
-					<View className="bg-white rounded-t-2xl">
-						<View className="flex-row justify-end p-4 border-b border-border">
+			<Modal visible={open} transparent animationType="fade">
+				<Pressable
+					className="flex-1 bg-black/40 justify-end"
+					onPress={() => setOpen(false)}
+				>
+					<Pressable
+						className="bg-white rounded-t-2xl"
+						onPress={(e) => e.stopPropagation()}
+					>
+						{/* Header with Done button */}
+						<View className="flex-row justify-between items-center px-4 py-3 border-b border-border">
+							<Text className="text-lg font-semibold text-text">
+								{placeholder}
+							</Text>
 							<Pressable onPress={handleDone}>
-								<Text className="text-blue-600 font-semibold">
+								<Text className="text-blue-600 font-semibold text-base">
 									Done
 								</Text>
 							</Pressable>
 						</View>
-						<Picker
-							selectedValue={localValue}
-							onValueChange={(v) => {
-								setLocalValue(v as T);
-							}}
+
+						{/* Scrollable options list */}
+						<ScrollView
+							className="max-h-80"
+							showsVerticalScrollIndicator={true}
+							contentContainerStyle={{ paddingBottom: 40 }}
+							nestedScrollEnabled={true}
 						>
 							{allOptions.map((opt, i) => (
-								<Picker.Item
+								<Pressable
 									key={
 										i === 0
 											? "__placeholder__"
 											: String(opt.value)
 									}
-									label={opt.label}
-									value={opt.value}
-									color={i === 0 ? "#9ca3af" : "#111827"}
-								/>
+									className={`flex-row items-center px-4 py-3 border-b border-border/50 ${
+										localValue === opt.value
+											? "bg-blue-50"
+											: "bg-white"
+									}`}
+									onPress={() =>
+										handleSelectOption(opt.value)
+									}
+								>
+									<Text
+										className={`flex-1 text-base ${
+											localValue === opt.value
+												? "text-blue-600 font-semibold"
+												: i === 0
+													? "text-text-secondary"
+													: "text-text"
+										}`}
+									>
+										{opt.label}
+									</Text>
+									{localValue === opt.value && (
+										<CheckIcon size={20} color="#3b82f6" />
+									)}
+								</Pressable>
 							))}
-						</Picker>
-					</View>
+						</ScrollView>
+					</Pressable>
 				</Pressable>
 			</Modal>
 		</>

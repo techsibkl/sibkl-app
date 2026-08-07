@@ -13,6 +13,9 @@ type MembersListProps = {
 	onReject?: (memberId: number) => void;
 	isUpdating?: number | null;
 	onRemoveMember?: (memberId: number) => void;
+	onCoreToggled?: () => void;
+	cellLeader1Id?: number | null;
+	cellLeader2Id?: number | null;
 };
 
 type SectionKey = "PENDING" | "ACTIVE" | "REJECTED";
@@ -27,6 +30,9 @@ const MembersList = ({
 	onReject,
 	isUpdating = null,
 	onRemoveMember,
+	onCoreToggled,
+	cellLeader1Id,
+	cellLeader2Id,
 }: MembersListProps) => {
 	const [expandedSections, setExpandedSections] = useState<
 		Record<SectionKey, boolean>
@@ -40,11 +46,44 @@ const MembersList = ({
 	const getMemberStatus = (member: any) =>
 		memberStatuses[member.id] || member.status || "ACTIVE";
 
+	// Helper function to determine member role priority
+	const getMemberRolePriority = (member: any) => {
+		const isLeader =
+			member.id === cellLeader1Id || member.id === cellLeader2Id;
+		if (isLeader) return 0; // Leaders first
+		if (member.is_core) return 1; // Then cores
+		return 2; // Then regular members
+	};
+
+	// Sort members by role and name
+	const sortMembers = (membersToSort: any[]) => {
+		return [...membersToSort].sort((a, b) => {
+			const priorityA = getMemberRolePriority(a);
+			const priorityB = getMemberRolePriority(b);
+
+			// Sort by priority (role) first
+			if (priorityA !== priorityB) {
+				return priorityA - priorityB;
+			}
+
+			// Within same priority, sort by name
+			const nameA = a.full_legal_name?.toLowerCase() ?? "";
+			const nameB = b.full_legal_name?.toLowerCase() ?? "";
+			return nameA.localeCompare(nameB);
+		});
+	};
+
 	// Group members by status
 	const groupedMembers = {
-		PENDING: members.filter((m) => getMemberStatus(m) === "PENDING"),
-		ACTIVE: members.filter((m) => getMemberStatus(m) === "ACTIVE"),
-		REJECTED: members.filter((m) => getMemberStatus(m) === "REJECTED"),
+		PENDING: sortMembers(
+			members.filter((m) => getMemberStatus(m) === "PENDING"),
+		),
+		ACTIVE: sortMembers(
+			members.filter((m) => getMemberStatus(m) === "ACTIVE"),
+		),
+		REJECTED: sortMembers(
+			members.filter((m) => getMemberStatus(m) === "REJECTED"),
+		),
 	};
 
 	// Filter members based on search query
@@ -114,19 +153,25 @@ const MembersList = ({
 		sectionKey: SectionKey,
 	) => {
 		const displayList = searchQuery ? filteredList : membersList;
-		return displayList.map((member) => (
-			<MemberRow
-				key={member.id}
-				member={member}
-				isLeader={isLeader}
-				currentPersonId={currentPersonId}
-				memberStatuses={memberStatuses}
-				onAccept={onAccept}
-				onReject={onReject}
-				isUpdating={isUpdating === member.id}
-				onRemoveMember={onRemoveMember}
-			/>
-		));
+		return displayList.map((member) => {
+			const isCellLeader =
+				member.id === cellLeader1Id || member.id === cellLeader2Id;
+			return (
+				<MemberRow
+					key={member.id}
+					member={member}
+					isLeader={isLeader}
+					currentPersonId={currentPersonId}
+					memberStatuses={memberStatuses}
+					onAccept={onAccept}
+					onReject={onReject}
+					isUpdating={isUpdating === member.id}
+					onRemoveMember={onRemoveMember}
+					onCoreToggled={onCoreToggled}
+					isCellLeader={isCellLeader}
+				/>
+			);
+		});
 	};
 
 	return (

@@ -3,22 +3,23 @@ import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import { useToggleMemberCheckInMutation } from "@/hooks/CellAttendance/useCellAttendanceMutation";
 import { useCellSessionByIdQuery } from "@/hooks/CellAttendance/useCellAttendanceQuery";
 import {
-  CellSessionAttendee,
-  CellSessionStatus,
+	CellSessionAttendee,
+	CellSessionStatus,
 } from "@/services/CellAttendance/cellAttendance.type";
 import { Person } from "@/services/Person/person.type";
+import { useQueryClient } from "@tanstack/react-query";
 import * as FileSystem from "expo-file-system";
 import { useLocalSearchParams } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { CheckIcon, UserIcon } from "lucide-react-native";
-import React, { useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import {
-  ActivityIndicator,
-  Pressable,
-  ScrollView,
-  Text,
-  TouchableOpacity,
-  View,
+	ActivityIndicator,
+	Pressable,
+	ScrollView,
+	Text,
+	TouchableOpacity,
+	View,
 } from "react-native";
 import QRCode from "react-native-qrcode-svg";
 
@@ -89,22 +90,18 @@ const SessionMemberRow = ({
 								: "#f3f4f6",
 					}}
 				>
-					{isProcessing ? (
-						<ActivityIndicator size="small" color="#d6361e" />
-					) : (
-						<Text
-							className="text-sm font-bold"
-							style={{
-								color: isReadOnly
-									? "#9ca3af"
-									: checkedIn
-										? "#16a34a"
-										: "#9ca3af",
-							}}
-						>
-							{initials}
-						</Text>
-					)}
+					<Text
+						className="text-sm font-bold"
+						style={{
+							color: isReadOnly
+								? "#9ca3af"
+								: checkedIn
+									? "#16a34a"
+									: "#9ca3af",
+						}}
+					>
+						{initials}
+					</Text>
 				</View>
 
 				{/* Info */}
@@ -145,6 +142,8 @@ const SessionMemberRow = ({
 					<View className="w-8 h-8 items-center justify-center">
 						<Text className="text-xs text-gray-400">–</Text>
 					</View>
+				) : isProcessing ? (
+					<ActivityIndicator size="small" color="blue" />
 				) : checkedIn ? (
 					<View className="w-8 h-8 rounded-full bg-green-100 items-center justify-center">
 						<CheckIcon
@@ -172,6 +171,7 @@ export default function SessionDetailScreen() {
 	}>();
 	const numericCellId = Number(cellId);
 	const numericSessionId = Number(sessionId);
+	const queryClient = useQueryClient();
 
 	const qrRef = useRef<any>(null);
 	const [sharing, setSharing] = useState(false);
@@ -194,6 +194,13 @@ export default function SessionDetailScreen() {
 		numericCellId,
 		numericSessionId,
 	);
+
+	// Invalidate cell query on mount to ensure fresh member data
+	useEffect(() => {
+		queryClient.invalidateQueries({
+			queryKey: ["cells", numericCellId],
+		});
+	}, [numericCellId, queryClient]);
 
 	// ── Derived state ──────────────────────────────────────────────────────────
 

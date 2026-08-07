@@ -1,7 +1,7 @@
 import { Person } from "@/services/Person/person.type";
 import { getInitials } from "@/utils/helper_profile";
 import { useLocalSearchParams } from "expo-router";
-import { Check, X } from "lucide-react-native";
+import { Check, Crown, StarIcon, X } from "lucide-react-native";
 import React, { useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import MemberActionSheet from "./MemberActionSheet";
@@ -15,6 +15,8 @@ type MemberRowProps = {
 	onReject?: (memberId: number) => void;
 	isUpdating?: boolean;
 	onRemoveMember?: (memberId: number) => void;
+	onCoreToggled?: () => void;
+	isCellLeader?: boolean;
 };
 
 const MemberRow = ({
@@ -26,6 +28,8 @@ const MemberRow = ({
 	onReject,
 	isUpdating = false,
 	onRemoveMember,
+	onCoreToggled,
+	isCellLeader = false,
 }: MemberRowProps) => {
 	const { id } = useLocalSearchParams();
 	const [modalVisible, setModalVisible] = useState(false);
@@ -33,21 +37,6 @@ const MemberRow = ({
 	const memberStatus = memberStatuses[member.id] || member.status || "ACTIVE";
 	const isCurrentUser =
 		currentPersonId != null && member.id === currentPersonId;
-
-	const getStatusColor = () => {
-		switch (memberStatus) {
-			case "ACTIVE":
-				return { bg: "#dcfce7", text: "#16a34a" };
-			case "PENDING":
-				return { bg: "#fef3c7", text: "#b45309" };
-			case "REJECTED":
-				return { bg: "#fee2e2", text: "#dc2626" };
-			default:
-				return { bg: "#f3f4f6", text: "#6b7280" };
-		}
-	};
-
-	const statusColor = getStatusColor();
 
 	const handleMemberPress = () => {
 		if (isCurrentUser) return;
@@ -71,33 +60,44 @@ const MemberRow = ({
 							</Text>
 						</View>
 
-						{/* Name, phone, status */}
-						<View className="flex-1 gap-y-0.5">
-							<Text
-								className="text-text font-semibold"
-								numberOfLines={1}
-							>
-								{member.full_legal_name}{" "}
-								{isCurrentUser ? "(You)" : ""}
-							</Text>
-							<Text
-								className="text-text-secondary text-sm"
-								numberOfLines={1}
-							>
-								{member.phone ?? "-"}
-							</Text>
+						{/* Name, phone, and badges */}
+						<View className="flex-1 gap-y-1">
+							<View className="flex-row items-center gap-1">
+								<Text
+									className="text-text font-semibold"
+									numberOfLines={1}
+								>
+									{member.full_legal_name}{" "}
+									{isCurrentUser ? "(You)" : ""}
+								</Text>
+							</View>
+							<View className="flex-row items-center gap-1">
+								<Text
+									className="text-text-secondary text-sm"
+									numberOfLines={1}
+								>
+									{member.phone ?? "-"}
+								</Text>
+							</View>
 						</View>
-						{/* Status badge */}
-						<View
-							className="px-2 py-1 rounded-full self-start mt-1"
-							style={{ backgroundColor: statusColor.bg }}
-						>
-							<Text
-								className="text-xs font-semibold"
-								style={{ color: statusColor.text }}
-							>
-								{memberStatus.toUpperCase()}
-							</Text>
+
+						<View>
+							{isCellLeader && (
+								<View className="bg-blue-100 px-2 py-0.5 rounded-full flex-row items-center gap-0.5">
+									<Crown size={12} color="#1e40af" />
+									<Text className="text-xs font-semibold text-blue-700">
+										Leader
+									</Text>
+								</View>
+							)}
+							{!!member?.is_core && (
+								<View className="px-2 py-1 rounded-full bg-amber-100 flex-row items-center gap-1">
+									<StarIcon size={12} color="#d97706" />
+									<Text className="text-xs font-semibold text-amber-700">
+										CORE
+									</Text>
+								</View>
+							)}
 						</View>
 
 						{/* Accept/Reject Buttons or Chevron */}
@@ -154,6 +154,7 @@ const MemberRow = ({
 				isLeader={isLeader}
 				currentPersonId={currentPersonId}
 				onRemove={onRemoveMember}
+				onCoreToggled={onCoreToggled}
 			/>
 		</>
 	);

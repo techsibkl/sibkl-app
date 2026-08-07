@@ -1,5 +1,6 @@
 import { Cell } from "@/services/Cell/cell.types";
-import { useRouter } from "expo-router";
+import { getInitials } from "@/utils/helper_profile";
+import { usePathname, useRouter } from "expo-router";
 import {
 	ChevronRight,
 	CircleIcon,
@@ -10,7 +11,6 @@ import {
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 import { ActionButton } from "../Cards/ActionButton";
-import { Avatar } from "../Cards/Avatar";
 import { InfoRow } from "../Cards/InfoRow";
 
 type CellCardProps = {
@@ -19,6 +19,7 @@ type CellCardProps = {
 
 const MyCellCard = ({ cell }: CellCardProps) => {
 	const router = useRouter();
+	const pathname = usePathname();
 
 	return (
 		<TouchableOpacity
@@ -30,7 +31,7 @@ const MyCellCard = ({ cell }: CellCardProps) => {
 			onPress={() =>
 				router.push({
 					pathname: "/(app)/cells/profile/[id]",
-					params: { id: cell.id! },
+					params: { id: cell.id!, backPath: pathname },
 				})
 			}
 			activeOpacity={0.8}
@@ -102,13 +103,10 @@ export const AllCellCard: React.FC<AllCellCardProps> = ({
 			className={`rounded-2xl p-3 mb-3 flex-row gap-3 bg-white border border-gray-200`}
 			style={{ shadowColor: "#000", elevation: 0 }}
 		>
-			{/* Left: Avatar */}
-			<View
-				className={
-					shouldCenterAvatar ? "justify-center" : "justify-start"
-				}
-			>
-				<Avatar initials={cell.cell_name?.charAt(0) ?? "?"} size="md" />
+			<View className="w-14 h-14 rounded-full bg-gray-200 items-center justify-center">
+				<Text className="text-lg font-bold text-text">
+					{getInitials(cell.cell_name ?? "")}
+				</Text>
 			</View>
 
 			{/* Middle: Content */}
