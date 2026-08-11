@@ -1,4 +1,7 @@
-import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
+import {
+	PeopleFlow,
+	getPeopleFlowPersonId,
+} from "@/services/Flow/peopleFlow.type";
 import { createNote } from "@/services/Note/notes.service";
 import { myToast } from "@/utils/helper";
 import React, { useState } from "react";
@@ -22,8 +25,14 @@ const AddNoteDialog = ({
 
 	const handleSave = async () => {
 		setIsLoading(true);
+		const personId = getPeopleFlowPersonId(personFlow);
+		if (!Number.isFinite(personId)) {
+			setIsLoading(false);
+			Toast.show(myToast({ success: false, message: "Missing person id" }));
+			return;
+		}
 		const res = await createNote(
-			personFlow.people_id!,
+			personId,
 			note,
 			personFlow.p__district_ids,
 		);
