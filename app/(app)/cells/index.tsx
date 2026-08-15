@@ -94,7 +94,10 @@ const CellsScreen = () => {
                 ability: ability,
                 router: router,
                 createSessionSheetModalRef: createSessionSheetModalRef,
-                cellId: ledCellsFormatted[0]?.id,
+                cellId:
+                  ledCellsFormatted.length === 1
+                    ? ledCellsFormatted[0].id
+                    : undefined,
               })}
               onStateChange={({ open }) => setOpen(open)}
             />
