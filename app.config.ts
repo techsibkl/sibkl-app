@@ -64,6 +64,7 @@ export default ({ config }: { config: any }) => ({
 			"@react-native-firebase/auth",
 			"@react-native-firebase/messaging",
 			"react-native-email-link",
+			"./plugins/withFmtConstevalFix",
 			[
 				"expo-build-properties",
 				{

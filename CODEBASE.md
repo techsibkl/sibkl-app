@@ -520,3 +520,4 @@ See `docs/FEATURE_FLAGS.md` for pilot vs production builds and gating experiment
 | Top bar title / back | Domain `_layout.tsx` + `SharedHeader` |
 | Bottom navbar | `(app)/_layout.tsx` only |
 | Pilot / production feature flags | `docs/FEATURE_FLAGS.md`, `config/featureFlags.ts` |
+| Expo SDK upgrade (53 → 54) | `docs/SDK_54_UPGRADE.md` |

@@ -73,6 +73,14 @@ All feature flags currently derive from `PILOT_BUILD`. When pilot ends, flip pro
 
 The `pilot` profile uses the **production API** and **production bundle ID**, but enables pilot UI. That lets testers exercise real prod data without exposing features to the general public.
 
+### iOS build image (Xcode 26+)
+
+Apple requires App Store submissions to be built with **Xcode 26 or newer** (since April 2026). All EAS profiles use `"image": "latest"` (Xcode 26.x) via the shared `base` profile.
+
+React Native 0.79 bundles `fmt` 11.x, which fails on Xcode 26 unless patched. The app includes `plugins/withFmtConstevalFix.js`, which injects a Podfile hook during prebuild to disable `FMT_USE_CONSTEVAL`. Remove this plugin after upgrading to a React Native release that bundles `fmt` ≥ 12.1.0.
+
+**EAS Build only uploads git-tracked files.** You must commit and push `plugins/withFmtConstevalFix.js` and the `app.config.ts` plugin entry — local-only changes are not sent to EAS cloud builds.
+
 ---
 
 ## Building
@@ -313,6 +321,8 @@ You do **not** need a separate Git branch or a new app binary type after promoti
 |---------|--------------|-----|
 | Feature missing in dev | `PILOT_BUILD` not set | `PILOT_BUILD=true npm start` or use `ios:dev` script |
 | Feature still visible after setting `false` | Stale native build / cache | Re-run `expo run:ios` or `eas build` |
+| iOS build fails with `fmt::basic_format_string` consteval error | Xcode 26 + unpatched fmt | Ensure `./plugins/withFmtConstevalFix` is in `app.config.ts` plugins |
+| EAS says build cannot be submitted (Xcode 16) | Old EAS image | Use `"image": "latest"` in `eas.json` (Xcode 26+) |
 | Settings says Pilot but feature hidden | Flag not wired to UI | Check `featureFlags.ts` and component import |
 | `featureFlags` all false in EAS build | Wrong profile | Use `pilot` or `staging`, not `production` |
 | Env set but flag still false | `app.config.ts` not re-run | Restart Metro; rebuild native app |
@@ -347,6 +357,13 @@ app/(app)/cells/_layout.tsx     # Stack redirect
 app/(app)/settings/index.tsx    # Pilot / Production debug label
 package.json                    # Local pilot/prod run scripts
 ```
+
+---
+
+## Related docs
+
+- [SDK_54_UPGRADE.md](./SDK_54_UPGRADE.md) — Expo SDK 53 → 54 upgrade checklist
+- [CODEBASE.md](../CODEBASE.md) — app architecture overview
 
 ---
 
