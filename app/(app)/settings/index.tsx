@@ -1,5 +1,7 @@
 import SharedBody from "@/components/shared/SharedBody";
+import { featureFlags } from "@/config/featureFlags";
 import { useAuthStore } from "@/stores/authStore";
+import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import {
 	CircleQuestionMark,
@@ -189,6 +191,10 @@ export default function SettingsScreen() {
 						)}
 					</TouchableOpacity>
 				))}
+				<Text className="text-center text-xs text-gray-400 mt-6 mb-4">
+					v{Constants.expoConfig?.version ?? "—"} ·{" "}
+					{featureFlags.isPilotBuild ? "Pilot" : "Production"}
+				</Text>
 			</View>
 		</SharedBody>
 	);

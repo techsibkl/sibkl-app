@@ -3,6 +3,7 @@
 import CellList from "@/components/Cells/CellList";
 import NotesTab from "@/components/Flows/NotesTab";
 import SharedBody from "@/components/shared/SharedBody";
+import { featureFlags } from "@/config/featureFlags";
 import SkeletonPeopleRow from "@/components/shared/Skeleton/SkeletonPeopleRow";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { Person } from "@/services/Person/person.type";
@@ -35,7 +36,12 @@ const ProfileScreen = () => {
 		isError,
 	} = useSinglePersonQuery(Number(id));
 
-	const tabs = ["Info", "Cells", "Notes", "Flows"];
+	const tabs = [
+		"Info",
+		...(featureFlags.cells ? ["Cells"] : []),
+		"Notes",
+		"Flows",
+	];
 
 	const copyPhoneToClipboard = (phone: string | undefined) => {
 		if (!phone) {

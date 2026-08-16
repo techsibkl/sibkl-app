@@ -1,3 +1,4 @@
+import { featureFlags } from "@/config/featureFlags";
 import { Tabs } from "expo-router";
 import {
   Circle,
@@ -46,6 +47,7 @@ export default function AppLayout() {
         name="cells"
         options={{
           title: "Cells",
+          href: featureFlags.cells ? "/(app)/cells" : null,
           tabBarIcon: ({ color, size, focused }) => (
             <Circle
               size={size}

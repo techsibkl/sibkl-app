@@ -1,5 +1,6 @@
 import SharedHeader from "@/components/shared/SharedHeader";
-import { Stack, useLocalSearchParams, useRouter } from "expo-router";
+import { featureFlags } from "@/config/featureFlags";
+import { Redirect, Stack, useLocalSearchParams, useRouter } from "expo-router";
 import React from "react";
 
 export const unstable_settings = {
@@ -9,6 +10,10 @@ export const unstable_settings = {
 export default function Layout() {
   const { backPath } = useLocalSearchParams<{ backPath?: string }>();
   const router = useRouter();
+
+  if (!featureFlags.cells) {
+    return <Redirect href="/(app)/home" />;
+  }
 
   return (
     <Stack>
