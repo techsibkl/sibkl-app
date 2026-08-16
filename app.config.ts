@@ -31,6 +31,8 @@ export default ({ config }: { config: any }) => ({
 			infoPlist: {
 				UIBackgroundModes: ["remote-notification"], // ← allows background notifications
 				ITSAppUsesNonExemptEncryption: false, // required for Apple Store submission if you use any service that uses encryption (this app does not)
+				NSCameraUsageDescription:
+					"SIBKL App uses the camera to scan QR codes for cell session attendance check-in.",
 			},
 		},
 
@@ -64,6 +66,13 @@ export default ({ config }: { config: any }) => ({
 			"@react-native-firebase/auth",
 			"@react-native-firebase/messaging",
 			"react-native-email-link",
+			[
+				"expo-camera",
+				{
+					cameraPermission:
+						"SIBKL App uses the camera to scan QR codes for cell session attendance check-in.",
+				},
+			],
 			"./plugins/withFmtConstevalFix",
 			[
 				"expo-build-properties",
