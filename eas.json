@@ -5,7 +5,14 @@
 	},
 
 	"build": {
+		"base": {
+			"ios": {
+				"image": "latest"
+			}
+		},
+
 		"development": {
+			"extends": "base",
 			"developmentClient": true,
 			"distribution": "internal",
 			"autoIncrement": true,
@@ -21,10 +28,10 @@
 		},
 
 		"staging": {
+			"extends": "base",
 			"distribution": "internal",
 			"autoIncrement": true,
 			"ios": {
-				"image": "latest",
 				"simulator": false
 			},
 			"android": {
@@ -38,10 +45,10 @@
 		},
 
 		"production": {
+			"extends": "base",
 			"distribution": "store",
 			"autoIncrement": true,
 			"ios": {
-				"image": "latest",
 				"simulator": false
 			},
 			"android": {
@@ -55,10 +62,10 @@
 		},
 
 		"pilot": {
+			"extends": "base",
 			"distribution": "store",
 			"autoIncrement": true,
 			"ios": {
-				"image": "latest",
 				"simulator": false
 			},
 			"android": {
