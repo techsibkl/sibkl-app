@@ -93,6 +93,8 @@ export default ({ config }: { config: any }) => ({
 
 			ENV: process.env.APP_ENV,
 			API_URL: process.env.API_URL,
+			// Build-time flag: "true" enables pilot-only features. Default false.
+			PILOT_BUILD: process.env.PILOT_BUILD === "true",
 			eas: {
 				// Production
 				projectId: "c415449d-f4d9-408f-854f-e26f86e8e7ad",

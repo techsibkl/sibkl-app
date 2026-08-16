@@ -1,3 +1,4 @@
+import { featureFlags } from "@/config/featureFlags";
 import HelpDialog from "@/components/shared/HelpDialog";
 import SharedModal from "@/components/shared/SharedModal";
 import { StepAction } from "@/services/Flow/flow.types";
@@ -44,19 +45,28 @@ const AssignDistrictCellAction = ({
 
 	const scope = action.value ?? "both";
 	const showDistrictTab = scope !== "cell";
-	const showCellTab = scope !== "district";
+	const showCellTab = featureFlags.cellFollowUp && scope !== "district";
 
 	const scopeLabel =
-		scope === "district"
-			? "District"
-			: scope === "cell"
-				? "Cell"
-				: "District / Cell";
+		showDistrictTab && showCellTab
+			? "District / Cell"
+			: showDistrictTab
+				? "District"
+				: "Cell";
 
-	const done = useMemo(
-		() => isAssignmentComplete(scope, personFlow),
-		[scope, personFlow],
-	);
+	const done = useMemo(() => {
+		if (showDistrictTab && showCellTab) {
+			return isAssignmentComplete("both", personFlow);
+		}
+		if (showDistrictTab) {
+			return isAssignmentComplete("district", personFlow);
+		}
+		return isAssignmentComplete("cell", personFlow);
+	}, [showDistrictTab, showCellTab, personFlow]);
+
+	if (!showDistrictTab && !showCellTab) {
+		return null;
+	}
 
 	return (
 		<View>

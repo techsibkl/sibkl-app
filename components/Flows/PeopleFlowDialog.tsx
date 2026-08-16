@@ -1,3 +1,4 @@
+import { featureFlags } from "@/config/featureFlags";
 import toastConfig from "@/config/toastConfig";
 import { ActionComponents } from "@/constants/const_flows";
 import {
@@ -145,7 +146,9 @@ const PeopleFlowDialog = ({
 		const isCellLeader = roles.includes(Role.CELL_LEADER);
 
 		const canAssignDistrict = isSuperRole || isDistrictRole;
-		const canAssignCell = isSuperRole || isDistrictRole || isCellLeader;
+		const canAssignCell =
+			featureFlags.cellFollowUp &&
+			(isSuperRole || isDistrictRole || isCellLeader);
 
 		const canAssign = ability.can(
 			"assign",
@@ -354,21 +357,23 @@ const PeopleFlowDialog = ({
 						)}
 					</View>
 					{/* Cell row */}
-					<View className="flex-row items-center gap-2">
-						<CircleIcon size={13} color="#9ca3af" />
-						{personFlow.cell_name ? (
-							<Text
-								className="text-xs text-gray-500 flex-1"
-								numberOfLines={1}
-							>
-								{personFlow.cell_name}
-							</Text>
-						) : (
-							<Text className="text-xs text-gray-400 italic">
-								No cell
-							</Text>
-						)}
-					</View>
+					{featureFlags.cellFollowUp && (
+						<View className="flex-row items-center gap-2">
+							<CircleIcon size={13} color="#9ca3af" />
+							{personFlow.cell_name ? (
+								<Text
+									className="text-xs text-gray-500 flex-1"
+									numberOfLines={1}
+								>
+									{personFlow.cell_name}
+								</Text>
+							) : (
+								<Text className="text-xs text-gray-400 italic">
+									No cell
+								</Text>
+							)}
+						</View>
+					)}
 					{/* District row */}
 					<View className="flex-row items-center gap-2">
 						<MapPinIcon size={13} color="#9ca3af" />

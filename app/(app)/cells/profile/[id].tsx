@@ -8,6 +8,7 @@ import MembersList from "@/components/Cells/Profile/MembersList";
 import SearchMembersModal from "@/components/Cells/Profile/SearchMembersModal";
 import SharedBody from "@/components/shared/SharedBody";
 import SkeletonCellProfile from "@/components/shared/Skeleton/SkeletonCellProfile";
+import { featureFlags } from "@/config/featureFlags";
 // import { getFabActions } from "@/constants/cont_cells";
 import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import {
@@ -135,6 +136,12 @@ const CellProfileScreen = () => {
 	useEffect(() => {
 		setOpen(false);
 	}, [activeTab]);
+
+	const cellProfileTabs = [
+		"people",
+		...(featureFlags.cellAttendance ? (["attendance"] as const) : []),
+		"announcements",
+	] as const;
 
 	const filteredMembers = (cell?.members ?? []).filter((member: Person) =>
 		member?.full_legal_name
@@ -302,12 +309,13 @@ const CellProfileScreen = () => {
 		}
 	};
 
-	if (isPending && isLeader)
+	if (isPending)
 		return (
 			<SharedBody>
 				<SkeletonCellProfile />
 			</SharedBody>
 		);
+
 	if (isError && isLeader)
 		return (
 			<SharedBody>
@@ -367,19 +375,21 @@ const CellProfileScreen = () => {
 
 					{/* Action Buttons */}
 					<View className="flex-row justify-center gap-2 w-full max-w-[90%] mx-6 mb-6">
-						{/* Scan QR - available to all */}
-						<TouchableOpacity
-							onPress={() =>
-								router.push({
-									pathname: "/(app)/cells/scanner",
-									params: { cell_id: String(id) },
-								})
-							}
-							className="bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5"
-						>
-							<ScanQrCodeIcon size={25} color="#1e40af" />
-							<Text className="text-text text-sm">Scan</Text>
-						</TouchableOpacity>
+						{/* Scan QR - attendance (pilot) */}
+						{featureFlags.cellAttendance && (
+							<TouchableOpacity
+								onPress={() =>
+									router.push({
+										pathname: "/(app)/cells/scanner",
+										params: { cell_id: String(id) },
+									})
+								}
+								className="bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5"
+							>
+								<ScanQrCodeIcon size={25} color="#1e40af" />
+								<Text className="text-text text-sm">Scan</Text>
+							</TouchableOpacity>
+						)}
 
 						{/* Search Members - available to all */}
 						<TouchableOpacity
@@ -393,22 +403,27 @@ const CellProfileScreen = () => {
 						</TouchableOpacity>
 
 						{/* View Sessions - for leaders and core only */}
-						{isLeader && ability.can("read", "CellSession") && (
-							<TouchableOpacity
-								onPress={() =>
-									router.push({
-										pathname: "/(app)/cells/sessions",
-										params: { cell_id: String(id) },
-									})
-								}
-								className="bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5"
-							>
-								<CalendarClockIcon size={25} color="#1e40af" />
-								<Text className="text-text text-sm">
-									Sessions
-								</Text>
-							</TouchableOpacity>
-						)}
+						{featureFlags.cellAttendance &&
+							isLeader &&
+							ability.can("read", "CellSession") && (
+								<TouchableOpacity
+									onPress={() =>
+										router.push({
+											pathname: "/(app)/cells/sessions",
+											params: { cell_id: String(id) },
+										})
+									}
+									className="bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5"
+								>
+									<CalendarClockIcon
+										size={25}
+										color="#1e40af"
+									/>
+									<Text className="text-text text-sm">
+										Sessions
+									</Text>
+								</TouchableOpacity>
+							)}
 
 						{/* Add Members - for leaders and core only */}
 						{isLeader && ability.can("create", "CellMembers") && (
@@ -426,34 +441,31 @@ const CellProfileScreen = () => {
 
 					{/* Tab bar */}
 					<View className="flex-row mx-6 mb-2">
-						{["people", "attendance", "announcements"].map(
-							(tab, index) => (
-								<TouchableOpacity
-									key={tab}
-									className={`flex-1 py-3 ${
-										index === 0
-											? "rounded-l-lg border border-border"
-											: index === 2
-												? "rounded-r-lg border border-border"
-												: " border-t border-b border-border"
-									} ${activeTab === tab ? "bg-background" : "bg-background-secondary"}`}
-									onPress={() =>
-										setActiveTab(tab as typeof activeTab)
-									}
+						{cellProfileTabs.map((tab, index) => (
+							<TouchableOpacity
+								key={tab}
+								className={`flex-1 py-3 ${
+									index === 0
+										? "rounded-l-lg border border-border"
+										: index === cellProfileTabs.length - 1
+											? "rounded-r-lg border border-border"
+											: " border-t border-b border-border"
+								} ${activeTab === tab ? "bg-background" : "bg-background-secondary"}`}
+								onPress={() =>
+									setActiveTab(tab as typeof activeTab)
+								}
+							>
+								<Text
+									className={`text-center text-sm text-nowrap font-medium ${
+										activeTab === tab
+											? "text-text"
+											: "text-text-secondary"
+									}`}
 								>
-									<Text
-										className={`text-center text-sm text-nowrap font-medium ${
-											activeTab === tab
-												? "text-text"
-												: "text-text-secondary"
-										}`}
-									>
-										{tab.charAt(0).toUpperCase() +
-											tab.slice(1)}
-									</Text>
-								</TouchableOpacity>
-							),
-						)}
+									{tab.charAt(0).toUpperCase() + tab.slice(1)}
+								</Text>
+							</TouchableOpacity>
+						))}
 					</View>
 
 					{renderTabContent()}

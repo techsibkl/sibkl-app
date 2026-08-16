@@ -502,6 +502,8 @@ npx expo run:android --device   # or ios
 
 See `README.md` for EAS builds, Play Store signing, and deployment.
 
+See `docs/FEATURE_FLAGS.md` for pilot vs production builds and gating experimental UI.
+
 ---
 
 ## 18. Where to start for common tasks
@@ -517,3 +519,4 @@ See `README.md` for EAS builds, Play Store signing, and deployment.
 | Push notifications | `app/_layout.tsx` FCM setup, `User/user.service` token |
 | Top bar title / back | Domain `_layout.tsx` + `SharedHeader` |
 | Bottom navbar | `(app)/_layout.tsx` only |
+| Pilot / production feature flags | `docs/FEATURE_FLAGS.md`, `config/featureFlags.ts` |

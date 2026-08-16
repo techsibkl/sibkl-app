@@ -1,4 +1,5 @@
 import { defaultFlowStatusAttrs } from "@/constants/const_flows";
+import { featureFlags } from "@/config/featureFlags";
 import {
 	FlowStatus,
 	FlowStep,
@@ -151,7 +152,9 @@ const PeopleFlowRowComponent = ({
 							)}
 
 							{/* Assignee + Cell row */}
-							{(effectiveAssignee || personFlow.cell_name) && (
+							{(effectiveAssignee ||
+								(featureFlags.cellFollowUp &&
+									personFlow.cell_name)) && (
 								<View className="flex-row items-center gap-x-1 flex-wrap">
 									{effectiveAssignee && (
 										<>
@@ -167,13 +170,15 @@ const PeopleFlowRowComponent = ({
 											</Text>
 										</>
 									)}
-									{effectiveAssignee &&
+									{featureFlags.cellFollowUp &&
+										effectiveAssignee &&
 										personFlow.cell_name && (
 											<Text className="text-xs text-gray-300">
 												·
 											</Text>
 										)}
-									{personFlow.cell_name && (
+									{featureFlags.cellFollowUp &&
+										personFlow.cell_name && (
 										<>
 											<CircleIcon
 												size={10}
