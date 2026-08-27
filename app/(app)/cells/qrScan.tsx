@@ -29,9 +29,8 @@ export default function QrScan() {
 
   const personId = useAuthStore((state) => state.user?.person?.id);
   const { cell_id } = useLocalSearchParams<{ cell_id: string }>();
-  const { mutateAsync: signIn } = useSignInToCellSessionMutation(
-    Number(cell_id ?? 0),
-  );
+  const cellId = Number(cell_id);
+  const { mutateAsync: signIn } = useSignInToCellSessionMutation(cellId);
 
   const handleLayout = (e: LayoutChangeEvent) => {
     const { width, height } = e.nativeEvent.layout;
@@ -41,6 +40,11 @@ export default function QrScan() {
   const handleScan = useCallback(
     async ({ data }: { data: string }) => {
       if (scanState !== "idle" || !personId) return;
+      if (!Number.isFinite(cellId) || cellId <= 0) {
+        setMessage("Missing cell context. Go back and try again.");
+        setScanState("error");
+        return;
+      }
       setScanState("loading");
       try {
         await signIn({ attendanceId: data, peopleId: personId });
@@ -53,7 +57,7 @@ export default function QrScan() {
         setScanState("error");
       }
     },
-    [scanState, personId, signIn],
+    [scanState, personId, signIn, cellId],
   );
 
   const handleReset = () => {
