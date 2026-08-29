@@ -28,7 +28,7 @@ const faqData = [
 	},
 	{
 		question: "When will the full version be released?",
-		answer: "The full version is expected to be released in Q2 2026, after thorough testing and feedback collection during the UAT phase.",
+		answer: "The full version is expected to be released in Q4 2026, after thorough testing and feedback collection during the UAT phase.",
 	},
 	{
 		question: "How do I reset my password?",
