@@ -70,6 +70,16 @@ export default function DeleteAccountScreen() {
 	const onSubmit = async (data: DeleteAccountFormData) => {
 		setIsLoading(true);
 		try {
+			const enteredEmail = data.email.trim().toLowerCase();
+			const accountEmail = userEmail?.trim().toLowerCase();
+			if (accountEmail && enteredEmail !== accountEmail) {
+				Alert.alert(
+					"Email Mismatch",
+					"Please enter the email address for the account you are signed in with.",
+				);
+				return;
+			}
+
 			// Re-authenticate user
 			const userCredential = await signInWithEmailAndPassword(
 				auth,
@@ -124,13 +134,47 @@ export default function DeleteAccountScreen() {
 					onPress: async () => {
 						setIsLoading(true);
 						try {
-							// Call backend to delete user from database and Firebase
-							await deleteAccount();
+							const deleteResult = await deleteAccount();
 
-							// Delete Firebase auth user locally
+							if (!deleteResult.success) {
+								Alert.alert(
+									"Error",
+									deleteResult.message ??
+										"The server could not delete your account. Please try again.",
+								);
+								return;
+							}
+
 							const currentUser = auth.currentUser;
 							if (currentUser) {
-								await deleteUser(currentUser);
+								try {
+									await deleteUser(currentUser);
+								} catch (firebaseError: any) {
+									console.error(
+										"[v0] Firebase deleteUser after successful server delete:",
+										firebaseError,
+									);
+									try {
+										await signOut();
+									} catch {
+										// ignore secondary sign-out errors
+									}
+									Alert.alert(
+										"Account removed",
+										"Your profile was removed from our records, but clearing this device login failed. You have been signed out. If you can still sign in, please contact support.",
+										[
+											{
+												text: "OK",
+												onPress: () => {
+													router.replace(
+														"/(auth)/index" as any,
+													);
+												},
+											},
+										],
+									);
+									return;
+								}
 							}
 
 							Alert.alert(
