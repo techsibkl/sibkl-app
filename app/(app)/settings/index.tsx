@@ -36,6 +36,8 @@ export default function SettingsScreen() {
 	};
 
 	const handleLogin = () => {
+		// Root routing checks isGuest before unauthenticated users.
+		useAuthStore.setState({ isGuest: false });
 		router.replace("/(auth)/sign-in");
 	};
 
