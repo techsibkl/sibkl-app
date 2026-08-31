@@ -21,9 +21,20 @@ const AddNoteDialog = ({
 	const [isLoading, setIsLoading] = useState(false);
 
 	const handleSave = async () => {
+		const personId = Number(personFlow.p__id ?? personFlow.people_id);
+		if (!Number.isFinite(personId)) {
+			Toast.show(
+				myToast({
+					success: false,
+					message: "Could not resolve person for this note.",
+				}),
+			);
+			return;
+		}
+
 		setIsLoading(true);
 		const res = await createNote(
-			personFlow.people_id!,
+			personId,
 			note,
 			personFlow.p__district_ids,
 		);
