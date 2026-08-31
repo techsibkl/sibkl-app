@@ -25,8 +25,8 @@ export const usePeoplePaginatedQuery = (
 			fetchPeoplePaginated({ ...params, page: pageParam }),
 		initialPageParam: 1,
 		getNextPageParam: (lastPage) => {
-			const { page, total } = lastPage.meta;
-			return page < total ? page + 1 : undefined;
+			const { page, totalPages } = lastPage.meta;
+			return page < totalPages ? page + 1 : undefined;
 		},
 	});
 
