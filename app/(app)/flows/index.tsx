@@ -1,6 +1,6 @@
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import React, { useEffect, useMemo, useState } from "react";
-import { StatusBar, TouchableOpacity, View } from "react-native";
+import { StatusBar, Text, TouchableOpacity, View } from "react-native";
 
 import FlowSelector from "@/components/Flows/FlowSelect";
 import PeopleFlowList from "@/components/Flows/PeopleFlowAssignedList";
@@ -16,7 +16,6 @@ import {
 import { useAuthStore } from "@/stores/authStore";
 import { useLocalSearchParams } from "expo-router";
 import { CheckIcon } from "lucide-react-native";
-import { Text } from "react-native";
 
 const FlowsPage = () => {
 	const { user } = useAuthStore();
@@ -40,30 +39,33 @@ const FlowsPage = () => {
 			setSelectedFlowId(Number(flow_id));
 			setIsMeMode(isMeModeParam === "true");
 		} else {
-			// On initial page load, ensure the ALL flows query runs
 			setSelectedFlowId(0);
-			allFlowsRefetch();
 		}
 	}, [flow_id, isMeModeParam]);
 
-	// Getting people from SINGLE selected flow
+	// People for the selected flow: flowId 0 means “all flows” (same backend contract).
 	const {
 		data: singleFlowPeople,
 		isPending: singleFlowPending,
 		refetch: singleFlowRefetch,
 	} = usePeopleFlowQuery(selectedFlowId);
 
-	// Getting people from ALL flows (only when selectedFlowId === 0)
-	const {
-		data: allFlowsPeople,
-		isPending: allFlowsPending,
-		refetch: allFlowsRefetch,
-	} = usePeopleFlowQuery();
-
-	const flowIds = useMemo(
-		() => [...new Set(allFlowsPeople?.map((p) => p.flow_id) || [])],
-		[allFlowsPeople],
-	);
+	const flowIds = useMemo(() => {
+		const fromPeople = [
+			...new Set(
+				(singleFlowPeople ?? [])
+					.map((p) => p.flow_id)
+					.filter((id): id is number => typeof id === "number"),
+			),
+		];
+		if (
+			selectedFlowId !== 0 &&
+			!fromPeople.includes(selectedFlowId)
+		) {
+			fromPeople.push(selectedFlowId);
+		}
+		return fromPeople;
+	}, [singleFlowPeople, selectedFlowId]);
 
 	const {
 		data: flows,
@@ -72,17 +74,12 @@ const FlowsPage = () => {
 	} = useFlowsQuery(flowIds as number[]);
 
 	const allPending = useMemo(() => {
-		return selectedFlowId === 0
-			? allFlowsPending || flowsPending
-			: singleFlowPending || flowsPending;
-	}, [selectedFlowId, allFlowsPending, singleFlowPending, flowsPending]);
+		return singleFlowPending || flowsPending;
+	}, [singleFlowPending, flowsPending]);
 
 	// Pre-status-filter list (search + isMeMode applied) — fed into the tab counts
 	const preFilteredPeopleFlow = useMemo(() => {
-		let list =
-			selectedFlowId === 0
-				? (allFlowsPeople ?? [])
-				: (singleFlowPeople ?? []);
+		let list = singleFlowPeople ?? [];
 
 		// Search filter
 		list = list.filter(
@@ -99,14 +96,7 @@ const FlowsPage = () => {
 		}
 
 		return list;
-	}, [
-		selectedFlowId,
-		allFlowsPeople,
-		singleFlowPeople,
-		searchQuery,
-		isMeMode,
-		user?.person?.id,
-	]);
+	}, [singleFlowPeople, searchQuery, isMeMode, user?.person?.id]);
 
 	// Final list — status tab + sort applied on top
 	const effectivePeopleFlow = useMemo(() => {
@@ -138,11 +128,7 @@ const FlowsPage = () => {
 		setSortOrder("desc");
 	};
 	const refresh = async () => {
-		if (selectedFlowId === 0) {
-			await allFlowsRefetch();
-		} else {
-			await singleFlowRefetch();
-		}
+		await singleFlowRefetch();
 		flowRefetch();
 	};
 
