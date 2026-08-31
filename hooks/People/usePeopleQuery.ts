@@ -25,8 +25,28 @@ export const usePeoplePaginatedQuery = (
 			fetchPeoplePaginated({ ...params, page: pageParam }),
 		initialPageParam: 1,
 		getNextPageParam: (lastPage) => {
-			const { page, total } = lastPage.meta;
-			return page < total ? page + 1 : undefined;
+			const meta = lastPage.meta;
+			if (meta == null || meta.page == null) return undefined;
+
+			// Prefer totalPages — `total` is the total row count, not the last page index.
+			// Comparing page to row count would keep hasNextPage true until page exceeds
+			// the number of people (hundreds of redundant fetches).
+			if (typeof meta.totalPages === "number" && meta.totalPages > 0) {
+				return meta.page < meta.totalPages ? meta.page + 1 : undefined;
+			}
+
+			if (
+				typeof meta.total === "number" &&
+				meta.total > 0 &&
+				typeof meta.pageSize === "number" &&
+				meta.pageSize > 0
+			) {
+				return meta.page * meta.pageSize < meta.total
+					? meta.page + 1
+					: undefined;
+			}
+
+			return undefined;
 		},
 	});
 
