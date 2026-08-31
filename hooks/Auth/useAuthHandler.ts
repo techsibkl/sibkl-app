@@ -4,7 +4,10 @@ import { AuthState } from "@/stores/authStore";
 import { defineAbilityFor, Role } from "@/utils/casl/defineAbilityFor";
 import { apiEndpoints } from "@/utils/endpoints";
 import { secureFetch } from "@/utils/secureFetch";
-import { FirebaseAuthTypes } from "@react-native-firebase/auth";
+import {
+	FirebaseAuthTypes,
+	getAuth,
+} from "@react-native-firebase/auth";
 
 export const handleAuthStateChange = async (
 	firebaseUser: FirebaseAuthTypes.User | null,
@@ -64,6 +67,13 @@ export const handleAuthStateChange = async (
 		// ADd toast
 		console.error("Failed to fetch person:", error);
 	} finally {
+		// Ignore stale results if auth changed while getPersonOfUid was in flight
+		// (sign-out, account switch, or another listener invocation).
+		const currentUid = getAuth().currentUser?.uid;
+		if (currentUid !== firebaseUser.uid) {
+			return;
+		}
+
 		let person: Person =
 			appUser?.person ?? <Person>{ id: 0, roles: [Role.NONE] };
 
