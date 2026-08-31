@@ -22,8 +22,14 @@ const AddNoteDialog = ({
 
 	const handleSave = async () => {
 		setIsLoading(true);
+		const personId = Number(personFlow.p__id ?? personFlow.people_id);
+		if (!Number.isFinite(personId)) {
+			setIsLoading(false);
+			Toast.show(myToast({ success: false, message: "Missing person id" }));
+			return;
+		}
 		const res = await createNote(
-			personFlow.people_id!,
+			personId,
 			note,
 			personFlow.p__district_ids,
 		);
