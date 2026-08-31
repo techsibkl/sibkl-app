@@ -32,6 +32,20 @@ export const deleteAccount = async (): Promise<ReturnVal> => {
 			"Content-Type": "application/json",
 		},
 	});
-	const json: ReturnVal = await response.json();
+
+	let json: ReturnVal;
+	try {
+		json = await response.json();
+	} catch {
+		throw new Error("Delete account failed: invalid server response");
+	}
+
+	if (!response.ok || !json.success) {
+		throw new Error(
+			json.message ||
+				`Delete account failed (${response.status})`,
+		);
+	}
+
 	return json;
 };

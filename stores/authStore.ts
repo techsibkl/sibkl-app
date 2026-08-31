@@ -1,5 +1,8 @@
 import { ProfileFormData } from "@/app/(auth)/complete-profile";
-import { handleAuthStateChange } from "@/hooks/Auth/useAuthHandler";
+import {
+	handleAuthStateChange,
+	setGuestModeFirebaseSignOut,
+} from "@/hooks/Auth/useAuthHandler";
 import { createAccount, getPersonOfUid } from "@/services/Auth/auth.service";
 import { Person } from "@/services/Person/person.type";
 import { AppUser } from "@/services/User/user.types";
@@ -32,7 +35,7 @@ export type AuthState = {
 	signUp: (
 		profileData: ProfileFormData,
 	) => Promise<FirebaseAuthTypes.User | null | undefined>;
-	guestLogin: () => void;
+	guestLogin: () => Promise<void>;
 	signOut: () => Promise<void>;
 	init: () => void;
 };
@@ -127,17 +130,24 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 		}
 	},
 
-	// Guest login
-	guestLogin: () => {
-		set({
-			isGuest: true,
-			isAuthenticated: false,
-			firebaseUser: null,
-			user: null,
-			authLoaded: true,
-			ability: defineAbilityFor(<Person>{ id: 0, roles: [Role.NONE] }),
-			isLoading: false,
-		});
+	// Guest login — sign out of Firebase first so we never keep a hidden
+	// authenticated session while isGuest is true (secureFetch, change password, etc.).
+	guestLogin: async () => {
+		setGuestModeFirebaseSignOut(true);
+		try {
+			await signOut(getAuth());
+			set({
+				isGuest: true,
+				isAuthenticated: false,
+				firebaseUser: null,
+				user: null,
+				authLoaded: true,
+				ability: defineAbilityFor(<Person>{ id: 0, roles: [Role.NONE] }),
+				isLoading: false,
+			});
+		} finally {
+			setGuestModeFirebaseSignOut(false);
+		}
 	},
 
 	// Sign out
