@@ -40,25 +40,23 @@ const FlowsPage = () => {
 			setSelectedFlowId(Number(flow_id));
 			setIsMeMode(isMeModeParam === "true");
 		} else {
-			// On initial page load, ensure the ALL flows query runs
 			setSelectedFlowId(0);
-			allFlowsRefetch();
 		}
 	}, [flow_id, isMeModeParam]);
 
-	// Getting people from SINGLE selected flow
+	// People for the currently selected flow (flowId=0 means ALL FOLLOW-UP)
 	const {
-		data: singleFlowPeople,
-		isPending: singleFlowPending,
-		refetch: singleFlowRefetch,
+		data: peopleFlowData,
+		isPending: peopleFlowPending,
+		refetch: peopleFlowRefetch,
 	} = usePeopleFlowQuery(selectedFlowId);
 
-	// Getting people from ALL flows (only when selectedFlowId === 0)
+	// Always load ALL flows so the flow selector can list every option
 	const {
 		data: allFlowsPeople,
-		isPending: allFlowsPending,
+		isPending: allFlowsMetaPending,
 		refetch: allFlowsRefetch,
-	} = usePeopleFlowQuery();
+	} = usePeopleFlowQuery(0);
 
 	const flowIds = useMemo(
 		() => [...new Set(allFlowsPeople?.map((p) => p.flow_id) || [])],
@@ -72,17 +70,16 @@ const FlowsPage = () => {
 	} = useFlowsQuery(flowIds as number[]);
 
 	const allPending = useMemo(() => {
-		return selectedFlowId === 0
-			? allFlowsPending || flowsPending
-			: singleFlowPending || flowsPending;
-	}, [selectedFlowId, allFlowsPending, singleFlowPending, flowsPending]);
+		return (
+			peopleFlowPending ||
+			(selectedFlowId !== 0 && allFlowsMetaPending) ||
+			flowsPending
+		);
+	}, [selectedFlowId, peopleFlowPending, allFlowsMetaPending, flowsPending]);
 
 	// Pre-status-filter list (search + isMeMode applied) — fed into the tab counts
 	const preFilteredPeopleFlow = useMemo(() => {
-		let list =
-			selectedFlowId === 0
-				? (allFlowsPeople ?? [])
-				: (singleFlowPeople ?? []);
+		let list = peopleFlowData ?? [];
 
 		// Search filter
 		list = list.filter(
@@ -99,14 +96,7 @@ const FlowsPage = () => {
 		}
 
 		return list;
-	}, [
-		selectedFlowId,
-		allFlowsPeople,
-		singleFlowPeople,
-		searchQuery,
-		isMeMode,
-		user?.person?.id,
-	]);
+	}, [peopleFlowData, searchQuery, isMeMode, user?.person?.id]);
 
 	// Final list — status tab + sort applied on top
 	const effectivePeopleFlow = useMemo(() => {
@@ -138,10 +128,9 @@ const FlowsPage = () => {
 		setSortOrder("desc");
 	};
 	const refresh = async () => {
-		if (selectedFlowId === 0) {
+		await peopleFlowRefetch();
+		if (selectedFlowId !== 0) {
 			await allFlowsRefetch();
-		} else {
-			await singleFlowRefetch();
 		}
 		flowRefetch();
 	};

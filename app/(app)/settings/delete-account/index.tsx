@@ -49,6 +49,9 @@ export default function DeleteAccountScreen() {
 		defaultValues: { email: "", password: "" },
 	});
 
+	const currentUser = auth.currentUser;
+	const userEmail = currentUser?.email;
+
 	const handleConfirmDelete = () => {
 		Alert.alert(
 			"Delete Account",
@@ -70,7 +73,16 @@ export default function DeleteAccountScreen() {
 	const onSubmit = async (data: DeleteAccountFormData) => {
 		setIsLoading(true);
 		try {
-			// Re-authenticate user
+			const expectedEmail = userEmail?.trim().toLowerCase();
+			const enteredEmail = data.email.trim().toLowerCase();
+			if (expectedEmail && enteredEmail !== expectedEmail) {
+				Alert.alert(
+					"Email Mismatch",
+					"The email you entered does not match your signed-in account.",
+				);
+				return;
+			}
+
 			const userCredential = await signInWithEmailAndPassword(
 				auth,
 				data.email,
@@ -124,10 +136,15 @@ export default function DeleteAccountScreen() {
 					onPress: async () => {
 						setIsLoading(true);
 						try {
-							// Call backend to delete user from database and Firebase
-							await deleteAccount();
+							// Delete backend data first; only remove Firebase auth on success
+							const result = await deleteAccount();
+							if (!result.success) {
+								throw new Error(
+									result.message ||
+										"Failed to delete account. Please try again.",
+								);
+							}
 
-							// Delete Firebase auth user locally
 							const currentUser = auth.currentUser;
 							if (currentUser) {
 								await deleteUser(currentUser);
@@ -163,9 +180,6 @@ export default function DeleteAccountScreen() {
 			],
 		);
 	};
-
-	const currentUser = auth.currentUser;
-	const userEmail = currentUser?.email;
 
 	return (
 		<SharedBody>

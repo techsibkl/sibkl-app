@@ -53,7 +53,7 @@ export async function fetchPeopleFlow(
 	});
 
 	const json = await response.json();
-	const data = json.data as PeopleFlow[];
+	const data = (json.data ?? []) as PeopleFlow[];
 	return data.map((item: PeopleFlow) => formatObjStrToDate(item));
 
 	// const data = json.data;
