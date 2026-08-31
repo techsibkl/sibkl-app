@@ -38,7 +38,11 @@ const NotesTab = ({ personFlow }: NotesTabProps) => {
 
 		setIsSubmitting(true);
 		try {
-			const result = await createNote(personId, newNote.trim());
+			const result = await createNote(
+				personId,
+				newNote.trim(),
+				personFlow.p__district_ids,
+			);
 
 			if (result.success) {
 				setNewNote("");

@@ -41,10 +41,12 @@ export async function updateNote(id: string, text: string): Promise<ReturnVal> {
 export async function createNote(
 	peopleId: number,
 	note: string,
+	districtIds?: number[],
 ): Promise<ReturnVal> {
 	let payload = {
 		people_id: peopleId,
 		note: note,
+		district_ids: districtIds,
 	};
 
 	// Send the request to the server
