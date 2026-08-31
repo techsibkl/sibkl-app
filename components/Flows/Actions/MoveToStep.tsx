@@ -78,10 +78,16 @@ const MoveToStepAction = ({ action, personFlow, steps, flow_id, onSuccess }: Pro
 
 		const targetStep = steps[option.key];
 
+		const personId = Number(personFlow.p__id ?? personFlow.people_id);
+		if (!Number.isFinite(personId)) {
+			console.error("MoveToStep: missing person id on PeopleFlow", personFlow);
+			return;
+		}
+
 		changeStep(
 			{
 				flowId: flow_id,
-				peopleIds: [personFlow.people_id!],
+				peopleIds: [personId],
 				step_key: option.key,
 				step: targetStep as FlowStep,
 				districtId: personFlow.district_id,
