@@ -1,4 +1,5 @@
 import { useCreateCellSessionMutation } from "@/hooks/CellAttendance/useCellAttendanceQuery";
+import { formatLocalDate } from "@/utils/helper";
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 // import DateTimePicker from "@react-native-community/datetimepicker";
 import * as FileSystem from "expo-file-system";
@@ -96,7 +97,10 @@ const CreateSessionSheet = forwardRef<
 
     setShowDuplicateWarning(false);
     try {
-      const result = await createSession(date.toISOString().split("T")[0]);
+      const result = await createSession({
+        meetingDate: formatLocalDate(date),
+        force,
+      });
       setInsertedSessionId(result.insertedId);
       setQrCodeValue(String(result.insertedId));
       onCreated?.(result.insertedId);

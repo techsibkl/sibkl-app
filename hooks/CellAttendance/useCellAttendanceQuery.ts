@@ -34,7 +34,13 @@ export const useCellSessionByIdQuery = (cellId: number, sessionId: number) => {
 export const useCreateCellSessionMutation = (cellId: number) => {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: (meetingDate: string) => createCellSession(cellId, meetingDate),
+    mutationFn: ({
+      meetingDate,
+      force = false,
+    }: {
+      meetingDate: string;
+      force?: boolean;
+    }) => createCellSession(cellId, meetingDate, force),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["cell-sessions", cellId] });
     },
