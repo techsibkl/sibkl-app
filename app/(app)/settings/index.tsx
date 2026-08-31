@@ -20,7 +20,7 @@ import {
 } from "react-native";
 
 export default function SettingsScreen() {
-	const { signOut, isGuest } = useAuthStore();
+	const { signOut, isGuest, exitGuestMode } = useAuthStore();
 	const router = useRouter();
 	const [darkTheme, setDarkTheme] = useState(true);
 
@@ -36,6 +36,7 @@ export default function SettingsScreen() {
 	};
 
 	const handleLogin = () => {
+		exitGuestMode();
 		router.replace("/(auth)/sign-in");
 	};
 

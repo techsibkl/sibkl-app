@@ -1,5 +1,8 @@
 import { ProfileFormData } from "@/app/(auth)/complete-profile";
-import { handleAuthStateChange } from "@/hooks/Auth/useAuthHandler";
+import {
+	handleAuthStateChange,
+	setGuestModeFirebaseSignOut,
+} from "@/hooks/Auth/useAuthHandler";
 import { createAccount, getPersonOfUid } from "@/services/Auth/auth.service";
 import { Person } from "@/services/Person/person.type";
 import { AppUser } from "@/services/User/user.types";
@@ -13,6 +16,8 @@ import {
 	signOut,
 } from "@react-native-firebase/auth";
 import { create } from "zustand";
+
+let authStateUnsubscribe: (() => void) | null = null;
 
 // Example state with Zustand
 export type AuthState = {
@@ -32,7 +37,8 @@ export type AuthState = {
 	signUp: (
 		profileData: ProfileFormData,
 	) => Promise<FirebaseAuthTypes.User | null | undefined>;
-	guestLogin: () => void;
+	guestLogin: () => Promise<void>;
+	exitGuestMode: () => void;
 	signOut: () => Promise<void>;
 	init: () => void;
 };
@@ -66,7 +72,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 			);
 			set({ firebaseUser: res?.user });
 			set({ authLoaded: false, isGuest: false });
-			await handleAuthStateChange(res?.user ?? null, set);
+			await handleAuthStateChange(res?.user ?? null, set, get);
 			return res?.user;
 		} catch (error: FirebaseAuthTypes.NativeFirebaseAuthError | any) {
 			if (error.code === "auth/invalid-credential") {
@@ -104,18 +110,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 				);
 			}
 
-			// 4. Build appUser object
+			const person = resPerson.data as Person;
 			const appUser: AppUser = {
 				uid: firebaseUser.uid,
 				email: firebaseUser.email ?? "",
-				people_id: resPerson.data.people_id,
-				person: resPerson.data as Person,
+				people_id: person.id,
+				person,
 			};
 
 			set({
 				isAuthenticated: true,
 				user: appUser,
 				authLoaded: true,
+				ability: defineAbilityFor(person),
 			});
 
 			return firebaseUser;
@@ -127,17 +134,27 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 		}
 	},
 
-	// Guest login
-	guestLogin: () => {
-		set({
-			isGuest: true,
-			isAuthenticated: false,
-			firebaseUser: null,
-			user: null,
-			authLoaded: true,
-			ability: defineAbilityFor(<Person>{ id: 0, roles: [Role.NONE] }),
-			isLoading: false,
-		});
+	// Guest login — sign out of Firebase first so we never keep a hidden session while isGuest is true.
+	guestLogin: async () => {
+		setGuestModeFirebaseSignOut(true);
+		try {
+			await signOut(getAuth());
+			set({
+				isGuest: true,
+				isAuthenticated: false,
+				firebaseUser: null,
+				user: null,
+				authLoaded: true,
+				ability: defineAbilityFor(<Person>{ id: 0, roles: [Role.NONE] }),
+				isLoading: false,
+			});
+		} finally {
+			setGuestModeFirebaseSignOut(false);
+		}
+	},
+
+	exitGuestMode: () => {
+		set({ isGuest: false, authLoaded: true });
 	},
 
 	// Sign out
@@ -152,9 +169,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 	},
 
 	init: () => {
-		set({ authLoaded: false, isGuest: false });
-		onAuthStateChanged(getAuth(), async (firebaseUser) =>
-			handleAuthStateChange(firebaseUser, set),
+		const { isGuest } = get();
+		set({ authLoaded: false, ...(isGuest ? {} : { isGuest: false }) });
+		authStateUnsubscribe?.();
+		authStateUnsubscribe = onAuthStateChanged(
+			getAuth(),
+			async (firebaseUser) => handleAuthStateChange(firebaseUser, set, get),
 		);
 	},
 }));
