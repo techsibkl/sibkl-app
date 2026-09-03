@@ -3,6 +3,7 @@ import SharedBody from "@/components/shared/SharedBody";
 import SkeletonPeopleRow from "@/components/shared/Skeleton/SkeletonPeopleRow";
 import { DEFAULT_PERSON_COLUMNS } from "@/constants/const_person";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
+import { handleAuthStateChange } from "@/hooks/Auth/useAuthHandler";
 import { updatePeople } from "@/services/Person/person.service";
 import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
@@ -16,6 +17,7 @@ import {
 	validateCompleteProfile,
 } from "@/utils/helper_profile";
 import { useLocalSearchParams } from "expo-router";
+import { getAuth } from "@react-native-firebase/auth";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
@@ -131,7 +133,13 @@ const Page = () => {
 					...data,
 				});
 				if (response.success) {
-					authStore.init();
+					const firebaseUser = getAuth().currentUser;
+					if (firebaseUser) {
+						await handleAuthStateChange(
+							firebaseUser,
+							useAuthStore.setState,
+						);
+					}
 				}
 			} catch (error) {
 				console.error("Error updating person profile:", error);
@@ -142,7 +150,6 @@ const Page = () => {
 				console.error("Something went wrong signing up");
 				return;
 			}
-			authStore.init();
 		}
 	};
 
