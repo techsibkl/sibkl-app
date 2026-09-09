@@ -1,0 +1,32 @@
+---
+description: SIBKL app stack, architecture, and global conventions
+alwaysApply: true
+---
+
+# SIBKL Mobile App
+
+React Native church operations app: Expo 53 + Expo Router + Firebase Auth/FCM + TanStack Query + Zustand + NativeWind + CASL.
+
+## Folder Map
+
+- `app/` — Expo Router screens (`(auth)/` unauthenticated, `(app)/` tabbed app)
+- `components/` — UI grouped by feature (Cells, Flows, People, shared/)
+- `hooks/` — React Query hooks (`useXxxQuery`, `useXxxMutation`)
+- `services/` — API calls + types (`*.service.ts`, `*.type.ts`)
+- `stores/` — Zustand (`authStore`, `signUpStore`, `claimStore`)
+- `utils/` — `secureFetch`, `endpoints`, CASL, helpers
+- `config/` — feature flags, toast config
+
+## Conventions
+
+- Import with `@/` path alias (maps to project root)
+- Add API paths to `utils/endpoints.ts`; never hardcode base URLs in services
+- Gate pilot features via `config/featureFlags.ts` — never read `PILOT_BUILD` in components
+- Backend enforces auth; client CASL is UX-only
+- Minimize diff scope; match existing naming and file placement
+- Do not commit `.env*` files or Firebase credential JSON/plist secrets
+
+## Environments
+
+- `APP_ENV` + `API_URL` come from `.env.development` / `.env.staging` / `.env.production`
+- Scripts: `npm run android:dev`, `ios:staging`, etc. (see `package.json`)

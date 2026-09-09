@@ -24,6 +24,7 @@ export const featureFlags = {
 	cells: isPilotBuild,
 	cellFollowUp: SHOW,
 	cellAttendance: isPilotBuild,
+	events: SHOW,
 } as const;
 
 export type FeatureFlagKey = Exclude<keyof typeof featureFlags, "isPilotBuild">;
@@ -37,6 +38,7 @@ if (__DEV__) {
 			cells: featureFlags.cells,
 			cellFollowUp: featureFlags.cellFollowUp,
 			cellAttendance: featureFlags.cellAttendance,
+			events: featureFlags.events,
 		},
 	);
 }

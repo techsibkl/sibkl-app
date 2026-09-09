@@ -1,0 +1,37 @@
+---
+description: React Native components, styling, and shared UI patterns
+globs: components/**/*.tsx
+alwaysApply: false
+---
+
+# Components & UI
+
+## Structure
+
+- Group by feature: `components/Cells/`, `components/Flows/`, `components/shared/`
+- Prefer functional components with explicit prop types (`XxxProps`)
+- Reuse shared primitives before creating new ones: `SharedButton`, `SharedModal`, `FormField`, `DynamicFormField`, skeletons in `shared/Skeleton/`
+
+## Styling
+
+- Use **NativeWind** (`className`) for layout/spacing; match existing Tailwind patterns
+- Use **React Native Paper** theme from `constants/const_styles.ts` for Material components
+- Icons: `lucide-react-native`
+- Lists: prefer `@shopify/flash-list` over FlatList for long lists
+
+## Permissions in UI
+
+```tsx
+// ✅ Gate actions by CASL ability
+<Can action="read" subject="CellDetails" fallback={<SignInPrompt />}>
+  <CellContent />
+</Can>
+```
+
+- Do not implement authorization logic only in UI — backend must enforce too
+- For guest users, show sign-in prompts instead of broken API calls
+
+## Feedback
+
+- Toasts: `myToast()` from `@/utils/helper` or `react-native-toast-message`
+- Loading: use existing skeleton components (`SkeletonList`, `SkeletonRow`)

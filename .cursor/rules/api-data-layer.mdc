@@ -1,0 +1,34 @@
+---
+description: API services, secureFetch, endpoints, and React Query hooks
+globs: services/**/*.ts,hooks/**/*.ts,utils/endpoints.ts,utils/secureFetch.ts
+alwaysApply: false
+---
+
+# API & Data Layer
+
+## Services
+
+- One domain folder under `services/` (e.g. `Cell/cell.service.ts` + `cell.types.ts`)
+- All HTTP calls go through `secureFetch` from `@/utils/secureFetch`
+- Use `apiEndpoints` from `@/utils/endpoints` — add new routes there first
+- Backend responses use `ReturnVal`: `{ success, message?, data?, status_code? }`
+
+```typescript
+// ✅ Service pattern
+export const fetchCells = async (): Promise<Cell[]> => {
+  const response = await secureFetch(apiEndpoints.cells.getAll);
+  const json: ReturnVal = await response.json();
+  return json.data as Cell[];
+};
+```
+
+- Throw `{ status, message }` on failure when hooks need retry logic
+- Guest/unauthenticated calls: `secureFetch(url, init, { allowUnauthenticated: true })`
+
+## React Query Hooks
+
+- Place in `hooks/<Domain>/useXxxQuery.ts` or `useXxxMutation.ts`
+- Name hooks `useCellsQuery`, `usePeopleFlowMutation` (domain + action)
+- Use stable `queryKey` arrays: `["cells"]`, `["people", id]`
+- Do not retry on 401/403 (match existing hooks)
+- Screens consume hooks — do not call services directly from `app/` routes

@@ -1,0 +1,32 @@
+---
+description: Expo Router screens, navigation, and app route conventions
+globs: app/**/*.tsx
+alwaysApply: false
+---
+
+# Screens & Routing
+
+## Route Groups
+
+- `(auth)/` — sign-in, sign-up, OTP, complete-profile, splash
+- `(app)/` — main tabs defined in `app/(app)/_layout.tsx` (Home, Cells, People, Follow-up, Leaders, Settings)
+- Hidden tab routes use `href: null` (announcements, notifications, profile)
+
+## Auth Routing
+
+Root `app/_layout.tsx` owns auth redirects — do not duplicate redirect logic in individual screens:
+splash → guest home | sign-in | complete-profile | app home
+
+## Screen Guidelines
+
+- Keep screens thin: compose from `components/`, fetch via hooks
+- Use `router.push` / `router.replace` from `expo-router`; prefer `replace` after auth state changes
+- Use `SharedBody`, `SharedSectionHeader`, `SharedSearchBar` for consistent layout
+- Check `useAuthStore()` for user/guest state; gate protected UI with `<Can>` or early returns
+- Respect `featureFlags` before showing pilot tabs/features (e.g. Cells)
+
+## File Naming
+
+- Tab screens: `app/(app)/<feature>/index.tsx`
+- Dynamic routes: `[id].tsx`, `[sessionId].tsx`
+- Layouts: `_layout.tsx` per segment
