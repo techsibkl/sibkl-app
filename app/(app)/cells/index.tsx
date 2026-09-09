@@ -16,6 +16,8 @@ import React, { useEffect, useRef, useState } from "react";
 import {
 	Animated,
 	Pressable,
+	RefreshControl,
+	ScrollView,
 	StatusBar,
 	StyleSheet,
 	Text,
@@ -33,13 +35,29 @@ const CellsScreen = () => {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [joiningCellId, setJoiningCellId] = useState<number | null>(null);
 	const [pendingCellIds, setPendingCellIds] = useState<number[]>([]);
+	const [refreshing, setRefreshing] = useState(false);
 	const underlinePosition = useRef(new Animated.Value(0)).current;
 
 	// Fetch all available cells
-	const { data: availableCells = [], isPending: cellsLoading } = useCellsPublicQuery();
+	const {
+		data: availableCells = [],
+		isPending: cellsLoading,
+		refetch: refetchCells,
+	} = useCellsPublicQuery();
 
 	// Fetch user's current person data
-	const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
+	const { data: person, refetch: refetchPerson } = useSinglePersonQuery(
+		user?.person?.id ?? -1,
+	);
+
+	const handleRefresh = async () => {
+		setRefreshing(true);
+		try {
+			await Promise.all([refetchCells(), refetchPerson()]);
+		} finally {
+			setRefreshing(false);
+		}
+	};
 	// Get leader cell IDs
 	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
 	// Get user's current cell IDs
@@ -207,24 +225,48 @@ const CellsScreen = () => {
 						<Text className="text-gray-500">Loading groups...</Text>
 					</View>
 				) : browseTab === "joined" && userCellIds.length === 0 ? (
-					<View className="flex-1 items-center justify-center px-6">
+					<ScrollView
+						contentContainerStyle={{
+							flexGrow: 1,
+							justifyContent: "center",
+							paddingHorizontal: 24,
+						}}
+						refreshControl={
+							<RefreshControl
+								refreshing={refreshing}
+								onRefresh={handleRefresh}
+							/>
+						}
+					>
 						<Text className="text-center text-gray-500 text-lg mb-4">No Cells</Text>
 						<Text className="text-center text-gray-400 mb-6">You haven't joined any groups yet</Text>
-						<Pressable 
+						<Pressable
 							onPress={() => setBrowseTab("available")}
 							style={styles.joinButton}
 						>
 							<Text style={styles.joinButtonText}>Join One Now</Text>
 						</Pressable>
-					</View>
+					</ScrollView>
 				) : filteredCells.length === 0 ? (
-					<View className="flex-1 items-center justify-center px-6">
+					<ScrollView
+						contentContainerStyle={{
+							flexGrow: 1,
+							justifyContent: "center",
+							paddingHorizontal: 24,
+						}}
+						refreshControl={
+							<RefreshControl
+								refreshing={refreshing}
+								onRefresh={handleRefresh}
+							/>
+						}
+					>
 						<Text className="text-center text-gray-500">
 							{searchQuery
 								? "No groups found matching your search"
 								: "No available groups to join"}
 						</Text>
-					</View>
+					</ScrollView>
 			) : (
 				<FlashList
 					data={filteredCells}
@@ -234,6 +276,8 @@ const CellsScreen = () => {
 					showsVerticalScrollIndicator={false}
 					contentContainerStyle={{ paddingHorizontal: 16, paddingVertical: 16 }}
 					estimatedItemSize={140}
+					refreshing={refreshing}
+					onRefresh={handleRefresh}
 				/>
 			)}
 			</View>
