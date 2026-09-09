@@ -125,4 +125,10 @@ export const apiEndpoints = {
 		updateAsClosed: _endpoint("notifications/mark-closed"),
 		updateAsReopen: _endpoint("notifications/mark-reopen"),
 	},
+	events: {
+		getAll: _endpoint("events"),
+		getById: (id: number | string) => _endpoint(`events/${id}`),
+		registerParticipant: (id: number | string) =>
+			_endpoint(`events/${id}/participants`),
+	},
 };

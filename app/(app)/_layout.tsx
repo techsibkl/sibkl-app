@@ -1,6 +1,8 @@
 import { featureFlags } from "@/config/featureFlags";
+import { useAuthStore } from "@/stores/authStore";
 import { Tabs } from "expo-router";
 import {
+	Calendar,
 	Circle,
 	FunnelIcon,
 	GraduationCap,
@@ -13,6 +15,8 @@ import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 export default function AppLayout() {
 	const insets = useSafeAreaInsets();
+	const isGuest = useAuthStore((s) => s.isGuest);
+	const showEventsTab = featureFlags.events && !isGuest;
 	return (
 		<Tabs
 			screenOptions={{
@@ -50,6 +54,21 @@ export default function AppLayout() {
 					href: featureFlags.cells ? "/(app)/cells" : null,
 					tabBarIcon: ({ color, size, focused }) => (
 						<Circle
+							size={size}
+							color={color}
+							strokeWidth={1}
+							fill={focused ? color : "none"}
+						/>
+					),
+				}}
+			/>
+			<Tabs.Screen
+				name="events"
+				options={{
+					title: "Events",
+					href: showEventsTab ? ("/(app)/events" as any) : null,
+					tabBarIcon: ({ color, size, focused }) => (
+						<Calendar
 							size={size}
 							color={color}
 							strokeWidth={1}
