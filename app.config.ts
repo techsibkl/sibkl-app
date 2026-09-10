@@ -59,6 +59,13 @@ export default ({ config }: { config: any }) => ({
 
 		plugins: [
 			"expo-router",
+			[
+				"expo-camera",
+				{
+					cameraPermission:
+						"Allow $(PRODUCT_NAME) to access your camera to scan QR codes.",
+				},
+			],
 			"expo-notifications",
 			"@react-native-firebase/app",
 			"@react-native-firebase/auth",

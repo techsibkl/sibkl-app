@@ -130,5 +130,14 @@ export const apiEndpoints = {
 		getById: (id: number | string) => _endpoint(`events/${id}`),
 		registerParticipant: (id: number | string) =>
 			_endpoint(`events/${id}/participants`),
+		checkInParticipant: (
+			eventId: number | string,
+			participantId: number | string,
+		) =>
+			_endpoint(
+				`events/${eventId}/participants/${participantId}/checkin`,
+			),
+		// TODO: wire when backend adds GET /events/mine (or equivalent)
+		// getMyRegistrations: _endpoint("events/mine"),
 	},
 };

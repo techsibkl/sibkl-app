@@ -1,5 +1,6 @@
 import { featureFlags } from "@/config/featureFlags";
 import { useAuthStore } from "@/stores/authStore";
+import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { Tabs } from "expo-router";
 import {
 	Calendar,
@@ -13,22 +14,25 @@ import {
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
+const CAMERA_ROUTES = new Set(["scanner", "qrScan"]);
+
 export default function AppLayout() {
 	const insets = useSafeAreaInsets();
 	const isGuest = useAuthStore((s) => s.isGuest);
 	const showEventsTab = featureFlags.events && !isGuest;
+	const defaultTabBarStyle = {
+		height: 50 + Math.max(insets.bottom, 8),
+		paddingTop: 2,
+		paddingHorizontal: 16,
+		borderTopWidth: 0.5,
+		borderTopColor: "#E5E5EA",
+	};
 	return (
 		<Tabs
 			screenOptions={{
 				tabBarActiveTintColor: "#007AFF",
 				tabBarInactiveTintColor: "#8E8E93",
-				tabBarStyle: {
-					height: 50 + Math.max(insets.bottom, 8),
-					paddingTop: 2,
-					paddingHorizontal: 16,
-					borderTopWidth: 0.5,
-					borderTopColor: "#E5E5EA",
-				},
+				tabBarStyle: defaultTabBarStyle,
 				headerTintColor: "#000",
 				headerShown: false,
 			}}
@@ -49,10 +53,15 @@ export default function AppLayout() {
 			/>
 			<Tabs.Screen
 				name="cells"
-				options={{
-					title: "Cells",
-					href: featureFlags.cells ? "/(app)/cells" : null,
-					tabBarIcon: ({ color, size, focused }) => (
+				options={({ route }) => {
+					const routeName = getFocusedRouteNameFromRoute(route) ?? "index";
+					return {
+						title: "Cells",
+						href: featureFlags.cells ? "/(app)/cells" : null,
+						tabBarStyle: CAMERA_ROUTES.has(routeName)
+							? { display: "none" }
+							: defaultTabBarStyle,
+						tabBarIcon: ({ color, size, focused }) => (
 						<Circle
 							size={size}
 							color={color}
@@ -60,14 +69,20 @@ export default function AppLayout() {
 							fill={focused ? color : "none"}
 						/>
 					),
+					};
 				}}
 			/>
 			<Tabs.Screen
 				name="events"
-				options={{
-					title: "Events",
-					href: showEventsTab ? ("/(app)/events" as any) : null,
-					tabBarIcon: ({ color, size, focused }) => (
+				options={({ route }) => {
+					const routeName = getFocusedRouteNameFromRoute(route) ?? "index";
+					return {
+						title: "Events",
+						href: showEventsTab ? ("/(app)/events" as any) : null,
+						tabBarStyle: CAMERA_ROUTES.has(routeName)
+							? { display: "none" }
+							: defaultTabBarStyle,
+						tabBarIcon: ({ color, size, focused }) => (
 						<Calendar
 							size={size}
 							color={color}
@@ -75,6 +90,7 @@ export default function AppLayout() {
 							fill={focused ? color : "none"}
 						/>
 					),
+					};
 				}}
 			/>
 			<Tabs.Screen
