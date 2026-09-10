@@ -28,6 +28,10 @@ export function isEventRegisterable(
 	return isEventPublished(event) && isWithinRsvpWindow(event, now);
 }
 
+export function isEventCheckInOpen(event: Event): boolean {
+	return isEventPublished(event) && event.allow_checkin !== false;
+}
+
 export function getRegistrationClosedMessage(event: Event): string {
 	if (!isEventPublished(event)) {
 		return "This event is not open for registration.";

@@ -29,6 +29,7 @@ export interface Event {
 	allow_rsvp?: boolean;
 	rsvp_start_at?: string | null;
 	rsvp_end_at?: string | null;
+	allow_checkin?: boolean;
 	custom_fields?: EventCustomField[];
 }
 
@@ -42,9 +43,15 @@ export interface EventParticipant {
 	invited?: boolean;
 	rsvp?: boolean;
 	checked_in?: boolean;
+	checked_in_at?: string | null;
 	metadata?: Record<string, unknown>;
 	remarks?: string;
 }
+
+export type EventRegistration = {
+	event: Event;
+	participant: EventParticipant;
+};
 
 export type EventParticipantWritePayload = {
 	full_name: string;

@@ -48,6 +48,21 @@ export default function EventsLayout() {
 					gestureEnabled: false,
 				}}
 			/>
+			<Stack.Screen
+				name="scanner"
+				options={{
+					headerShown: false,
+					animation: "fade",
+				}}
+			/>
+			<Stack.Screen
+				name="qrScan"
+				options={{
+					headerShown: false,
+					presentation: "fullScreenModal",
+					contentStyle: { flex: 1, backgroundColor: "#000" },
+				}}
+			/>
 		</Stack>
 	);
 }

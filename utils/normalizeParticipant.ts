@@ -44,6 +44,9 @@ export function normalizeParticipant(raw: Record<string, unknown>): EventPartici
 		invited: toBool(get("invited", "invited")),
 		rsvp: toBool(get("rsvp", "rsvp")),
 		checked_in: toBool(get("checked_in", "checkedIn")),
+		checked_in_at: (get("checked_in_at", "checkedInAt") ?? null) as
+			| string
+			| null,
 		metadata: parseMetadata(get("metadata", "metadata")),
 	};
 }

@@ -2,6 +2,7 @@ import {
 	Event,
 	EventParticipant,
 	EventParticipantWritePayload,
+	EventRegistration,
 } from "@/services/Event/event.type";
 import { apiEndpoints } from "@/utils/endpoints";
 import { toCustomFieldsArray } from "@/utils/eventCustomFields";
@@ -30,6 +31,10 @@ function normalizeEvent(raw: Record<string, unknown>): Event {
 		rsvp_end_at: (get("rsvp_end_at", "rsvpEndAt") ?? null) as
 			| string
 			| null,
+		allow_checkin:
+			get("allow_checkin", "allowCheckin") === undefined
+				? undefined
+				: Boolean(get("allow_checkin", "allowCheckin")),
 		custom_fields: toCustomFieldsArray(
 			customFieldsRaw as Event["custom_fields"] | string,
 		),
@@ -79,6 +84,32 @@ export const registerEventParticipant = async (
 			headers: { "Content-Type": "application/json" },
 			body: JSON.stringify(payload),
 		},
+	);
+	const json: ReturnVal = await response.json();
+
+	if (!json.success) {
+		throwApiError(json);
+	}
+
+	return normalizeParticipant(json.data as Record<string, unknown>);
+};
+
+/**
+ * TODO: Replace stub with GET /events/mine (or equivalent) when backend is ready.
+ */
+export const fetchMyEventRegistrations = async (
+	_personId: number | string,
+): Promise<EventRegistration[]> => {
+	return [];
+};
+
+export const checkInEventParticipant = async (
+	eventId: string | number,
+	participantId: string | number,
+): Promise<EventParticipant> => {
+	const response = await secureFetch(
+		apiEndpoints.events.checkInParticipant(eventId, participantId),
+		{ method: "POST" },
 	);
 	const json: ReturnVal = await response.json();
 
