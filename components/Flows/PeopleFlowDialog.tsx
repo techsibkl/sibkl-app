@@ -1,6 +1,6 @@
 import { ActionComponents } from "@/constants/const_flows";
 import { FlowStep, SingleCustomAttr } from "@/services/Flow/flow.types";
-import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
+import { PeopleFlow, getPeopleFlowPersonId } from "@/services/Flow/peopleFlow.type";
 import { daysAgo, formatPhone } from "@/utils/helper";
 import { daysAgoTextColorNative } from "@/utils/helper_flows";
 import { getAvatarColors, getInitials } from "@/utils/helper_profile";
@@ -71,10 +71,10 @@ const PeopleFlowDialog = ({
 	const goToProfile = useCallback(() => {
 		router.push({
 			pathname: "/(app)/profile/[id]",
-			params: { id: Number(personFlow.p__id), backPath: "/(app)/flows" },
+			params: { id: getPeopleFlowPersonId(personFlow), backPath: "/(app)/flows" },
 		});
 		onDismiss();
-	}, [personFlow.p__id, router, onDismiss]);
+	}, [personFlow, router, onDismiss]);
 
 	return (
 		<View className="h-full w-full bg-white rounded-[15px] overflow-hidden">
