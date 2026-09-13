@@ -1,4 +1,4 @@
-import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
+import { PeopleFlow, getPeopleFlowPersonId } from "@/services/Flow/peopleFlow.type";
 import { createNote } from "@/services/Note/notes.service";
 import { myToast } from "@/utils/helper";
 import React, { useState } from "react";
@@ -23,7 +23,7 @@ const AddNoteDialog = ({
 	const handleSave = async () => {
 		setIsLoading(true);
 		const res = await createNote(
-			personFlow.people_id!,
+			getPeopleFlowPersonId(personFlow),
 			note,
 			personFlow.p__district_ids,
 		);
