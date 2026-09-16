@@ -14,6 +14,8 @@ import {
 } from "@react-native-firebase/auth";
 import { create } from "zustand";
 
+let authUnsubscribe: (() => void) | null = null;
+
 // Example state with Zustand
 export type AuthState = {
 	firebaseUser: FirebaseAuthTypes.User | null;
@@ -79,7 +81,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 	// Register new account
 	signUp: async (profileData: Partial<Person>) => {
-		set({ authLoaded: false, isGuest: false });
+		set({ isGuest: false });
 		try {
 			const { firebaseUser } = get();
 
@@ -104,18 +106,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 				);
 			}
 
-			// 4. Build appUser object
+			const person = resPerson.data as Person;
 			const appUser: AppUser = {
 				uid: firebaseUser.uid,
 				email: firebaseUser.email ?? "",
-				people_id: resPerson.data.people_id,
-				person: resPerson.data as Person,
+				people_id: person.id,
+				person,
 			};
 
 			set({
 				isAuthenticated: true,
 				user: appUser,
 				authLoaded: true,
+				ability: defineAbilityFor(person),
 			});
 
 			return firebaseUser;
@@ -152,8 +155,9 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 	},
 
 	init: () => {
-		set({ authLoaded: false, isGuest: false });
-		onAuthStateChanged(getAuth(), async (firebaseUser) =>
+		authUnsubscribe?.();
+		set({ isGuest: false });
+		authUnsubscribe = onAuthStateChanged(getAuth(), async (firebaseUser) =>
 			handleAuthStateChange(firebaseUser, set),
 		);
 	},
