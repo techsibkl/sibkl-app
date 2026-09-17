@@ -31,7 +31,7 @@ const ScannerPage = () => {
     if (isPermissionGranted) {
       router.replace({
         pathname: "/(app)/cells/qrScan",
-        params: cell_id ? { cell_id } : {},
+        params: cell_id ? { cell_id } : undefined,
       });
     }
   }, [isPermissionGranted, cell_id]);
