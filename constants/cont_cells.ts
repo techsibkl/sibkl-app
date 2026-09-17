@@ -32,25 +32,25 @@ export const getFabActions = ({
       style: { backgroundColor: "#d6361e" },
     },
     ability.can("read", "CellDetails") &&
-      cellId && {
+      cellId != null && {
       icon: "camera",
       label: "Mark Attendance",
       onPress: () =>
         router.push({
           pathname: "/(app)/cells/scanner",
-          params: { cell_id: cellId },
+          params: { cell_id: String(cellId) },
         }),
       color: "white",
       style: { backgroundColor: "#d6361e" },
     },
     ability.can("read", "CellSession") &&
-      cellId && {
+      cellId != null && {
       icon: "calendar-clock",
       label: "View Sessions",
       onPress: () =>
         router.push({
           pathname: "/(app)/cells/sessions",
-          params: { cell_id: cellId },
+          params: { cell_id: String(cellId) },
         }),
       color: "white",
       style: { backgroundColor: "#d6361e" },

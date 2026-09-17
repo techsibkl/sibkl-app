@@ -81,7 +81,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 	// Register new account
 	signUp: async (profileData: Partial<Person>) => {
-		set({ authLoaded: false, isGuest: false });
+		set({ isGuest: false });
 		try {
 			const { firebaseUser } = get();
 
@@ -106,18 +106,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 				);
 			}
 
-			// 4. Build appUser object
+			const person = resPerson.data as Person;
 			const appUser: AppUser = {
 				uid: firebaseUser.uid,
 				email: firebaseUser.email ?? "",
-				people_id: resPerson.data.id,
-				person: resPerson.data as Person,
+				people_id: person.id,
+				person,
 			};
 
 			set({
 				isAuthenticated: true,
 				user: appUser,
 				authLoaded: true,
+				ability: defineAbilityFor(person),
 			});
 
 			return firebaseUser;
@@ -154,7 +155,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 	},
 
 	init: () => {
-		set({ authLoaded: false, isGuest: false });
+		set({ isGuest: false });
 		authUnsubscribe?.();
 		authUnsubscribe = onAuthStateChanged(getAuth(), async (firebaseUser) =>
 			handleAuthStateChange(firebaseUser, set),
