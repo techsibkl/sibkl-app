@@ -31,6 +31,8 @@ export default ({ config }: { config: any }) => ({
 			infoPlist: {
 				UIBackgroundModes: ["remote-notification"], // ← allows background notifications
 				ITSAppUsesNonExemptEncryption: false, // required for Apple Store submission if you use any service that uses encryption (this app does not)
+				NSCameraUsageDescription:
+					"Allow $(PRODUCT_NAME) to access your camera to scan QR codes.",
 			},
 		},
 
