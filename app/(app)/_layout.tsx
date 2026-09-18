@@ -1,4 +1,5 @@
-import { featureFlags } from "@/config/featureFlags";
+import { binaryFeatureFlags } from "@/config/featureFlags";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { useAuthStore } from "@/stores/authStore";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { Tabs } from "expo-router";
@@ -19,7 +20,11 @@ const CAMERA_ROUTES = new Set(["scanner", "qrScan"]);
 export default function AppLayout() {
   const insets = useSafeAreaInsets();
   const isGuest = useAuthStore((s) => s.isGuest);
-  const showEventsTab = featureFlags.events && !isGuest;
+  const cellsEnabled =
+    binaryFeatureFlags.cells && useFeatureFlag("cells");
+  const guestFollowUpEnabled = useFeatureFlag("guestFollowUp");
+  const leadersPageEnabled = useFeatureFlag("leadersPage");
+  const showEventsTab = useFeatureFlag("events") && !isGuest;
   const defaultTabBarStyle = {
     height: 50 + Math.max(insets.bottom, 8),
     paddingTop: 2,
@@ -57,7 +62,7 @@ export default function AppLayout() {
           const routeName = getFocusedRouteNameFromRoute(route) ?? "index";
           return {
             title: "Cells",
-            href: featureFlags.cells ? "/(app)/cells" : null,
+            href: cellsEnabled ? "/(app)/cells" : null,
             tabBarStyle: CAMERA_ROUTES.has(routeName)
               ? { display: "none" }
               : defaultTabBarStyle,
@@ -111,6 +116,7 @@ export default function AppLayout() {
         name="flows"
         options={{
           title: "Follow-up",
+          href: guestFollowUpEnabled ? "/(app)/flows" : null,
           tabBarIcon: ({ color, size, focused }) => (
             <FunnelIcon
               size={size}
@@ -127,6 +133,7 @@ export default function AppLayout() {
         name="leaders"
         options={{
           title: "Leaders",
+          href: leadersPageEnabled ? "/(app)/leaders" : null,
           tabBarIcon: ({ color, size, focused }) => (
             <GraduationCap
               size={size}

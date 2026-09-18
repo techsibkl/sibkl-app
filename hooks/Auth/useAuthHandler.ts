@@ -1,6 +1,7 @@
 import { Person } from "@/services/Person/person.type";
 import { AppUser } from "@/services/User/user.types";
 import { AuthState } from "@/stores/authStore";
+import { useSystemStore } from "@/stores/systemStore";
 import { defineAbilityFor, Role } from "@/utils/casl/defineAbilityFor";
 import { apiEndpoints } from "@/utils/endpoints";
 import { secureFetch } from "@/utils/secureFetch";
@@ -63,19 +64,23 @@ export const handleAuthStateChange = async (
 	} catch (error) {
 		// ADd toast
 		console.error("Failed to fetch person:", error);
-	} finally {
-		let person: Person =
-			appUser?.person ?? <Person>{ id: 0, roles: [Role.NONE] };
+  } finally {
+    let person: Person =
+      appUser?.person ?? <Person>{ id: 0, roles: [Role.NONE] };
 
-		const ability = defineAbilityFor(person);
-		set({
-			firebaseUser: firebaseUser,
-			user: appUser,
-			isAuthenticated: !!appUser.person, // only true if profile is complete
-			isGuest: false, // Clear guest state when user authenticates
-			isLoading: false,
-			authLoaded: true,
-			ability: ability,
-		});
-	}
+    const ability = defineAbilityFor(person);
+    set({
+      firebaseUser: firebaseUser,
+      user: appUser,
+      isAuthenticated: !!appUser.person, // only true if profile is complete
+      isGuest: false, // Clear guest state when user authenticates
+      isLoading: false,
+      authLoaded: true,
+      ability: ability,
+    });
+
+    // Fetch system config (feature flags + launch status) once auth resolves.
+    // Non-blocking: failure keeps safe defaults (all flags false).
+    useSystemStore.getState().fetchSystemConfig();
+  }
 };

@@ -1,28 +1,30 @@
 import SharedBody from "@/components/shared/SharedBody";
-import { featureFlags } from "@/config/featureFlags";
+import { binaryFeatureFlags } from "@/config/featureFlags";
 import { useAuthStore } from "@/stores/authStore";
+import { useSystemStore } from "@/stores/systemStore";
 import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import {
-	CircleQuestionMark,
-	FileTextIcon,
-	LockKeyhole,
-	SquareArrowRight,
-	ThumbsUpIcon,
-	Trash2,
+    CircleQuestionMark,
+    FileTextIcon,
+    LockKeyhole,
+    SquareArrowRight,
+    ThumbsUpIcon,
+    Trash2,
 } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-	Alert,
-	Linking,
-	Switch,
-	Text,
-	TouchableOpacity,
-	View,
+    Alert,
+    Linking,
+    Switch,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 
 export default function SettingsScreen() {
 	const { signOut, isGuest } = useAuthStore();
+	const appStatus = useSystemStore((state) => state.appStatus);
 	const router = useRouter();
 	const [darkTheme, setDarkTheme] = useState(true);
 
@@ -193,7 +195,8 @@ export default function SettingsScreen() {
 				))}
 				<Text className="text-center text-xs text-gray-400 mt-6 mb-4">
 					v{Constants.expoConfig?.version ?? "—"} ·{" "}
-					{featureFlags.isPilotBuild ? "Pilot" : "Production"}
+					{binaryFeatureFlags.isPilotBuild ? "Pilot" : "Production"} ·{" "}
+					launch {appStatus?.launch_version ?? "—"}
 				</Text>
 			</View>
 		</SharedBody>
