@@ -128,6 +128,7 @@ export const apiEndpoints = {
 	events: {
 		getAll: _endpoint("events"),
 		getById: (id: number | string) => _endpoint(`events/${id}`),
+		getMyEvents: _endpoint("events/myEvents"),
 		registerParticipant: (id: number | string) =>
 			_endpoint(`events/${id}/participants`),
 		checkInParticipant: (

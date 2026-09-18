@@ -13,23 +13,37 @@ import { Animated, Pressable, Text, View } from "react-native";
 type BrowseTab = "all" | "mine";
 
 const EventsPage = () => {
-	const { isGuest } = useAuthStore();
-	const { data: events, isPending, isError, error } = useEventsQuery();
+	const { isGuest, user, firebaseUser } = useAuthStore();
+	const [searchQuery, setSearchQuery] = useState("");
+	const [browseTab, setBrowseTab] = useState<BrowseTab>("all");
+	const underlinePosition = useRef(new Animated.Value(0)).current;
+
+	const {
+		data: events,
+		isPending,
+		isError,
+		error,
+		refetch: refetchEvents,
+	} = useEventsQuery();
 	const {
 		data: myRegistrations = [],
 		isPending: myPending,
 		isError: myError,
 		error: myFetchError,
-	} = useMyEventRegistrationsQuery();
-	const [searchQuery, setSearchQuery] = useState("");
-	const [browseTab, setBrowseTab] = useState<BrowseTab>("all");
-	const underlinePosition = useRef(new Animated.Value(0)).current;
+		isFetching: myFetching,
+		refetch: refetchMyEvents,
+	} = useMyEventRegistrationsQuery({ enabled: browseTab === "mine" });
 
 	useEffect(() => {
-		if (myRegistrations.length > 0) {
-			setBrowseTab("mine");
-		}
-	}, []);
+		if (browseTab !== "mine") return;
+		console.log("[MyEvents] tab active", {
+			personId: user?.person?.id,
+			peopleId: user?.people_id,
+			firebaseUid: firebaseUser?.uid,
+			isFetching: myFetching,
+			count: myRegistrations.length,
+		});
+	}, [browseTab, user?.person?.id, user?.people_id, firebaseUser?.uid, myFetching, myRegistrations.length]);
 
 	useEffect(() => {
 		Animated.timing(underlinePosition, {
@@ -72,6 +86,14 @@ const EventsPage = () => {
 		browseTab === "all"
 			? (error as any)?.message
 			: (myFetchError as any)?.message;
+
+	const refreshAllEvents = async () => {
+		await refetchEvents();
+	};
+
+	const refreshMyEvents = async () => {
+		await refetchMyEvents();
+	};
 
 	return (
 		<SharedBody>
@@ -143,11 +165,15 @@ const EventsPage = () => {
 						</Text>
 					</View>
 				) : browseTab === "all" ? (
-					<EventList events={filteredEvents} />
+					<EventList
+						events={filteredEvents}
+						onRefresh={refreshAllEvents}
+					/>
 				) : (
 					<MyEventList
 						registrations={filteredRegistrations}
 						onBrowseEvents={() => setBrowseTab("all")}
+						onRefresh={refreshMyEvents}
 					/>
 				)}
 			</View>

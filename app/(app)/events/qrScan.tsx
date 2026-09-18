@@ -9,6 +9,7 @@ import {
 	StatusBar,
 	StyleSheet,
 	Text,
+	useWindowDimensions,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -19,6 +20,7 @@ export default function EventQrScan() {
 	const [scanState, setScanState] = useState<ScanState>("idle");
 	const [message, setMessage] = useState("");
 	const [permission, requestPermission] = useCameraPermissions();
+	const { width, height } = useWindowDimensions();
 
 	const { eventId, participantId } = useLocalSearchParams<{
 		eventId: string;
@@ -141,11 +143,11 @@ export default function EventQrScan() {
 	}
 
 	return (
-		<View style={styles.root}>
+		<View style={[styles.root, { width, height }]}>
 			{Platform.OS === "android" && <StatusBar hidden />}
 
 			<CameraView
-				style={StyleSheet.absoluteFillObject}
+				style={{ width, height }}
 				facing="back"
 				barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
 				onBarcodeScanned={scanState === "idle" ? handleScan : undefined}
@@ -226,5 +228,5 @@ export default function EventQrScan() {
 }
 
 const styles = StyleSheet.create({
-	root: { flex: 1, backgroundColor: "#000" },
+	root: { backgroundColor: "#000" },
 });

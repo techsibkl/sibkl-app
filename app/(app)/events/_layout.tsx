@@ -13,7 +13,7 @@ export default function EventsLayout() {
 	}
 
 	return (
-		<Stack>
+		<Stack screenOptions={{ contentStyle: { flex: 1 } }}>
 			<Stack.Screen
 				name="index"
 				options={{

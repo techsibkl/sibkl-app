@@ -94,13 +94,53 @@ export const registerEventParticipant = async (
 	return normalizeParticipant(json.data as Record<string, unknown>);
 };
 
-/**
- * TODO: Replace stub with GET /events/mine (or equivalent) when backend is ready.
- */
-export const fetchMyEventRegistrations = async (
-	_personId: number | string,
-): Promise<EventRegistration[]> => {
-	return [];
+function normalizeEventRegistration(
+	raw: Record<string, unknown>,
+  ): EventRegistration {
+	const eventRaw =
+	  (raw.event as Record<string, unknown> | undefined) ??
+	  (raw.event_details as Record<string, unknown> | undefined);
+  
+	const participantRaw =
+	  (raw.participant as Record<string, unknown> | undefined) ??
+	  (raw.registration as Record<string, unknown> | undefined) ??
+	  raw;
+  
+	if (!eventRaw) {
+	  throw new Error("Invalid my-events payload: missing event");
+	}
+  
+	return {
+	  event: normalizeEvent(eventRaw),
+	  participant: normalizeParticipant(
+		participantRaw as Record<string, unknown>,
+	  ),
+	};
+  }
+
+export const fetchMyEventRegistrations = async (): Promise<EventRegistration[]> => {
+	const response = await secureFetch(apiEndpoints.events.getMyEvents);
+	const json: ReturnVal = await response.json();
+	if (!json.success) {
+		throwApiError(json);
+	}
+	const data = json.data;
+	if (!Array.isArray(data)) {
+		console.log("[MyEvents] API data is not an array", { data });
+		return [];
+	}
+	const registrations = data.map((item) =>
+		normalizeEventRegistration(item as Record<string, unknown>),
+	);
+	console.log("[MyEvents] API response normalized", {
+		rawCount: data.length,
+		registrations: registrations.map((r) => ({
+			eventId: r.event.id,
+			participantId: r.participant.id,
+			checkedIn: r.participant.checked_in,
+		})),
+	});
+	return registrations;
 };
 
 export const checkInEventParticipant = async (
