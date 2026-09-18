@@ -1,3 +1,4 @@
+import EventCheckInSection from "@/components/Events/EventCheckInSection";
 import EventDetailContent from "@/components/Events/EventDetailContent";
 import EventDetailFooter, {
 	EventDetailFooterMode,
@@ -112,6 +113,12 @@ const EventDetailScreen = () => {
 					}}
 				>
 					<EventDetailContent event={event} />
+					{participant ? (
+						<EventCheckInSection
+							event={event}
+							participant={participant}
+						/>
+					) : null}
 					{!registerable && !participant && (
 						<EventRegistrationClosed message={closedMessage} />
 					)}

@@ -16,7 +16,7 @@ export default function Layout() {
   }
 
   return (
-    <Stack>
+    <Stack screenOptions={{ contentStyle: { flex: 1 } }}>
       <Stack.Screen
         name="index"
         options={{
@@ -57,6 +57,7 @@ export default function Layout() {
           headerShown: false,
           tabBarStyle: { display: "none" },
           presentation: "fullScreenModal",
+          contentStyle: { flex: 1, backgroundColor: "#000" },
         })}
       />
       <Stack.Screen

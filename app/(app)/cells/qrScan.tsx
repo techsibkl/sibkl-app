@@ -5,12 +5,12 @@ import { router, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
 import {
 	ActivityIndicator,
-	LayoutChangeEvent,
 	Platform,
 	Pressable,
 	StatusBar,
 	StyleSheet,
 	Text,
+	useWindowDimensions,
 	View,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -25,7 +25,7 @@ const RED = "#d6361e";
 export default function QrScan() {
 	const [scanState, setScanState] = useState<ScanState>("idle");
 	const [message, setMessage] = useState("");
-	const [screenSize, setScreenSize] = useState({ width: 0, height: 0 });
+	const { width, height } = useWindowDimensions();
 	const [permission] = useCameraPermissions();
 
 	const personId = useAuthStore((state) => state.user?.person?.id);
@@ -41,11 +41,6 @@ export default function QrScan() {
 			router.back();
 		}
 	}, [permission]);
-
-	const handleLayout = (e: LayoutChangeEvent) => {
-		const { width, height } = e.nativeEvent.layout;
-		setScreenSize({ width, height });
-	};
 
 	const handleScan = useCallback(
 		async ({ data }: { data: string }) => {
@@ -71,38 +66,32 @@ export default function QrScan() {
 		setMessage("");
 	};
 
-	const windowLeft =
-		screenSize.width > 0 ? (screenSize.width - WINDOW_SIZE) / 2 : 0;
-	const windowTop =
-		screenSize.height > 0 ? (screenSize.height - WINDOW_SIZE) / 2 : 0;
+	const windowLeft = (width - WINDOW_SIZE) / 2;
+	const windowTop = (height - WINDOW_SIZE) / 2;
 
 	// Don't render camera if permission not granted
 	if (!permission?.granted) {
 		return (
-			<View style={styles.root}>
+			<View style={[styles.root, { width, height }]}>
 				<ActivityIndicator size="large" color={RED} />
 			</View>
 		);
 	}
 
 	return (
-		<View style={styles.root} onLayout={handleLayout}>
+		<View style={[styles.root, { width, height }]}>
 			{Platform.OS === "android" && <StatusBar hidden />}
 
-			{/* Camera — must use StyleSheet.absoluteFillObject, not NativeWind inset-0 */}
+			{/* Camera — size from window; flex:1 collapses to 0 in this modal stack */}
 			<CameraView
-				style={StyleSheet.absoluteFillObject}
+				style={{ width, height }}
 				facing="back"
 				barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
 				onBarcodeScanned={scanState === "idle" ? handleScan : undefined}
 			/>
 
 			{/* Dark overlay — 4 exact regions around scan window */}
-			{screenSize.width > 0 && (
-				<View
-					style={StyleSheet.absoluteFillObject}
-					pointerEvents="none"
-				>
+			<View style={StyleSheet.absoluteFillObject} pointerEvents="none">
 					{/* Top */}
 					<View
 						style={[
@@ -146,15 +135,10 @@ export default function QrScan() {
 							},
 						]}
 					/>
-				</View>
-			)}
+			</View>
 
 			{/* Corner brackets */}
-			{screenSize.width > 0 && (
-				<View
-					style={StyleSheet.absoluteFillObject}
-					pointerEvents="none"
-				>
+			<View style={StyleSheet.absoluteFillObject} pointerEvents="none">
 					{/* Top Left */}
 					<View
 						style={[
@@ -207,8 +191,7 @@ export default function QrScan() {
 							},
 						]}
 					/>
-				</View>
-			)}
+			</View>
 
 			{/* Top bar */}
 			<SafeAreaView style={styles.topBar}>
@@ -287,7 +270,7 @@ export default function QrScan() {
 }
 
 const styles = StyleSheet.create({
-	root: { flex: 1, backgroundColor: "#000" },
+	root: { backgroundColor: "#000" },
 	overlay: { position: "absolute" },
 	corner: {
 		position: "absolute",

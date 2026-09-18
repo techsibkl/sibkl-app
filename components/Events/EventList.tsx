@@ -2,11 +2,12 @@ import EventCard from "@/components/Events/EventCard";
 import { Event } from "@/services/Event/event.type";
 import { isEventPublished } from "@/utils/eventRegistrationGates";
 import { FlashList } from "@shopify/flash-list";
-import React, { useMemo } from "react";
-import { Text, View } from "react-native";
+import React, { useMemo, useState } from "react";
+import { RefreshControl, Text, View } from "react-native";
 
 type EventListProps = {
 	events: Event[];
+	onRefresh?: () => Promise<unknown>;
 };
 
 const EventListEmpty = () => (
@@ -20,11 +21,22 @@ const EventListEmpty = () => (
 	</View>
 );
 
-const EventList = ({ events }: EventListProps) => {
+const EventList = ({ events, onRefresh }: EventListProps) => {
+	const [refreshing, setRefreshing] = useState(false);
 	const publishedEvents = useMemo(
 		() => events.filter((event) => isEventPublished(event)),
 		[events],
 	);
+
+	const handleRefresh = async () => {
+		if (!onRefresh) return;
+		setRefreshing(true);
+		try {
+			await onRefresh();
+		} finally {
+			setRefreshing(false);
+		}
+	};
 
 	return (
 		<FlashList
@@ -38,6 +50,16 @@ const EventList = ({ events }: EventListProps) => {
 			renderItem={({ item }) => <EventCard event={item} />}
 			ListEmptyComponent={<EventListEmpty />}
 			estimatedItemSize={130}
+			refreshControl={
+				onRefresh ? (
+					<RefreshControl
+						refreshing={refreshing}
+						onRefresh={handleRefresh}
+						colors={["#d6361e"]}
+						tintColor="#d6361e"
+					/>
+				) : undefined
+			}
 		/>
 	);
 };
