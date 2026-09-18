@@ -1,4 +1,5 @@
 import AnnouncementPinList from "@/components/Announcement/AnnouncementPinList";
+import LaunchBanner from "@/components/Home/LaunchBanner";
 import NotificationList from "@/components/Home/NotificationList";
 import SharedBody from "@/components/shared/SharedBody";
 import SharedSectionHeader from "@/components/shared/SharedSectionHeader";
@@ -31,6 +32,9 @@ const DashboardScreen = () => {
 				className="bg-white"
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
+
+			{/* Launch event banner — visible while hasNewLaunch is true */}
+			<LaunchBanner />
 
 			{/* Featured Pinned Announcements */}
 			<SharedSectionHeader

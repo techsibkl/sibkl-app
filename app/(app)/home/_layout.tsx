@@ -20,6 +20,15 @@ export default function Layout() {
 				}}
 			/>
 			<Stack.Screen
+				name="launch"
+				options={{
+					headerShown: true,
+					header() {
+						return <SharedHeader title="Leader's Advance 2026" isPop />;
+					},
+				}}
+			/>
+			<Stack.Screen
 				name="profile/index"
 				options={({ route }) => ({
 					headerShown: true,
