@@ -8,35 +8,54 @@ const isPilotBuild =
 	Constants.expoConfig?.extra?.PILOT_BUILD === true ||
 	Constants.expoConfig?.extra?.PILOT_BUILD === "true";
 
-const SHOW = true;
 /**
- * Centralized feature flags for the current binary.
+ * Binary-level feature gates (build-time only).
  *
- * All pilot-only features derive from PILOT_BUILD. To add a new pilot
- * feature, add a flag here and gate UI with `featureFlags.yourFlag`.
+ * These are HARD guards – a feature cannot appear in a non-pilot binary even
+ * if the server-driven DB flag is enabled. They are intentionally a separate
+ * layer from the runtime flags in `useSystemStore` / `useFeatureFlag`.
+ *
+ * Layering model:
+ *   1. binaryFeatureFlags  – hard binary guard (this file, build-time)
+ *   2. useFeatureFlag(key) – server-driven DB flag (runtime, from /system/config)
+ *
+ * For features that are pilot-only at the binary level, gate with BOTH:
+ *   const canSee = binaryFeatureFlags.cells && useFeatureFlag("cells");
+ *
+ * For features that are not binary-restricted (available in all builds),
+ * use useFeatureFlag(key) alone – no entry needed here.
+ *
  * Do not check process.env.PILOT_BUILD in components.
- *
- * These flags control frontend availability only. Backend APIs must
- * still authenticate and authorize independently.
+ * Backend APIs still authenticate and authorize independently.
  */
-export const featureFlags = {
+export const binaryFeatureFlags = {
 	isPilotBuild,
+	/** Cell groups: hard-gated to pilot binary AND must be enabled in DB. */
 	cells: isPilotBuild,
-	cellFollowUp: SHOW,
+	/** Cell attendance: hard-gated to pilot binary AND must be enabled in DB. */
 	cellAttendance: isPilotBuild,
+	/**
+	 * Cell follow-up: binary passthrough (true in all builds, was SHOW=true).
+	 * Runtime availability is controlled entirely by the server flag "cellFollowUp".
+	 * Components that read this synchronously (PeopleFlowRow, PeopleFlowDialog,
+	 * AssignDistrictCellAction) keep working; the server flag is the real gate.
+	 */
+	cellFollowUp: true,
 } as const;
 
-export type FeatureFlagKey = Exclude<keyof typeof featureFlags, "isPilotBuild">;
+export type binaryFeatureFlagKey = Exclude<
+	keyof typeof binaryFeatureFlags,
+	"isPilotBuild"
+>;
 
 if (__DEV__) {
 	console.log(
-		"[featureFlags] isPilotBuild:",
-		featureFlags.isPilotBuild,
-		"| flags:",
+		"[binaryFeatureFlags] isPilotBuild:",
+		binaryFeatureFlags.isPilotBuild,
+		"| binary gates:",
 		{
-			cells: featureFlags.cells,
-			cellFollowUp: featureFlags.cellFollowUp,
-			cellAttendance: featureFlags.cellAttendance,
+			cells: binaryFeatureFlags.cells,
+			cellAttendance: binaryFeatureFlags.cellAttendance,
 		},
 	);
 }

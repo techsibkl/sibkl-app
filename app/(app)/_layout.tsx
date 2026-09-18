@@ -1,4 +1,4 @@
-import { featureFlags } from "@/config/featureFlags";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { Tabs } from "expo-router";
 import {
 	Circle,
@@ -47,7 +47,7 @@ export default function AppLayout() {
 				name="cells"
 				options={{
 					title: "Cells",
-					href: featureFlags.cells ? "/(app)/cells" : null,
+					href: useFeatureFlag("cells") ? "/(app)/cells" : null,
 					tabBarIcon: ({ color, size, focused }) => (
 						<Circle
 							size={size}
@@ -77,6 +77,9 @@ export default function AppLayout() {
 				name="flows"
 				options={{
 					title: "Follow-up",
+					href: useFeatureFlag("guestFollowUp")
+						? "/(app)/flows"
+						: null,
 					tabBarIcon: ({ color, size, focused }) => (
 						<FunnelIcon
 							size={size}
@@ -89,10 +92,12 @@ export default function AppLayout() {
 			/>
 			<Tabs.Screen
 				// Note: with leaders/_layout, the name just needs to be (route) and not (route)/index
-
 				name="leaders"
 				options={{
 					title: "Leaders",
+					href: useFeatureFlag("leadersPage")
+						? "/(app)/leaders"
+						: null,
 					tabBarIcon: ({ color, size, focused }) => (
 						<GraduationCap
 							size={size}

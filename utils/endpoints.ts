@@ -125,4 +125,7 @@ export const apiEndpoints = {
 		updateAsClosed: _endpoint("notifications/mark-closed"),
 		updateAsReopen: _endpoint("notifications/mark-reopen"),
 	},
+	system: {
+		getConfig: _endpoint("system/config"),
+	},
 };
