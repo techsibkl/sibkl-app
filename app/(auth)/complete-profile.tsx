@@ -2,6 +2,7 @@ import DynamicFormField from "@/components/shared/DynamicFormField";
 import SharedBody from "@/components/shared/SharedBody";
 import SkeletonPeopleRow from "@/components/shared/Skeleton/SkeletonPeopleRow";
 import { DEFAULT_PERSON_COLUMNS } from "@/constants/const_person";
+import { handleAuthStateChange } from "@/hooks/Auth/useAuthHandler";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { updatePeople } from "@/services/Person/person.service";
 import { Person } from "@/services/Person/person.type";
@@ -15,6 +16,7 @@ import {
 	getInitials,
 	validateCompleteProfile,
 } from "@/utils/helper_profile";
+import { getAuth } from "@react-native-firebase/auth";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -131,7 +133,13 @@ const Page = () => {
 					...data,
 				});
 				if (response.success) {
-					authStore.init();
+					const firebaseUser = getAuth().currentUser;
+					if (firebaseUser) {
+						await handleAuthStateChange(
+							firebaseUser,
+							useAuthStore.setState,
+						);
+					}
 				}
 			} catch (error) {
 				console.error("Error updating person profile:", error);
@@ -142,7 +150,6 @@ const Page = () => {
 				console.error("Something went wrong signing up");
 				return;
 			}
-			authStore.init();
 		}
 	};
 
