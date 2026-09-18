@@ -81,6 +81,17 @@ const EventDetailScreen = () => {
 		footerMode = "register";
 	}
 
+	const handleScanPress = () => {
+		if (!participant?.id) return;
+		router.push({
+			pathname: "/(app)/events/qrScan",
+			params: {
+				eventId: String(eventId),
+				participantId: String(participant.id),
+			},
+		});
+	};
+
 	const handleFooterPress = () => {
 		if (footerMode === "register") {
 			router.push({
@@ -90,14 +101,8 @@ const EventDetailScreen = () => {
 			return;
 		}
 
-		if (footerMode === "checkin" && participant?.id) {
-			router.push({
-				pathname: "/(app)/events/qrScan",
-				params: {
-					eventId: String(eventId),
-					participantId: String(participant.id),
-				},
-			});
+		if (footerMode === "checkin") {
+			handleScanPress();
 		}
 	};
 
@@ -117,6 +122,7 @@ const EventDetailScreen = () => {
 						<EventCheckInSection
 							event={event}
 							participant={participant}
+							onScanPress={handleScanPress}
 						/>
 					) : null}
 					{!registerable && !participant && (

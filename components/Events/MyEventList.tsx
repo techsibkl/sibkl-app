@@ -68,7 +68,7 @@ const MyEventList = ({
 			ListEmptyComponent={
 				<MyEventListEmpty onBrowseEvents={onBrowseEvents} />
 			}
-			estimatedItemSize={180}
+			estimatedItemSize={130}
 			refreshControl={
 				onRefresh ? (
 					<RefreshControl

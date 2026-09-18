@@ -140,7 +140,7 @@ const EventDetailContent = ({ event }: EventDetailContentProps) => {
 			</View>
 
 			{/* About */}
-			{event.description ? (
+			{/* {event.description ? (
 				<View className="bg-white rounded-3xl border border-border p-5 gap-2">
 					<Text className="text-xs font-bold text-gray-400 tracking-widest uppercase">
 						About this event
@@ -149,7 +149,7 @@ const EventDetailContent = ({ event }: EventDetailContentProps) => {
 						{event.description}
 					</Text>
 				</View>
-			) : null}
+			) : null} */}
 		</View>
 	);
 };
