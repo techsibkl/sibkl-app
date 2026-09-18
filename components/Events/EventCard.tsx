@@ -14,7 +14,7 @@ const EventCard = ({ event }: EventCardProps) => {
 
 	const handlePress = () => {
 		router.push({
-			pathname: "/(app)/events/qrScan/",
+			pathname: "/(app)/events/[eventId]/",
 			params: { eventId: String(event.id) },
 		});
 	};
