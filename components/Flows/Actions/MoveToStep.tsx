@@ -2,7 +2,10 @@ import { defaultFlowStatusAttrs } from "@/constants/const_flows";
 import { useChangeStepMutation } from "@/hooks/Flows/usePeopleFlowMutations";
 
 import { FlowStatus, FlowStep, StepAction } from "@/services/Flow/flow.types";
-import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
+import {
+	PeopleFlow,
+	getPeopleFlowPersonId,
+} from "@/services/Flow/peopleFlow.type";
 import {
 	ChevronDownIcon,
 	ChevronUpIcon,
@@ -81,7 +84,7 @@ const MoveToStepAction = ({ action, personFlow, steps, flow_id, onSuccess }: Pro
 		changeStep(
 			{
 				flowId: flow_id,
-				peopleIds: [personFlow.people_id!],
+				peopleIds: [getPeopleFlowPersonId(personFlow)],
 				step_key: option.key,
 				step: targetStep as FlowStep,
 				districtId: personFlow.district_id,
