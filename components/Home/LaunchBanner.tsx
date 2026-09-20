@@ -1,57 +1,74 @@
 import { useSystemStore } from "@/stores/systemStore";
-import { FeatureFlags } from "@/types/SystemConfig";
 import { useRouter } from "expo-router";
-import { ChevronRight, LockKeyholeOpen, LockKeyhole } from "lucide-react-native";
+import { ChevronRight, LockKeyhole, LockKeyholeOpen } from "lucide-react-native";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
-const isAnyFeatureEnabled = (flags: FeatureFlags) =>
-	flags.cells || flags.events || flags.leadersPage || flags.cellAttendance;
+// ─── Banner ───────────────────────────────────────────────────────────────────
 
 /**
  * Shown on the home page while hasNewLaunch is true.
+ * Locked/unlocked state is driven by appStatus.status (BE-controlled),
+ * not by which feature flags happen to be enabled.
  * Disappears after acknowledgeLaunch() is called from the launch screen.
  */
 const LaunchBanner = () => {
 	const router = useRouter();
-	const { hasNewLaunch, featureFlags } = useSystemStore();
+	const { hasNewLaunch, appStatus } = useSystemStore();
 
 	if (!hasNewLaunch) return null;
 
-	const isUnlocked = isAnyFeatureEnabled(featureFlags);
+	const isUnlocked = appStatus?.status === "unlocked";
 
 	return (
 		<TouchableOpacity
 			onPress={() => router.push("/(app)/home/launch" as any)}
-			activeOpacity={0.82}
-			className="mx-4 mb-5 rounded-2xl overflow-hidden bg-gray-900"
+			activeOpacity={0.78}
+			className={`mx-4 mb-5 rounded-2xl overflow-hidden border ${
+				isUnlocked
+					? "bg-green-50 border-green-100"
+					: "bg-amber-50 border-amber-100"
+			}`}
 		>
-			<View className="flex-row items-center px-4 py-4 gap-3">
-				{/* Icon */}
-				<View className="w-10 h-10 rounded-full bg-white/10 items-center justify-center shrink-0">
+			<View className="flex-row items-center px-4 py-3.5 gap-3">
+				{/* Icon bubble */}
+				<View
+					className="w-10 h-10 rounded-full items-center justify-center shrink-0"
+					style={{ backgroundColor: isUnlocked ? "#DCFCE7" : "#FDE68A" }}
+				>
 					{isUnlocked ? (
-						<LockKeyholeOpen size={20} color="#4ADE80" strokeWidth={1.5} />
+						<LockKeyholeOpen size={19} color="#16A34A" strokeWidth={1.75} />
 					) : (
-						<LockKeyhole size={20} color="#FCD34D" strokeWidth={1.5} />
+						<LockKeyhole size={19} color="#D97706" strokeWidth={1.75} />
 					)}
 				</View>
 
-				{/* Text */}
+				{/* Text block */}
 				<View className="flex-1">
-					<Text className="text-white font-semibold text-sm leading-5">
-						{isUnlocked
-							? "You're unlocked! 🎉 See what's new →"
-							: "Unlock the Full Experience"}
+					<Text
+						className={`font-semibold text-sm leading-5 ${
+							isUnlocked ? "text-green-900" : "text-amber-900"
+						}`}
+					>
+						{isUnlocked ? "You're fully unlocked! 🎉" : "Limited features"}
 					</Text>
-					{!isUnlocked && (
-						<Text className="text-white/55 text-xs mt-0.5 font-regular">
-							Come to Leader's Advance 2026 to experience the launch
-						</Text>
-					)}
+					<Text
+						className={`text-xs mt-0.5 font-regular leading-4 ${
+							isUnlocked ? "text-green-700" : "text-amber-700"
+						}`}
+					>
+						{isUnlocked
+							? "Tap to explore everything that's now available"
+							: "Unlock the full experience at Leader's Advance"}
+					</Text>
 				</View>
 
 				{/* Arrow */}
-				<ChevronRight size={16} color="rgba(255,255,255,0.35)" strokeWidth={2} />
+				<ChevronRight
+					size={16}
+					color={isUnlocked ? "#15803D" : "#B45309"}
+					strokeWidth={2}
+				/>
 			</View>
 		</TouchableOpacity>
 	);

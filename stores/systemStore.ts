@@ -57,9 +57,23 @@ type SystemState = {
    * persisted to disk. Gate the launch animation on this flag.
    */
   hasNewLaunch: boolean;
+  /**
+   * In-memory flag (not persisted). Set to true the moment the user taps
+   * "Refresh to Unlock" and the unlock animation plays. Allows the launch
+   * page to start in the unlocked state on subsequent visits within the
+   * same session, while keeping hasNewLaunch = true so the banner remains
+   * visible until the user explicitly dismisses it.
+   */
+  hasActivatedLaunch: boolean;
 
   /** Fetch config from API, populate flags, and detect launch events. */
   fetchSystemConfig: () => Promise<void>;
+  /**
+   * Called the moment the unlock animation plays. Marks this session as
+   * having seen the animation so the launch page can restore unlocked state.
+   * Does NOT write to disk — the banner remains until acknowledgeLaunch().
+   */
+  activateLaunch: () => void;
   /**
    * Call after the launch animation / onboarding is dismissed.
    * Writes the current launch_version to disk so it won't trigger again.
@@ -72,6 +86,7 @@ export const useSystemStore = create<SystemState>((set, get) => ({
   appStatus: null,
   isLoaded: false,
   hasNewLaunch: false,
+  hasActivatedLaunch: false,
 
   fetchSystemConfig: async () => {
     try {
@@ -99,10 +114,12 @@ export const useSystemStore = create<SystemState>((set, get) => ({
     }
   },
 
+  activateLaunch: () => set({ hasActivatedLaunch: true }),
+
   acknowledgeLaunch: async () => {
     const { appStatus } = get();
     if (!appStatus) return;
     await writeSeenLaunchVersion(appStatus.launch_version);
-    set({ hasNewLaunch: false });
+    set({ hasNewLaunch: false, hasActivatedLaunch: false });
   },
 }));
