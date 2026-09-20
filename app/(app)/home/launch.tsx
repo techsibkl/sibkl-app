@@ -1,10 +1,8 @@
 import { useSystemStore } from "@/stores/systemStore";
-import { FeatureFlags } from "@/types/SystemConfig";
 import { useRouter } from "expo-router";
 import {
 	Calendar,
 	ChevronRight,
-	Circle as CircleIcon,
 	ClipboardList,
 	FunnelIcon,
 	GraduationCap,
@@ -13,10 +11,11 @@ import {
 	RefreshCw,
 	Sparkles,
 } from "lucide-react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import {
 	Dimensions,
 	FlatList,
+	ScrollView,
 	Text,
 	TouchableOpacity,
 	View,
@@ -31,31 +30,75 @@ import Animated, {
 	withTiming,
 } from "react-native-reanimated";
 
-// ─── Types & helpers ─────────────────────────────────────────────────────────
+// ─── Countdown hook ───────────────────────────────────────────────────────────
+
+function useMsLeft(launchDate: string | null): number {
+	const [msLeft, setMsLeft] = useState<number>(() => {
+		if (!launchDate) return 0;
+		return Math.max(0, new Date(launchDate).getTime() - Date.now());
+	});
+
+	useEffect(() => {
+		if (!launchDate) {
+			setMsLeft(0);
+			return;
+		}
+		const tick = () =>
+			setMsLeft(Math.max(0, new Date(launchDate).getTime() - Date.now()));
+		tick();
+		const id = setInterval(tick, 1000);
+		return () => clearInterval(id);
+	}, [launchDate]);
+
+	return msLeft;
+}
+
+// ─── Countdown display ────────────────────────────────────────────────────────
+
+const CountdownDisplay = ({ msLeft }: { msLeft: number }) => {
+	const d = Math.floor(msLeft / (1000 * 60 * 60 * 24));
+	const h = Math.floor((msLeft / (1000 * 60 * 60)) % 24);
+	const m = Math.floor((msLeft / (1000 * 60)) % 60);
+	const s = Math.floor((msLeft / 1000) % 60);
+	const pad = (n: number) => String(n).padStart(2, "0");
+
+	return (
+		<View className="flex-row justify-center gap-3 mb-5">
+			{[
+				{ value: pad(d), label: "Days" },
+				{ value: pad(h), label: "Hrs" },
+				{ value: pad(m), label: "Min" },
+				{ value: pad(s), label: "Sec" },
+			].map(({ value, label }) => (
+				<View key={label} className="items-center">
+					<View className="w-[68px] h-16 bg-amber-50 rounded-2xl border border-amber-100 items-center justify-center">
+						<Text className="text-2xl font-bold text-amber-800">
+							{value}
+						</Text>
+					</View>
+					<Text className="text-xs text-gray-400 mt-1.5 font-regular">
+						{label}
+					</Text>
+				</View>
+			))}
+		</View>
+	);
+};
+
+// ─── Types ────────────────────────────────────────────────────────────────────
 
 type ScreenState = "locked" | "refreshing" | "animating" | "unlocked";
 
-const isAnyFeatureEnabled = (flags: FeatureFlags) =>
-	flags.cells || flags.events || flags.leadersPage || flags.cellAttendance;
-
-// ─── Feature card data ───────────────────────────────────────────────────────
+// ─── Feature data ─────────────────────────────────────────────────────────────
 
 const UNLOCK_FEATURES: {
-	key: keyof FeatureFlags;
+	key: string;
 	Icon: React.FC<any>;
 	title: string;
 	description: string;
 	color: string;
 	bgColor: string;
 }[] = [
-	{
-		key: "cells",
-		Icon: CircleIcon,
-		title: "Cell Groups",
-		description: "Join and stay connected with your cell group.",
-		color: "#3B82F6",
-		bgColor: "#EFF6FF",
-	},
 	{
 		key: "cellAttendance",
 		Icon: ClipboardList,
@@ -93,11 +136,17 @@ const UNLOCK_FEATURES: {
 const { width: SCREEN_W } = Dimensions.get("window");
 const CARD_W = Math.round(SCREEN_W * 0.62);
 
-// ─── Feature card ─────────────────────────────────────────────────────────────
+// ─── Feature card — unlocked ──────────────────────────────────────────────────
 
-type FeatureCardProps = (typeof UNLOCK_FEATURES)[number];
+type FeatureCardProps = Omit<(typeof UNLOCK_FEATURES)[number], "key">;
 
-const FeatureCard = ({ Icon, title, description, color, bgColor }: FeatureCardProps) => (
+const FeatureCard = ({
+	Icon,
+	title,
+	description,
+	color,
+	bgColor,
+}: FeatureCardProps) => (
 	<View
 		style={{ width: CARD_W, backgroundColor: bgColor }}
 		className="rounded-2xl p-5"
@@ -115,38 +164,102 @@ const FeatureCard = ({ Icon, title, description, color, bgColor }: FeatureCardPr
 	</View>
 );
 
+// ─── Feature card — locked sneak peek ─────────────────────────────────────────
+
+const LockedFeatureCard = ({
+	Icon,
+	title,
+	description,
+	color,
+	bgColor,
+}: FeatureCardProps) => (
+	<View
+		style={{ width: Math.round(SCREEN_W * 0.52), backgroundColor: bgColor }}
+		className="rounded-2xl p-4"
+	>
+		<View className="flex-row items-start justify-between mb-2.5">
+			<View
+				className="w-9 h-9 rounded-xl items-center justify-center"
+				style={{ backgroundColor: color + "33" }}
+			>
+				<Icon size={18} color={color} strokeWidth={1.5} />
+			</View>
+			<View className="flex-row items-center gap-1 bg-white/80 px-2 py-0.5 rounded-full border border-gray-100">
+				<LockKeyhole size={9} color="#9CA3AF" strokeWidth={2.5} />
+				<Text
+					className="text-gray-400 font-semibold"
+					style={{ fontSize: 10 }}
+				>
+					Soon
+				</Text>
+			</View>
+		</View>
+		<Text className="text-sm font-bold text-text mb-0.5">{title}</Text>
+		<Text className="text-xs text-gray-400 font-regular leading-4">
+			{description}
+		</Text>
+	</View>
+);
+
 // ─── Main screen ──────────────────────────────────────────────────────────────
 
 export default function LaunchScreen() {
 	const router = useRouter();
-	const { featureFlags, fetchSystemConfig, acknowledgeLaunch } = useSystemStore();
+	const {
+		appStatus,
+		fetchSystemConfig,
+		acknowledgeLaunch,
+		activateLaunch,
+		hasActivatedLaunch,
+	} = useSystemStore();
 
-	const alreadyUnlocked = isAnyFeatureEnabled(featureFlags);
+	// BE has already set status = "unlocked" in the database.
+	const beAlreadyUnlocked = appStatus?.status === "unlocked";
+
+	// Countdown only blocks the button while the BE is still locked.
+	// If the BE has already unlocked, button is active immediately — status
+	// is the priority override over the countdown timer.
+	const msLeft = useMsLeft(
+		!beAlreadyUnlocked ? (appStatus?.launch_date ?? null) : null,
+	);
+	const isCountdownActive = msLeft > 0; // always false when beAlreadyUnlocked
+	const countdownJustExpired =
+		!beAlreadyUnlocked && !isCountdownActive && !!appStatus?.launch_date;
+
+	// Start in the unlocked UI only if the user has already tapped
+	// "Refresh to Unlock" and seen the animation this session
+	// (hasActivatedLaunch is in-memory, resets on cold start).
+	// The banner remains visible until they explicitly dismiss it.
+	const startUnlocked = beAlreadyUnlocked && hasActivatedLaunch;
 
 	const [screenState, setScreenState] = useState<ScreenState>(
-		alreadyUnlocked ? "unlocked" : "locked",
+		startUnlocked ? "unlocked" : "locked",
 	);
-	const [showOpenIcon, setShowOpenIcon] = useState(alreadyUnlocked);
+	const [showOpenIcon, setShowOpenIcon] = useState(startUnlocked);
 	const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-	// ─── Animated values ─────────────────────────────────────────────────────
+	// ─── Animated values ──────────────────────────────────────────────────────
 
 	const lockScale = useSharedValue(1);
 	const lockRotate = useSharedValue(0);
-	const lockBg = useSharedValue(alreadyUnlocked ? 1 : 0); // 0=gray 1=green
+	const lockBg = useSharedValue(startUnlocked ? 1 : 0);
 
-	const lockedOpacity = useSharedValue(alreadyUnlocked ? 0 : 1);
-	const unlockedOpacity = useSharedValue(alreadyUnlocked ? 1 : 0);
-	const unlockedY = useSharedValue(alreadyUnlocked ? 0 : 36);
+	const lockedOpacity = useSharedValue(startUnlocked ? 0 : 1);
+	const unlockedOpacity = useSharedValue(startUnlocked ? 1 : 0);
+	const unlockedY = useSharedValue(startUnlocked ? 0 : 36);
 
-	// ─── Animated styles ─────────────────────────────────────────────────────
+	// ─── Animated styles ──────────────────────────────────────────────────────
 
 	const lockAnimStyle = useAnimatedStyle(() => ({
 		transform: [
 			{ scale: lockScale.value },
 			{ rotate: `${lockRotate.value}deg` },
 		],
-		backgroundColor: interpolateColor(lockBg.value, [0, 1], ["#F3F4F6", "#DCFCE7"]),
+		backgroundColor: interpolateColor(
+			lockBg.value,
+			[0, 1],
+			["#F3F4F6", "#DCFCE7"],
+		),
 	}));
 
 	const lockedStyle = useAnimatedStyle(() => ({
@@ -158,10 +271,9 @@ export default function LaunchScreen() {
 		transform: [{ translateY: unlockedY.value }],
 	}));
 
-	// ─── Unlock animation sequence ───────────────────────────────────────────
+	// ─── Unlock animation sequence ────────────────────────────────────────────
 
 	const playUnlockAnimation = useCallback(() => {
-		// 1. Lock icon bounces
 		lockScale.value = withSequence(
 			withTiming(1.35, { duration: 170 }),
 			withSpring(1, { damping: 5, stiffness: 260 }),
@@ -171,26 +283,26 @@ export default function LaunchScreen() {
 			withTiming(14, { duration: 120 }),
 			withSpring(0, { damping: 8, stiffness: 180 }),
 		);
-
-		// 2. Swap lock → open-lock icon at peak of bounce
 		setTimeout(() => setShowOpenIcon(true), 260);
-
-		// 3. Background circle turns green
 		lockBg.value = withDelay(260, withTiming(1, { duration: 350 }));
-
-		// 4. Locked text fades out
 		lockedOpacity.value = withDelay(320, withTiming(0, { duration: 260 }));
-
-		// 5. Unlocked section slides up and fades in
-		unlockedOpacity.value = withDelay(650, withTiming(1, { duration: 400 }));
+		unlockedOpacity.value = withDelay(
+			650,
+			withTiming(1, { duration: 400 }),
+		);
 		unlockedY.value = withDelay(
 			650,
 			withSpring(0, { damping: 14, stiffness: 110 }),
 		);
-
-		// 6. Transition state to 'unlocked' after animation finishes
 		setTimeout(() => setScreenState("unlocked"), 1300);
-	}, [lockScale, lockRotate, lockBg, lockedOpacity, unlockedOpacity, unlockedY]);
+	}, [
+		lockScale,
+		lockRotate,
+		lockBg,
+		lockedOpacity,
+		unlockedOpacity,
+		unlockedY,
+	]);
 
 	// ─── Handlers ─────────────────────────────────────────────────────────────
 
@@ -198,13 +310,16 @@ export default function LaunchScreen() {
 		setErrorMsg(null);
 		setScreenState("refreshing");
 		await fetchSystemConfig();
-		const newFlags = useSystemStore.getState().featureFlags;
-		if (isAnyFeatureEnabled(newFlags)) {
+		const newStatus = useSystemStore.getState().appStatus?.status;
+		if (newStatus === "unlocked") {
+			// Mark session as activated (in-memory only).
+			// Banner stays visible; page restores unlocked state on re-entry.
+			activateLaunch();
 			setScreenState("animating");
 			playUnlockAnimation();
 		} else {
 			setScreenState("locked");
-			setErrorMsg("Not yet — check back when the event kicks off! 👀");
+			setErrorMsg("Almost there — check back when the launch kicks off!");
 		}
 	};
 
@@ -213,138 +328,240 @@ export default function LaunchScreen() {
 		router.back();
 	};
 
-	const isLockedView = screenState === "locked" || screenState === "refreshing";
-	const isUnlockedView = screenState === "unlocked" || screenState === "animating";
+	const isLockedView =
+		screenState === "locked" || screenState === "refreshing";
+	const isUnlockedView =
+		screenState === "unlocked" || screenState === "animating";
+	const refreshDisabled = screenState === "refreshing" || isCountdownActive;
 
 	// ─── Render ───────────────────────────────────────────────────────────────
 
 	return (
-		<View className="flex-1 bg-white px-6">
-			{/* ── Hero lock icon ── */}
-			<View className="items-center pt-10 pb-8">
+		<ScrollView
+			showsVerticalScrollIndicator={false}
+			contentContainerStyle={{ paddingBottom: 32, flex: 1 }}
+		>
+			{/* ────────────────────────────────────────────────────────────────
+			    Lock icon — always visible, always animates
+			──────────────────────────────────────────────────────────────── */}
+			<View className="items-center pt-6">
 				<Animated.View
 					style={lockAnimStyle}
 					className="w-24 h-24 rounded-full items-center justify-center mb-5"
 				>
 					{showOpenIcon ? (
-						<LockKeyholeOpen size={44} color="#16A34A" strokeWidth={1.5} />
+						<LockKeyholeOpen
+							size={44}
+							color="#16A34A"
+							strokeWidth={1.5}
+						/>
 					) : (
-						<LockKeyhole size={44} color="#F59E0B" strokeWidth={1.5} />
+						<LockKeyhole
+							size={44}
+							color="#F59E0B"
+							strokeWidth={1.5}
+						/>
 					)}
-				</Animated.View>
-
-				{/* ── Locked header ── */}
-				<Animated.View style={lockedStyle} className="items-center absolute top-28">
-					<View className="px-3 py-1 bg-amber-100 rounded-full mb-3">
-						<Text className="text-amber-700 text-xs font-semibold tracking-wide">
-							LEADER'S ADVANCE 2026
-						</Text>
-					</View>
-					<Text className="text-2xl font-bold text-text text-center leading-tight">
-						Unlock the Full{"\n"}Experience
-					</Text>
-					<Text className="text-gray-500 font-regular text-center mt-3 leading-6">
-						Some features are reserved for the launch.{"\n"}
-						Come to the event to unlock the complete SIBKL app.
-					</Text>
-					{errorMsg && (
-						<View className="mt-4 px-4 py-3 bg-amber-50 rounded-2xl">
-							<Text className="text-amber-700 text-sm text-center font-regular">
-								{errorMsg}
-							</Text>
-						</View>
-					)}
-				</Animated.View>
-
-				{/* ── Unlocked header ── */}
-				<Animated.View
-					style={unlockedStyle}
-					className="items-center absolute top-28"
-				>
-					<Text className="text-2xl font-bold text-text text-center leading-tight">
-						You're fully unlocked! 🎉
-					</Text>
-					<Text className="text-gray-500 font-regular text-center mt-2 leading-6">
-						Welcome to the complete SIBKL experience.
-					</Text>
 				</Animated.View>
 			</View>
 
-			{/* ── Spacer to push content below the absolute hero text ── */}
-			<View style={{ height: 130 }} />
-
-			{/* ── Locked: refresh button ── */}
-			{isLockedView && (
-				<Animated.View style={lockedStyle}>
-					<TouchableOpacity
-						onPress={handleRefresh}
-						disabled={screenState === "refreshing"}
-						activeOpacity={0.8}
-						className="py-4 rounded-2xl bg-gray-900 flex-row items-center justify-center gap-2"
+			{/* ────────────────────────────────────────────────────────────────
+			    Hero text area — both headers always rendered so opacity
+			    animations fire correctly; absolute-positioned inside a
+			    fixed-height container so they don't stack.
+			──────────────────────────────────────────────────────────────── */}
+			<View className="items-center pb-6">
+				{/* Locked header */}
+				{isLockedView && (
+					<Animated.View
+						style={lockedStyle}
+						className="items-center justify-start pt-1 px-6"
 					>
-						{screenState === "refreshing" ? (
-							<>
-								<RefreshCw size={18} color="white" strokeWidth={1.5} />
-								<Text className="text-white font-semibold text-base ml-2">
-									Checking…
+						<View className="px-3 py-1 bg-amber-100 rounded-full mb-3">
+							<Text className="text-amber-700 text-xs font-bold tracking-widest">
+								LEADER'S ADVANCE 2026
+							</Text>
+						</View>
+						<Text className="text-3xl font-bold text-text text-center leading-tight mb-2">
+							Unlock the Full{"\n"}Experience
+						</Text>
+						<Text className="text-gray-500 font-regular text-center text-sm leading-5">
+							Some features are reserved for the launch.{"\n"}Come
+							to the event to unlock the complete app.
+						</Text>
+					</Animated.View>
+				)}
+				{isUnlockedView && (
+					<Animated.View
+						style={unlockedStyle}
+						className="items-center justify-center px-6"
+					>
+						<Text className="text-3xl font-bold text-text text-center leading-tight mb-2">
+							You're fully{"\n"}unlocked! 🎉
+						</Text>
+						<Text className="text-gray-500 font-regular text-center text-sm leading-5">
+							Welcome to the complete SIBKL experience.
+						</Text>
+					</Animated.View>
+				)}
+			</View>
+			{/* ────────────────────────────────────────────────────────────────
+			    Locked: countdown · refresh button · sneak-peek carousel
+			──────────────────────────────────────────────────────────────── */}
+			{isLockedView && (
+				<Animated.View style={lockedStyle} className="flex-1">
+					<View>
+						{/* Error banner */}
+						{errorMsg && (
+							<View className="mx-6 mb-4 px-4 py-3 bg-amber-50 rounded-2xl border border-amber-100">
+								<Text className="text-amber-700 text-sm text-center font-regular">
+									{errorMsg}
 								</Text>
-							</>
-						) : (
-							<>
-								<Sparkles size={18} color="#FCD34D" strokeWidth={1.5} />
-								<Text className="text-white font-semibold text-base ml-2">
-									Refresh to Unlock
-								</Text>
-							</>
+							</View>
 						)}
-					</TouchableOpacity>
-					<Text className="text-center text-xs text-gray-400 mt-3 font-regular">
-						Already at the event? Tap above when the launch begins.
-					</Text>
+
+						{/* Countdown boxes */}
+						{isCountdownActive && (
+							<CountdownDisplay msLeft={msLeft} />
+						)}
+
+						{/* Post-countdown hint */}
+						{countdownJustExpired && !errorMsg && (
+							<Text className="text-center text-green-600 text-sm font-semibold mb-5">
+								🎉 The time has come — tap below to unlock!
+							</Text>
+						)}
+
+						{/* Refresh button */}
+						<View className="px-6">
+							<TouchableOpacity
+								onPress={handleRefresh}
+								disabled={refreshDisabled}
+								activeOpacity={refreshDisabled ? 1 : 0.8}
+								className={`py-4 rounded-2xl flex-row items-center justify-center gap-2 ${
+									refreshDisabled
+										? "bg-gray-100"
+										: "bg-gray-900"
+								}`}
+							>
+								{screenState === "refreshing" ? (
+									<>
+										<RefreshCw
+											size={18}
+											color="#9CA3AF"
+											strokeWidth={1.5}
+										/>
+										<Text className="text-gray-400 font-semibold text-base ml-2">
+											Checking…
+										</Text>
+									</>
+								) : (
+									<>
+										<Sparkles
+											size={18}
+											color={
+												refreshDisabled
+													? "#D1D5DB"
+													: "#FCD34D"
+											}
+											strokeWidth={1.5}
+										/>
+										<Text
+											className={`font-semibold text-base ml-2 ${
+												refreshDisabled
+													? "text-gray-400"
+													: "text-white"
+											}`}
+										>
+											Refresh to Unlock
+										</Text>
+									</>
+								)}
+							</TouchableOpacity>
+
+							<Text className="text-center text-xs text-gray-400 mt-3  font-regular">
+								{isCountdownActive
+									? "The unlock button will activate when the event begins."
+									: "Already at the event? Tap above when the launch begins."}
+							</Text>
+						</View>
+
+						{/* ── Sneak-peek section ── */}
+						<View className="flex-row items-center gap-3 px-6 my-6">
+							<View className="h-px flex-1 bg-gray-100" />
+							<Text className="text-xs font-bold text-gray-400 tracking-widest uppercase">
+								Coming at launch
+							</Text>
+							<View className="h-px flex-1 bg-gray-100" />
+						</View>
+
+						<ScrollView
+							horizontal
+							showsHorizontalScrollIndicator={false}
+							contentContainerStyle={{
+								paddingHorizontal: 24,
+								gap: 10,
+							}}
+						>
+							{UNLOCK_FEATURES.map(({ key, ...cardProps }) => (
+								<LockedFeatureCard key={key} {...cardProps} />
+							))}
+						</ScrollView>
+					</View>
 				</Animated.View>
 			)}
 
-			{/* ── Unlocked: feature cards + CTA ── */}
+			{/* ────────────────────────────────────────────────────────────────
+			    Unlocked: feature carousel + CTAs
+			──────────────────────────────────────────────────────────────── */}
 			{isUnlockedView && (
 				<Animated.View style={unlockedStyle} className="flex-1">
-					{/* Feature carousel */}
 					<FlatList
 						data={UNLOCK_FEATURES}
 						horizontal
 						keyExtractor={(item) => item.key}
 						showsHorizontalScrollIndicator={false}
-						contentContainerStyle={{ paddingHorizontal: 0 }}
-						ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
+						contentContainerStyle={{ paddingHorizontal: 24 }}
+						ItemSeparatorComponent={() => (
+							<View style={{ width: 12 }} />
+						)}
 						snapToInterval={CARD_W + 12}
 						snapToAlignment="start"
 						decelerationRate="fast"
-						renderItem={({ item }) => <FeatureCard {...item} />}
-						className="mb-6"
+						renderItem={({ item: { key, ...cardProps } }) => (
+							<FeatureCard {...cardProps} />
+						)}
+						className="flex-grow-0 mb-6"
 					/>
 
-					{/* Check-in CTA */}
-					<TouchableOpacity
-						onPress={handleDone}
-						activeOpacity={0.82}
-						className="py-4 rounded-2xl bg-primary-500 flex-row items-center justify-center gap-2 mb-3"
-					>
-						<Text className="text-white font-bold text-base">
-							Check in for Leader's Advance
-						</Text>
-						<ChevronRight size={18} color="white" strokeWidth={2} />
-					</TouchableOpacity>
+					<View className="px-6">
+						<TouchableOpacity
+							onPress={handleDone}
+							activeOpacity={0.82}
+							className="py-4 rounded-2xl bg-primary-500 flex-row items-center justify-center gap-2 mb-3"
+						>
+							<Text className="text-white font-bold text-base">
+								Check in for Leader's Advance
+							</Text>
+							<ChevronRight
+								size={18}
+								color="white"
+								strokeWidth={2}
+							/>
+						</TouchableOpacity>
 
-					<TouchableOpacity
-						onPress={handleDone}
-						activeOpacity={0.7}
-						className="py-3 items-center"
-					>
-						<Text className="text-gray-400 text-sm font-regular">
-							Maybe later
-						</Text>
-					</TouchableOpacity>
+						<TouchableOpacity
+							onPress={handleDone}
+							activeOpacity={0.7}
+							className="py-3 items-center"
+						>
+							<Text className="text-gray-400 text-sm font-regular">
+								Maybe later
+							</Text>
+						</TouchableOpacity>
+					</View>
 				</Animated.View>
 			)}
-		</View>
+		</ScrollView>
 	);
 }
