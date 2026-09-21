@@ -125,7 +125,13 @@ export default function DeleteAccountScreen() {
 						setIsLoading(true);
 						try {
 							// Call backend to delete user from database and Firebase
-							await deleteAccount();
+							const deleteResult = await deleteAccount();
+							if (!deleteResult.success) {
+								throw new Error(
+									deleteResult.message ||
+										"Failed to delete account on server",
+								);
+							}
 
 							// Delete Firebase auth user locally
 							const currentUser = auth.currentUser;
