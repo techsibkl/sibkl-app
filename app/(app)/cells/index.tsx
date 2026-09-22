@@ -14,7 +14,6 @@ import { myToast } from "@/utils/helper";
 import { FlashList } from "@shopify/flash-list";
 import { useQueryClient } from "@tanstack/react-query";
 import React, { useEffect, useRef, useState } from "react";
-import Toast from "react-native-toast-message";
 import {
 	Animated,
 	Pressable,
@@ -24,6 +23,7 @@ import {
 	Text,
 	View,
 } from "react-native";
+import Toast from "react-native-toast-message";
 
 const CellsScreen = () => {
 	const queryClient = useQueryClient();
@@ -42,14 +42,36 @@ const CellsScreen = () => {
 	const underlinePosition = useRef(new Animated.Value(0)).current;
 
 	// Fetch all available cells
-	const { data: availableCells = [], isPending: cellsLoading, refetch: refetchAvailableCells } =
-		useCellsPublicQuery();
+	const {
+		data: availableCells = [],
+		isPending: cellsLoading,
+		refetch: refetchAvailableCells,
+	} = useCellsPublicQuery();
 
 	// Fetch user's current person data
-	const { data: person, refetch: refetchPerson } = useSinglePersonQuery(user?.person?.id ?? -1);
+	const { data: person, refetch: refetchPerson } = useSinglePersonQuery(
+		user?.person?.id ?? -1,
+	);
 	// Get leader cell IDs
 	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
-	// Get user's current cell IDs
+	// Active (approved) cell IDs — PENDING cells excluded so they remain
+	// visible in the "All" list with a Pending badge after a join request.
+	// member_status comes from cell_members.status via the person query.
+	const activeCellIds = (person?.cells ?? [])
+		.filter((c) => c.member_status === "ACTIVE")
+		.map((c) => c.id as number);
+
+	// PENDING membership IDs persisted in the BE (survives navigation / cold start)
+	const pendingCellIdsFromPerson = (person?.cells ?? [])
+		.filter((c) => c.member_status === "PENDING")
+		.map((c) => c.id as number);
+
+	// Effective pending set: session-local (optimistic) + persisted BE state
+	const allPendingCellIds = Array.from(
+		new Set([...pendingCellIds, ...pendingCellIdsFromPerson]),
+	);
+
+	// Joined cell IDs for "My Cells" tab and button label derivation
 	const userCellIds = (person?.cells ?? []).map((cell) => cell.id);
 
 	// Deduplicate Available Cells
@@ -58,14 +80,18 @@ const CellsScreen = () => {
 	);
 
 	const availableCellsFiltered = uniqueAvailableCells
-		.filter((cell: Cell) => !userCellIds?.includes(cell.id))
+		.filter((cell: Cell) => !activeCellIds.includes(cell.id as number))
 		.filter((cell: Cell) =>
 			cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase()),
 		);
 
 	// Deduplicate Joined Cells
 	const uniqueJoinedCells = Array.from(
-		new Map((person?.cells ?? []).map((cell) => [cell.id, cell])).values(),
+		new Map(
+			(person?.cells ?? [])
+				.filter((cell) => cell.member_status === "ACTIVE")
+				.map((cell) => [cell.id, cell]),
+		).values(),
 	);
 
 	const joinedCellsList = uniqueJoinedCells.filter((cell: Cell) =>
@@ -128,9 +154,11 @@ const CellsScreen = () => {
 			await queryClient.invalidateQueries({
 				queryKey: ["people", user?.person?.id],
 			});
-			
+
 			// Show toast notification
-			const cellName = availableCells.find((c) => c.id === cellId)?.cell_name;
+			const cellName = availableCells.find(
+				(c) => c.id === cellId,
+			)?.cell_name;
 			Toast.show(
 				myToast({
 					success: true,
@@ -153,10 +181,7 @@ const CellsScreen = () => {
 	const handleRefresh = async () => {
 		setIsRefreshing(true);
 		try {
-			await Promise.all([
-				refetchAvailableCells(),
-				refetchPerson(),
-			]);
+			await Promise.all([refetchAvailableCells(), refetchPerson()]);
 		} catch (err) {
 			console.error("Refresh error:", err);
 		} finally {
@@ -165,12 +190,9 @@ const CellsScreen = () => {
 	};
 
 	const selectedCellId = selectedCell?.id;
-	const selectedCellMembership = person?.cells?.find(
-		(c) => c.id === selectedCellId,
+	const isSelectedCellPending = Boolean(
+		selectedCellId && allPendingCellIds.includes(selectedCellId as number),
 	);
-	const isSelectedCellPending =
-		Boolean(selectedCellId && pendingCellIds.includes(selectedCellId)) ||
-		selectedCellMembership?.status === "PENDING";
 	const isSelectedCellJoined =
 		!isSelectedCellPending &&
 		(browseTab === "joined" ||
@@ -183,10 +205,12 @@ const CellsScreen = () => {
 
 	const renderCellCard = ({ item: cell }: { item: Cell }) => {
 		if (browseTab === "available") {
+			const cellIsPending = allPendingCellIds.includes(cell.id as number);
 			return (
 				<AllCellCard
 					cell={cell}
 					hasJoinedAnyCells={hasJoinedAnyCells}
+					isPending={cellIsPending}
 					onViewDetails={handleViewDetails}
 				/>
 			);

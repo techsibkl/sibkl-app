@@ -138,5 +138,6 @@ const styles = {
 		padding: 12,
 		borderRadius: 8,
 		marginBottom: 15,
+		color: "#374151", // explicit color prevents white text on dark-mode system keyboards
 	},
 };

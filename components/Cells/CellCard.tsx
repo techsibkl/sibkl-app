@@ -65,6 +65,7 @@ const MyCellCard = ({ cell }: CellCardProps) => {
 type AllCellCardProps = {
 	cell: Cell;
 	hasJoinedAnyCells?: boolean;
+	isPending?: boolean;
 	onJoin?: (cellId: number) => void;
 	onViewDetails?: (cell: Cell) => void;
 };
@@ -79,6 +80,7 @@ type AllCellCardProps = {
 export const AllCellCard: React.FC<AllCellCardProps> = ({
 	cell,
 	hasJoinedAnyCells = false,
+	isPending = false,
 	onJoin,
 	onViewDetails,
 }) => {
@@ -162,7 +164,13 @@ export const AllCellCard: React.FC<AllCellCardProps> = ({
 			{/* Right: Action Button */}
 			<View className="justify-center">
 				<ActionButton
-					label={hasJoinedAnyCells ? "View Details" : "Join Cell"}
+					label={
+						isPending
+							? "Pending"
+							: hasJoinedAnyCells
+								? "View Details"
+								: "Join Cell"
+					}
 					onPress={handleJoinPress}
 					variant="ghost"
 					size="sm"
