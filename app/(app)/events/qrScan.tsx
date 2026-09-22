@@ -1,6 +1,7 @@
 import { useEventCheckInMutation } from "@/hooks/Event/useEventCheckInMutation";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { router, useLocalSearchParams } from "expo-router";
+import { CheckIcon } from "lucide-react-native";
 import React, { useCallback, useEffect, useState } from "react";
 import {
 	ActivityIndicator,
@@ -161,7 +162,9 @@ export default function EventQrScan() {
 					className="h-10 w-10 rounded-full bg-white/20 items-center justify-center"
 					onPress={() => router.back()}
 				>
-					<Text className="text-white text-base font-semibold">✕</Text>
+					<Text className="text-white text-base font-semibold">
+						✕
+					</Text>
 				</Pressable>
 				<Text className="text-white text-base font-bold tracking-wide">
 					Scan QR Code
@@ -187,14 +190,18 @@ export default function EventQrScan() {
 
 				{scanState === "success" && (
 					<View className="w-full bg-white rounded-2xl p-6 items-center gap-3">
-						<View className="h-[52px] w-[52px] rounded-full border-2 border-green-500 items-center justify-center">
-							<Text className="text-[22px]">✓</Text>
+						<View className="h-[52px] w-[52px] rounded-full bg-green-100 border-2 border-green-500 items-center justify-center">
+							<CheckIcon
+								size={24}
+								color="#10B981"
+								strokeWidth={2}
+							/>
 						</View>
-						<Text className="text-sm font-medium text-green-500 text-center">
+						<Text className="text-sm font-bold text-green-600 text-center">
 							{message}
 						</Text>
 						<Pressable
-							className="bg-primary-500 rounded-[10px] py-3 px-8 mt-1"
+							className="bg-green-600 rounded-[10px] py-3 px-8 mt-1"
 							onPress={() => router.back()}
 						>
 							<Text className="text-white font-bold text-[15px]">

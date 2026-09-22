@@ -1,4 +1,4 @@
-import { RefreshCw, Sparkles } from "lucide-react-native";
+import { RefreshCw } from "lucide-react-native";
 import React from "react";
 import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 import { CountdownDisplay } from "./CountdownDisplay";
@@ -64,7 +64,7 @@ export const LockedView = ({
 				disabled={refreshDisabled}
 				activeOpacity={refreshDisabled ? 1 : 0.8}
 				className={`py-4 rounded-2xl flex-row items-center justify-center gap-2 ${
-					refreshDisabled ? "bg-gray-100" : "bg-gray-900"
+					refreshDisabled ? "bg-gray-100" : "bg-blue-500"
 				}`}
 			>
 				{screenState === "refreshing" ? (
@@ -80,13 +80,13 @@ export const LockedView = ({
 					</>
 				) : (
 					<>
-						<Sparkles
+						<RefreshCw
 							size={18}
-							color={refreshDisabled ? "#D1D5DB" : "#FCD34D"}
+							color={refreshDisabled ? "#D1D5DB" : "#ffffff"}
 							strokeWidth={1.5}
 						/>
 						<Text
-							className={`font-semibold text-base ml-2 ${
+							className={`font-bold text-base ml-2 ${
 								refreshDisabled ? "text-gray-400" : "text-white"
 							}`}
 						>
@@ -117,10 +117,11 @@ export const LockedView = ({
 		<ScrollView
 			horizontal
 			showsHorizontalScrollIndicator={false}
+			style={{ height: 148 }}
 			contentContainerStyle={{
 				paddingHorizontal: 24,
 				gap: 10,
-				height: 160,
+				alignItems: "center",
 			}}
 		>
 			{UNLOCK_FEATURES.map(({ key, ...cardProps }) => (

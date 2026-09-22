@@ -1,6 +1,10 @@
 import { useSystemStore } from "@/stores/systemStore";
 import { useRouter } from "expo-router";
-import { ChevronRight, LockKeyhole, LockKeyholeOpen } from "lucide-react-native";
+import {
+	ChevronRight,
+	LockKeyhole,
+	LockKeyholeOpen,
+} from "lucide-react-native";
 import React from "react";
 import { Text, TouchableOpacity, View } from "react-native";
 
@@ -14,11 +18,14 @@ import { Text, TouchableOpacity, View } from "react-native";
  */
 const LaunchBanner = () => {
 	const router = useRouter();
-	const { hasNewLaunch, appStatus } = useSystemStore();
+	const { hasNewLaunch, hasActivatedLaunch } = useSystemStore();
 
 	if (!hasNewLaunch) return null;
 
-	const isUnlocked = appStatus?.status === "unlocked";
+	// isUnlocked = true only when the user has completed the unlock animation
+	// for the current launch_version (persisted to disk). A new launch_version
+	// resets hasActivatedLaunch to false regardless of the BE status field.
+	const isUnlocked = hasActivatedLaunch;
 
 	return (
 		<TouchableOpacity
@@ -34,12 +41,22 @@ const LaunchBanner = () => {
 				{/* Icon bubble */}
 				<View
 					className="w-10 h-10 rounded-full items-center justify-center shrink-0"
-					style={{ backgroundColor: isUnlocked ? "#DCFCE7" : "#FDE68A" }}
+					style={{
+						backgroundColor: isUnlocked ? "#DCFCE7" : "#FDE68A",
+					}}
 				>
 					{isUnlocked ? (
-						<LockKeyholeOpen size={19} color="#16A34A" strokeWidth={1.75} />
+						<LockKeyholeOpen
+							size={19}
+							color="#16A34A"
+							strokeWidth={1.75}
+						/>
 					) : (
-						<LockKeyhole size={19} color="#D97706" strokeWidth={1.75} />
+						<LockKeyhole
+							size={19}
+							color="#D97706"
+							strokeWidth={1.75}
+						/>
 					)}
 				</View>
 
@@ -50,7 +67,9 @@ const LaunchBanner = () => {
 							isUnlocked ? "text-green-900" : "text-amber-900"
 						}`}
 					>
-						{isUnlocked ? "You're fully unlocked! 🎉" : "Limited features"}
+						{isUnlocked
+							? "All features available! 🎉"
+							: "Limited features"}
 					</Text>
 					<Text
 						className={`text-xs mt-0.5 font-regular leading-4 ${

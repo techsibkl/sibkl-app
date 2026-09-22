@@ -60,7 +60,7 @@ export const CelebrationScreen = ({ onExplore }: Props) => {
 	const leftRef = useRef<any>(null);
 	const rightRef = useRef<any>(null);
 	const { width, height } = Dimensions.get("window");
-	const expandScaleTo = (Math.hypot(width, height) / ICON_SIZE) * 1.2;
+	const expandScaleTo = (Math.hypot(width, height) / ICON_SIZE) * 1.5;
 
 	// Icon
 	const iconScale = useSharedValue(0);

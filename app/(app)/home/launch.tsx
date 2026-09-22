@@ -7,7 +7,7 @@ import { useSystemStore } from "@/stores/systemStore";
 import { useRouter } from "expo-router";
 import { LockKeyhole, LockKeyholeOpen } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
-import { ScrollView, Text, View } from "react-native";
+import { RefreshControl, ScrollView, Text, View } from "react-native";
 import Animated, {
 	interpolateColor,
 	useAnimatedStyle,
@@ -83,7 +83,7 @@ export default function LaunchScreen() {
 		await fetchSystemConfig();
 		const newStatus = useSystemStore.getState().appStatus?.status;
 		if (newStatus === "unlocked") {
-			activateLaunch();
+			await activateLaunch();
 			// Pre-set the unlocked UI behind the celebration overlay so it's
 			// immediately visible once the overlay fades out on "Explore".
 			lockBg.value = 1;
@@ -128,13 +128,22 @@ export default function LaunchScreen() {
 				className="bg-white"
 				contentContainerStyle={{
 					paddingTop: 64,
-					paddingBottom: 32,
-					flex: 1,
-					alignItems: "center",
+					paddingBottom: 64,
+					flexGrow: 1,
 				}}
+				refreshControl={
+					true ? (
+						<RefreshControl
+							refreshing={screenState === "refreshing"}
+							onRefresh={handleRefresh}
+							tintColor="#F59E0B"
+							colors={["#F59E0B"]}
+						/>
+					) : undefined
+				}
 			>
 				{/* Lock icon — always visible */}
-				<View className="">
+				<View className="w-full items-center">
 					<Animated.View
 						style={lockAnimStyle}
 						className="w-24 h-24 rounded-full items-center justify-center mb-5"
@@ -178,7 +187,7 @@ export default function LaunchScreen() {
 					{isUnlockedView && (
 						<Animated.View
 							style={unlockedStyle}
-							className="items-center justify-start pt-1 px-6 gap-2 mb-6"
+							className="items-center justify-start pt-1 px-6 mb-6"
 						>
 							<Text className="text-3xl font-bold text-text text-center leading-tight">
 								All features available!
