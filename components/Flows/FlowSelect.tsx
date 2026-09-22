@@ -27,7 +27,7 @@ const FlowSelector = ({ flows, selectedFlowId, onSelect }: Props) => {
 						})),
 					]}
 					renderTrigger={(label) => (
-						<Text className="font-medium text-md">
+						<Text className="font-medium text-md text-gray-600">
 							{label || "Select flow"}
 						</Text>
 					)}
