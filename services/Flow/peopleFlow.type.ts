@@ -28,3 +28,7 @@ export interface PeopleFlow extends PrefixedPerson {
 	updated_at?: Date; // Timestamp of last update
 	[key: string]: any; // Allow for additional properties
 }
+
+export function getPeopleFlowPersonId(personFlow: PeopleFlow): number {
+	return Number(personFlow.p__id ?? personFlow.people_id);
+}
