@@ -35,7 +35,7 @@ export const FeatureCard = ({
 					}
 				}}
 			>
-				<Text className="text-xs text-blue-500 font-regular leading-4 p-2 ">
+				<Text className="text-xs text-blue-400 font-bold leading-4 p-2 ">
 					{"Explore"}
 				</Text>
 			</TouchableOpacity>

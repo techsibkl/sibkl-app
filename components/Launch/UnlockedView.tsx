@@ -10,15 +10,16 @@ type Props = {
 };
 
 export const UnlockedView = ({ onCheckIn, onBack }: Props) => (
-	<View className="flex-1">
+	<View>
 		<ScrollView
 			horizontal
 			showsHorizontalScrollIndicator={false}
-			className="flex-grow-0"
+			className="h-[160px]"
 			contentContainerStyle={{
 				paddingHorizontal: 24,
 				gap: 10,
 				height: 160,
+				alignItems: "center",
 			}}
 		>
 			{UNLOCK_FEATURES.map(({ key, ...cardProps }) => (
@@ -51,7 +52,7 @@ export const UnlockedView = ({ onCheckIn, onBack }: Props) => (
 				activeOpacity={0.7}
 				className="py-3 items-center"
 			>
-				<Text className="text-blue-400 text-sm font-regular underline">
+				<Text className="text-blue-400 text-sm underline">
 					Back to home page
 				</Text>
 			</TouchableOpacity>

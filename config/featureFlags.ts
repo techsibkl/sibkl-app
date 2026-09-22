@@ -30,16 +30,12 @@ const isPilotBuild =
  */
 export const binaryFeatureFlags = {
 	isPilotBuild,
-	/** Cell groups: hard-gated to pilot binary AND must be enabled in DB. */
-	cells: isPilotBuild,
-	/** Cell attendance: hard-gated to pilot binary AND must be enabled in DB. */
-	cellAttendance: isPilotBuild,
 	/**
-	 * Cell follow-up: binary passthrough (true in all builds, was SHOW=true).
-	 * Runtime availability is controlled entirely by the server flag "cellFollowUp".
-	 * Components that read this synchronously (PeopleFlowRow, PeopleFlowDialog,
-	 * AssignDistrictCellAction) keep working; the server flag is the real gate.
+	 * Pilot binary gates are disabled. These stay true so existing call sites
+	 * compile, and the server flag from useFeatureFlag is the real gate.
 	 */
+	cells: true,
+	cellAttendance: true,
 	cellFollowUp: true,
 } as const;
 
