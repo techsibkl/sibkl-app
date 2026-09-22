@@ -1,0 +1,33 @@
+---
+description: Firebase auth, Zustand auth store, guest mode, and CASL permissions
+globs: stores/**/*.ts,hooks/Auth/**/*.ts,utils/casl/**/*.ts,components/shared/Can.tsx
+alwaysApply: false
+---
+
+# Auth & Permissions
+
+## Auth State (`stores/authStore.ts`)
+
+- `firebaseUser` — Firebase session
+- `user` — backend `AppUser` with `people_id` and `person`
+- `isGuest` — browse without login (no Firebase token)
+- `ability` — CASL instance from `defineAbilityFor(person)`
+
+Sign-in/sign-up flows must clear guest state (`isGuest: false`). Use `handleAuthStateChange` in `hooks/Auth/useAuthHandler.ts` after Firebase auth changes.
+
+## secureFetch & Guests
+
+- Authenticated: attaches `Authorization: Bearer <firebase id token>`
+- Guest: no token; only endpoints marked `allowUnauthenticated` on backend
+- Never create fake `Person` objects for guests
+
+## CASL (`utils/casl/defineAbilityFor.ts`)
+
+- Roles: Cell Leader, District Admin, People Admin, Member, Guest, etc.
+- Subjects: `PeopleProfile`, `CellDetails`, `PeopleFlow`, `Announcements`, `Resource`, …
+- Add new permissions here AND on backend; use `<Can action="..." subject="...">` in UI
+
+## Firebase
+
+- Use `@react-native-firebase/auth` (not web Firebase SDK)
+- FCM token registration lives in root `app/_layout.tsx` — do not duplicate unless necessary

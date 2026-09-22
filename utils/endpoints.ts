@@ -125,4 +125,20 @@ export const apiEndpoints = {
 		updateAsClosed: _endpoint("notifications/mark-closed"),
 		updateAsReopen: _endpoint("notifications/mark-reopen"),
 	},
+	events: {
+		getAll: _endpoint("events"),
+		getById: (id: number | string) => _endpoint(`events/${id}`),
+		getMyEvents: _endpoint("events/myEvents"),
+		registerParticipant: (id: number | string) =>
+			_endpoint(`events/${id}/participants`),
+		checkInParticipant: (
+			eventId: number | string,
+			participantId: number | string,
+		) =>
+			_endpoint(
+				`events/${eventId}/participants/${participantId}/checkin`,
+			),
+		// TODO: wire when backend adds GET /events/mine (or equivalent)
+		// getMyRegistrations: _endpoint("events/mine"),
+	},
 };
