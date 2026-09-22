@@ -22,9 +22,15 @@ export default function Layout() {
 			<Stack.Screen
 				name="launch"
 				options={{
-					headerShown: true,
+					headerShown: false,
 					header() {
-						return <SharedHeader title="Leader's Advance 2026" isPop />;
+						return (
+							<SharedHeader
+								title="Leader's Advance 2026"
+								isPop
+								className="!bg-white"
+							/>
+						);
 					},
 				}}
 			/>

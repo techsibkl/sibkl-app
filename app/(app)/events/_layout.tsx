@@ -1,6 +1,5 @@
 import SharedHeader from "@/components/shared/SharedHeader";
-import { useFeatureFlag } from "@/hooks/useFeatureFlag";
-import { Redirect, Stack } from "expo-router";
+import { Stack } from "expo-router";
 import React from "react";
 
 export const unstable_settings = {
@@ -8,10 +7,6 @@ export const unstable_settings = {
 };
 
 export default function EventsLayout() {
-	if (!useFeatureFlag("events")) {
-		return <Redirect href="/(app)/home" />;
-	}
-
 	return (
 		<Stack screenOptions={{ contentStyle: { flex: 1 } }}>
 			<Stack.Screen

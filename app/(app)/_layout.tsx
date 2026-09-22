@@ -22,6 +22,8 @@ export default function AppLayout() {
 	const insets = useSafeAreaInsets();
 	const isGuest = useAuthStore((s) => s.isGuest);
 	const showEventsTab = useFeatureFlag("events") && !isGuest;
+	const showCells = useFeatureFlag("cells");
+	const showGuestFollowUp = useFeatureFlag("guestFollowUp");
 	const defaultTabBarStyle = {
 		height: 50 + Math.max(insets.bottom, 8),
 		paddingTop: 2,
@@ -41,16 +43,23 @@ export default function AppLayout() {
 		>
 			<Tabs.Screen
 				name="home"
-				options={{
-					title: "Home",
-					tabBarIcon: ({ color, size, focused }) => (
-						<Home
-							size={size}
-							color={color}
-							strokeWidth={1}
-							fill={focused ? color : "none"}
-						/>
-					),
+				options={({ route }) => {
+					const routeName = getFocusedRouteNameFromRoute(route) ?? "index";
+					return {
+						title: "Home",
+						tabBarStyle:
+							routeName === "launch"
+								? { display: "none" }
+								: defaultTabBarStyle,
+						tabBarIcon: ({ color, size, focused }) => (
+							<Home
+								size={size}
+								color={color}
+								strokeWidth={1}
+								fill={focused ? color : "none"}
+							/>
+						),
+					};
 				}}
 			/>
 			<Tabs.Screen
@@ -60,7 +69,7 @@ export default function AppLayout() {
 						getFocusedRouteNameFromRoute(route) ?? "index";
 					return {
 						title: "Cells",
-						href: useFeatureFlag("cells") ? "/(app)/cells" : null,
+						href: showCells ? "/(app)/cells" : null,
 						tabBarStyle: CAMERA_ROUTES.has(routeName)
 							? { display: "none" }
 							: defaultTabBarStyle,
@@ -116,9 +125,7 @@ export default function AppLayout() {
 				name="flows"
 				options={{
 					title: "Follow-up",
-					href: useFeatureFlag("guestFollowUp")
-						? "/(app)/flows"
-						: null,
+					href: showGuestFollowUp ? "/(app)/flows" : null,
 					tabBarIcon: ({ color, size, focused }) => (
 						<FunnelIcon
 							size={size}

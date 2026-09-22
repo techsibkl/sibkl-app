@@ -9,6 +9,7 @@ export type SharedHeaderProps = {
 	isPop?: boolean;
 	backFunc?: Function;
 	child?: ReactElement;
+	className?: string;
 };
 
 /**
@@ -16,12 +17,18 @@ export type SharedHeaderProps = {
  * @param child component will override default header
  * @returns
  */
-const SharedHeader = ({ title, isPop, backFunc, child }: SharedHeaderProps) => {
+const SharedHeader = ({
+	title,
+	isPop,
+	backFunc,
+	child,
+	className,
+}: SharedHeaderProps) => {
 	const router = useRouter();
 	return (
 		<SafeAreaView
 			edges={{ bottom: "off", top: "additive" }}
-			className="py-4 px-4 bg-background z-10"
+			className={`py-4 px-4 bg-background z-10 ${className}`}
 		>
 			{child ? (
 				<>{child}</>
@@ -31,7 +38,12 @@ const SharedHeader = ({ title, isPop, backFunc, child }: SharedHeaderProps) => {
 					{(isPop || backFunc) && (
 						<TouchableOpacity
 							className="absolute left-0 top-0 bottom-0 justify-center z-10 pr-6" // Absolute position so it doesn't push the title
-							hitSlop={{ top: 15, bottom: 15, left: 15, right: 15 }}
+							hitSlop={{
+								top: 15,
+								bottom: 15,
+								left: 15,
+								right: 15,
+							}}
 							onPress={() => {
 								if (backFunc) {
 									console.log(
@@ -50,9 +62,9 @@ const SharedHeader = ({ title, isPop, backFunc, child }: SharedHeaderProps) => {
 						</TouchableOpacity>
 					)}
 					{!!title && (
-						<Text 
-                            className={`text-2xl text-black font-bold ${(isPop || backFunc) ? "ml-10" : ""}`}
-                        >
+						<Text
+							className={`text-2xl text-black font-bold ${isPop || backFunc ? "ml-10" : ""}`}
+						>
 							{title}
 						</Text>
 					)}
