@@ -1,4 +1,4 @@
-import { featureFlags } from "@/config/featureFlags";
+import { binaryFeatureFlags } from "@/config/featureFlags";
 import { AnyAbility } from "@casl/ability";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Router } from "expo-router";
@@ -21,7 +21,7 @@ export const getFabActions = ({
 	cellId,
 }: getFabActionsProps) => {
 	const actions: (FABActionItem | false)[] = [
-		featureFlags.cellAttendance &&
+		binaryFeatureFlags.cellAttendance &&
 			ability.can("create", "CellSession") && {
 				icon: "calendar",
 				label: "New Session",
@@ -38,7 +38,7 @@ export const getFabActions = ({
 			color: "white",
 			style: { backgroundColor: "#d6361e" },
 		},
-		featureFlags.cellAttendance && {
+		binaryFeatureFlags.cellAttendance && {
 			icon: "camera",
 			label: "Mark Attendance",
 			labelTextColor: "black",
@@ -50,7 +50,7 @@ export const getFabActions = ({
 			color: "white",
 			style: { backgroundColor: "#d6361e" },
 		},
-		featureFlags.cellAttendance &&
+		binaryFeatureFlags.cellAttendance &&
 			ability.can("read", "CellSession") && {
 				icon: "calendar-clock",
 				label: "View Sessions",

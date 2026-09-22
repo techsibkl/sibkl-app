@@ -1,5 +1,5 @@
 import SharedHeader from "@/components/shared/SharedHeader";
-import { featureFlags } from "@/config/featureFlags";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { Redirect, Stack } from "expo-router";
 import React from "react";
 
@@ -8,7 +8,7 @@ export const unstable_settings = {
 };
 
 export default function EventsLayout() {
-	if (!featureFlags.events) {
+	if (!useFeatureFlag("events")) {
 		return <Redirect href="/(app)/home" />;
 	}
 

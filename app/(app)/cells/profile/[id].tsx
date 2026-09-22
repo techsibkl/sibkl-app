@@ -8,7 +8,7 @@ import MembersList from "@/components/Cells/Profile/MembersList";
 import SearchMembersModal from "@/components/Cells/Profile/SearchMembersModal";
 import SharedBody from "@/components/shared/SharedBody";
 import SkeletonCellProfile from "@/components/shared/Skeleton/SkeletonCellProfile";
-import { featureFlags } from "@/config/featureFlags";
+import { binaryFeatureFlags } from "@/config/featureFlags";
 // import { getFabActions } from "@/constants/cont_cells";
 import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import {
@@ -139,7 +139,7 @@ const CellProfileScreen = () => {
 
 	const cellProfileTabs = [
 		"people",
-		...(featureFlags.cellAttendance ? (["attendance"] as const) : []),
+		...(binaryFeatureFlags.cellAttendance ? (["attendance"] as const) : []),
 		"announcements",
 	] as const;
 
@@ -376,7 +376,7 @@ const CellProfileScreen = () => {
 					{/* Action Buttons */}
 					<View className="flex-row justify-center gap-2 w-full max-w-[90%] mx-6 mb-6">
 						{/* Scan QR - attendance (pilot) */}
-						{featureFlags.cellAttendance && (
+						{binaryFeatureFlags.cellAttendance && (
 							<TouchableOpacity
 								onPress={() =>
 									router.push({
@@ -403,7 +403,7 @@ const CellProfileScreen = () => {
 						</TouchableOpacity>
 
 						{/* View Sessions - for leaders and core only */}
-						{featureFlags.cellAttendance &&
+						{binaryFeatureFlags.cellAttendance &&
 							isLeader &&
 							ability.can("read", "CellSession") && (
 								<TouchableOpacity

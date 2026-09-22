@@ -1,15 +1,15 @@
-import { featureFlags } from "@/config/featureFlags";
+import { binaryFeatureFlags } from "@/config/featureFlags";
 import toastConfig from "@/config/toastConfig";
 import { ActionComponents } from "@/constants/const_flows";
 import {
-	usePeopleFlowAllQuery,
-	usePeopleFlowQuery,
+    usePeopleFlowAllQuery,
+    usePeopleFlowQuery,
 } from "@/hooks/Flows/useFlowsQuery";
 import { useAssignMutation } from "@/hooks/Flows/usePeopleFlowMutations";
 import {
-	FlowStep,
-	SingleCustomAttr,
-	StepAction,
+    FlowStep,
+    SingleCustomAttr,
+    StepAction,
 } from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { fetchPeoplePaginated } from "@/services/Person/person.service";
@@ -18,8 +18,8 @@ import { useAuthStore } from "@/stores/authStore";
 import { Role } from "@/utils/casl/defineAbilityFor";
 import { daysAgo, formatPhone } from "@/utils/helper";
 import {
-	daysAgoTextColorNative,
-	getStepStatusStyleNative,
+    daysAgoTextColorNative,
+    getStepStatusStyleNative,
 } from "@/utils/helper_flows";
 import { getAvatarColors, getInitials } from "@/utils/helper_profile";
 import { subject } from "@casl/ability";
@@ -27,25 +27,25 @@ import Clipboard from "@react-native-clipboard/clipboard";
 import { useQuery } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import {
-	ChevronUpIcon,
-	CircleDashedIcon,
-	CircleIcon,
-	GitBranchIcon,
-	InfoIcon,
-	MapPinIcon,
-	PhoneIcon,
-	UserIcon,
+    ChevronUpIcon,
+    CircleDashedIcon,
+    CircleIcon,
+    GitBranchIcon,
+    InfoIcon,
+    MapPinIcon,
+    PhoneIcon,
+    UserIcon,
 } from "lucide-react-native";
 import React, { useCallback, useMemo, useState } from "react";
 import {
-	Alert,
-	Linking,
-	Modal,
-	ScrollView,
-	Text,
-	TouchableOpacity,
-	TouchableWithoutFeedback,
-	View,
+    Alert,
+    Linking,
+    Modal,
+    ScrollView,
+    Text,
+    TouchableOpacity,
+    TouchableWithoutFeedback,
+    View,
 } from "react-native";
 import Toast from "react-native-toast-message";
 import AssignDistrictCellDialog from "./Assign/AssignDistrictCellDialog";
@@ -147,7 +147,7 @@ const PeopleFlowDialog = ({
 
 		const canAssignDistrict = isSuperRole || isDistrictRole;
 		const canAssignCell =
-			featureFlags.cellFollowUp &&
+			binaryFeatureFlags.cellFollowUp &&
 			(isSuperRole || isDistrictRole || isCellLeader);
 
 		const canAssign = ability.can(
@@ -357,7 +357,7 @@ const PeopleFlowDialog = ({
 						)}
 					</View>
 					{/* Cell row */}
-					{featureFlags.cellFollowUp && (
+					{binaryFeatureFlags.cellFollowUp && (
 						<View className="flex-row items-center gap-2">
 							<CircleIcon size={13} color="#9ca3af" />
 							{personFlow.cell_name ? (

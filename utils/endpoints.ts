@@ -141,4 +141,7 @@ export const apiEndpoints = {
 		// TODO: wire when backend adds GET /events/mine (or equivalent)
 		// getMyRegistrations: _endpoint("events/mine"),
 	},
+	system: {
+		getConfig: _endpoint("system/config"),
+	},
 };

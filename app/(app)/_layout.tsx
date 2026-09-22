@@ -1,4 +1,4 @@
-import { featureFlags } from "@/config/featureFlags";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { useAuthStore } from "@/stores/authStore";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { Tabs } from "expo-router";
@@ -15,11 +15,13 @@ import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 
 const CAMERA_ROUTES = new Set(["scanner", "qrScan"]);
+// this is used to hide the tab bar on camera routes
+// getFocusedRouteNameFromRoute is used to get the name of the current route
 
 export default function AppLayout() {
 	const insets = useSafeAreaInsets();
 	const isGuest = useAuthStore((s) => s.isGuest);
-	const showEventsTab = featureFlags.events && !isGuest;
+	const showEventsTab = useFeatureFlag("events") && !isGuest;
 	const defaultTabBarStyle = {
 		height: 50 + Math.max(insets.bottom, 8),
 		paddingTop: 2,
@@ -54,28 +56,30 @@ export default function AppLayout() {
 			<Tabs.Screen
 				name="cells"
 				options={({ route }) => {
-					const routeName = getFocusedRouteNameFromRoute(route) ?? "index";
+					const routeName =
+						getFocusedRouteNameFromRoute(route) ?? "index";
 					return {
 						title: "Cells",
-						href: featureFlags.cells ? "/(app)/cells" : null,
+						href: useFeatureFlag("cells") ? "/(app)/cells" : null,
 						tabBarStyle: CAMERA_ROUTES.has(routeName)
 							? { display: "none" }
 							: defaultTabBarStyle,
 						tabBarIcon: ({ color, size, focused }) => (
-						<Circle
-							size={size}
-							color={color}
-							strokeWidth={1}
-							fill={focused ? color : "none"}
-						/>
-					),
+							<Circle
+								size={size}
+								color={color}
+								strokeWidth={1}
+								fill={focused ? color : "none"}
+							/>
+						),
 					};
 				}}
 			/>
 			<Tabs.Screen
 				name="events"
 				options={({ route }) => {
-					const routeName = getFocusedRouteNameFromRoute(route) ?? "index";
+					const routeName =
+						getFocusedRouteNameFromRoute(route) ?? "index";
 					return {
 						title: "Events",
 						href: showEventsTab ? ("/(app)/events" as any) : null,
@@ -83,13 +87,13 @@ export default function AppLayout() {
 							? { display: "none" }
 							: defaultTabBarStyle,
 						tabBarIcon: ({ color, size, focused }) => (
-						<Calendar
-							size={size}
-							color={color}
-							strokeWidth={1}
-							fill={focused ? color : "none"}
-						/>
-					),
+							<Calendar
+								size={size}
+								color={color}
+								strokeWidth={1}
+								fill={focused ? color : "none"}
+							/>
+						),
 					};
 				}}
 			/>
@@ -112,6 +116,9 @@ export default function AppLayout() {
 				name="flows"
 				options={{
 					title: "Follow-up",
+					href: useFeatureFlag("guestFollowUp")
+						? "/(app)/flows"
+						: null,
 					tabBarIcon: ({ color, size, focused }) => (
 						<FunnelIcon
 							size={size}
@@ -124,10 +131,12 @@ export default function AppLayout() {
 			/>
 			<Tabs.Screen
 				// Note: with leaders/_layout, the name just needs to be (route) and not (route)/index
-
 				name="leaders"
 				options={{
 					title: "Leaders",
+					href: useFeatureFlag("leadersPage")
+						? "/(app)/leaders"
+						: null,
 					tabBarIcon: ({ color, size, focused }) => (
 						<GraduationCap
 							size={size}
