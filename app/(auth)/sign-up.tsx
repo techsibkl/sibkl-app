@@ -102,7 +102,7 @@ const Page = () => {
 					<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
 						<User2Icon size={20} color="#6b7280" />
 						<TextInput
-							className="font-regular flex-1 ml-3"
+							className="font-regular flex-1 ml-3 text-gray-600"
 							style={inputPadding}
 							placeholder="Search by name"
 							value={nameQuery}

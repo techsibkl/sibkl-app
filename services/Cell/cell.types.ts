@@ -20,6 +20,8 @@ export type Cell = {
   specific_weeks?: string;
   cell_character?: string;
   status?: CellStatus;
+  /** Membership status from cell_members table — only present on cells returned via person query */
+  member_status?: "PENDING" | "ACTIVE" | "REJECTED";
   cell_leader_1_name?: string | null;
   cell_leader_1_phone?: string | null;
   cell_leader_2_name?: string | null;
