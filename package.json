@@ -68,6 +68,7 @@
 		"react-hook-form": "^7.62.0",
 		"react-native": "0.79.6",
 		"react-native-calendar-picker": "^8.0.5",
+		"react-native-confetti-cannon": "^1.5.2",
 		"react-native-date-picker": "^5.0.13",
 		"react-native-dropdown-picker": "^5.4.6",
 		"react-native-email-link": "^1.16.1",

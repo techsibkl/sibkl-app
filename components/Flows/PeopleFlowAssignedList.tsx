@@ -78,10 +78,6 @@ const PeopleFlowList = ({
 			if (item.kind === "header") {
 				currentSectionKey = item.sectionKey;
 				result.push(item);
-				// Mark this section as expanded by default if not explicitly set
-				if (!(item.sectionKey in expandedSections)) {
-					expandedSections[item.sectionKey] = true;
-				}
 			} else if (
 				currentSectionKey &&
 				expandedSections[currentSectionKey] !== false

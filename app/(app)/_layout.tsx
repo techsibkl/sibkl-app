@@ -44,16 +44,21 @@ export default function AppLayout() {
     >
       <Tabs.Screen
         name="home"
-        options={{
-          title: "Home",
-          tabBarIcon: ({ color, size, focused }) => (
-            <Home
-              size={size}
-              color={color}
-              strokeWidth={1}
-              fill={focused ? color : "none"}
-            />
-          ),
+        options={({ route }) => {
+          const routeName = getFocusedRouteNameFromRoute(route) ?? "index";
+          return {
+            title: "Home",
+            tabBarStyle:
+              routeName === "launch" ? { display: "none" } : defaultTabBarStyle,
+            tabBarIcon: ({ color, size, focused }) => (
+              <Home
+                size={size}
+                color={color}
+                strokeWidth={1}
+                fill={focused ? color : "none"}
+              />
+            ),
+          };
         }}
       />
       <Tabs.Screen
