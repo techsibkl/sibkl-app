@@ -60,7 +60,7 @@ const Greeting = () => {
 			>
 				{/* Color-coded avatar with initials */}
 				<View className="w-14 h-14 rounded-full bg-gray-200 items-center justify-center">
-					<Text className="text-sm font-bold">
+					<Text className="text-sm font-bold text-text">
 						{getInitials(currentPerson?.full_legal_name)}
 					</Text>
 				</View>

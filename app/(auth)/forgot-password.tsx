@@ -97,7 +97,7 @@ const Page = () => {
 								<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
 									<Mail size={20} color="#6b7280" />
 									<TextInput
-										className="font-regular flex-1 ml-3"
+										className="font-regular flex-1 ml-3 text-gray-600"
 										style={inputPadding}
 										placeholder="Enter your email"
 										placeholderTextColor="#9ca3af"

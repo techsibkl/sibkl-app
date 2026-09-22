@@ -75,7 +75,7 @@ const ProfileViewPage = () => {
 				{/* Header */}
 				<View className="items-center mb-6 gap-1">
 					<View className="w-20 h-20 rounded-full bg-gray-200 items-center justify-center">
-						<Text className="text-lg  font-bold">
+						<Text className="text-lg font-bold text-text">
 							{getInitials(person.full_legal_name)}
 						</Text>
 					</View>

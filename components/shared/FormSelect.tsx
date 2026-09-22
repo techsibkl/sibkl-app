@@ -41,7 +41,7 @@ export const FormSelect = ({
 				render={({ field: { onChange, value } }) => {
 					return (
 						<View
-							className={`${formStyles.inputSelect} ${disabled ? "bg-gray-100" : ""}`}
+							className={`${formStyles.inputSelect} ${disabled ? "bg-gray-100" : ""} h-12 justify-center`}
 						>
 							<AppPicker
 								value={value}

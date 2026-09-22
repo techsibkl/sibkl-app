@@ -1,112 +1,424 @@
 "use client";
 
-import CellList from "@/components/Cells/CellList";
-import CreateSessionSheet from "@/components/Cells/CreateSessionSheet";
+import MyCellCard, { AllCellCard } from "@/components/Cells/CellCard";
+import CellDetailModal from "@/components/shared/CellDetailModal";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
-import { getFabActions } from "@/constants/cont_cells";
+import { useCellsPublicQuery } from "@/hooks/Cell/useCellQuery";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
+import { joinCell } from "@/services/Cell/cell.service";
 import { Cell } from "@/services/Cell/cell.types";
 import { useAuthStore } from "@/stores/authStore";
-import React, {
-  BottomSheetModal,
-  BottomSheetModalProvider,
-} from "@gorhom/bottom-sheet";
-import { useRouter } from "expo-router";
-import { useEffect, useRef, useState } from "react";
-import { StatusBar, Text, View } from "react-native";
-import { FAB, Portal, Provider } from "react-native-paper";
+import { myToast } from "@/utils/helper";
+import { FlashList } from "@shopify/flash-list";
+import { useQueryClient } from "@tanstack/react-query";
+import React, { useEffect, useRef, useState } from "react";
+import {
+	Animated,
+	Pressable,
+	RefreshControl,
+	StatusBar,
+	StyleSheet,
+	Text,
+	View,
+} from "react-native";
+import Toast from "react-native-toast-message";
 
 const CellsScreen = () => {
-  const { isDark } = useThemeColors();
-  const { user, ability } = useAuthStore();
-  const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
-  const [open, setOpen] = useState(false);
-  const [searchQuery, setSearchQuery] = useState("");
-  const router = useRouter();
-  const ledCells: number[] = person?.leader_of_cell_ids;
-  const ledCellsFormatted = (person?.cells ?? []) // ← use same source
-    .filter((cell) => cell.id && ledCells.map(Number).includes(Number(cell.id)))
-    .map((cell) => ({ id: cell.id!, name: cell.cell_name! }));
+	const queryClient = useQueryClient();
+	const { isDark } = useThemeColors();
+	const { user } = useAuthStore();
+	const [searchQuery, setSearchQuery] = useState("");
+	const [browseTab, setBrowseTab] = useState<"available" | "joined">(
+		"joined",
+	);
+	const [joinedCells, setJoinedCells] = useState<number[]>([]);
+	const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
+	const [modalVisible, setModalVisible] = useState(false);
+	const [joiningCellId, setJoiningCellId] = useState<number | null>(null);
+	const [pendingCellIds, setPendingCellIds] = useState<number[]>([]);
+	const [isRefreshing, setIsRefreshing] = useState(false);
+	const underlinePosition = useRef(new Animated.Value(0)).current;
 
-  // ref
-  const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
-  // console.log("user:", user);
-  // console.log("firebaseUser:", firebaseUser);
-  const filteredCells = (person?.cells ?? []).filter((cell: Cell) =>
-    cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase()),
-  );
-  // // derive filtered list
-  // const filteredCells = (user?.person?.cells ?? []).filter((cell: Cell) =>
-  // 	cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase())
-  // );
+	// Fetch all available cells
+	const {
+		data: availableCells = [],
+		isPending: cellsLoading,
+		refetch: refetchAvailableCells,
+	} = useCellsPublicQuery();
 
-  useEffect(() => {
-    if (!person) return;
-    const cells = person.cells ?? [];
+	// Fetch user's current person data
+	const { data: person, refetch: refetchPerson } = useSinglePersonQuery(
+		user?.person?.id ?? -1,
+	);
+	// Get leader cell IDs
+	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
+	// Active (approved) cell IDs — PENDING cells excluded so they remain
+	// visible in the "All" list with a Pending badge after a join request.
+	// member_status comes from cell_members.status via the person query.
+	const activeCellIds = (person?.cells ?? [])
+		.filter((c) => c.member_status === "ACTIVE")
+		.map((c) => c.id as number);
 
-    if (cells.length === 1) {
-      router.replace({
-        pathname: "/(app)/cells/profile/[id]",
-        params: { id: cells[0].id! },
-      });
-    }
-  }, [person]);
+	// PENDING membership IDs persisted in the BE (survives navigation / cold start)
+	const pendingCellIdsFromPerson = (person?.cells ?? [])
+		.filter((c) => c.member_status === "PENDING")
+		.map((c) => c.id as number);
 
-  if (!user)
-    return (
-      <SharedBody>
-        <Text>Unauthenticated</Text>
-        <Text>Go Away!!!!</Text>
-      </SharedBody>
-    );
+	// Effective pending set: session-local (optimistic) + persisted BE state
+	const allPendingCellIds = Array.from(
+		new Set([...pendingCellIds, ...pendingCellIdsFromPerson]),
+	);
 
-  return (
-    <SharedBody>
-      <StatusBar
-        className="bg-background dark:bg-background-dark"
-        barStyle={isDark ? "light-content" : "dark-content"}
-      />
+	// Joined cell IDs for "My Cells" tab and button label derivation
+	const userCellIds = (person?.cells ?? []).map((cell) => cell.id);
 
-      <SharedSearchBar
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        placeholder="Search cells..."
-      />
+	// Deduplicate Available Cells
+	const uniqueAvailableCells = Array.from(
+		new Map((availableCells ?? []).map((cell) => [cell.id, cell])).values(),
+	);
 
-      {/* Content */}
-      <View className="flex-1">
-        <CellList cells={filteredCells} />
-      </View>
+	const availableCellsFiltered = uniqueAvailableCells
+		.filter((cell: Cell) => !activeCellIds.includes(cell.id as number))
+		.filter((cell: Cell) =>
+			cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase()),
+		);
 
-      <BottomSheetModalProvider>
-        <Provider>
-          {/* existing content */}
-          <Portal>
-            <FAB.Group
-              open={open}
-              icon={open ? "close" : "plus"}
-              color="white"
-              fabStyle={{ backgroundColor: "#d6361e" }} // Tailwind red-500
-              visible
-              actions={getFabActions({
-                ability: ability,
-                router: router,
-                createSessionSheetModalRef: createSessionSheetModalRef,
-                cellId: ledCellsFormatted[0]?.id,
-              })}
-              onStateChange={({ open }) => setOpen(open)}
-            />
-            <CreateSessionSheet
-              ref={createSessionSheetModalRef}
-              ledCells={ledCellsFormatted}
-            />
-          </Portal>
-        </Provider>
-      </BottomSheetModalProvider>
-    </SharedBody>
-  );
+	// Deduplicate Joined Cells
+	const uniqueJoinedCells = Array.from(
+		new Map(
+			(person?.cells ?? [])
+				.filter((cell) => cell.member_status === "ACTIVE")
+				.map((cell) => [cell.id, cell]),
+		).values(),
+	);
+
+	const joinedCellsList = uniqueJoinedCells.filter((cell: Cell) =>
+		cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase()),
+	);
+
+	const filteredCells =
+		browseTab === "available" ? availableCellsFiltered : joinedCellsList;
+
+	fetch("http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/json",
+			"X-Debug-Session-Id": "247e04",
+		},
+		body: JSON.stringify({
+			sessionId: "247e04",
+			location: "index.tsx:60",
+			message: "Filtered cells",
+			data: {
+				availableCellsFilteredCount: availableCellsFiltered.length,
+				joinedCellsListCount: joinedCellsList.length,
+				filteredCellsCount: filteredCells.length,
+				browseTab,
+				cellsLoading,
+			},
+			timestamp: Date.now(),
+			runId: "debug1",
+			hypothesisId: "A,B,C,D,E",
+		}),
+	}).catch(() => {});
+	// #endregion
+	useEffect(() => {
+		if (userCellIds.length === 0) {
+			setBrowseTab("available");
+		} else {
+			setBrowseTab("joined");
+		}
+	}, []); // Empty dependency array - runs only once on mount
+
+	useEffect(() => {
+		Animated.timing(underlinePosition, {
+			toValue: browseTab === "available" ? 0 : 1,
+			duration: 300,
+			useNativeDriver: false,
+		}).start();
+	}, [browseTab]);
+
+	// Smart routing: Set initial tab based on whether user has cells
+
+	const hasJoinedAnyCells = joinedCells.length > 0 || userCellIds.length > 0;
+
+	const handleJoinCell = async (cellId: number) => {
+		try {
+			setJoiningCellId(cellId);
+			await joinCell(cellId);
+			setPendingCellIds((prev) =>
+				prev.includes(cellId) ? prev : [...prev, cellId],
+			);
+			await queryClient.invalidateQueries({
+				queryKey: ["people", user?.person?.id],
+			});
+
+			// Show toast notification
+			const cellName = availableCells.find(
+				(c) => c.id === cellId,
+			)?.cell_name;
+			Toast.show(
+				myToast({
+					success: true,
+					message: `Join request sent to ${cellName}`,
+				}),
+			);
+		} catch (error) {
+			console.error("Failed to join cell:", error);
+			Toast.show(
+				myToast({
+					success: false,
+					message: "Failed to send join request",
+				}),
+			);
+		} finally {
+			setJoiningCellId(null);
+		}
+	};
+
+	const handleRefresh = async () => {
+		setIsRefreshing(true);
+		try {
+			await Promise.all([refetchAvailableCells(), refetchPerson()]);
+		} catch (err) {
+			console.error("Refresh error:", err);
+		} finally {
+			setIsRefreshing(false);
+		}
+	};
+
+	const selectedCellId = selectedCell?.id;
+	const isSelectedCellPending = Boolean(
+		selectedCellId && allPendingCellIds.includes(selectedCellId as number),
+	);
+	const isSelectedCellJoined =
+		!isSelectedCellPending &&
+		(browseTab === "joined" ||
+			Boolean(userCellIds?.includes(selectedCellId as number)));
+
+	const handleViewDetails = (cell: Cell) => {
+		setSelectedCell(cell);
+		setModalVisible(true);
+	};
+
+	const renderCellCard = ({ item: cell }: { item: Cell }) => {
+		if (browseTab === "available") {
+			const cellIsPending = allPendingCellIds.includes(cell.id as number);
+			return (
+				<AllCellCard
+					cell={cell}
+					hasJoinedAnyCells={hasJoinedAnyCells}
+					isPending={cellIsPending}
+					onViewDetails={handleViewDetails}
+				/>
+			);
+		}
+		return <MyCellCard cell={cell} />;
+	};
+
+	if (!user)
+		return (
+			<SharedBody>
+				<Text>Unauthenticated</Text>
+			</SharedBody>
+		);
+
+	return (
+		<SharedBody>
+			<StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
+
+			<SharedSearchBar
+				searchQuery={searchQuery}
+				onSearchChange={setSearchQuery}
+				placeholder="Search groups..."
+			/>
+
+			{/* Tab Navigation - Always Visible */}
+			<View style={styles.tabWrapper}>
+				<View style={styles.tabContainer}>
+					<Pressable
+						onPress={() => setBrowseTab("available")}
+						style={[
+							styles.tab,
+							browseTab === "available" && styles.tabActive,
+						]}
+					>
+						<Text
+							style={[
+								styles.tabText,
+								browseTab === "available" &&
+									styles.tabTextActive,
+							]}
+						>
+							All
+						</Text>
+					</Pressable>
+					<Pressable
+						onPress={() => setBrowseTab("joined")}
+						style={[
+							styles.tab,
+							browseTab === "joined" && styles.tabActive,
+						]}
+					>
+						<Text
+							style={[
+								styles.tabText,
+								browseTab === "joined" && styles.tabTextActive,
+							]}
+						>
+							My Cells
+						</Text>
+					</Pressable>
+				</View>
+				<Animated.View
+					style={[
+						styles.underline,
+						browseTab === "available"
+							? { marginLeft: 16 }
+							: { marginRight: 16 },
+						{
+							transform: [
+								{
+									translateX: underlinePosition.interpolate({
+										inputRange: [0, 1],
+										outputRange: [0, 200],
+									}),
+								},
+							],
+						},
+					]}
+				/>
+			</View>
+
+			{/* Content */}
+			<View className="flex-1">
+				{cellsLoading ? (
+					<View className="flex-1 items-center justify-center">
+						<Text className="text-gray-500">Loading groups...</Text>
+					</View>
+				) : browseTab === "joined" && userCellIds.length === 0 ? (
+					<View className="flex-1 items-center justify-center px-6">
+						<Text className="text-center text-gray-500 text-lg mb-4">
+							No Cells
+						</Text>
+						<Text className="text-center text-gray-400 mb-6">
+							You haven't joined any groups yet
+						</Text>
+						<Pressable
+							onPress={() => setBrowseTab("available")}
+							style={styles.joinButton}
+						>
+							<Text style={styles.joinButtonText}>
+								Join One Now
+							</Text>
+						</Pressable>
+					</View>
+				) : filteredCells.length === 0 ? (
+					<View className="flex-1 items-center justify-center px-6">
+						<Text className="text-center text-gray-500">
+							{searchQuery
+								? "No groups found matching your search"
+								: "No available groups to join"}
+						</Text>
+					</View>
+				) : (
+					<FlashList
+						data={filteredCells}
+						keyExtractor={(item) => String(item.id)}
+						renderItem={renderCellCard}
+						scrollEnabled={true}
+						showsVerticalScrollIndicator={false}
+						contentContainerStyle={{
+							paddingHorizontal: 16,
+							paddingVertical: 16,
+						}}
+						estimatedItemSize={140}
+						refreshControl={
+							<RefreshControl
+								refreshing={isRefreshing}
+								onRefresh={handleRefresh}
+								colors={["#d6361e"]}
+								tintColor="#d6361e"
+							/>
+						}
+					/>
+				)}
+			</View>
+
+			<CellDetailModal
+				visible={modalVisible}
+				onClose={() => setModalVisible(false)}
+				cell={selectedCell}
+				isJoined={isSelectedCellJoined}
+				isPending={isSelectedCellPending}
+				isJoining={joiningCellId === selectedCellId}
+				isLeader={
+					selectedCellId
+						? Boolean(
+								ledCells
+									?.map(Number)
+									.includes(Number(selectedCellId)),
+							)
+						: false
+				}
+				onJoin={handleJoinCell}
+				onManage={() => {
+					console.log("Manage cell:", selectedCell?.id);
+				}}
+			/>
+		</SharedBody>
+	);
 };
+
+const styles = StyleSheet.create({
+	tabWrapper: {
+		borderBottomWidth: 1,
+		borderBottomColor: "#f3f4f6",
+	},
+	tabContainer: {
+		flexDirection: "row",
+		paddingHorizontal: 16,
+		paddingVertical: 0,
+	},
+	tab: {
+		flex: 1,
+		paddingVertical: 16,
+		paddingHorizontal: 12,
+		alignItems: "center",
+	},
+	tabActive: {
+		opacity: 1,
+	},
+	tabText: {
+		fontSize: 15,
+		fontWeight: "500",
+		color: "#9ca3af",
+		letterSpacing: -0.3,
+	},
+	tabTextActive: {
+		color: "#1f2937",
+		fontWeight: "600",
+	},
+	underline: {
+		height: 3,
+		width: "45%",
+		backgroundColor: "#d6361e",
+		borderRadius: 1.5,
+	},
+	joinButton: {
+		backgroundColor: "#d6361e",
+		paddingVertical: 12,
+		paddingHorizontal: 24,
+		borderRadius: 8,
+	},
+	joinButtonText: {
+		color: "#ffffff",
+		fontSize: 16,
+		fontWeight: "600",
+		textAlign: "center",
+	},
+});
 
 export default CellsScreen;

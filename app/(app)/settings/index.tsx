@@ -1,5 +1,8 @@
 import SharedBody from "@/components/shared/SharedBody";
+import { binaryFeatureFlags } from "@/config/featureFlags";
 import { useAuthStore } from "@/stores/authStore";
+import { useSystemStore } from "@/stores/systemStore";
+import Constants from "expo-constants";
 import { useRouter } from "expo-router";
 import {
 	CircleQuestionMark,
@@ -21,6 +24,7 @@ import {
 
 export default function SettingsScreen() {
 	const { signOut, isGuest } = useAuthStore();
+	const appStatus = useSystemStore((state) => state.appStatus);
 	const router = useRouter();
 	const [darkTheme, setDarkTheme] = useState(true);
 
@@ -189,6 +193,10 @@ export default function SettingsScreen() {
 						)}
 					</TouchableOpacity>
 				))}
+				<Text className="text-center text-xs text-gray-400 mt-6 mb-4">
+					v{Constants.expoConfig?.version ?? "—"} ·{" "}
+					{binaryFeatureFlags.isPilotBuild ? "Pilot" : "Production"}
+				</Text>
 			</View>
 		</SharedBody>
 	);

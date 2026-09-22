@@ -3,8 +3,8 @@ import { FlashList } from "@shopify/flash-list";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { View } from "react-native";
-import EmptyList from "../Cells/EmptyList";
 import AnnouncementCard from "./AnnouncementCard";
+import EmptyList from "./EmptyList";
 
 type AnnouncementAllListProps = {
 	announcements: Announcement[];
@@ -36,7 +36,7 @@ const AnnouncementAllList = ({ announcements }: AnnouncementAllListProps) => {
 		<FlashList
 			ref={listRef}
 			data={announcements}
-			inverted
+			inverted={announcements.length > 0}
 			contentContainerStyle={{
 				paddingHorizontal: 16,
 				paddingBottom: 16,

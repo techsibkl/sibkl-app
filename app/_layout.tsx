@@ -22,7 +22,7 @@ import * as Device from "expo-device";
 import { useFonts } from "expo-font";
 import * as Notifications from "expo-notifications";
 import { Stack, useRouter } from "expo-router";
-import { useEffect } from "react";
+import React, { useEffect } from "react";
 import { Platform, StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider } from "react-native-paper";
@@ -30,7 +30,17 @@ import { SafeAreaProvider } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
 import "../global.css";
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      staleTime: 10 * 60 * 1000,        // 10 minutes - data is fresh for 10 mins
+      gcTime: 5 * 60 * 1000,            // 5 minutes - keep in memory for 5 mins
+      refetchOnWindowFocus: false,       // Don't refetch when app regains focus
+      refetchOnReconnect: true,       // Only refetch if data is stale when reconnecting
+      refetchOnMount: true,           // Only refetch if data is stale when component mounts
+    },
+  },
+});
 
 // ─── Module-level messaging instance ─────────────────────────────────────────
 const messagingInstance = getMessaging(getApp());
@@ -170,7 +180,6 @@ function RootLayoutNav() {
             name="qrScan"
             options={{
               headerShown: false,
-              tabBarStyle: { display: "none" }, // if using tab navigator
             }}
           />
       </Stack>
@@ -190,8 +199,10 @@ export default function RootLayout() {
     <QueryClientProvider client={queryClient}>
       <ThemeProvider value={customNavigationTheme}>
         <PaperProvider theme={customLightTheme}>
+        <GestureHandlerRootView style={{ flex: 1 }}>
           <RootLayoutNav />
           <StatusBar barStyle="dark-content" />
+          </GestureHandlerRootView>
         </PaperProvider>
       </ThemeProvider>
     </QueryClientProvider>

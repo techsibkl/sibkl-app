@@ -59,13 +59,9 @@ const StepActionDetailDialog = ({
 		Toast.show(myToast(res));
 		setIsLoading(false);
 		if (res.success) {
-			// Invalidate the specific flow query this person belongs to
+			// Prefix match covers single-flow, ALL FLOWS ("accessible"), and assignee-scoped keys
 			queryClient.invalidateQueries({
-				queryKey: ["peopleFlow", personFlow.flow_id ?? "all"],
-			});
-			// Also invalidate the assignee-scoped "all flows" query if it exists
-			queryClient.invalidateQueries({
-				queryKey: ["peopleFlow", "all"],
+				queryKey: ["peopleFlow"],
 			});
 			onSuccess(submittedValue);
 		}

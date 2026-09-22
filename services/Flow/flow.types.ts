@@ -10,7 +10,14 @@ export type StepAction =
 	| { type: "CHANGE_FIELD"; source: string; value?: any; defaultValue?: any }
 	| { type: "SEND_MESSAGE"; source: string; value?: any }
 	| { type: "MOVE_TO_STEP"; source: string; value?: any }
-	| { type: "MOVE_TO_FLOW"; source: string; value?: any };
+	| { type: "MOVE_TO_FLOW"; source: string; value?: any }
+	| {
+			type: "ASSIGN_DISTRICT_CELL";
+			source: string;
+			/** "district" | "cell" | "both" — controls which tabs appear. Defaults to "both". */
+			value?: "district" | "cell" | "both";
+	  }
+	| { type: "ASSIGN_PERSON"; source: string; value?: any };
 
 export type Flow = {
 	id: number;

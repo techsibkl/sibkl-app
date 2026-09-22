@@ -4,6 +4,7 @@
 
 - `npm install`
 - Ensure `tempEnv` is connected to backend server
+- Ensure .env.development is connected to your actual backend port :>
 - `rm -rf android ios` (reset platform folders)
 - `npx expo run:android --device` (for development mode)
 

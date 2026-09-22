@@ -96,6 +96,19 @@ export async function fetchPeopleScopedFields(): Promise<Person[]> {
 	return json.data as Person[];
 }
 
+export async function fetchPeopleScopedMaskedFields(): Promise<MaskedPerson[]> {
+	let response = await secureFetch(`${apiEndpoints.people.getScopedMasked}`);
+	let json: ReturnVal = await response.json();
+	if (!json.success) {
+		throw {
+			status: json.status_code,
+			message: json.message,
+		};
+	}
+
+	return json.data as MaskedPerson[];
+}
+
 export const fetchPeopleWithNoUid = async (): Promise<
 	MaskedPerson[] | null
 > => {

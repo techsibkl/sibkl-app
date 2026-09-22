@@ -1,22 +1,24 @@
+import { binaryFeatureFlags } from "@/config/featureFlags";
 import { defaultFlowStatusAttrs } from "@/constants/const_flows";
 import {
-	FlowStatus,
-	FlowStep,
-	SingleCustomAttr,
+    FlowStatus,
+    FlowStep,
+    SingleCustomAttr,
 } from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { daysAgo } from "@/utils/helper";
 import {
-	daysAgoTextColorNative,
-	getStepStatusStyleNative,
+    daysAgoTextColorNative,
+    getStepStatusStyleNative,
 } from "@/utils/helper_flows";
 import { getInitials } from "@/utils/helper_profile";
 import {
-	ChevronRightIcon,
-	CircleDashedIcon,
-	CircleIcon,
-	FunnelIcon,
-	UserIcon,
+    ChevronRightIcon,
+    CircleDashedIcon,
+    CircleIcon,
+    FunnelIcon,
+    MapPinIcon,
+    UserIcon,
 } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -29,6 +31,8 @@ type PeopleFlowRowProps = {
 	flow_title?: string;
 	steps: { [key: string]: FlowStep };
 	custom_attr: { [key: string]: SingleCustomAttr };
+	/** Owning district of the Flow definition (used for CASL `flow_district_id`) */
+	flow_district_id?: number;
 };
 
 // Map defaultFlowStatusAttrs color strings → avatar bg/icon hex values
@@ -50,6 +54,7 @@ const PeopleFlowRowComponent = ({
 	flow_title,
 	steps,
 	custom_attr,
+	flow_district_id,
 }: PeopleFlowRowProps) => {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [noteDialogVisible, setNoteDialogVisible] = useState(false);
@@ -73,7 +78,7 @@ const PeopleFlowRowComponent = ({
 				onPress={() => setModalVisible(true)}
 				activeOpacity={0.6}
 			>
-				<View className="flex-col py-4 border-b border-border-secondary">
+				<View className="flex-col px-4 py-4 border-b border-border-secondary">
 					{/* Top row: status badge + last contacted */}
 					<View className="flex-row justify-between items-center mb-3">
 						<View
@@ -146,22 +151,10 @@ const PeopleFlowRowComponent = ({
 								</View>
 							)}
 
-							{/* District */}
-							{personFlow.district_id && (
-								<View className="flex-row items-center gap-x-1 flex-wrap">
-									<CircleIcon size={10} color="#9ca3af" />
-									<Text
-										className="text-xs text-gray-400 mt-0.5"
-										numberOfLines={1}
-									>
-										{personFlow.district_name}
-									</Text>
-								</View>
-							)}
-
-							{/* Assignee + last assigned */}
+							{/* Assignee + Cell row */}
 							{(effectiveAssignee ||
-								personFlow.last_assigned_at) && (
+								(binaryFeatureFlags.cellFollowUp &&
+									personFlow.cell_name)) && (
 								<View className="flex-row items-center gap-x-1 flex-wrap">
 									{effectiveAssignee && (
 										<>
@@ -177,20 +170,41 @@ const PeopleFlowRowComponent = ({
 											</Text>
 										</>
 									)}
-									{effectiveAssignee &&
-										personFlow.last_assigned_at && (
+									{binaryFeatureFlags.cellFollowUp &&
+										effectiveAssignee &&
+										personFlow.cell_name && (
 											<Text className="text-xs text-gray-300">
 												·
 											</Text>
 										)}
-									{personFlow.last_assigned_at && (
-										<Text className="text-xs text-gray-400 italic">
-											assigned{" "}
-											{daysAgo(
-												personFlow.last_assigned_at,
-											)}
-										</Text>
-									)}
+									{binaryFeatureFlags.cellFollowUp &&
+										personFlow.cell_name && (
+											<>
+												<CircleIcon
+													size={10}
+													color="#9ca3af"
+												/>
+												<Text
+													className="text-xs text-gray-400"
+													numberOfLines={1}
+												>
+													{personFlow.cell_name}
+												</Text>
+											</>
+										)}
+								</View>
+							)}
+
+							{/* District row */}
+							{personFlow.district_name && (
+								<View className="flex-row items-center gap-x-1">
+									<MapPinIcon size={10} color="#9ca3af" />
+									<Text
+										className="text-xs text-gray-400"
+										numberOfLines={1}
+									>
+										{personFlow.district_name}
+									</Text>
 								</View>
 							)}
 						</View>
@@ -216,8 +230,10 @@ const PeopleFlowRowComponent = ({
 					step={_step}
 					steps={steps}
 					flow_id={personFlow.flow_id!}
+					flow_title={flow_title}
 					custom_attr={custom_attr}
 					colors={colors}
+					flow_district_id={flow_district_id}
 				/>
 			</SharedModal>
 

@@ -18,7 +18,14 @@ import {
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
+import {
+	ActivityIndicator,
+	KeyboardAvoidingView,
+	Platform,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import Toast from "react-native-toast-message";
@@ -110,7 +117,15 @@ const Page = () => {
 	const onSubmit = async (data: ProfileFormData) => {
 		clearErrors();
 		setSubmitAttempted(true);
-		const validationErrors = validateCompleteProfile(data);
+
+		// Normalise phone before validation so formatting (country code, strip dashes)
+		// is applied even if the user submits without blurring the field first.
+		const normalisedData: ProfileFormData = {
+			...data,
+			phone: data.phone ? formatPhone(data.phone) : data.phone,
+		};
+
+		const validationErrors = validateCompleteProfile(normalisedData);
 
 		if (Object.keys(validationErrors).length > 0) {
 			Object.entries(validationErrors).forEach(([field, message]) => {
@@ -128,18 +143,38 @@ const Page = () => {
 			try {
 				const response = await updatePeople({
 					id: activeClaimedPeopleId,
-					...data,
+					...normalisedData,
 				});
 				if (response.success) {
+					Toast.show({
+						type: "success",
+						text1: "Profile updated!",
+					});
 					authStore.init();
+				} else {
+					Toast.show({
+						type: "error",
+						text1: "Failed to update profile",
+						text2: response.message ?? "Please try again.",
+					});
 				}
 			} catch (error) {
 				console.error("Error updating person profile:", error);
+				Toast.show({
+					type: "error",
+					text1: "Something went wrong",
+					text2: "Please try again.",
+				});
 			}
 		} else {
-			const user = await signUp(data);
+			const user = await signUp(normalisedData);
 			if (!user) {
 				console.error("Something went wrong signing up");
+				Toast.show({
+					type: "error",
+					text1: "Sign up failed",
+					text2: "Please try again.",
+				});
 				return;
 			}
 			authStore.init();
@@ -183,6 +218,8 @@ const Page = () => {
 				type: "manual",
 				message: validationErrors[key],
 			});
+		} else {
+			clearErrors(key as any);
 		}
 	};
 
@@ -203,7 +240,10 @@ const Page = () => {
 	}
 
 	return (
-		<>
+		<KeyboardAvoidingView
+			behavior={Platform.OS === "ios" ? "padding" : "height"}
+			className="flex-1"
+		>
 			<KeyboardAwareScrollView
 				className="flex-1 bg-background relative"
 				enableOnAndroid={true}
@@ -278,7 +318,7 @@ const Page = () => {
 					</Text>
 				)}
 			</TouchableOpacity>
-		</>
+		</KeyboardAvoidingView>
 	);
 };
 

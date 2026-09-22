@@ -31,6 +31,8 @@ export default ({ config }: { config: any }) => ({
 			infoPlist: {
 				UIBackgroundModes: ["remote-notification"], // ← allows background notifications
 				ITSAppUsesNonExemptEncryption: false, // required for Apple Store submission if you use any service that uses encryption (this app does not)
+				NSCameraUsageDescription:
+					"Allow $(PRODUCT_NAME) to access your camera to scan QR codes.",
 			},
 		},
 
@@ -59,17 +61,37 @@ export default ({ config }: { config: any }) => ({
 
 		plugins: [
 			"expo-router",
+			[
+				"expo-camera",
+				{
+					cameraPermission:
+						"Allow $(PRODUCT_NAME) to access your camera to scan QR codes.",
+				},
+			],
 			"expo-notifications",
 			"@react-native-firebase/app",
 			"@react-native-firebase/auth",
 			"@react-native-firebase/messaging",
 			"react-native-email-link",
 			[
+				"expo-camera",
+				{
+					cameraPermission:
+						"SIBKL App uses the camera to scan QR codes for cell session attendance check-in.",
+				},
+			],
+			"./plugins/withFmtConstevalFix",
+			[
 				"expo-build-properties",
 				{
 					ios: {
 						useFrameworks: "static",
 						deploymentTarget: "15.1",
+					},
+					android: {
+						compileSdkVersion: 36,
+						targetSdkVersion: 36,
+						buildToolsVersion: "36.0.0",
 					},
 				},
 			],
@@ -93,6 +115,8 @@ export default ({ config }: { config: any }) => ({
 
 			ENV: process.env.APP_ENV,
 			API_URL: process.env.API_URL,
+			// Build-time flag: "true" enables pilot-only features. Default false.
+			PILOT_BUILD: process.env.PILOT_BUILD === "true",
 			eas: {
 				// Production
 				projectId: "c415449d-f4d9-408f-854f-e26f86e8e7ad",

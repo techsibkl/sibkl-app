@@ -20,7 +20,7 @@ const FlowSelector = ({ flows, selectedFlowId, onSelect }: Props) => {
 					value={selectedFlowId ?? 0}
 					onChange={(v) => onSelect(v)}
 					options={[
-						{ label: "ALL FOLLOW-UP (Combined)", value: 0 },
+						{ label: "ALL FLOWS (Combined)", value: 0 },
 						...flows.map((f) => ({
 							label: f.title,
 							value: f.id,
@@ -28,7 +28,9 @@ const FlowSelector = ({ flows, selectedFlowId, onSelect }: Props) => {
 					]}
 					showPlaceholder={false}
 					renderTrigger={(label) => (
-						<Text className="font-medium text-md">{label}</Text>
+						<Text className="font-medium text-md text-gray-600">
+							{label}
+						</Text>
 					)}
 				/>
 			</View>
