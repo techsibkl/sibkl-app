@@ -1,4 +1,3 @@
-import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { AnyAbility } from "@casl/ability";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
 import { Router } from "expo-router";
@@ -12,6 +11,8 @@ type getFabActionsProps = {
 	router: Router;
 	createSessionSheetModalRef: React.RefObject<BottomSheetModal | null>;
 	cellId: number;
+	/** Pass from a component via useFeatureFlag("cellAttendance") — hooks cannot run here. */
+	cellAttendanceEnabled: boolean;
 };
 
 export const getFabActions = ({
@@ -19,9 +20,10 @@ export const getFabActions = ({
 	router,
 	createSessionSheetModalRef,
 	cellId,
+	cellAttendanceEnabled,
 }: getFabActionsProps) => {
 	const actions: (FABActionItem | false)[] = [
-		useFeatureFlag("cellAttendance") &&
+		cellAttendanceEnabled &&
 			ability.can("create", "CellSession") && {
 				icon: "calendar",
 				label: "New Session",
@@ -38,7 +40,7 @@ export const getFabActions = ({
 			color: "white",
 			style: { backgroundColor: "#d6361e" },
 		},
-		useFeatureFlag("cellAttendance") && {
+		cellAttendanceEnabled && {
 			icon: "camera",
 			label: "Mark Attendance",
 			labelTextColor: "black",
@@ -50,7 +52,7 @@ export const getFabActions = ({
 			color: "white",
 			style: { backgroundColor: "#d6361e" },
 		},
-		useFeatureFlag("cellAttendance") &&
+		cellAttendanceEnabled &&
 			ability.can("read", "CellSession") && {
 				icon: "calendar-clock",
 				label: "View Sessions",

@@ -6,7 +6,7 @@ import SharedHeader from "@/components/shared/SharedHeader";
 import { useSystemStore } from "@/stores/systemStore";
 import { useRouter } from "expo-router";
 import { LockKeyhole, LockKeyholeOpen } from "lucide-react-native";
-import React, { useCallback, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 import { RefreshControl, ScrollView, Text, View } from "react-native";
 import Animated, {
 	interpolateColor,
@@ -41,8 +41,7 @@ export default function LaunchScreen() {
 	const countdownJustExpired =
 		!beAlreadyUnlocked && !isCountdownActive && !!appStatus?.launch_date;
 
-	// Start unlocked only if the user has already gone through the animation
-	// this session (hasActivatedLaunch is in-memory, resets on cold start).
+	// Start unlocked when BE is unlocked and activation was persisted for this version.
 	const startUnlocked = beAlreadyUnlocked && hasActivatedLaunch;
 
 	// ─── Local state ──────────────────────────────────────────────────────────
@@ -74,6 +73,31 @@ export default function LaunchScreen() {
 		opacity: unlockedOpacity.value,
 		transform: [{ translateY: unlockedY.value }],
 	}));
+
+	// Restore unlocked UI after fetchSystemConfig rehydrates hasActivatedLaunch from disk.
+	useEffect(() => {
+		if (
+			!beAlreadyUnlocked ||
+			!hasActivatedLaunch ||
+			screenState !== "locked"
+		) {
+			return;
+		}
+		lockBg.value = 1;
+		lockedOpacity.value = 0;
+		unlockedOpacity.value = 1;
+		unlockedY.value = 0;
+		setShowOpenIcon(true);
+		setScreenState("unlocked");
+	}, [
+		beAlreadyUnlocked,
+		hasActivatedLaunch,
+		screenState,
+		lockBg,
+		lockedOpacity,
+		unlockedOpacity,
+		unlockedY,
+	]);
 
 	// ─── Handlers ─────────────────────────────────────────────────────────────
 
@@ -132,7 +156,7 @@ export default function LaunchScreen() {
 					flexGrow: 1,
 				}}
 				refreshControl={
-					true ? (
+					isLockedView ? (
 						<RefreshControl
 							refreshing={screenState === "refreshing"}
 							onRefresh={handleRefresh}
