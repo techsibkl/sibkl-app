@@ -55,7 +55,7 @@ if (__DEV__) {
 		"| binary gates:",
 		{
 			// cells: binaryFeatureFlags.cells,
-			// cellAttendance: binaryFeatureFlags.cellAttendance,
+			// cellAttendance: useFeatureFlag("cellAttendance"),
 		},
 	);
 }

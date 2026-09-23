@@ -8,7 +8,6 @@ import MembersList from "@/components/Cells/Profile/MembersList";
 import SearchMembersModal from "@/components/Cells/Profile/SearchMembersModal";
 import SharedBody from "@/components/shared/SharedBody";
 import SkeletonCellProfile from "@/components/shared/Skeleton/SkeletonCellProfile";
-import { binaryFeatureFlags } from "@/config/featureFlags";
 // import { getFabActions } from "@/constants/cont_cells";
 import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import {
@@ -18,6 +17,7 @@ import {
 	usePersonSessionAttendanceQuery,
 } from "@/hooks/CellAttendance/useCellAttendanceQuery";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import {
 	removeCellMembers,
@@ -137,9 +137,13 @@ const CellProfileScreen = () => {
 		setOpen(false);
 	}, [activeTab]);
 
+	// Hoisted here (top level, before any early returns) so the hook call count
+	// is always the same regardless of which early-return branch executes.
+	const cellAttendanceEnabled = useFeatureFlag("cellAttendance");
+
 	const cellProfileTabs = [
 		"people",
-		...(binaryFeatureFlags.cellAttendance ? (["attendance"] as const) : []),
+		...(cellAttendanceEnabled ? (["attendance"] as const) : []),
 		"announcements",
 	] as const;
 
@@ -376,7 +380,7 @@ const CellProfileScreen = () => {
 					{/* Action Buttons */}
 					<View className="flex-row justify-center gap-2 w-full max-w-[90%] mx-6 mb-6">
 						{/* Scan QR - attendance (pilot) */}
-						{binaryFeatureFlags.cellAttendance && (
+						{cellAttendanceEnabled && (
 							<TouchableOpacity
 								onPress={() =>
 									router.push({
@@ -403,7 +407,7 @@ const CellProfileScreen = () => {
 						</TouchableOpacity>
 
 						{/* View Sessions - for leaders and core only */}
-						{binaryFeatureFlags.cellAttendance &&
+						{cellAttendanceEnabled &&
 							isLeader &&
 							ability.can("read", "CellSession") && (
 								<TouchableOpacity

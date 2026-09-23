@@ -1,24 +1,24 @@
-import { binaryFeatureFlags } from "@/config/featureFlags";
 import { defaultFlowStatusAttrs } from "@/constants/const_flows";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import {
-    FlowStatus,
-    FlowStep,
-    SingleCustomAttr,
+	FlowStatus,
+	FlowStep,
+	SingleCustomAttr,
 } from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { daysAgo } from "@/utils/helper";
 import {
-    daysAgoTextColorNative,
-    getStepStatusStyleNative,
+	daysAgoTextColorNative,
+	getStepStatusStyleNative,
 } from "@/utils/helper_flows";
 import { getInitials } from "@/utils/helper_profile";
 import {
-    ChevronRightIcon,
-    CircleDashedIcon,
-    CircleIcon,
-    FunnelIcon,
-    MapPinIcon,
-    UserIcon,
+	ChevronRightIcon,
+	CircleDashedIcon,
+	CircleIcon,
+	FunnelIcon,
+	MapPinIcon,
+	UserIcon,
 } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
 import { Text, TouchableOpacity, View } from "react-native";
@@ -58,6 +58,7 @@ const PeopleFlowRowComponent = ({
 }: PeopleFlowRowProps) => {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [noteDialogVisible, setNoteDialogVisible] = useState(false);
+	const cellFollowUpEnabled = useFeatureFlag("cellFollowUp");
 
 	const _step = useMemo(() => {
 		const key = personFlow.step_key ?? "not_started";
@@ -153,7 +154,7 @@ const PeopleFlowRowComponent = ({
 
 							{/* Assignee + Cell row */}
 							{(effectiveAssignee ||
-								(binaryFeatureFlags.cellFollowUp &&
+								(cellFollowUpEnabled &&
 									personFlow.cell_name)) && (
 								<View className="flex-row items-center gap-x-1 flex-wrap">
 									{effectiveAssignee && (
@@ -170,14 +171,14 @@ const PeopleFlowRowComponent = ({
 											</Text>
 										</>
 									)}
-									{binaryFeatureFlags.cellFollowUp &&
+									{cellFollowUpEnabled &&
 										effectiveAssignee &&
 										personFlow.cell_name && (
 											<Text className="text-xs text-gray-300">
 												·
 											</Text>
 										)}
-									{binaryFeatureFlags.cellFollowUp &&
+									{cellFollowUpEnabled &&
 										personFlow.cell_name && (
 											<>
 												<CircleIcon

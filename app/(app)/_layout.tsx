@@ -24,6 +24,7 @@ export default function AppLayout() {
 	const showEventsTab = useFeatureFlag("events") && !isGuest;
 	const showCells = useFeatureFlag("cells");
 	const showGuestFollowUp = useFeatureFlag("guestFollowUp");
+	const showLeadersPage = useFeatureFlag("leadersPage");
 	const defaultTabBarStyle = {
 		height: 50 + Math.max(insets.bottom, 8),
 		paddingTop: 2,
@@ -142,9 +143,7 @@ export default function AppLayout() {
 				name="leaders"
 				options={{
 					title: "Leaders",
-					href: useFeatureFlag("leadersPage")
-						? "/(app)/leaders"
-						: null,
+					href: showLeadersPage ? "/(app)/leaders" : null,
 					tabBarIcon: ({ color, size, focused }) => (
 						<GraduationCap
 							size={size}
