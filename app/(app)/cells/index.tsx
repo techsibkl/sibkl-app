@@ -58,7 +58,7 @@ const CellsScreen = () => {
 	// visible in the "All" list with a Pending badge after a join request.
 	// member_status comes from cell_members.status via the person query.
 	const activeCellIds = (person?.cells ?? [])
-		.filter((c) => c.member_status === "ACTIVE")
+		.filter((c) => (c.member_status ?? "ACTIVE") === "ACTIVE")
 		.map((c) => c.id as number);
 
 	// PENDING membership IDs persisted in the BE (survives navigation / cold start)
@@ -89,7 +89,7 @@ const CellsScreen = () => {
 	const uniqueJoinedCells = Array.from(
 		new Map(
 			(person?.cells ?? [])
-				.filter((cell) => cell.member_status === "ACTIVE")
+				.filter((cell) => (cell.member_status ?? "ACTIVE") === "ACTIVE")
 				.map((cell) => [cell.id, cell]),
 		).values(),
 	);
