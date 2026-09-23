@@ -1,14 +1,14 @@
 import HelpDialog from "@/components/shared/HelpDialog";
 import SharedModal from "@/components/shared/SharedModal";
-import { binaryFeatureFlags } from "@/config/featureFlags";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { StepAction } from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import {
-    ArrowRight,
-    CheckCircleIcon,
-    CircleIcon,
-    HelpCircle,
-    MapPinIcon,
+	ArrowRight,
+	CheckCircleIcon,
+	CircleIcon,
+	HelpCircle,
+	MapPinIcon,
 } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
 import { Pressable, Text, TouchableOpacity, View } from "react-native";
@@ -45,7 +45,7 @@ const AssignDistrictCellAction = ({
 
 	const scope = action.value ?? "both";
 	const showDistrictTab = scope !== "cell";
-	const showCellTab = binaryFeatureFlags.cellFollowUp && scope !== "district";
+	const showCellTab = useFeatureFlag("cellFollowUp") && scope !== "district";
 
 	const scopeLabel =
 		showDistrictTab && showCellTab

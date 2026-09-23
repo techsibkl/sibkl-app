@@ -4,8 +4,8 @@ import CellList from "@/components/Cells/CellList";
 import NotesTab from "@/components/Flows/NotesTab";
 import SharedBody from "@/components/shared/SharedBody";
 import SkeletonPeopleRow from "@/components/shared/Skeleton/SkeletonPeopleRow";
-import { binaryFeatureFlags } from "@/config/featureFlags";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { Person } from "@/services/Person/person.type";
 import { displayDateAsStr, formatPhone } from "@/utils/helper";
 import { getInitials } from "@/utils/helper_profile";
@@ -14,14 +14,14 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import { Calendar, Mail, MapPin, Phone, User } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-    Alert,
-    Clipboard,
-    Linking,
-    ScrollView,
-    StatusBar,
-    Text,
-    TouchableOpacity,
-    View,
+	Alert,
+	Clipboard,
+	Linking,
+	ScrollView,
+	StatusBar,
+	Text,
+	TouchableOpacity,
+	View,
 } from "react-native";
 
 const ProfileScreen = () => {
@@ -38,7 +38,7 @@ const ProfileScreen = () => {
 
 	const tabs = [
 		"Info",
-		...(binaryFeatureFlags.cells ? ["Cells"] : []),
+		...(useFeatureFlag("cells") ? ["Cells"] : []),
 		"Notes",
 		"Flows",
 	];

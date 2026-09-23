@@ -1,4 +1,4 @@
-import { binaryFeatureFlags } from "@/config/featureFlags";
+import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { FAB } from "react-native-paper";
 import { AnyAbility } from "@casl/ability";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
@@ -21,7 +21,7 @@ export const getFabActions = ({
   cellId,
 }: getFabActionsProps) => {
   const actions: (FABActionItem | false)[] = [
-    binaryFeatureFlags.cellAttendance &&
+    useFeatureFlag("cellAttendance") &&
       ability.can("create", "CellSession") && {
         icon: "calendar",
         label: "New Session",
@@ -38,7 +38,7 @@ export const getFabActions = ({
       color: "white",
       style: { backgroundColor: "#d6361e" },
     },
-    binaryFeatureFlags.cellAttendance && {
+    useFeatureFlag("cellAttendance") && {
       icon: "camera",
       label: "Mark Attendance",
       labelTextColor: "black",
@@ -50,7 +50,7 @@ export const getFabActions = ({
       color: "white",
       style: { backgroundColor: "#d6361e" },
     },
-    binaryFeatureFlags.cellAttendance &&
+    useFeatureFlag("cellAttendance") &&
       ability.can("read", "CellSession") && {
         icon: "calendar-clock",
         label: "View Sessions",
