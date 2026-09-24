@@ -36,9 +36,11 @@ const ProfileScreen = () => {
 		isError,
 	} = useSinglePersonQuery(Number(id));
 
+	const cellsTabEnabled = useFeatureFlag("cells");
+
 	const tabs = [
 		"Info",
-		...(useFeatureFlag("cells") ? ["Cells"] : []),
+		...(cellsTabEnabled ? ["Cells"] : []),
 		"Notes",
 		"Flows",
 	];
