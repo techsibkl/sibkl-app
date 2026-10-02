@@ -186,7 +186,7 @@ const EventRegisterScreen = () => {
 						/>
 
 						<SharedButton
-							title="Register"
+							title="Confirm Registration"
 							onPress={onSubmit}
 							isLoading={mutation.isPending}
 							disabled={mutation.isPending}

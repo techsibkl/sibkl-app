@@ -1,11 +1,20 @@
-import { Event } from "@/services/Event/event.type";
+import { Event, EventParticipant } from "@/services/Event/event.type";
 import { formatEventDateTime } from "@/utils/eventFormHelpers";
-import { Calendar1Icon, ClockIcon, MapPinIcon } from "lucide-react-native";
+import { isEventRegisterable } from "@/utils/eventRegistrationGates";
+import {
+	Calendar1Icon,
+	CheckCircle2Icon,
+	CircleIcon,
+	ClockIcon,
+	MapPinIcon,
+	XCircleIcon,
+} from "lucide-react-native";
 import React from "react";
 import { Text, View } from "react-native";
 
 type EventDetailContentProps = {
 	event: Event;
+	participant?: EventParticipant;
 };
 
 function parseEventDate(dateString?: string | null) {
@@ -18,9 +27,9 @@ function formatEventDateLabel(dateString?: string | null): string {
 	const date = parseEventDate(dateString);
 	if (!date) return "Date TBC";
 	return date.toLocaleDateString("en-MY", {
-		weekday: "long",
+		weekday: "short",
 		day: "numeric",
-		month: "long",
+		month: "short",
 		year: "numeric",
 	});
 }
@@ -61,7 +70,10 @@ const InfoRow = ({
 	</View>
 );
 
-const EventDetailContent = ({ event }: EventDetailContentProps) => {
+const EventDetailContent = ({
+	event,
+	participant,
+}: EventDetailContentProps) => {
 	const startTime = formatEventTimeLabel(event.start_at);
 	const endTime = formatEventTimeLabel(event.end_at);
 	const timeRange =
@@ -74,34 +86,77 @@ const EventDetailContent = ({ event }: EventDetailContentProps) => {
 	return (
 		<View className="gap-4">
 			{/* Hero card */}
-			<View
-				className="bg-white rounded-3xl border border-border overflow-hidden"
-				style={{
-					shadowColor: "#000",
-					shadowOffset: { width: 0, height: 2 },
-					shadowOpacity: 0.06,
-					shadowRadius: 12,
-					elevation: 3,
-				}}
-			>
-				<View className="h-1.5 bg-primary-500" />
-				<View className="p-5 gap-3">
+			<View className="bg-white rounded-2xl overflow-hidden border-t-4 border-primary-500">
+				<View className="p-5 gap-4">
 					<Text className="text-2xl font-bold text-text leading-8">
 						{event.name}
 					</Text>
-					{event.status === "published" && (
-						<View className="self-start bg-primary-50 border border-primary-200 px-3 py-1 rounded-full">
-							<Text className="text-xs font-semibold text-primary-600 uppercase tracking-wide">
-								Published
+					{/* Status chips */}
+					<View className="flex-row gap-2 flex-wrap">
+						{/* Registration state — 3-way: Registered / Open / Closed */}
+						{(() => {
+							const isRegistered = !!participant;
+						const isOpen =
+							!isRegistered && isEventRegisterable(event);
+							const bg = isRegistered
+								? "bg-green-50 border-green-200"
+								: isOpen
+									? "bg-amber-50 border-amber-200"
+									: "bg-gray-50 border-gray-200";
+							const color = isRegistered
+								? "#16a34a"
+								: isOpen
+									? "#f59e0b"
+									: "#9CA3AF";
+							const label = isRegistered
+								? "Registered"
+								: isOpen
+									? "Open"
+									: "Closed";
+							const Icon = isRegistered
+								? CheckCircle2Icon
+								: isOpen
+									? CircleIcon
+									: XCircleIcon;
+							return (
+								<View
+									className={`flex-row items-center gap-1.5 px-3 py-1 rounded-full border ${bg}`}
+								>
+									<Icon size={12} color={color} />
+									<Text
+										className="text-xs font-semibold uppercase tracking-wide"
+										style={{ color }}
+									>
+										{label}
+									</Text>
+								</View>
+							);
+						})()}
+
+						{/* Check-in status */}
+						<View
+							className={`flex-row items-center gap-1.5 px-3 py-1 rounded-full border ${participant?.checked_in ? "bg-blue-50 border-blue-200" : "bg-gray-50 border-gray-200"}`}
+						>
+							{participant?.checked_in ? (
+								<CheckCircle2Icon size={12} color="#2563eb" />
+							) : (
+								<XCircleIcon size={12} color="#9CA3AF" />
+							)}
+							<Text
+								className={`text-xs font-semibold uppercase tracking-wide ${participant?.checked_in ? "text-blue-600" : "text-gray-400"}`}
+							>
+								{participant?.checked_in
+									? "Checked In"
+									: "Not Checked In"}
 							</Text>
 						</View>
-					)}
+					</View>
 				</View>
 			</View>
 
 			{/* Date & location */}
 			<View
-				className="bg-white rounded-3xl border border-border p-5 gap-5"
+				className="bg-white rounded-2xl p-5 gap-5"
 				style={{
 					shadowColor: "#000",
 					shadowOffset: { width: 0, height: 2 },

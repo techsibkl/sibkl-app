@@ -44,61 +44,65 @@ const EventCheckInSection = ({
 			: "Check-in is not open yet.";
 
 	return (
-		<View
-			className={`flex-row items-center gap-4 rounded-3xl border p-5 ${
-				isCheckedIn
-					? "bg-success-50 border-success-200"
-					: "bg-white border-border"
-			}`}
-			style={
-				isCheckedIn
-					? undefined
-					: {
-							shadowColor: "#000",
-							shadowOffset: { width: 0, height: 2 },
-							shadowOpacity: 0.04,
-							shadowRadius: 8,
-							elevation: 2,
-						}
-			}
+		<TouchableOpacity
+			onPress={isCheckedIn ? undefined : onScanPress}
+			disabled={!canScan}
+			activeOpacity={0.7}
+			hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
+			accessibilityRole="button"
+			accessibilityLabel="Check in by scanning QR code"
+			className="p-1"
 		>
-			<View className="flex-1 gap-1">
-				<Text
-					className={`text-xl font-bold ${
-						isCheckedIn ? "text-success-700" : "text-text"
-					}`}
-				>
-					{primaryText}
-				</Text>
-				<Text
-					className={`text-sm leading-5 ${
-						isCheckedIn ? "text-success-600" : "text-gray-500"
-					}`}
-				>
-					{secondaryText}
-				</Text>
-			</View>
+			<View
+				className={`flex-row items-center gap-4 rounded-2xl p-5 ${
+					isCheckedIn
+						? "bg-success-50 border border-success-200"
+						: "bg-white"
+				}`}
+				style={
+					isCheckedIn
+						? undefined
+						: {
+								shadowColor: "#000",
+								shadowOffset: { width: 0, height: 2 },
+								shadowOpacity: 0.04,
+								shadowRadius: 8,
+								elevation: 2,
+							}
+				}
+			>
+				<View className="flex-1 gap-1">
+					<Text
+						className={`text-xl font-bold ${
+							isCheckedIn ? "text-success-700" : "text-text"
+						}`}
+					>
+						{primaryText}
+					</Text>
+					<Text
+						className={`text-sm leading-5 ${
+							isCheckedIn ? "text-success-600" : "text-gray-500"
+						}`}
+					>
+						{secondaryText}
+					</Text>
+				</View>
 
-			{isCheckedIn ? (
-				<CheckCircle2Icon size={32} color="#16a34a" strokeWidth={2} />
-			) : (
-				<TouchableOpacity
-					onPress={onScanPress}
-					disabled={!canScan}
-					activeOpacity={0.7}
-					hitSlop={{ top: 8, bottom: 8, left: 8, right: 8 }}
-					accessibilityRole="button"
-					accessibilityLabel="Check in by scanning QR code"
-					className="p-1"
-				>
+				{isCheckedIn ? (
+					<CheckCircle2Icon
+						size={32}
+						color="#16a34a"
+						strokeWidth={2}
+					/>
+				) : (
 					<QrCodeIcon
 						size={36}
 						color={canScan ? "#111827" : "#d1d5db"}
 						strokeWidth={1.6}
 					/>
-				</TouchableOpacity>
-			)}
-		</View>
+				)}
+			</View>
+		</TouchableOpacity>
 	);
 };
 

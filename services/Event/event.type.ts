@@ -30,6 +30,10 @@ export interface Event {
 	rsvp_start_at?: string | null;
 	rsvp_end_at?: string | null;
 	allow_checkin?: boolean;
+	/** UTC ISO string — when set, participants cannot register before this date/time. */
+	registration_open_at?: string | null;
+	/** UTC ISO string — when set, participants cannot register after this date/time. */
+	registration_close_at?: string | null;
 	custom_fields?: EventCustomField[];
 }
 

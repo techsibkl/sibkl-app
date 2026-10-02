@@ -1,4 +1,4 @@
-import MyEventCard from "@/components/Events/MyEventCard";
+import EventCard from "@/components/Events/EventCard";
 import { EventRegistration } from "@/services/Event/event.type";
 import { FlashList } from "@shopify/flash-list";
 import React, { useState } from "react";
@@ -64,7 +64,9 @@ const MyEventList = ({
 				paddingTop: 8,
 			}}
 			ItemSeparatorComponent={() => <View className="h-4" />}
-			renderItem={({ item }) => <MyEventCard registration={item} />}
+			renderItem={({ item }) => (
+				<EventCard event={item.event} participant={item.participant} />
+			)}
 			ListEmptyComponent={
 				<MyEventListEmpty onBrowseEvents={onBrowseEvents} />
 			}
