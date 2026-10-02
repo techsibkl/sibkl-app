@@ -11,8 +11,7 @@ import { secureFetch } from "@/utils/secureFetch";
 import { ReturnVal } from "@/utils/types/returnVal.types";
 
 function normalizeEvent(raw: Record<string, unknown>): Event {
-	const get = (snake: string, camel: string) =>
-		raw[snake] ?? raw[camel];
+	const get = (snake: string, camel: string) => raw[snake] ?? raw[camel];
 
 	const customFieldsRaw = get("custom_fields", "customFields");
 
@@ -24,13 +23,19 @@ function normalizeEvent(raw: Record<string, unknown>): Event {
 		start_at: get("start_at", "startAt") as string | undefined,
 		end_at: get("end_at", "endAt") as string | undefined,
 		status: String(get("status", "status") ?? "draft"),
+		registration_open_at: get(
+			"registration_open_at",
+			"registrationOpenAt",
+		) as string | undefined,
+		registration_close_at: get(
+			"registration_close_at",
+			"registrationCloseAt",
+		) as string | undefined,
 		allow_rsvp: Boolean(get("allow_rsvp", "allowRsvp")),
 		rsvp_start_at: (get("rsvp_start_at", "rsvpStartAt") ?? null) as
 			| string
 			| null,
-		rsvp_end_at: (get("rsvp_end_at", "rsvpEndAt") ?? null) as
-			| string
-			| null,
+		rsvp_end_at: (get("rsvp_end_at", "rsvpEndAt") ?? null) as string | null,
 		allow_checkin:
 			get("allow_checkin", "allowCheckin") === undefined
 				? undefined
@@ -96,29 +101,31 @@ export const registerEventParticipant = async (
 
 function normalizeEventRegistration(
 	raw: Record<string, unknown>,
-  ): EventRegistration {
+): EventRegistration {
 	const eventRaw =
-	  (raw.event as Record<string, unknown> | undefined) ??
-	  (raw.event_details as Record<string, unknown> | undefined);
-  
-	const participantRaw =
-	  (raw.participant as Record<string, unknown> | undefined) ??
-	  (raw.registration as Record<string, unknown> | undefined) ??
-	  raw;
-  
-	if (!eventRaw) {
-	  throw new Error("Invalid my-events payload: missing event");
-	}
-  
-	return {
-	  event: normalizeEvent(eventRaw),
-	  participant: normalizeParticipant(
-		participantRaw as Record<string, unknown>,
-	  ),
-	};
-  }
+		(raw.event as Record<string, unknown> | undefined) ??
+		(raw.event_details as Record<string, unknown> | undefined);
 
-export const fetchMyEventRegistrations = async (): Promise<EventRegistration[]> => {
+	const participantRaw =
+		(raw.participant as Record<string, unknown> | undefined) ??
+		(raw.registration as Record<string, unknown> | undefined) ??
+		raw;
+
+	if (!eventRaw) {
+		throw new Error("Invalid my-events payload: missing event");
+	}
+
+	return {
+		event: normalizeEvent(eventRaw),
+		participant: normalizeParticipant(
+			participantRaw as Record<string, unknown>,
+		),
+	};
+}
+
+export const fetchMyEventRegistrations = async (): Promise<
+	EventRegistration[]
+> => {
 	const response = await secureFetch(apiEndpoints.events.getMyEvents);
 	const json: ReturnVal = await response.json();
 	if (!json.success) {

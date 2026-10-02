@@ -9,7 +9,7 @@ type EventRegistrationHeaderProps = {
 };
 
 const EventRegistrationHeader = ({ event }: EventRegistrationHeaderProps) => (
-	<View className="bg-white rounded-2xl border border-border p-4 gap-3">
+	<View className="bg-white rounded-2xl p-4 gap-3 border-t-4 border-primary-500">
 		<Text className="text-xl font-bold text-text">{event.name}</Text>
 		{event.start_at && (
 			<View className="flex-row items-center gap-2">
@@ -22,7 +22,9 @@ const EventRegistrationHeader = ({ event }: EventRegistrationHeaderProps) => (
 		{event.venue && (
 			<View className="flex-row items-center gap-2">
 				<MapPinIcon size={16} color="#6B7280" />
-				<Text className="text-sm text-gray-600 flex-1">{event.venue}</Text>
+				<Text className="text-sm text-gray-600 flex-1">
+					{event.venue}
+				</Text>
 			</View>
 		)}
 	</View>

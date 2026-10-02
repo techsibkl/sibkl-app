@@ -117,7 +117,7 @@ const EventDetailScreen = () => {
 						gap: 16,
 					}}
 				>
-					<EventDetailContent event={event} />
+					<EventDetailContent event={event} participant={participant} />
 					{participant ? (
 						<EventCheckInSection
 							event={event}
