@@ -1,4 +1,5 @@
 import PulsingLogo from "@/components/shared/PulsingLogo";
+import { inputPadding } from "@/constants/const_styles";
 import { sendOTP } from "@/services/OTP/otp.service";
 import { useSignUpStore } from "@/stores/signUpStore";
 import { Link, useRouter } from "expo-router";
@@ -107,6 +108,7 @@ const Page = () => {
 										<Mail size={20} color="#6b7280" />
 										<TextInput
 											className="font-regular flex-1 ml-3 text-gray-600"
+											style={inputPadding}
 											placeholder="Enter your email"
 											placeholderTextColor="#9ca3af"
 											onBlur={onBlur}
@@ -155,6 +157,7 @@ const Page = () => {
 									<TextInput
 										ref={passwordRef}
 										className="font-regular flex-1 ml-3  text-gray-600"
+										style={inputPadding}
 										placeholder="Enter your password"
 										placeholderTextColor="#9ca3af"
 										onBlur={onBlur}
