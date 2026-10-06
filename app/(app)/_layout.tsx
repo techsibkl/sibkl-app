@@ -24,6 +24,7 @@ export default function AppLayout() {
     binaryFeatureFlags.cells && useFeatureFlag("cells");
   const guestFollowUpEnabled = useFeatureFlag("guestFollowUp");
   const leadersPageEnabled = useFeatureFlag("leadersPage");
+  const showPeople = useFeatureFlag("people");
   const showEventsTab = useFeatureFlag("events") && !isGuest;
   const defaultTabBarStyle = {
     height: 50 + Math.max(insets.bottom, 8),
@@ -107,6 +108,7 @@ export default function AppLayout() {
         name="people"
         options={{
           title: "People",
+          href: showPeople ? "/(app)/people" : null,
           tabBarIcon: ({ color, size, focused }) => (
             <Users
               size={size}
