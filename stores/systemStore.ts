@@ -176,7 +176,21 @@ export const useSystemStore = create<SystemState>((set, get) => ({
 
       const currentVersion = config.app_status.launch_version;
       const hasNewLaunch = currentVersion !== seenVersion;
-      const hasActivatedLaunch = activatedVersion === currentVersion;
+
+      // hasActivatedLaunch is true when:
+      //   a) the user completed the unlock animation for this version (disk), OR
+      //   b) the server says status is "unlocked" — treat as a remote activation
+      //      so the banner and feature flags update immediately without requiring
+      //      the user to manually refresh on the lock screen.
+      const diskActivated = activatedVersion === currentVersion;
+      const remoteUnlocked = config.app_status.status === "unlocked";
+      const hasActivatedLaunch = diskActivated || remoteUnlocked;
+
+      // Persist remote activation to disk so a cold restart restores the state.
+      if (remoteUnlocked && !diskActivated) {
+        await writeActivatedLaunchVersion(currentVersion);
+      }
+
       const featureFlags = { ...DEFAULT_FLAGS, ...config.feature_flags };
 
       // API flags are the source of truth — they replace disk immediately.

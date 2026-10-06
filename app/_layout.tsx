@@ -5,6 +5,7 @@ import {
 } from "@/constants/const_styles";
 import { updateDeviceToken } from "@/services/User/user.service";
 import { useAuthStore } from "@/stores/authStore";
+import { useSystemStore } from "@/stores/systemStore";
 import { getApp } from "@react-native-firebase/app";
 import {
   AuthorizationStatus,
@@ -15,6 +16,7 @@ import {
   onNotificationOpenedApp,
   requestPermission,
   setBackgroundMessageHandler,
+  subscribeToTopic,
 } from "@react-native-firebase/messaging";
 import { ThemeProvider } from "@react-navigation/native";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -22,8 +24,8 @@ import * as Device from "expo-device";
 import { useFonts } from "expo-font";
 import * as Notifications from "expo-notifications";
 import { Stack, useRouter } from "expo-router";
-import React, { useEffect } from "react";
-import { Platform, StatusBar } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { AppState, AppStateStatus, Platform, StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { PaperProvider } from "react-native-paper";
 import { SafeAreaProvider } from "react-native-safe-area-context";
@@ -57,6 +59,8 @@ Notifications.setNotificationHandler({
 
 setBackgroundMessageHandler(messagingInstance, async (remoteMessage) => {
   console.log("[FCM] Background:", remoteMessage);
+  // system_config_updated background messages are handled when the app
+  // comes to foreground via the AppState listener in RootLayoutNav.
 });
 // ─────────────────────────────────────────────────────────────────────────────
 
@@ -96,6 +100,16 @@ async function registerAndGetToken(): Promise<string | null> {
 
   const token = await getToken(messagingInstance);
   console.log("[FCM] Token:", token);
+
+  // Subscribe to the system-config topic so the server can push
+  // a config-invalidation signal without storing per-device tokens.
+  try {
+    await subscribeToTopic(messagingInstance, "system-config");
+    console.log("[FCM] Subscribed to topic: system-config");
+  } catch (err) {
+    console.warn("[FCM] Topic subscription failed (non-fatal):", err);
+  }
+
   return token;
 }
 
@@ -143,11 +157,26 @@ function RootLayoutNav() {
     };
   }, [firebaseUser?.uid]);
 
-  // Notification listeners
+  // ─── FCM + AppState listeners ─────────────────────────────────────────────
+  const lastConfigFetch = useRef<number>(0);
+
+  const refetchConfigIfStale = () => {
+    const FIVE_MINUTES = 5 * 60 * 1000;
+    if (Date.now() - lastConfigFetch.current > FIVE_MINUTES) {
+      lastConfigFetch.current = Date.now();
+      useSystemStore.getState().fetchSystemConfig();
+    }
+  };
+
   useEffect(() => {
-    // Foreground
+    // Foreground FCM — handle system-config invalidation signal directly
     const unsubscribeForeground = onMessage(messagingInstance, async (msg) => {
       console.log("[FCM] Foreground:", msg);
+      if (msg.data?.type === "system_config_updated") {
+        console.log("[FCM] system_config_updated → refetching config");
+        lastConfigFetch.current = Date.now();
+        useSystemStore.getState().fetchSystemConfig();
+      }
     });
 
     // Background → foreground tap
@@ -163,9 +192,22 @@ function RootLayoutNav() {
       if (msg) console.log("[FCM] Quit state:", msg);
     });
 
+    // AppState: refetch config when app returns to foreground (safety net for
+    // background FCM messages that the OS may have suppressed, and for users
+    // who left the app open without receiving the push).
+    const appStateSub = AppState.addEventListener(
+      "change",
+      (nextState: AppStateStatus) => {
+        if (nextState === "active") {
+          refetchConfigIfStale();
+        }
+      }
+    );
+
     return () => {
       unsubscribeForeground();
       unsubscribeOpened();
+      appStateSub.remove();
     };
   }, []);
 
