@@ -21,6 +21,7 @@ const CAMERA_ROUTES = new Set(["scanner", "qrScan"]);
 export default function AppLayout() {
 	const insets = useSafeAreaInsets();
 	const isGuest = useAuthStore((s) => s.isGuest);
+	const showPeople = useFeatureFlag("people");
 	const showEventsTab = useFeatureFlag("events") && !isGuest;
 	const showCells = useFeatureFlag("cells");
 	const showGuestFollowUp = useFeatureFlag("guestFollowUp");
@@ -94,6 +95,7 @@ export default function AppLayout() {
 					return {
 						title: "Events",
 						href: showEventsTab ? ("/(app)/events" as any) : null,
+
 						tabBarStyle: CAMERA_ROUTES.has(routeName)
 							? { display: "none" }
 							: defaultTabBarStyle,
@@ -111,8 +113,8 @@ export default function AppLayout() {
 			<Tabs.Screen
 				name="people"
 				options={{
-					// href: null,
 					title: "People",
+					href: showPeople ? "/(app)/people" : null,
 					tabBarIcon: ({ color, size, focused }) => (
 						<Users
 							size={size}

@@ -79,8 +79,8 @@ export const handleAuthStateChange = async (
       ability: ability,
     });
 
-    // Fetch system config (feature flags + launch status) once auth resolves.
-    // Non-blocking: failure keeps safe defaults (all flags false).
+    // Fetch system config in the background. Tabs already render from
+    // last-known flags on disk; this silently refreshes them from the API.
     useSystemStore.getState().fetchSystemConfig();
   }
 };

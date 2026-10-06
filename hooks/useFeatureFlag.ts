@@ -2,16 +2,16 @@ import { FeatureFlags } from "@/types/SystemConfig";
 import { useSystemStore } from "@/stores/systemStore";
 
 /**
- * Returns the server-driven enabled state of a feature flag.
+ * Returns the enabled state of a feature flag.
  *
- * Returns false while the config is still loading, ensuring features stay
- * hidden until the server explicitly enables them (safe default).
+ * Source of truth: API /system/config (always wins when it succeeds).
+ * Fallback: Last-known flags persisted to disk (UX smoothing while network loads).
+ * First install: No disk cache → flags default to false until first successful fetch.
  *
- * Launch-gate: when a new launch cycle is detected (hasNewLaunch = true),
- * all flags return false until the user has gone through the unlock animation
+ * Launch-gate: When a new launch cycle is detected (hasNewLaunch = true),
+ * all flags return false until the user completes "Refresh to Unlock"
  * (hasActivatedLaunch = true). This keeps the bottom nav hidden in sync with
- * the LaunchBanner — features only become reachable after the user taps
- * "Refresh to Unlock" and the animation plays.
+ * the LaunchBanner.
  *
  * Usage:
  *   const canSeeCells = useFeatureFlag("cells");
