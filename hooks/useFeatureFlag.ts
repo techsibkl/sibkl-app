@@ -1,5 +1,6 @@
-import { FeatureFlags } from "@/types/SystemConfig";
+import { useMsLeft } from "@/components/Launch/CountdownDisplay";
 import { useSystemStore } from "@/stores/systemStore";
+import { FeatureFlags } from "@/types/SystemConfig";
 
 /**
  * Returns the enabled state of a feature flag.
@@ -9,17 +10,29 @@ import { useSystemStore } from "@/stores/systemStore";
  * First install: No disk cache → flags default to false until first successful fetch.
  *
  * Launch-gate: When a new launch cycle is detected (hasNewLaunch = true),
- * all flags return false until the user completes "Refresh to Unlock"
- * (hasActivatedLaunch = true). This keeps the bottom nav hidden in sync with
- * the LaunchBanner.
+ * flags stay hidden until the launch window is open:
+ *   - BE status === "unlocked" (early start), or
+ *   - countdown launch_date has been reached locally, or
+ *   - the user already completed "Refresh to Unlock" for this version.
  *
  * Usage:
  *   const canSeeCells = useFeatureFlag("cells");
  */
 export const useFeatureFlag = (key: keyof FeatureFlags): boolean => {
-  const { featureFlags, hasNewLaunch, hasActivatedLaunch } = useSystemStore();
+  const { featureFlags, hasNewLaunch, hasActivatedLaunch, appStatus } =
+    useSystemStore();
   const flagEnabled = featureFlags[key] ?? false;
-  // If a launch cycle is pending, gate behind activation.
-  const launchGatePassed = !hasNewLaunch || hasActivatedLaunch;
+
+  // Tick locally while locked so tabs open at T=0 without a BE write.
+  const launchDate =
+    hasActivatedLaunch || appStatus?.status === "unlocked"
+      ? null
+      : (appStatus?.launch_date ?? null);
+  const msLeft = useMsLeft(launchDate);
+  const windowOpen =
+    appStatus?.status === "unlocked" ||
+    (launchDate != null && msLeft === 0);
+
+  const launchGatePassed = !hasNewLaunch || hasActivatedLaunch || windowOpen;
   return flagEnabled && launchGatePassed;
 };
