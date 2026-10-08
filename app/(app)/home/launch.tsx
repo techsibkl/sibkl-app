@@ -4,6 +4,7 @@ import { LockedView } from "@/components/Launch/LockedView";
 import { UnlockedView } from "@/components/Launch/UnlockedView";
 import SharedHeader from "@/components/shared/SharedHeader";
 import { useSystemStore } from "@/stores/systemStore";
+import { isLaunchWindowOpen } from "@/utils/launchWindow";
 import { useRouter } from "expo-router";
 import { LockKeyhole, LockKeyholeOpen } from "lucide-react-native";
 import React, { useCallback, useState } from "react";
@@ -32,18 +33,19 @@ export default function LaunchScreen() {
 
 	const beAlreadyUnlocked = appStatus?.status === "unlocked";
 
-	// Countdown only blocks the button while the BE is still locked.
-	// If the BE has already unlocked, `msLeft` is always 0 so the button is active.
+	// Early start (status=unlocked) skips the timer. While locked, the
+	// local countdown is the authority — at T=0 the button enables even
+	// if the BE row is still "locked".
 	const msLeft = useMsLeft(
 		!beAlreadyUnlocked ? (appStatus?.launch_date ?? null) : null,
 	);
-	const isCountdownActive = msLeft > 0;
+	const isCountdownActive = !beAlreadyUnlocked && msLeft > 0;
 	const countdownJustExpired =
 		!beAlreadyUnlocked && !isCountdownActive && !!appStatus?.launch_date;
 
-	// Start unlocked only if the user has already gone through the animation
-	// this session (hasActivatedLaunch is in-memory, resets on cold start).
-	const startUnlocked = beAlreadyUnlocked && hasActivatedLaunch;
+	// Restore unlocked UI if this version was already activated (disk),
+	// including timer-based unlock where BE status may still be "locked".
+	const startUnlocked = hasActivatedLaunch;
 
 	// ─── Local state ──────────────────────────────────────────────────────────
 
@@ -81,8 +83,9 @@ export default function LaunchScreen() {
 		setErrorMsg(null);
 		setScreenState("refreshing");
 		await fetchSystemConfig();
-		const newStatus = useSystemStore.getState().appStatus?.status;
-		if (newStatus === "unlocked") {
+		const latestStatus = useSystemStore.getState().appStatus;
+		// Re-evaluate after fetch so a delayed launch_date still blocks.
+		if (isLaunchWindowOpen(latestStatus)) {
 			await activateLaunch();
 			// Pre-set the unlocked UI behind the celebration overlay so it's
 			// immediately visible once the overlay fades out on "Explore".
