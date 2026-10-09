@@ -123,15 +123,7 @@ function normalizeEventRegistration(
 	};
 }
 
-export const fetchMyEventRegistrations = async (): Promise<
-	EventRegistration[]
-> => {
-	const response = await secureFetch(apiEndpoints.events.getMyEvents);
-	const json: ReturnVal = await response.json();
-	if (!json.success) {
-		throwApiError(json);
-	}
-	const data = json.data;
+function parseEventRegistrations(data: unknown): EventRegistration[] {
 	if (!Array.isArray(data)) {
 		console.log("[MyEvents] API data is not an array", { data });
 		return [];
@@ -148,6 +140,40 @@ export const fetchMyEventRegistrations = async (): Promise<
 		})),
 	});
 	return registrations;
+}
+
+export const fetchMyEventRegistrations = async (): Promise<
+	EventRegistration[]
+> => {
+	const response = await secureFetch(apiEndpoints.events.getMyEvents);
+	const json: ReturnVal = await response.json();
+	if (!json.success) {
+		throwApiError(json);
+	}
+	return parseEventRegistrations(json.data);
+};
+
+export type ClaimMyEventsResult = {
+	registrations: EventRegistration[];
+	claimed: number;
+};
+
+/** Links published-event participant rows to the signed-in person. No body. */
+export const claimMyEvents = async (): Promise<ClaimMyEventsResult> => {
+	const response = await secureFetch(apiEndpoints.events.claimMyEvents, {
+		method: "POST",
+	});
+	const json: ReturnVal = await response.json();
+	if (!json.success) {
+		throwApiError(json);
+	}
+	const claimedRaw = json.meta?.claimed;
+	const claimed =
+		typeof claimedRaw === "number" ? claimedRaw : Number(claimedRaw ?? 0);
+	return {
+		registrations: parseEventRegistrations(json.data),
+		claimed: Number.isFinite(claimed) ? claimed : 0,
+	};
 };
 
 export const checkInEventParticipant = async (

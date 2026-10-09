@@ -32,7 +32,7 @@ const EventsPage = () => {
 		error: myFetchError,
 		isFetching: myFetching,
 		refetch: refetchMyEvents,
-	} = useMyEventRegistrationsQuery({ enabled: browseTab === "mine" });
+	} = useMyEventRegistrationsQuery();
 
 	useEffect(() => {
 		if (browseTab !== "mine") return;
