@@ -94,10 +94,19 @@ const MoveToStepAction = ({
 			ability.can(
 				"complete",
 				subject("PeopleFlow", {
+					district_id: personFlow.district_id,
+					cell_ids: [personFlow.assigned_cell_id],
 					flow_district_id: flow_district_id,
+					assignee_id: personFlow.assignee_id,
 				}),
 			),
-		[ability, flow_district_id],
+		[
+			ability,
+			flow_district_id,
+			personFlow.district_id,
+			personFlow.assigned_cell_id,
+			personFlow.assignee_id,
+		],
 	);
 
 	const suggestedStep = action.value ? steps[action.value as string] : null;
@@ -109,7 +118,7 @@ const MoveToStepAction = ({
 		if (isCompletedStatus(option.status) && !canComplete) {
 			Alert.alert(
 				"Permission required",
-				"You do not have permission to mark this person as completed. Please contact a district admin or pastor.",
+				"You do not have permission to mark this person as completed. Please contact your leader, admin or pastor.",
 			);
 			return;
 		}
@@ -193,9 +202,15 @@ const MoveToStepAction = ({
 					{!canComplete && (
 						<View className="mx-3 mt-3 mb-1 px-3 py-2 rounded-lg bg-amber-50 border border-amber-200">
 							<Text className="text-xs text-amber-700 leading-4">
-								Completed steps are locked. Only district admins
-								or pastors can move someone to Success or
-								Failed.
+								{`Completed steps are locked. Only leaders, admins or pastors can move someone to: ${
+									groupedSteps
+										.flat()
+										.filter((s) =>
+											isCompletedStatus(s.status),
+										)
+										.map((s) => `"${s.label}"`)
+										.join(", ") || "a completed step"
+								}.`}
 							</Text>
 						</View>
 					)}
