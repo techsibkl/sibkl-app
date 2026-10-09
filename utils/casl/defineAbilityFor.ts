@@ -25,12 +25,19 @@ export enum Role {
 	GUEST = "Guest (New)",
 	GUEST_INTEGRATED = "Guest (Integrated)",
 	MEMBER = "Member",
+	STAIRWARS_ADMIN = "StairWars Admin",
 }
 
-export function defineAbilityFor(person: Person): AnyAbility {
+export function defineAbilityFor(person: Person | null): AnyAbility {
 	const { can, cannot, build } = new AbilityBuilder(createMongoAbility);
 	try {
-		// Default for ALL roles (including no role)
+		// Guest user (person === null): ONLY allow public announcements
+		if (person === null) {
+			can("read", "Announcements", { role_group_ids: { $in: [7] } });
+			return build();
+		}
+
+		// Default for ALL authenticated roles (including no role)
 		can("read", "Flow", { district_id: null, get_public: true });
 		can(["update", "read"], "PeopleProfile", { id: person.id }); // Can update self
 		can("read", "PeopleProfile", {
@@ -43,7 +50,7 @@ export function defineAbilityFor(person: Person): AnyAbility {
 		can(["read", "create"], "PeopleProfileNotes", {
 			assignee_ids: { $in: [person.id] },
 		});
-		can(["read", "update", "assign", "default", "add"], "PeopleFlow", {
+		can(["read", "update", "assign", "add"], "PeopleFlow", {
 			assignee_id: person.id,
 		});
 		can("read", "Notification", { people_id: person.id });
@@ -61,21 +68,12 @@ export function defineAbilityFor(person: Person): AnyAbility {
 			cell_ids: { $in: person.cell_ids ?? [] },
 		});
 
-		if (
-			!person ||
-			person?.roles?.includes(Role.NONE) ||
-			!person?.roles?.every((role) =>
-				Object.values<string>(Role).includes(role),
-			)
-		) {
-			//  No roles, use default permissions above (can read public flows, can read/update self profile, can manage assigned people flow)
-		}
-
-		// default permissions that apply to anyone with a valid role
-		// (this is where you can add any extra "base" rules that should
-		// be granted to every authenticated user regardless of what
-		// specific role(s) they have)
-		if (person?.roles && person.roles.length > 0) {
+		// Extra base rules for anyone with at least one known role (not None / unknown strings).
+		// No-role users keep only the authenticated defaults above.
+		const knownRoles = Object.values(Role).filter(
+			(role) => role !== Role.NONE,
+		) as string[];
+		if (person.roles?.some((role) => knownRoles.includes(role))) {
 			can("read", "PeopleScoped");
 			can("read", "CellScoped");
 			can("read", "PeopleProfile", {
@@ -98,15 +96,16 @@ export function defineAbilityFor(person: Person): AnyAbility {
 			cannot("manage", "Permissions");
 			cannot("manage", "Duplicates");
 			cannot("manage", "PeopleProfile");
-			// Only explicitly assigned to staff
+			can(["update", "read"], "PeopleProfile", { id: person.id });
 			can("read", "PeopleProfile", {
 				assignee_ids: { $in: [person.id] },
 			});
+
 			cannot(["create", "update", "delete"], "Flow");
 			can("read", "Flow", { district_id: null, get_public: true });
 
 			cannot("manage", "PeopleFlow");
-			can(["read", "update", "assign", "default", "add"], "PeopleFlow", {
+			can(["read", "update", "assign", "add"], "PeopleFlow", {
 				assignee_id: person.id,
 			});
 		}
@@ -116,7 +115,7 @@ export function defineAbilityFor(person: Person): AnyAbility {
 				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});
 
-			can(["read", "update", "assign"], "PeopleFlow", {
+			can(["read", "update", "assign", "complete"], "PeopleFlow", {
 				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});
 
@@ -171,6 +170,8 @@ export function defineAbilityFor(person: Person): AnyAbility {
 			cannot(["create", "update", "delete"], "CellChangeRequest");
 			cannot(["create", "update", "delete"], "DistrictDetails");
 			cannot(["create", "update", "delete"], "Zone");
+			cannot(["create", "update", "delete"], "ZoneCreationRequest");
+			cannot(["create", "update", "delete"], "LeadershipResignationRequest");
 		}
 
 		if (person?.roles?.includes(Role.MEDIA_ADMIN)) {
@@ -179,13 +180,17 @@ export function defineAbilityFor(person: Person): AnyAbility {
 			can("manage", "Resource");
 		}
 
+		if (person?.roles?.includes(Role.STAIRWARS_ADMIN)) {
+			can("manage", "StairWars");
+		}
+
 		if (person?.roles?.includes(Role.STAFF)) {
 			// Only explicitly assigned to staff
 			can("read", "PeopleProfile", {
 				assignee_ids: { $in: [person.id] },
 			});
 			can("read", "Flow", { district_id: null, get_public: true });
-			can(["read", "update", "assign", "default"], "PeopleFlow", {
+			can(["read", "update", "assign"], "PeopleFlow", {
 				assignee_id: person.id,
 			});
 		}
@@ -234,6 +239,14 @@ export function defineAbilityFor(person: Person): AnyAbility {
 				district_id: { $in: person.admin_district_ids },
 			});
 
+			can(["create", "read", "update"], "ZoneCreationRequest", {
+				district_ids: { $in: person.admin_district_ids },
+			});
+
+			can(["create", "read", "update"], "LeadershipResignationRequest", {
+				district_ids: { $in: person.admin_district_ids },
+			});
+
 			// Districts
 			can(["read", "update"], "DistrictDetails", {
 				district_id: { $in: person.admin_district_ids },
@@ -246,7 +259,7 @@ export function defineAbilityFor(person: Person): AnyAbility {
 				district_id: { $in: person.admin_district_ids },
 			});
 
-			can(["read", "update", "assign"], "PeopleFlow", {
+			can(["read", "update", "assign", "complete"], "PeopleFlow", {
 				district_id: { $in: person.admin_district_ids },
 			});
 
@@ -303,6 +316,14 @@ export function defineAbilityFor(person: Person): AnyAbility {
 				district_id: { $in: person.pastor_district_ids },
 			});
 
+			can(["create", "read", "update"], "ZoneCreationRequest", {
+				district_ids: { $in: person.pastor_district_ids },
+			});
+
+			can(["create", "read", "update"], "LeadershipResignationRequest", {
+				district_ids: { $in: person.pastor_district_ids },
+			});
+
 			// Districts
 			can(["read", "update"], "DistrictDetails", {
 				district_id: { $in: person.pastor_district_ids },
@@ -314,7 +335,7 @@ export function defineAbilityFor(person: Person): AnyAbility {
 			can(["read", "update", "delete", "add"], "Flow", {
 				district_id: { $in: person.pastor_district_ids },
 			});
-			can(["read", "update", "assign"], "PeopleFlow", {
+			can(["read", "update", "assign", "complete"], "PeopleFlow", {
 				district_id: { $in: person.pastor_district_ids },
 			});
 
