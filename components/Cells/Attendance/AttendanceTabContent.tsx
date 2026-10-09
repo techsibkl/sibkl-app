@@ -59,7 +59,7 @@ function getShortcutRange(key: ShortcutKey): {
 export type Props = {
 	cellId: number;
 	sessions: CellSession[];
-	isLeader: boolean;
+	canViewCellAnalytics: boolean;
 	currentPersonId?: number;
 	sessionStats?: any;
 	memberStats?: any;
@@ -72,7 +72,7 @@ export type Props = {
 export default function AttendanceTabContent({
 	cellId,
 	sessions,
-	isLeader,
+	canViewCellAnalytics,
 	currentPersonId,
 	sessionStats,
 	memberStats,
@@ -82,7 +82,7 @@ export default function AttendanceTabContent({
 	isLoadingPersonStats = false,
 }: Props) {
 	const [cellAttendanceExpanded, setCellAttendanceExpanded] =
-		useState(isLeader);
+		useState(canViewCellAnalytics);
 	const [myAttendanceExpanded, setMyAttendanceExpanded] = useState(true);
 
 	// Date range filter state
@@ -339,8 +339,8 @@ export default function AttendanceTabContent({
 					)}
 				</View>
 
-				{/* Card 2 — Cell Analytics (leaders only) */}
-				{isLeader && memberStats && (
+				{/* Card 2 — Cell Analytics (leaders and core) */}
+				{canViewCellAnalytics && memberStats && (
 					<View className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
 						<TouchableOpacity
 							onPress={() =>

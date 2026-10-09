@@ -61,7 +61,11 @@ const CellProfileScreen = () => {
 	// console.log("person:", person);
 
 	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
+	const coreCells: number[] | undefined = person?.core_of_cell_ids;
 	const isLeader = ledCells?.map(Number).includes(Number(id));
+	const isCore = coreCells?.map(Number).includes(Number(id));
+	const canReviewJoinRequests = Boolean(isLeader || isCore);
+	const canManageSessions = Boolean(isLeader || isCore);
 
 	// Initialize state early so it can be used in queries
 	const [activeTab, setActiveTab] = useState<
@@ -92,11 +96,11 @@ const CellProfileScreen = () => {
 	const { data: sessions = [], isPending: isSessionsPending } =
 		useCellSessionsQuery(Number(id));
 
-	// Fetch attendance stats for all members (for leaders)
+	// Fetch attendance stats for all members (leaders and core)
 	const {
 		data: memberAttendanceStats = [],
 		isPending: isMemberStatsPending,
-	} = useCellAttendanceStatsQuery(Number(id), isLeader ?? false);
+	} = useCellAttendanceStatsQuery(Number(id), canManageSessions);
 
 	// Fetch current user's attendance stats
 	const { data: myAttendanceStats, isPending: isMyAttendanceStatsPending } =
@@ -126,11 +130,13 @@ const CellProfileScreen = () => {
 		(member: Person) => member.status === "ACTIVE",
 	);
 
+	const managedCellIds = [
+		...(person?.leader_of_cell_ids ?? []),
+		...(person?.core_of_cell_ids ?? []),
+	].map(Number);
+
 	const ledCellsFormatted = (person?.cells ?? [])
-		.filter(
-			(cell) =>
-				cell.id && ledCells?.map(Number).includes(Number(cell.id)),
-		)
+		.filter((cell) => cell.id && managedCellIds.includes(Number(cell.id)))
 		.map((cell) => ({ id: cell.id!, name: cell.cell_name! }));
 
 	useEffect(() => {
@@ -261,7 +267,7 @@ const CellProfileScreen = () => {
 					<View className="px-2">
 						<MembersList
 							members={
-								isLeader
+								canReviewJoinRequests
 									? filteredMembers
 									: filteredMembers.filter(
 											(m) =>
@@ -272,6 +278,7 @@ const CellProfileScreen = () => {
 							}
 							searchQuery={searchQuery}
 							isLeader={isLeader}
+							canReviewJoinRequests={canReviewJoinRequests}
 							currentPersonId={person?.id}
 							memberStatuses={memberStatuses}
 							onAccept={handleAcceptMember}
@@ -290,7 +297,7 @@ const CellProfileScreen = () => {
 					<AttendanceTabContent
 						cellId={Number(id)}
 						sessions={sessions}
-						isLeader={isLeader ?? false}
+						canViewCellAnalytics={canManageSessions}
 						currentPersonId={person?.id}
 						memberStats={memberAttendanceStats}
 						sessionStats={
@@ -408,7 +415,7 @@ const CellProfileScreen = () => {
 
 						{/* View Sessions - for leaders and core only */}
 						{cellAttendanceEnabled &&
-							isLeader &&
+							canManageSessions &&
 							ability.can("read", "CellSession") && (
 								<TouchableOpacity
 									onPress={() =>
@@ -509,6 +516,7 @@ const CellProfileScreen = () => {
 							members={filteredMembers}
 							memberStatuses={memberStatuses}
 							isLeader={isLeader ?? false}
+							canReviewJoinRequests={canReviewJoinRequests}
 							currentPersonId={person?.id}
 							isUpdating={isUpdating}
 							onAccept={handleAcceptMember}

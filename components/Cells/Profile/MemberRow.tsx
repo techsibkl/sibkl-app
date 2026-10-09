@@ -9,6 +9,7 @@ import MemberActionSheet from "./MemberActionSheet";
 type MemberRowProps = {
 	member: Person;
 	isLeader?: boolean;
+	canReviewJoinRequests?: boolean;
 	currentPersonId?: number;
 	memberStatuses?: Record<number, string>;
 	onAccept?: (memberId: number) => void;
@@ -22,6 +23,7 @@ type MemberRowProps = {
 const MemberRow = ({
 	member,
 	isLeader = false,
+	canReviewJoinRequests = false,
 	currentPersonId,
 	memberStatuses = {},
 	onAccept,
@@ -101,7 +103,7 @@ const MemberRow = ({
 						</View>
 
 						{/* Accept/Reject Buttons or Chevron */}
-						{isLeader && memberStatus === "PENDING" && (
+						{canReviewJoinRequests && memberStatus === "PENDING" && (
 							<View className="flex-row gap-2">
 								{isUpdating ? (
 									<View className="w-9 h-9 items-center justify-center">
