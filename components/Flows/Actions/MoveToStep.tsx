@@ -1,6 +1,6 @@
 import HelpDialog from "@/components/shared/HelpDialog";
 import SharedModal from "@/components/shared/SharedModal";
-import { defaultFlowStatusAttrs } from "@/constants/const_flows";
+import { defaultFlowStatusAttrs } from "@/constants/flowStatusAttrs";
 import { useChangeStepMutation } from "@/hooks/Flows/usePeopleFlowMutations";
 
 import { FlowStatus, FlowStep, StepAction } from "@/services/Flow/flow.types";

@@ -1,4 +1,4 @@
-import { defaultFlowStatusAttrs } from "@/constants/const_flows";
+import { defaultFlowStatusAttrs } from "@/constants/flowStatusAttrs";
 import { DEFAULT_PERSON_COLUMNS } from "@/constants/const_person";
 import { Person } from "@/services/Person/person.type";
 import { SectionEnum } from "@/types/TableField.type";
