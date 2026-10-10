@@ -1,4 +1,4 @@
-import { defaultFlowStatusAttrs } from "@/constants/const_flows";
+import { defaultFlowStatusAttrs } from "@/constants/flowStatusAttrs";
 import { FlowStatus, FlowStep } from "@/services/Flow/flow.types";
 
 export function daysAgo(dateInput?: string | Date | null): string {

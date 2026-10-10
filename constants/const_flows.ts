@@ -4,36 +4,10 @@ import AssignPersonAction from "@/components/Flows/Actions/AssignPersonAction";
 import ChangeFieldAction from "@/components/Flows/Actions/ChangeField";
 import MoveToStepAction from "@/components/Flows/Actions/MoveToStep";
 import SendMessageAction from "@/components/Flows/Actions/SendMessage";
-import { FlowStatus } from "@/services/Flow/flow.types";
 
-export const defaultFlowStatusAttrs = {
-	[FlowStatus.IRRELEVANT]: {
-		label: "Irrelevant",
-		icon: "uil:minus-circle",
-		color: "gray",
-	},
-
-	[FlowStatus.NOT_STARTED]: {
-		label: "Not Started",
-		icon: "uil:circle",
-		color: "gray",
-	},
-	[FlowStatus.IN_PROGRESS]: {
-		label: "In Progress",
-		icon: "uil:bowling-ball",
-		color: "purple",
-	},
-	[FlowStatus.COMPLETED_SUCCESS]: {
-		label: "Success",
-		icon: "uil:check",
-		color: "green",
-	},
-	[FlowStatus.COMPLETED_FAIL]: {
-		label: "Failed",
-		icon: "uil:times",
-		color: "red",
-	},
-};
+// Re-exported for backwards compatibility. Import directly from flowStatusAttrs
+// for any new code to keep this file's dependency graph component-only.
+export { defaultFlowStatusAttrs } from "@/constants/flowStatusAttrs";
 
 export const ActionComponents = {
 	SEND_MESSAGE: SendMessageAction,

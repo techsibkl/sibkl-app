@@ -28,7 +28,13 @@ const FlowSelector = ({ flows, selectedFlowId, onSelect }: Props) => {
 					]}
 					showPlaceholder={false}
 					renderTrigger={(label) => (
-						<Text className="font-medium text-md">{label}</Text>
+						<Text
+							className="font-medium text-md pr-2 text-gray-600"
+							numberOfLines={1}
+							ellipsizeMode="tail"
+						>
+							{label}
+						</Text>
 					)}
 				/>
 			</View>

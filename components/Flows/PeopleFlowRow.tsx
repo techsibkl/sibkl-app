@@ -1,4 +1,4 @@
-import { defaultFlowStatusAttrs } from "@/constants/const_flows";
+import { defaultFlowStatusAttrs } from "@/constants/flowStatusAttrs";
 import { featureFlags } from "@/config/featureFlags";
 import {
 	FlowStatus,
