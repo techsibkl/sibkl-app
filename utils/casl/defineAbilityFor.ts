@@ -13,6 +13,7 @@ export enum Role {
 	CELL_COORDINATOR = "Cell Coordinator",
 	CELL_LEADER = "Cell Leader",
 	CELL_CORE = "Cell Core",
+	ZONE_LEADER = "Zone Leader",
 	// PEOPLE_ADMIN is a special role that can manage people but not permissions or cells/districts
 	// i.e MSJ, Connect, Guest Ministry Admins
 	PEOPLE_ADMIN = "People Admin",
@@ -110,7 +111,7 @@ export function defineAbilityFor(person: Person | null): AnyAbility {
 			});
 		}
 
-		if (person?.roles?.includes(Role.CELL_LEADER)) {
+		if (person?.roles?.includes(Role.CELL_LEADER) || person?.roles?.includes(Role.ZONE_LEADER)) {
 			can(["read", "update"], "PeopleProfile", {
 				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});

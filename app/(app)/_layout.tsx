@@ -3,13 +3,13 @@ import { useAuthStore } from "@/stores/authStore";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { Tabs } from "expo-router";
 import {
-	Calendar,
-	Circle,
-	FunnelIcon,
-	GraduationCap,
-	Home,
-	Settings,
-	Users,
+    Calendar,
+    Circle,
+    FunnelIcon,
+    GraduationCap,
+    Home,
+    Settings,
+    Users,
 } from "lucide-react-native";
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";

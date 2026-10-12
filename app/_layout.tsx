@@ -174,14 +174,7 @@ function RootLayoutNav() {
       <Stack screenOptions={{ headerShown: false }}>
         <Stack.Screen name="(auth)" options={{ headerShown: false }} />
         <Stack.Screen name="(app)" options={{ headerShown: false }} />
-        <Stack.Screen name="(app)/profile" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
-          <Stack.Screen
-            name="qrScan"
-            options={{
-              headerShown: false,
-            }}
-          />
       </Stack>
       <Toast config={toastConfig} />
     </SafeAreaProvider>
