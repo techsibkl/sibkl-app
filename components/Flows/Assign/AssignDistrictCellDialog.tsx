@@ -185,17 +185,15 @@ const AssignDistrictCellDialog = ({
 								districts={districts}
 								selected={selectedDistrict}
 								onSelect={(d) => {
-									setSelectedDistrict(d);
-									setDistrictOpen(false);
-									// Clear cell if it no longer belongs to the new district
-									if (
-										selectedCell &&
-										!cells.find(
-											(c) => c.id === selectedCell.id,
-										)
-									) {
+									// Clear immediately. The cells list still
+									// belongs to the previous district until
+									// the next fetch, so it cannot be used to
+									// decide whether the old cell is valid.
+									if (d.id !== selectedDistrict?.id) {
 										setSelectedCell(null);
 									}
+									setSelectedDistrict(d);
+									setDistrictOpen(false);
 								}}
 								onClear={() => {
 									setSelectedDistrict(null);
