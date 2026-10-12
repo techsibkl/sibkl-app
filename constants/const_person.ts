@@ -46,7 +46,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: true,
 		type: FieldTypeEnum.TEXT,
 		section: SectionEnum.PERSONAL_INFORMATION,
-		editable: true,
+		editable: false,
 		completeProfileOnly: true,
 	},
 	{
@@ -87,7 +87,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: true,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CHURCH_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "birth_date",
@@ -118,7 +118,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: true,
 		type: FieldTypeEnum.SELECT,
 		section: SectionEnum.CHURCH_DETAILS,
-		editable: true,
+		editable: false,
 		options: [
 			"(Eng) 1st Service",
 			"(Eng) 2nd Service",
@@ -227,7 +227,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.SELECT,
 		section: SectionEnum.CHURCH_DETAILS,
-		editable: true,
+		editable: false,
 		options: ["Yes", "No"],
 	},
 	// {
@@ -266,7 +266,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.SELECT,
 		section: SectionEnum.CHURCH_DETAILS,
-		editable: true,
+		editable: false,
 		options: Array.from(
 			{ length: 100 },
 			(_, i) => new Date().getFullYear() - i,
@@ -279,7 +279,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.SELECT,
 		section: SectionEnum.CHURCH_DETAILS,
-		editable: true,
+		editable: false,
 		options: ["Yes", "No"],
 	},
 	{
@@ -289,7 +289,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.SELECT,
 		section: SectionEnum.CHURCH_DETAILS,
-		editable: true,
+		editable: false,
 		options: ["Yes", "No"],
 	},
 	{
@@ -300,7 +300,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CHURCH_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "baptism_cert_number",
@@ -309,7 +309,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.TEXT,
 		section: SectionEnum.CHURCH_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "date_dna_session",
@@ -319,7 +319,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.MEMBERSHIP_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "date_dna_plus",
@@ -328,7 +328,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.MEMBERSHIP_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "date_membership",
@@ -338,7 +338,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.MEMBERSHIP_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "member_id",
@@ -347,7 +347,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.TEXT,
 		section: SectionEnum.MEMBERSHIP_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "class_eq1_date",
@@ -356,7 +356,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CLASS_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "class_eq2_date",
@@ -365,7 +365,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CLASS_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "class_l1_date",
@@ -374,7 +374,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CLASS_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "class_l2_date",
@@ -383,7 +383,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CLASS_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "class_timothy_prog_date",
@@ -392,7 +392,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CLASS_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	// Leadership installation dates
 	{
@@ -402,7 +402,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CHURCH_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "date_ml_installation",
@@ -411,7 +411,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CHURCH_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "date_cml_installation",
@@ -420,7 +420,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CHURCH_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "date_zl_installation",
@@ -429,7 +429,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CHURCH_DETAILS,
-		editable: true,
+		editable: false,
 	},
 
 	// Leadership training
@@ -440,7 +440,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CLASS_DETAILS,
-		editable: true,
+		editable: false,
 	},
 
 	// Foundational classes
@@ -451,7 +451,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CLASS_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "date_christian_living",
@@ -460,7 +460,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CLASS_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "date_life_in_christ",
@@ -469,7 +469,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CLASS_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "date_spiritual_warfare",
@@ -478,7 +478,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CLASS_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "date_steps_to_freedom",
@@ -487,7 +487,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CLASS_DETAILS,
-		editable: true,
+		editable: false,
 	},
 	{
 		key: "date_christian_doctrine",
@@ -496,7 +496,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		visible: false,
 		type: FieldTypeEnum.DATE,
 		section: SectionEnum.CLASS_DETAILS,
-		editable: true,
+		editable: false,
 	},
 ];
 
