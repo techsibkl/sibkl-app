@@ -92,6 +92,15 @@ const PeopleFlowList = ({
 		return result;
 	}, [listData, expandedSections]);
 
+	// FlashList crashes on Android when this is an empty array. A user with no
+	// assignments has no section headers, so omit the prop entirely.
+	const stickyHeaderIndices = useMemo(() => {
+		const indices = filteredListData
+			.map((item, idx) => (item.kind === "header" ? idx : -1))
+			.filter((idx) => idx >= 0);
+		return indices.length > 0 ? indices : undefined;
+	}, [filteredListData]);
+
 	const renderItem = ({ item }: { item: FlowListItem }) => {
 		if (item.kind === "header") {
 			const isExpanded = expandedSections[item.sectionKey] !== false;
@@ -154,9 +163,7 @@ const PeopleFlowList = ({
 						tintColor="#3B82F6"
 					/>
 				}
-				stickyHeaderIndices={filteredListData
-					.map((item, idx) => (item.kind === "header" ? idx : -1))
-					.filter((idx) => idx >= 0)}
+				stickyHeaderIndices={stickyHeaderIndices}
 			/>
 		</View>
 	);
