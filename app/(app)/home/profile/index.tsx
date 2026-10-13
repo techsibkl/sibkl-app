@@ -16,7 +16,6 @@ const ProfileViewPage = () => {
 		user?.person?.id ?? -1,
 	);
 	const router = useRouter();
-
 	// Guest user profile page
 	if (isGuest) {
 		return (

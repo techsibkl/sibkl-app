@@ -61,7 +61,10 @@ const CellProfileScreen = () => {
 	// console.log("person:", person);
 
 	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
-	const isLeader = ledCells?.map(Number).includes(Number(id));
+	const personId = person?.id != null ? Number(person.id) : null;
+	const isCellLeader = Boolean(
+		ledCells?.map(Number).includes(Number(id)),
+	);
 
 	// Initialize state early so it can be used in queries
 	const [activeTab, setActiveTab] = useState<
@@ -88,6 +91,14 @@ const CellProfileScreen = () => {
 		refetch,
 	} = useSingleCellQuery(Number(id));
 
+	// Zone leaders are assigned on the cell, not via leader_of_cell_ids.
+	const isZoneLeaderOfCell =
+		personId != null &&
+		[cellFromApi?.zone_leader_1, cellFromApi?.zone_leader_2].some(
+			(leaderId) => leaderId != null && Number(leaderId) === personId,
+		);
+	const canManageCell = isCellLeader || isZoneLeaderOfCell;
+
 	// Fetch cell sessions
 	const { data: sessions = [], isPending: isSessionsPending } =
 		useCellSessionsQuery(Number(id));
@@ -96,7 +107,7 @@ const CellProfileScreen = () => {
 	const {
 		data: memberAttendanceStats = [],
 		isPending: isMemberStatsPending,
-	} = useCellAttendanceStatsQuery(Number(id), isLeader ?? false);
+	} = useCellAttendanceStatsQuery(Number(id), canManageCell);
 
 	// Fetch current user's attendance stats
 	const { data: myAttendanceStats, isPending: isMyAttendanceStatsPending } =
@@ -261,7 +272,7 @@ const CellProfileScreen = () => {
 					<View className="px-2">
 						<MembersList
 							members={
-								isLeader
+								canManageCell
 									? filteredMembers
 									: filteredMembers.filter(
 											(m) =>
@@ -271,7 +282,7 @@ const CellProfileScreen = () => {
 										)
 							}
 							searchQuery={searchQuery}
-							isLeader={isLeader}
+							isLeader={canManageCell}
 							currentPersonId={person?.id}
 							memberStatuses={memberStatuses}
 							onAccept={handleAcceptMember}
@@ -290,7 +301,7 @@ const CellProfileScreen = () => {
 					<AttendanceTabContent
 						cellId={Number(id)}
 						sessions={sessions}
-						isLeader={isLeader ?? false}
+						isLeader={canManageCell}
 						currentPersonId={person?.id}
 						memberStats={memberAttendanceStats}
 						sessionStats={
@@ -320,7 +331,7 @@ const CellProfileScreen = () => {
 			</SharedBody>
 		);
 
-	if (isError && isLeader)
+	if (isError && canManageCell)
 		return (
 			<SharedBody>
 				<Text>Type of Id: {typeof id}</Text>
@@ -406,10 +417,11 @@ const CellProfileScreen = () => {
 							<Text className="text-text text-sm ">Search</Text>
 						</TouchableOpacity>
 
-						{/* View Sessions - for leaders and core only */}
+						{/* View Sessions - cell leaders and zone leaders of this cell */}
 						{cellAttendanceEnabled &&
-							isLeader &&
-							ability.can("read", "CellSession") && (
+							canManageCell &&
+							(isZoneLeaderOfCell ||
+								ability.can("read", "CellSession")) && (
 								<TouchableOpacity
 									onPress={() =>
 										router.push({
@@ -429,18 +441,22 @@ const CellProfileScreen = () => {
 								</TouchableOpacity>
 							)}
 
-						{/* Add Members - for leaders and core only */}
-						{isLeader && ability.can("create", "CellMembers") && (
-							<TouchableOpacity
-								onPress={() =>
-									addMembersSheetRef.current?.present()
-								}
-								className="bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5"
-							>
-								<UserPlusIcon size={25} color="#1e40af" />
-								<Text className="text-text text-sm">Add</Text>
-							</TouchableOpacity>
-						)}
+						{/* Add Members - cell leaders and zone leaders of this cell */}
+						{canManageCell &&
+							(isZoneLeaderOfCell ||
+								ability.can("create", "CellMembers")) && (
+								<TouchableOpacity
+									onPress={() =>
+										addMembersSheetRef.current?.present()
+									}
+									className="bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5"
+								>
+									<UserPlusIcon size={25} color="#1e40af" />
+									<Text className="text-text text-sm">
+										Add
+									</Text>
+								</TouchableOpacity>
+							)}
 					</View>
 
 					{/* Tab bar */}
@@ -508,7 +524,7 @@ const CellProfileScreen = () => {
 							ref={searchMembersSheetRef}
 							members={filteredMembers}
 							memberStatuses={memberStatuses}
-							isLeader={isLeader ?? false}
+							isLeader={canManageCell}
 							currentPersonId={person?.id}
 							isUpdating={isUpdating}
 							onAccept={handleAcceptMember}

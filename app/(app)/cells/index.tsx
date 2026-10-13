@@ -86,10 +86,12 @@ const CellsScreen = () => {
 		);
 
 	// Deduplicate Joined Cells
+
+	// console.log("cells", person?.cell_ids)
 	const uniqueJoinedCells = Array.from(
 		new Map(
 			(person?.cells ?? [])
-				.filter((cell) => cell.member_status === "ACTIVE")
+				// .filter((cell) => cell.member_status === "ACTIVE")
 				.map((cell) => [cell.id, cell]),
 		).values(),
 	);

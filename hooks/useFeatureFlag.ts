@@ -1,5 +1,5 @@
-import { FeatureFlags } from "@/types/SystemConfig";
 import { useSystemStore } from "@/stores/systemStore";
+import { FeatureFlags } from "@/types/SystemConfig";
 
 /**
  * Returns the server-driven enabled state of a feature flag.
@@ -21,5 +21,6 @@ export const useFeatureFlag = (key: keyof FeatureFlags): boolean => {
   const flagEnabled = featureFlags[key] ?? false;
   // If a launch cycle is pending, gate behind activation.
   const launchGatePassed = !hasNewLaunch || hasActivatedLaunch;
+  if (__DEV__) return true;
   return flagEnabled && launchGatePassed;
 };
