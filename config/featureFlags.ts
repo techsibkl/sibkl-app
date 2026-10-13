@@ -5,8 +5,8 @@ import Constants from "expo-constants";
  * EAS env vars are strings; default to false (production-safe).
  */
 const isPilotBuild =
-	Constants.expoConfig?.extra?.PILOT_BUILD === true ||
-	Constants.expoConfig?.extra?.PILOT_BUILD === "true";
+	Constants.expoConfig?.extra?.PILOT_BUILD === false ||
+	Constants.expoConfig?.extra?.PILOT_BUILD === "false";
 
 /**
  * Binary-level feature gates (build-time only).

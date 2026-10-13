@@ -141,6 +141,19 @@ export function defineAbilityFor(person: Person | null): AnyAbility {
 			});
 		}
 
+		// Zone leaders manage every cell in their zone, not only cells they
+		// personally lead. Match either zone-leader slot on the cell record.
+		if (person?.roles?.includes(Role.ZONE_LEADER)) {
+			for (const field of ["zone_leader_1", "zone_leader_2"] as const) {
+				can(["create", "read", "update", "delete"], "CellMembers", {
+					[field]: person.id,
+				});
+				can(["create", "read", "update"], "CellSession", {
+					[field]: person.id,
+				});
+			}
+		}
+
 		if (person?.roles?.includes(Role.CELL_CORE)) {
 			can(["read", "update"], "PeopleProfile", {
 				cell_ids: { $in: person.core_of_cell_ids ?? [] },
