@@ -26,12 +26,13 @@ const HIGH_PRIVILEGE_ROLES: Role[] = [
 
 const CELL_ROLES: Role[] = [Role.CELL_LEADER, Role.CELL_CORE];
 
-const AssignmentFilterToggle = ({ value, onChange, roles = [] }: Props) => {
-	const canSeeDistrict = roles.some((r) =>
+const AssignmentFilterToggle = ({ value, onChange, roles }: Props) => {
+	const roleList = roles ?? [];
+	const canSeeDistrict = roleList.some((r) =>
 		HIGH_PRIVILEGE_ROLES.includes(r as Role),
 	);
 	const canSeeCell =
-		canSeeDistrict || roles.some((r) => CELL_ROLES.includes(r as Role));
+		canSeeDistrict || roleList.some((r) => CELL_ROLES.includes(r as Role));
 
 	const options: FilterOption[] = [
 		{ value: null, label: "-" },
