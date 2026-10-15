@@ -23,6 +23,7 @@ export type AuthState = {
 	isGuest: boolean;
 	authLoaded: boolean;
 	ability: AnyAbility;
+	personRevision: string | null;
 	setFirebaseUser: (firebaseUser: FirebaseAuthTypes.User | null) => void;
 	setUser: (user: AppUser | null) => void;
 	signIn: (
@@ -35,7 +36,11 @@ export type AuthState = {
 	guestLogin: () => void;
 	signOut: () => Promise<void>;
 	init: () => void;
+	refreshPerson: (nextRevision?: string) => Promise<void>;
 };
+
+let personRefresh: Promise<void> | null = null;
+let personRefreshBlockedUntil = 0;
 
 export const useAuthStore = create<AuthState>((set, get) => ({
 	firebaseUser: null,
@@ -45,6 +50,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 	isGuest: false,
 	authLoaded: false,
 	ability: defineAbilityFor(<Person>{ id: 0, roles: [Role.NONE] }),
+	personRevision: null,
 
 	setUser: (user: AppUser | null) =>
 		set({
@@ -136,6 +142,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 			user: null,
 			authLoaded: true,
 			ability: defineAbilityFor(<Person>{ id: 0, roles: [Role.NONE] }),
+			personRevision: null,
 			isLoading: false,
 		});
 	},
@@ -148,7 +155,59 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 			user: null,
 			isAuthenticated: false,
 			isGuest: false,
+			personRevision: null,
 		});
+	},
+
+	refreshPerson: (nextRevision?: string) => {
+		if (personRefresh) return personRefresh;
+		if (Date.now() < personRefreshBlockedUntil) return Promise.resolve();
+
+		const uid = get().firebaseUser?.uid;
+		const previousRevision = get().personRevision;
+		if (!uid || !get().user || get().isGuest) return Promise.resolve();
+
+		personRefresh = (async () => {
+			try {
+				const resPerson = await getPersonOfUid({ skipPersonSync: true });
+				const latestUser = get().user;
+				if (
+					get().firebaseUser?.uid !== uid ||
+					!latestUser ||
+					get().isGuest
+				) {
+					return;
+				}
+				if (!resPerson.success || !resPerson.data) {
+					personRefreshBlockedUntil = Date.now() + 15_000;
+					return;
+				}
+
+				const person = resPerson.data as Person;
+				set({
+					user: {
+						...latestUser,
+						people_id:
+							typeof person.id === "number"
+								? person.id
+								: latestUser.people_id,
+						person,
+					},
+					ability: defineAbilityFor(person),
+					personRevision:
+						resPerson.personRevision ?? nextRevision ?? previousRevision,
+				});
+			} catch (error) {
+				console.error("Failed to refresh person:", error);
+				if (get().firebaseUser?.uid === uid) {
+					personRefreshBlockedUntil = Date.now() + 15_000;
+				}
+			} finally {
+				personRefresh = null;
+			}
+		})();
+
+		return personRefresh;
 	},
 
 	init: () => {

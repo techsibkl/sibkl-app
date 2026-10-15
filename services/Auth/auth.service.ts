@@ -17,12 +17,15 @@ export const createAccount = async (
 	return json;
 };
 
-export const getPersonOfUid = async () => {
-	const response = await secureFetch(apiEndpoints.users.getPersonOfUid, {
-		method: "GET",
-	});
+export const getPersonOfUid = async (options?: { skipPersonSync?: boolean }) => {
+	const response = await secureFetch(
+		apiEndpoints.users.getPersonOfUid,
+		{ method: "GET" },
+		{ skipPersonSync: options?.skipPersonSync },
+	);
+	const personRevision = response.headers.get("x-person-revision");
 	const json: ReturnVal = await response.json();
-	return json;
+	return { ...json, personRevision };
 };
 
 export const deleteAccount = async (): Promise<ReturnVal> => {

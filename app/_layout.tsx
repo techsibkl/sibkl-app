@@ -122,7 +122,8 @@ function RootLayoutNav() {
     } else {
       router.replace("/(app)/home");
     }
-  }, [user, authLoaded, router, firebaseUser, isGuest]);
+  // people_id only: refreshing person must not send the user back to home.
+  }, [user?.people_id, authLoaded, router, firebaseUser, isGuest]);
 
   // Register + save token when user logs in
   useEffect(() => {

@@ -4,7 +4,7 @@ import { useAuthStore } from "@/stores/authStore";
 export async function secureFetch(
   input: RequestInfo,
   init: RequestInit = {},
-  options: { allowUnauthenticated?: boolean } = {}
+  options: { allowUnauthenticated?: boolean; skipPersonSync?: boolean } = {}
 ) {
 	const auth = getAuth();
 	const user = auth.currentUser;
@@ -29,5 +29,26 @@ export async function secureFetch(
     headers,
   });
 
+  if (!options.skipPersonSync) {
+    try {
+      syncPersonRevision(res.headers?.get?.("x-person-revision") ?? null);
+    } catch (error) {
+      console.error("Failed to sync person revision:", error);
+    }
+  }
+
   return res;
+}
+
+function syncPersonRevision(revision: string | null) {
+  if (!revision) return;
+
+  const { personRevision, refreshPerson } = useAuthStore.getState();
+  if (!personRevision) {
+    useAuthStore.setState({ personRevision: revision });
+    return;
+  }
+  if (personRevision !== revision) {
+    void refreshPerson(revision);
+  }
 }
