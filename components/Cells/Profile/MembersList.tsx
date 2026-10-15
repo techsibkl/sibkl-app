@@ -7,6 +7,7 @@ type MembersListProps = {
 	members: any[];
 	searchQuery: string;
 	isLeader?: boolean;
+	canRemoveMembers?: boolean;
 	canReviewJoinRequests?: boolean;
 	currentPersonId?: number;
 	memberStatuses?: Record<number, string>;
@@ -17,6 +18,7 @@ type MembersListProps = {
 	onCoreToggled?: () => void;
 	cellLeader1Id?: number | null;
 	cellLeader2Id?: number | null;
+	scrollable?: boolean;
 };
 
 type SectionKey = "PENDING" | "ACTIVE" | "REJECTED";
@@ -25,6 +27,7 @@ const MembersList = ({
 	members,
 	searchQuery,
 	isLeader = false,
+	canRemoveMembers = false,
 	canReviewJoinRequests = false,
 	currentPersonId,
 	memberStatuses = {},
@@ -35,6 +38,7 @@ const MembersList = ({
 	onCoreToggled,
 	cellLeader1Id,
 	cellLeader2Id,
+	scrollable = true,
 }: MembersListProps) => {
 	const [expandedSections, setExpandedSections] = useState<
 		Record<SectionKey, boolean>
@@ -46,7 +50,10 @@ const MembersList = ({
 
 	// Get status for a member
 	const getMemberStatus = (member: any) =>
-		memberStatuses[member.id] || member.status || "ACTIVE";
+		memberStatuses[member.id] ||
+		member.status ||
+		member.member_status ||
+		"ACTIVE";
 
 	// Helper function to determine member role priority
 	const getMemberRolePriority = (member: any) => {
@@ -163,6 +170,7 @@ const MembersList = ({
 					key={member.id}
 					member={member}
 					isLeader={isLeader}
+					canRemoveMembers={canRemoveMembers}
 					canReviewJoinRequests={canReviewJoinRequests}
 					currentPersonId={currentPersonId}
 					memberStatuses={memberStatuses}
@@ -177,70 +185,74 @@ const MembersList = ({
 		});
 	};
 
+	const sections = (
+		<>
+			{groupedMembers.PENDING.length > 0 && (
+				<View>
+					<SectionHeader
+						title="Pending"
+						count={groupedMembers.PENDING.length}
+						sectionKey="PENDING"
+					/>
+					{expandedSections.PENDING &&
+						renderMembersList(
+							groupedMembers.PENDING,
+							filteredMembers.PENDING,
+							"PENDING",
+						)}
+				</View>
+			)}
+
+			{groupedMembers.ACTIVE.length > 0 && (
+				<View>
+					<SectionHeader
+						title="Active"
+						count={groupedMembers.ACTIVE.length}
+						sectionKey="ACTIVE"
+					/>
+					{expandedSections.ACTIVE &&
+						renderMembersList(
+							groupedMembers.ACTIVE,
+							filteredMembers.ACTIVE,
+							"ACTIVE",
+						)}
+				</View>
+			)}
+
+			{groupedMembers.REJECTED.length > 0 && (
+				<View>
+					<SectionHeader
+						title="Rejected"
+						count={groupedMembers.REJECTED.length}
+						sectionKey="REJECTED"
+					/>
+					{expandedSections.REJECTED &&
+						renderMembersList(
+							groupedMembers.REJECTED,
+							filteredMembers.REJECTED,
+							"REJECTED",
+						)}
+				</View>
+			)}
+
+			{members.length === 0 && (
+				<View className="items-center justify-center py-8 px-4">
+					<Text className="text-text-secondary text-center">
+						No members found
+					</Text>
+				</View>
+			)}
+		</>
+	);
+
+	if (!scrollable) {
+		return <View className="flex-1 pb-10">{sections}</View>;
+	}
+
 	return (
 		<View className="flex-1">
-			<ScrollView
-				contentContainerStyle={{
-					paddingBottom: 40,
-				}}
-			>
-				{/* Sections */}
-				{groupedMembers.PENDING.length > 0 && (
-					<View>
-						<SectionHeader
-							title="Pending"
-							count={groupedMembers.PENDING.length}
-							sectionKey="PENDING"
-						/>
-						{expandedSections.PENDING &&
-							renderMembersList(
-								groupedMembers.PENDING,
-								filteredMembers.PENDING,
-								"PENDING",
-							)}
-					</View>
-				)}
-
-				{groupedMembers.ACTIVE.length > 0 && (
-					<View>
-						<SectionHeader
-							title="Active"
-							count={groupedMembers.ACTIVE.length}
-							sectionKey="ACTIVE"
-						/>
-						{expandedSections.ACTIVE &&
-							renderMembersList(
-								groupedMembers.ACTIVE,
-								filteredMembers.ACTIVE,
-								"ACTIVE",
-							)}
-					</View>
-				)}
-
-				{groupedMembers.REJECTED.length > 0 && (
-					<View>
-						<SectionHeader
-							title="Rejected"
-							count={groupedMembers.REJECTED.length}
-							sectionKey="REJECTED"
-						/>
-						{expandedSections.REJECTED &&
-							renderMembersList(
-								groupedMembers.REJECTED,
-								filteredMembers.REJECTED,
-								"REJECTED",
-							)}
-					</View>
-				)}
-
-				{/* No members message */}
-				{members.length === 0 && (
-					<View className="items-center justify-center py-8 px-4">
-						<Text className="text-text-secondary text-center">
-							No members found
-						</Text>
-					</View>
-				)}
+			<ScrollView contentContainerStyle={{ paddingBottom: 40 }}>
+				{sections}
 			</ScrollView>
 		</View>
 	);

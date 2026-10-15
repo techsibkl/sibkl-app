@@ -9,6 +9,7 @@ type SearchMembersModalProps = {
 	members: any[];
 	memberStatuses?: Record<number, string>;
 	isLeader?: boolean;
+	canRemoveMembers?: boolean;
 	canReviewJoinRequests?: boolean;
 	currentPersonId?: number;
 	isUpdating?: number | null;
@@ -26,6 +27,7 @@ const SearchMembersModal = forwardRef<
 			members,
 			memberStatuses = {},
 			isLeader = false,
+			canRemoveMembers = false,
 			canReviewJoinRequests = false,
 			currentPersonId,
 			isUpdating = null,
@@ -89,6 +91,7 @@ const SearchMembersModal = forwardRef<
 						members={members}
 						searchQuery={searchQuery}
 						isLeader={isLeader}
+						canRemoveMembers={canRemoveMembers}
 						canReviewJoinRequests={canReviewJoinRequests}
 						currentPersonId={currentPersonId}
 						memberStatuses={memberStatuses}

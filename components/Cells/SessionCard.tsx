@@ -14,8 +14,10 @@ type Props = {
 
 export default function SessionCard({ session, onPress }: Props) {
 	const date = new Date(session.meeting_date);
+	const isClosed = session.status === "closed";
 	const isToday = date.toDateString() === new Date().toDateString();
-	const isUpcoming = isUpcomingOrLive(session);
+	const isUpcoming = !isClosed && isUpcomingOrLive(session);
+	const isLive = isToday && !isClosed;
 	const attendanceRate =
 		session.total_members > 0
 			? Math.round((session.attendee_count / session.total_members) * 100)
@@ -29,7 +31,7 @@ export default function SessionCard({ session, onPress }: Props) {
 		>
 			<View
 				className={`w-12 h-14 rounded-xl items-center justify-center ${
-					isToday
+					isLive
 						? "bg-red-600"
 						: isUpcoming
 							? "bg-red-50 border-2 border-red-600"
@@ -38,7 +40,7 @@ export default function SessionCard({ session, onPress }: Props) {
 			>
 				<Text
 					className={`text-xs font-semibold tracking-widest leading-none mb-0.5 ${
-						isToday
+						isLive
 							? "text-white"
 							: isUpcoming
 								? "text-red-600"
@@ -51,7 +53,7 @@ export default function SessionCard({ session, onPress }: Props) {
 				</Text>
 				<Text
 					className={`text-xl font-bold leading-none ${
-						isToday
+						isLive
 							? "text-white"
 							: isUpcoming
 								? "text-red-600"
@@ -65,16 +67,25 @@ export default function SessionCard({ session, onPress }: Props) {
 			<View className="flex-1 gap-1">
 				<View className="flex-row items-center gap-2 flex-wrap">
 					<Text className="text-base font-bold text-gray-900">
-						{isToday
-							? "Today's Session"
-							: isUpcoming
-								? "Upcoming Session"
-								: "Past Session"}
+						{isClosed
+							? "Closed Session"
+							: isToday
+								? "Today's Session"
+								: isUpcoming
+									? "Upcoming Session"
+									: "Past Session"}
 					</Text>
-					{isToday && (
+					{isLive && (
 						<View className="bg-red-600 rounded px-1.5 py-0.5">
 							<Text className="text-white text-xs font-bold tracking-wide">
 								LIVE
+							</Text>
+						</View>
+					)}
+					{isClosed && (
+						<View className="bg-gray-200 rounded px-1.5 py-0.5">
+							<Text className="text-gray-700 text-xs font-bold tracking-wide">
+								CLOSED
 							</Text>
 						</View>
 					)}
@@ -96,7 +107,7 @@ export default function SessionCard({ session, onPress }: Props) {
 					})}
 				</Text>
 
-				{!isUpcoming && (
+				{(isClosed || !isUpcoming) && (
 					<View className="flex-row items-center gap-2 mt-1">
 						<View className="flex-1 h-1 bg-gray-100 rounded-full overflow-hidden">
 							<View
@@ -110,7 +121,7 @@ export default function SessionCard({ session, onPress }: Props) {
 					</View>
 				)}
 
-				{isToday && session.attendee_count > 0 && (
+				{isLive && session.attendee_count > 0 && (
 					<Text className="text-xs text-red-600 font-semibold mt-0.5">
 						{session.attendee_count} checked in so far
 					</Text>

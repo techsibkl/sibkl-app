@@ -72,6 +72,8 @@ export const apiEndpoints = {
 			_endpoint(`cells/${cellId}/sessions`),
 		getSessionById: (cellId: number | string, sessionId: number | string) =>
 			_endpoint(`cells/${cellId}/sessions/${sessionId}`),
+		closeSession: (cellId: number | string, sessionId: number | string) =>
+			_endpoint(`cells/${cellId}/sessions/${sessionId}/close`),
 		getAttendanceStats: (cellId: number | string) =>
 			_endpoint(`cells/${cellId}/attendance/stats`),
 		getAttendanceStatsByPerson: (

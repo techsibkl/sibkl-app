@@ -1,5 +1,13 @@
 import { useSignInToCellSessionMutation } from "@/hooks/CellAttendance/useCellAttendanceMutation";
+import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
+import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useAuthStore } from "@/stores/authStore";
+import {
+	canCheckInToCell,
+	cellAttendanceErrorMessage,
+	cellCheckInBlockedMessage,
+	getCellMembershipStatus,
+} from "@/utils/cellMembership";
 import { CameraView, useCameraPermissions } from "expo-camera";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useCallback, useEffect, useState } from "react";
@@ -31,9 +39,36 @@ export default function QrScan() {
 	const personId = useAuthStore((state) => state.user?.person?.id);
 	const { cell_id } = useLocalSearchParams<{ cell_id: string }>();
 	const cellId = Number(Array.isArray(cell_id) ? cell_id[0] : cell_id);
-	const { mutateAsync: signIn } = useSignInToCellSessionMutation(
-		Number.isFinite(cellId) && cellId > 0 ? cellId : 0,
+	const resolvedCellId =
+		Number.isFinite(cellId) && cellId > 0 ? cellId : 0;
+	const {
+		data: cell,
+		isLoading: isCellLoading,
+		isError: isCellError,
+	} = useSingleCellQuery(resolvedCellId);
+	const { data: person } = useSinglePersonQuery(personId ?? -1);
+	const { mutateAsync: signIn } =
+		useSignInToCellSessionMutation(resolvedCellId);
+
+	const myMemberRecord = cell?.members?.find(
+		(member) => Number(member.id) === Number(personId),
 	);
+	const myPersonCell = person?.cells?.find(
+		(membership) => Number(membership.id) === resolvedCellId,
+	);
+	const rosterLoaded = Array.isArray(cell?.members);
+	const membershipStatus = getCellMembershipStatus(
+		myMemberRecord,
+		myPersonCell,
+	);
+	const canSelfCheckIn =
+		rosterLoaded &&
+		canCheckInToCell({
+			member: myMemberRecord,
+			personCell: myPersonCell,
+			rosterLoaded,
+		});
+	const membershipBlocked = rosterLoaded && !canSelfCheckIn;
 
 	// If permission is denied, go back to scanner page
 	useEffect(() => {
@@ -44,7 +79,14 @@ export default function QrScan() {
 
 	const handleScan = useCallback(
 		async ({ data }: { data: string }) => {
-			if (scanState !== "idle" || !personId) return;
+			if (scanState !== "idle" || !personId || isCellLoading) return;
+			if (!canSelfCheckIn) {
+				setMessage(
+					cellCheckInBlockedMessage({ status: membershipStatus }),
+				);
+				setScanState("error");
+				return;
+			}
 			setScanState("loading");
 			try {
 				await signIn({ attendanceId: data, peopleId: personId });
@@ -52,13 +94,22 @@ export default function QrScan() {
 				setScanState("success");
 			} catch (err: any) {
 				setMessage(
-					err?.message ??
+					cellAttendanceErrorMessage(
+						err,
 						"Failed to submit attendance. Please try again.",
+					),
 				);
 				setScanState("error");
 			}
 		},
-		[scanState, personId, signIn],
+		[
+			scanState,
+			personId,
+			signIn,
+			isCellLoading,
+			canSelfCheckIn,
+			membershipStatus,
+		],
 	);
 
 	const handleReset = () => {
@@ -87,7 +138,11 @@ export default function QrScan() {
 				style={{ width, height }}
 				facing="back"
 				barcodeScannerSettings={{ barcodeTypes: ["qr"] }}
-				onBarcodeScanned={scanState === "idle" ? handleScan : undefined}
+				onBarcodeScanned={
+					scanState === "idle" && canSelfCheckIn
+						? handleScan
+						: undefined
+				}
 			/>
 
 			{/* Dark overlay — 4 exact regions around scan window */}
@@ -207,9 +262,34 @@ export default function QrScan() {
 
 			{/* Bottom panel */}
 			<View style={styles.bottomPanel}>
-				{scanState === "idle" && (
+				{membershipBlocked && (
+					<View style={styles.feedbackBox}>
+						<View
+							style={[styles.feedbackIcon, { borderColor: RED }]}
+						>
+							<Text style={{ fontSize: 22 }}>✕</Text>
+						</View>
+						<Text style={[styles.feedbackText, { color: RED }]}>
+							{cellCheckInBlockedMessage({
+								status: membershipStatus,
+							})}
+						</Text>
+						<Pressable
+							style={styles.actionBtn}
+							onPress={() => router.back()}
+						>
+							<Text style={styles.actionBtnText}>Go Back</Text>
+						</Pressable>
+					</View>
+				)}
+
+				{scanState === "idle" && !membershipBlocked && (
 					<Text style={styles.hint}>
-						Point your camera at the session QR code
+						{isCellLoading
+							? "Checking membership..."
+							: isCellError
+								? "Couldn't verify your membership. Go back and try again."
+								: "Point your camera at the session QR code"}
 					</Text>
 				)}
 

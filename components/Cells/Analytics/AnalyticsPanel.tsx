@@ -46,21 +46,23 @@ export default function AnalyticsPanel({
   );
 
   const averageMemberPerSessionData = useMemo(() => {
-    const attendedSessions = sessions.filter(
-      (session) => Number(session.member_count ?? 0) > 0,
+    const ratedSessions = sessions.filter(
+      (session) => Number(session.total_members) > 0,
     );
-    if (attendedSessions.length === 0) {
+    if (ratedSessions.length === 0) {
       return { count: 0, percent: 0 };
     }
 
-    const avgAttendanceRate = average(attendedSessions.map(getMemberRate));
-    const totalMembers = members.length > 0 ? members.length : stats.length;
+    const avgAttendanceRate = average(ratedSessions.map(getMemberRate));
+    const avgCount = average(
+      ratedSessions.map((session) => Number(session.member_count ?? 0)),
+    );
 
     return {
-      count: Math.round(avgAttendanceRate * totalMembers),
+      count: Math.round(avgCount),
       percent: toPercent(avgAttendanceRate),
     };
-  }, [sessions, members, stats]);
+  }, [sessions]);
 
   const totalGuests = useMemo(
     () =>
@@ -79,7 +81,7 @@ export default function AnalyticsPanel({
     return map;
   }, [members]);
 
-  const totalMembers = members.length > 0 ? members.length : stats.length;
+  const totalMembers = stats.length;
 
   return (
     <View className="gap-5">

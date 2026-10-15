@@ -40,6 +40,7 @@ interface MemberActionSheetProps {
 	member: Person | null;
 	cellId?: number;
 	isLeader?: boolean;
+	canRemoveMembers?: boolean;
 	currentPersonId?: number;
 	onRemove?: (memberId: number) => void;
 	onCoreToggled?: () => void;
@@ -51,6 +52,7 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
 	member,
 	cellId,
 	isLeader = false,
+	canRemoveMembers = false,
 	currentPersonId,
 	onRemove,
 	onCoreToggled,
@@ -210,7 +212,9 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
 	};
 
 	const canRemoveMember =
-		isLeader && currentPersonId != null && member.id !== currentPersonId;
+		(isLeader || canRemoveMembers) &&
+		currentPersonId != null &&
+		member.id !== currentPersonId;
 	const canToggleCore =
 		isLeader && currentPersonId != null && member.id !== currentPersonId;
 

@@ -24,8 +24,17 @@ export type CellSessionAttendee = {
   invited_by_id: number | null;
 };
 
+/** Active roster while open; frozen roster after the session is closed. */
+export type CellSessionMember = {
+  id: number;
+  full_legal_name?: string;
+  email?: string;
+  phone?: string;
+};
+
 export type CellSessionDetail = CellSession & {
   attendees: CellSessionAttendee[];
+  members: CellSessionMember[];
 };
 
 export type CellAttendanceStat = {

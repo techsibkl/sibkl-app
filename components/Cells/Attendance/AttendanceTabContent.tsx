@@ -331,8 +331,15 @@ export default function AttendanceTabContent({
 							<AttendanceSessionsList
 								sessions={filteredSessions}
 								myAttendanceMap={mySessionAttendance}
+								emptyMessage={
+									sessions.length === 0
+										? "No history of attendance"
+										: "No sessions in this date range"
+								}
 								isLoading={
-									isLoadingSessions || isLoadingPersonStats
+									isLoadingSessions ||
+									(sessions.length > 0 &&
+										isLoadingPersonStats)
 								}
 							/>
 						</View>

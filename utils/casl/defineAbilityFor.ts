@@ -154,8 +154,8 @@ export function defineAbilityFor(person: Person): AnyAbility {
 			can(["read"], "CellDetails", {
 				cell_ids: { $in: person.core_of_cell_ids ?? [] },
 			});
-			// was read-only; update is what accept/reject uses
-			can(["read", "update"], "CellMembers", {
+			// create and delete match leaders so cores can add and remove members
+			can(["create", "read", "update", "delete"], "CellMembers", {
 				cell_ids: { $in: person.core_of_cell_ids ?? [] },
 			});
 			can(["create", "read", "update"], "CellSession", {
