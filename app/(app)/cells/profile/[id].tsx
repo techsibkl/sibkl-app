@@ -92,31 +92,34 @@ const CellProfileScreen = () => {
 	const isSamePerson = (value: number | string | null | undefined) =>
 		personId != null && value != null && Number(value) === personId;
 
-	const isListedCellLeader = Boolean(
+	// Cell leaders: person.leader_of_cell_ids, or cell_leader_1 / cell_leader_2 on the cell.
+	const isCellLeader = Boolean(
 		membershipPerson?.leader_of_cell_ids
 			?.map(Number)
-			.includes(Number(id)),
+			.includes(Number(id)) ||
+			isSamePerson(cellFromApi?.cell_leader_1) ||
+			isSamePerson(cellFromApi?.cell_leader_2),
 	);
-	const isListedCore = Boolean(
-		membershipPerson?.core_of_cell_ids?.map(Number).includes(Number(id)),
-	);
-	const isCellLeader =
-		isListedCellLeader ||
-		isSamePerson(cellFromApi?.cell_leader_1) ||
-		isSamePerson(cellFromApi?.cell_leader_2);
+	// Zone leaders are assigned on the cell, not via leader_of_cell_ids.
 	const isZoneLeaderOfCell =
 		isSamePerson(cellFromApi?.zone_leader_1) ||
 		isSamePerson(cellFromApi?.zone_leader_2);
-	const isCoreMemberOfCell = Boolean(
-		cellFromApi?.members?.some(
-			(member) => isSamePerson(member.id) && Boolean(member.is_core),
-		),
+	// Cores: person.core_of_cell_ids, or the roster is_core flag.
+	const isCore = Boolean(
+		membershipPerson?.core_of_cell_ids
+			?.map(Number)
+			.includes(Number(id)) ||
+			cellFromApi?.members?.some(
+				(member) => isSamePerson(member.id) && Boolean(member.is_core),
+			),
 	);
-	const isLeader = isCellLeader;
-	const isCore = isListedCore || isCoreMemberOfCell;
 	const canManageCell = Boolean(isCellLeader || isZoneLeaderOfCell || isCore);
 	const canManageSessions = canManageCell;
 	const canRemoveMembers = canManageCell;
+	// Cell and zone leaders keep leader actions. Cores are not leaders, but they
+	// can accept or reject pending join requests and add members.
+	const isLeader = isCellLeader || isZoneLeaderOfCell;
+	const canReviewJoinRequests = canManageCell;
 
 	// Fetch cell sessions
 	const { data: sessions = [], isLoading: isSessionsLoading } =
@@ -153,9 +156,8 @@ const CellProfileScreen = () => {
 		zone_leader_1: cell?.zone_leader_1,
 		zone_leader_2: cell?.zone_leader_2,
 	});
-	const canReviewJoinRequests = Boolean(
-		canManageCell || ability.can("update", cellMembersSubject),
-	);
+	const canUpdateCellMembers =
+		canReviewJoinRequests || ability.can("update", cellMembersSubject);
 	const activeCellMembers = cell?.members?.filter(
 		(member: Person) => member.status === "ACTIVE",
 	);
@@ -373,7 +375,7 @@ const CellProfileScreen = () => {
 					<View className="px-2">
 						<MembersList
 							members={
-								canReviewJoinRequests
+								canUpdateCellMembers
 									? filteredMembers
 									: filteredMembers.filter(
 											(m) =>
@@ -385,7 +387,7 @@ const CellProfileScreen = () => {
 							searchQuery={searchQuery}
 							isLeader={isLeader}
 							canRemoveMembers={canRemoveMembers}
-							canReviewJoinRequests={canReviewJoinRequests}
+							canReviewJoinRequests={canUpdateCellMembers}
 							currentPersonId={personId ?? undefined}
 							memberStatuses={memberStatuses}
 							onAccept={handleAcceptMember}
@@ -521,8 +523,12 @@ const CellProfileScreen = () => {
 							<Text className="text-text text-sm ">Search</Text>
 						</TouchableOpacity>
 
-						{/* View Sessions - cell leaders and zone leaders of this cell */}
-						{cellAttendanceEnabled && canManageSessions && (
+						{/* View Sessions - cell leaders, cores, and zone leaders of this cell */}
+						{cellAttendanceEnabled &&
+							canManageCell &&
+							(isZoneLeaderOfCell ||
+								isCore ||
+								ability.can("read", "CellSession")) && (
 								<TouchableOpacity
 									onPress={() =>
 										router.push({
@@ -542,8 +548,8 @@ const CellProfileScreen = () => {
 								</TouchableOpacity>
 							)}
 
-						{/* Add Members - leaders and cores of this cell */}
-						{canManageCell && (
+						{/* Add Members - cell leaders, cores, and zone leaders of this cell */}
+						{canUpdateCellMembers && (
 							<TouchableOpacity
 								onPress={() =>
 									addMembersSheetRef.current?.present()
@@ -623,7 +629,7 @@ const CellProfileScreen = () => {
 							memberStatuses={memberStatuses}
 							isLeader={isLeader ?? false}
 							canRemoveMembers={canRemoveMembers}
-							canReviewJoinRequests={canReviewJoinRequests}
+							canReviewJoinRequests={canUpdateCellMembers}
 							currentPersonId={personId ?? undefined}
 							isUpdating={isUpdating}
 							onAccept={handleAcceptMember}
