@@ -1,4 +1,4 @@
-import { defaultFlowStatusAttrs } from "@/constants/const_flows";
+import { defaultFlowStatusAttrs } from "@/constants/flowStatusAttrs";
 import { FlowStatus } from "@/services/Flow/flow.types";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import React from "react";

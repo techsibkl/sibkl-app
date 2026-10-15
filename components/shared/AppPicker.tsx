@@ -69,7 +69,7 @@ export function AppPicker<T>({
 							className={`flex-1 text-base ${
 								isPlaceholder
 									? "text-text-secondary"
-									: "text-text"
+									: "text-gray-600"
 							}`}
 						>
 							{isPlaceholder ? placeholder : selectedLabel}

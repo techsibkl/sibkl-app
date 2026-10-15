@@ -31,6 +31,7 @@ export const handleAuthStateChange = async (
 			isGuest: false,
 			isLoading: false,
 			authLoaded: true,
+			personRevision: null,
 		});
 		console.log("No firebase user");
 		return;
