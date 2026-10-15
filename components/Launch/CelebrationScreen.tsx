@@ -393,7 +393,7 @@ export const CelebrationScreen = ({ onExplore }: Props) => {
 			<ConfettiCannon
 				ref={leftRef}
 				count={120}
-				origin={{ x: -10, y: height * 0.35 }}
+				origin={{ x: -20, y: height * 0.35 }}
 				angle={65}
 				autoStart={false}
 				fadeOut

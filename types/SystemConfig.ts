@@ -18,12 +18,14 @@ export type AppStatus = {
   launch_version: string;
   description: string | null;
   /**
-   * Primary BE override for the lock/unlock banner.
-   * 'locked'   = show locked state regardless of feature flags or countdown.
-   * 'unlocked' = show unlocked celebration (overrides a not-yet-expired countdown).
+   * Early-start override. 'unlocked' opens the launch window immediately,
+   * even if launch_date is still in the future. 'locked' defers to launch_date.
    */
   status: "locked" | "unlocked";
-  /** ISO 8601 UTC datetime string for the FE countdown timer. null = no countdown. */
+  /**
+   * ISO 8601 UTC datetime for the FE countdown. When status is 'locked',
+   * the window opens locally once this time is reached — no BE write required.
+   */
   launch_date: string | null;
 };
 
