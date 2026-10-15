@@ -25,6 +25,8 @@ import {
 } from "@/services/Cell/cell.service";
 import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
+import { canCheckInToCell } from "@/utils/cellMembership";
+import { subject } from "@casl/ability";
 import { myToast } from "@/utils/helper";
 import { getInitials } from "@/utils/helper_profile";
 import {
@@ -100,31 +102,31 @@ const CellProfileScreen = () => {
 			(leaderId) => leaderId != null && Number(leaderId) === personId,
 		);
 	const canManageCell = isCellLeader || isZoneLeaderOfCell;
-	const canReviewJoinRequests = canManageCell || isCore;
 	const canManageSessions = canManageCell || isCore;
+	const canRemoveMembers = canManageSessions;
 
 	// Fetch cell sessions
-	const { data: sessions = [], isPending: isSessionsPending } =
+	const { data: sessions = [], isLoading: isSessionsLoading } =
 		useCellSessionsQuery(Number(id));
 
 	// Fetch attendance stats for all members (leaders and core)
 	const {
 		data: memberAttendanceStats = [],
-		isPending: isMemberStatsPending,
+		isLoading: isMemberStatsLoading,
 	} = useCellAttendanceStatsQuery(Number(id), canManageSessions);
 
 	// Fetch current user's attendance stats
-	const { data: myAttendanceStats, isPending: isMyAttendanceStatsPending } =
+	const { data: myAttendanceStats, isLoading: isMyAttendanceStatsLoading } =
 		usePersonCellAttendanceStatsQuery(
 			Number(id),
 			person?.id ?? -1,
 			activeTab === "attendance",
 		);
 
-	// Fetch current user's session-by-session attendance
+	// Disabled when there are no sessions; isLoading stays false in that case.
 	const {
 		data: mySessionAttendance = {},
-		isPending: isSessionAttendancePending,
+		isLoading: isSessionAttendanceLoading,
 	} = usePersonSessionAttendanceQuery(
 		Number(id),
 		sessions,
@@ -137,9 +139,36 @@ const CellProfileScreen = () => {
 
 	// Use API data for leaders, fallback to person data for members
 	const cell = cellFromApi;
+	const isCoreMemberOfCell = Boolean(
+		cell?.members?.some(
+			(member) =>
+				Number(member.id) === Number(person?.id) &&
+				Boolean(member.is_core),
+		),
+	);
+	const canReviewJoinRequests = Boolean(
+		canManageCell ||
+			isCore ||
+			isCoreMemberOfCell ||
+			ability.can(
+				"update",
+				subject("CellMembers", { cell_ids: Number(id) }),
+			),
+	);
 	const activeCellMembers = cell?.members?.filter(
 		(member: Person) => member.status === "ACTIVE",
 	);
+	const myMemberRecord = cell?.members?.find(
+		(member) => Number(member.id) === Number(person?.id),
+	);
+	const myPersonCell = person?.cells?.find(
+		(membership) => Number(membership.id) === Number(id),
+	);
+	const canSelfCheckIn = canCheckInToCell({
+		member: myMemberRecord,
+		personCell: myPersonCell,
+		rosterLoaded: Array.isArray(cell?.members),
+	});
 
 	const managedCellIds = [
 		...(person?.leader_of_cell_ids ?? []),
@@ -185,6 +214,12 @@ const CellProfileScreen = () => {
 			// Invalidate cell query to refresh member list
 			queryClient.invalidateQueries({
 				queryKey: ["cells", Number(id)],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ["cell-sessions", Number(id)],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ["cell-session", Number(id)],
 			});
 
 			// Show success toast
@@ -237,6 +272,12 @@ const CellProfileScreen = () => {
 				...prev,
 				[memberId]: "REJECTED",
 			}));
+			queryClient.invalidateQueries({
+				queryKey: ["cell-sessions", Number(id)],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ["cell-session", Number(id)],
+			});
 		} catch (err: any) {
 			setStatusError(err.message || "Failed to reject member");
 			console.error("Reject member error:", err);
@@ -245,37 +286,76 @@ const CellProfileScreen = () => {
 		}
 	};
 
-	// Remove member, not yet implemented
 	const handleRemoveMember = async (memberId: number) => {
+		const memberName = cell?.members?.find(
+			(m) => m.id === memberId,
+		)?.full_legal_name;
+
 		try {
-			console.log("Removing member with ID:", memberId);
 			setIsUpdating(memberId);
 			setStatusError(null);
 
 			await removeCellMembers(Number(id), [memberId], person?.id ?? -1);
 
-			await queryClient.invalidateQueries({
+			queryClient.setQueryData(
+				["cells", Number(id)],
+				(old: typeof cell) => {
+					if (!old) return old;
+					return {
+						...old,
+						members:
+							old.members?.map((m) =>
+								m.id === memberId
+									? {
+											...m,
+											status: "REMOVED",
+											member_status: "REMOVED",
+										}
+									: m,
+							) ?? [],
+					};
+				},
+			);
+
+			setMemberStatuses((prev) => ({
+				...prev,
+				[memberId]: "REMOVED",
+			}));
+
+			queryClient.invalidateQueries({
 				queryKey: ["cells", Number(id)],
 			});
-			await queryClient.invalidateQueries({
+			queryClient.invalidateQueries({
 				queryKey: ["people", person?.id],
 			});
-			await queryClient.invalidateQueries({
+			queryClient.invalidateQueries({
 				queryKey: ["cells"],
 			});
-			await queryClient.invalidateQueries({
+			queryClient.invalidateQueries({
 				queryKey: ["cells-scoped-fields"],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ["cell-sessions", Number(id)],
+			});
+			queryClient.invalidateQueries({
+				queryKey: ["cell-session", Number(id)],
 			});
 
 			Toast.show(
 				myToast({
 					success: true,
-					message: `${cell?.members?.find((m) => m.id === memberId)?.full_legal_name} removed from cell`,
+					message: `${memberName} removed from cell`,
 				}),
 			);
 		} catch (err: any) {
 			setStatusError(err.message || "Failed to remove member");
 			console.error("Remove member error:", err);
+			Toast.show(
+				myToast({
+					success: false,
+					message: err.message || "Failed to remove member",
+				}),
+			);
 		} finally {
 			setIsUpdating(null);
 		}
@@ -299,6 +379,7 @@ const CellProfileScreen = () => {
 							}
 							searchQuery={searchQuery}
 							isLeader={isCellLeader}
+							canRemoveMembers={canRemoveMembers}
 							canReviewJoinRequests={canReviewJoinRequests}
 							currentPersonId={person?.id}
 							memberStatuses={memberStatuses}
@@ -309,6 +390,7 @@ const CellProfileScreen = () => {
 							onCoreToggled={() => refetch()}
 							cellLeader1Id={cell?.cell_leader_1}
 							cellLeader2Id={cell?.cell_leader_2}
+							scrollable={false}
 						/>
 					</View>
 				);
@@ -326,11 +408,11 @@ const CellProfileScreen = () => {
 						}
 						mySessionAttendance={mySessionAttendance}
 						members={cell?.members ?? []}
-						isLoadingSessions={isSessionsPending}
+						isLoadingSessions={isSessionsLoading}
 						isLoadingPersonStats={
-							isMyAttendanceStatsPending ||
-							isMemberStatsPending ||
-							isSessionAttendancePending
+							isMyAttendanceStatsLoading ||
+							isMemberStatsLoading ||
+							isSessionAttendanceLoading
 						}
 					/>
 				);
@@ -408,7 +490,7 @@ const CellProfileScreen = () => {
 					{/* Action Buttons */}
 					<View className="flex-row justify-center gap-2 w-full max-w-[90%] mx-6 mb-6">
 						{/* Scan QR - attendance (pilot) */}
-						{cellAttendanceEnabled && (
+						{cellAttendanceEnabled && canSelfCheckIn && (
 							<TouchableOpacity
 								onPress={() =>
 									router.push({
@@ -458,22 +540,20 @@ const CellProfileScreen = () => {
 								</TouchableOpacity>
 							)}
 
-						{/* Add Members - cell leaders and zone leaders of this cell */}
-						{canManageCell &&
-							(isZoneLeaderOfCell ||
-								ability.can("create", "CellMembers")) && (
-								<TouchableOpacity
-									onPress={() =>
-										addMembersSheetRef.current?.present()
-									}
-									className="bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5"
-								>
-									<UserPlusIcon size={25} color="#1e40af" />
-									<Text className="text-text text-sm">
-										Add
-									</Text>
-								</TouchableOpacity>
-							)}
+						{/* Add Members - leaders, cores, and zone leaders of this cell */}
+						{(isZoneLeaderOfCell ||
+							((isCellLeader || isCore) &&
+								ability.can("create", "CellMembers"))) && (
+							<TouchableOpacity
+								onPress={() =>
+									addMembersSheetRef.current?.present()
+								}
+								className="bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5"
+							>
+								<UserPlusIcon size={25} color="#1e40af" />
+								<Text className="text-text text-sm">Add</Text>
+							</TouchableOpacity>
+						)}
 					</View>
 
 					{/* Tab bar */}
@@ -542,6 +622,7 @@ const CellProfileScreen = () => {
 							members={filteredMembers}
 							memberStatuses={memberStatuses}
 							isLeader={isCellLeader}
+							canRemoveMembers={canRemoveMembers}
 							canReviewJoinRequests={canReviewJoinRequests}
 							currentPersonId={person?.id}
 							isUpdating={isUpdating}
@@ -554,8 +635,23 @@ const CellProfileScreen = () => {
 						<AddMembersSheet
 							ref={addMembersSheetRef}
 							cellId={Number(id)}
-							currentMembers={cell?.members ?? []}
-							onSuccess={() => {}}
+							currentMembers={(cell?.members ?? []).map((m) => ({
+								id: m.id,
+								status:
+									memberStatuses[m.id] ||
+									m.status ||
+									m.member_status,
+								member_status: m.member_status,
+							}))}
+							onSuccess={(addedIds) => {
+								setMemberStatuses((prev) => {
+									const next = { ...prev };
+									for (const memberId of addedIds) {
+										delete next[memberId];
+									}
+									return next;
+								});
+							}}
 						/>
 					</Portal>
 				</Provider>

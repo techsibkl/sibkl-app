@@ -5,6 +5,7 @@ import {
   CellAttendanceStat,
   CellSession,
   CellSessionDetail,
+  CellSessionMember,
 } from "./cellAttendance.type";
 
 export const signInToCellSession = async (
@@ -106,6 +107,13 @@ export const fetchCellSessions = async (
 	}));
 };
 
+const normalizeSessionMember = (member: CellSessionMember): CellSessionMember => ({
+	id: Number(member.id),
+	full_legal_name: member.full_legal_name ?? "",
+	email: member.email ?? "",
+	phone: member.phone ?? "",
+});
+
 export const fetchCellSessionById = async (
 	cellId: number,
 	sessionId: number,
@@ -114,7 +122,33 @@ export const fetchCellSessionById = async (
 		apiEndpoints.cells.getSessionById(cellId, sessionId),
 	);
 	const json: ReturnVal = await response.json();
-	return json.data as CellSessionDetail;
+	if (!json.success) throw json;
+	const data = (json.data ?? {}) as CellSessionDetail;
+	const members = Array.isArray(data.members)
+		? data.members.map(normalizeSessionMember)
+		: [];
+	return {
+		...data,
+		attendee_count: Number(data.attendee_count ?? 0),
+		member_count: Number(data.member_count ?? 0),
+		guest_count: Number(data.guest_count ?? 0),
+		total_members: Number(data.total_members ?? members.length),
+		status: data.status ?? "open",
+		attendees: Array.isArray(data.attendees) ? data.attendees : [],
+		members,
+	};
+};
+
+export const closeCellSession = async (
+	cellId: number,
+	sessionId: number,
+): Promise<void> => {
+	const response = await secureFetch(
+		apiEndpoints.cells.closeSession(cellId, sessionId),
+		{ method: "PATCH" },
+	);
+	const json: ReturnVal = await response.json();
+	if (!json.success) throw json;
 };
 
 export const fetchCellAttendanceStats = async (

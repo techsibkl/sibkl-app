@@ -3,7 +3,9 @@ import SessionCard from "@/components/Cells/SessionCard";
 import SharedBody from "@/components/shared/SharedBody";
 import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import { useCellSessionsQuery } from "@/hooks/CellAttendance/useCellAttendanceQuery";
+import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { CellSession } from "@/services/CellAttendance/cellAttendance.type";
+import { useAuthStore } from "@/stores/authStore";
 import {
 	BottomSheetModal,
 	BottomSheetModalProvider,
@@ -23,7 +25,7 @@ import {
 const TODAY = new Date(new Date().setHours(0, 0, 0, 0));
 
 const isUpcomingOrLive = (session: CellSession) =>
-	new Date(session.meeting_date) >= TODAY;
+	session.status !== "closed" && new Date(session.meeting_date) >= TODAY;
 
 type SectionItem =
 	| { type: "header"; label: string }
@@ -64,8 +66,20 @@ export default function SessionsScreen() {
 	const { cell_id } = useLocalSearchParams<{ cell_id: string }>();
 	const cellId = Number(cell_id);
 	const router = useRouter();
+	const { ability, user } = useAuthStore();
+	const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
 	const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
 	const [refreshing, setRefreshing] = useState(false);
+	const membershipPerson = person ?? user?.person;
+	const isLeaderOrCoreOfCell = [
+		...(membershipPerson?.leader_of_cell_ids ?? []),
+		...(membershipPerson?.core_of_cell_ids ?? []),
+	]
+		.map(Number)
+		.includes(cellId);
+	const canCreateSession =
+		ability.can("manage", "all") ||
+		(isLeaderOrCoreOfCell && ability.can("create", "CellSession"));
 
 	const {
 		data: sessions,
@@ -99,7 +113,7 @@ export default function SessionsScreen() {
 		);
 
 	const listData: SectionItem[] = [
-		{ type: "create-card" as const },
+		...(canCreateSession ? [{ type: "create-card" as const }] : []),
 		...(upcoming.length > 0
 			? [
 					{ type: "header" as const, label: "UPCOMING & LIVE" },
@@ -185,9 +199,11 @@ export default function SessionsScreen() {
 								<Text className="text-gray-400 text-base">
 									No sessions yet.
 								</Text>
-								<Text className="text-gray-300 text-sm">
-									Create one using the card above.
-								</Text>
+								{canCreateSession && (
+									<Text className="text-gray-300 text-sm">
+										Create one using the card above.
+									</Text>
+								)}
 							</View>
 						) : null
 					}

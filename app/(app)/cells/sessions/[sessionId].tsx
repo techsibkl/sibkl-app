@@ -1,20 +1,24 @@
 import SharedBody from "@/components/shared/SharedBody";
-import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
-import { useToggleMemberCheckInMutation } from "@/hooks/CellAttendance/useCellAttendanceMutation";
+import {
+	useCloseCellSessionMutation,
+	useToggleMemberCheckInMutation,
+} from "@/hooks/CellAttendance/useCellAttendanceMutation";
 import { useCellSessionByIdQuery } from "@/hooks/CellAttendance/useCellAttendanceQuery";
+import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import {
 	CellSessionAttendee,
-	CellSessionStatus,
+	CellSessionMember,
 } from "@/services/CellAttendance/cellAttendance.type";
-import { Person } from "@/services/Person/person.type";
-import { useQueryClient } from "@tanstack/react-query";
+import { useAuthStore } from "@/stores/authStore";
+import { cellAttendanceErrorMessage } from "@/utils/cellMembership";
 import * as FileSystem from "expo-file-system";
-import { useLocalSearchParams } from "expo-router";
+import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { CheckIcon, UserIcon } from "lucide-react-native";
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useCallback, useMemo, useRef, useState } from "react";
 import {
 	ActivityIndicator,
+	Alert,
 	Pressable,
 	ScrollView,
 	Text,
@@ -25,7 +29,7 @@ import QRCode from "react-native-qrcode-svg";
 
 // ─── Session member row ─────────────────────────────────────────────────────
 type SessionMemberRowProps = {
-	member: Person;
+	member: CellSessionMember;
 	checkedIn: boolean;
 	checkedInAt?: string;
 	canCheckIn: boolean;
@@ -56,18 +60,6 @@ const SessionMemberRow = ({
 			})
 		: null;
 
-	const statusBadgeColor =
-		{
-			PENDING: "#fef3c7",
-			REMOVED: "#fee2e2",
-		}[member.status as string] || "transparent";
-
-	const statusTextColor =
-		{
-			PENDING: "#92400e",
-			REMOVED: "#991b1b",
-		}[member.status as string] || "#9ca3af";
-
 	return (
 		<TouchableOpacity
 			onPress={onPress}
@@ -76,28 +68,20 @@ const SessionMemberRow = ({
 		>
 			<View
 				className={`flex-row items-center gap-x-3 px-4 py-4 border-b border-border-secondary ${
-					isReadOnly ? "opacity-60" : ""
+					isReadOnly && !checkedIn ? "opacity-60" : ""
 				}`}
 			>
 				{/* Avatar */}
 				<View
 					className="w-11 h-11 rounded-full items-center justify-center"
 					style={{
-						backgroundColor: isReadOnly
-							? "#e5e7eb"
-							: checkedIn
-								? "#dcfce7"
-								: "#f3f4f6",
+						backgroundColor: checkedIn ? "#dcfce7" : "#f3f4f6",
 					}}
 				>
 					<Text
 						className="text-sm font-bold"
 						style={{
-							color: isReadOnly
-								? "#9ca3af"
-								: checkedIn
-									? "#16a34a"
-									: "#9ca3af",
+							color: checkedIn ? "#16a34a" : "#9ca3af",
 						}}
 					>
 						{initials}
@@ -113,19 +97,6 @@ const SessionMemberRow = ({
 						>
 							{member.full_legal_name}
 						</Text>
-						{isReadOnly && member.status && (
-							<View
-								className="px-2 py-1 rounded"
-								style={{ backgroundColor: statusBadgeColor }}
-							>
-								<Text
-									className="text-xs font-semibold"
-									style={{ color: statusTextColor }}
-								>
-									{member.status}
-								</Text>
-							</View>
-						)}
 					</View>
 					<Text
 						className="text-text-secondary text-sm"
@@ -138,11 +109,7 @@ const SessionMemberRow = ({
 				</View>
 
 				{/* Status indicator */}
-				{isReadOnly ? (
-					<View className="w-8 h-8 items-center justify-center">
-						<Text className="text-xs text-gray-400">–</Text>
-					</View>
-				) : isProcessing ? (
+				{isProcessing ? (
 					<ActivityIndicator size="small" color="blue" />
 				) : checkedIn ? (
 					<View className="w-8 h-8 rounded-full bg-green-100 items-center justify-center">
@@ -156,7 +123,11 @@ const SessionMemberRow = ({
 					<View className="w-8 h-8 rounded-full border-2 border-dashed border-gray-300 items-center justify-center">
 						<UserIcon size={14} color="#d1d5db" />
 					</View>
-				) : null}
+				) : (
+					<View className="w-8 h-8 items-center justify-center">
+						<Text className="text-xs text-gray-400">–</Text>
+					</View>
+				)}
 			</View>
 		</TouchableOpacity>
 	);
@@ -171,7 +142,8 @@ export default function SessionDetailScreen() {
 	}>();
 	const numericCellId = Number(cellId);
 	const numericSessionId = Number(sessionId);
-	const queryClient = useQueryClient();
+	const { ability, user } = useAuthStore();
+	const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
 
 	const qrRef = useRef<any>(null);
 	const [sharing, setSharing] = useState(false);
@@ -179,38 +151,52 @@ export default function SessionDetailScreen() {
 	const [notification, setNotification] = useState<{
 		type: "success" | "error";
 		message: string;
-		undoMember?: Person;
 	} | null>(null);
 
 	const {
 		data: session,
 		isLoading,
 		isError,
+		refetch,
 	} = useCellSessionByIdQuery(numericCellId, numericSessionId);
-
-	const { data: cell } = useSingleCellQuery(numericCellId);
 
 	const { mutateAsync: toggleCheckIn } = useToggleMemberCheckInMutation(
 		numericCellId,
 		numericSessionId,
 	);
+	const { mutateAsync: closeSession, isPending: isClosing } =
+		useCloseCellSessionMutation(numericCellId, numericSessionId);
 
-	// Invalidate cell query on mount to ensure fresh member data
-	useEffect(() => {
-		queryClient.invalidateQueries({
-			queryKey: ["cells", numericCellId],
-		});
-	}, [numericCellId, queryClient]);
+	useFocusEffect(
+		useCallback(() => {
+			if (!numericCellId || !numericSessionId) return;
+			refetch();
+		}, [numericCellId, numericSessionId, refetch]),
+	);
 
 	// ── Derived state ──────────────────────────────────────────────────────────
 
-	const isLive = session?.status === ("open" as CellSessionStatus);
+	const isClosed = session?.status === "closed";
 	const date = session ? new Date(session.meeting_date) : new Date();
 	const today = new Date();
 	today.setHours(0, 0, 0, 0);
-	const isUpcoming = date >= today;
-	// Allow check-in for all session types
-	const canCheckIn = true;
+	const isToday = date.toDateString() === new Date().toDateString();
+	const meetingDay = new Date(date);
+	meetingDay.setHours(0, 0, 0, 0);
+	const isFuture = meetingDay.getTime() > today.getTime();
+	const isUpcoming = isFuture;
+	const isLive = Boolean(session) && !isClosed && isToday;
+	const canCheckIn = !isClosed && !isFuture;
+	const membershipPerson = person ?? user?.person;
+	const isLeaderOrCoreOfCell = [
+		...(membershipPerson?.leader_of_cell_ids ?? []),
+		...(membershipPerson?.core_of_cell_ids ?? []),
+	]
+		.map(Number)
+		.includes(numericCellId);
+	const canCloseSession =
+		!isClosed &&
+		(ability.can("manage", "all") || isLeaderOrCoreOfCell);
 
 	const attendanceRate =
 		session && session.total_members > 0
@@ -226,33 +212,25 @@ export default function SessionDetailScreen() {
 		return map;
 	}, [session?.attendees]);
 
-	// Sort members: active members first (not-checked-in first, then checked-in), then pending, then REMOVED
-	const sortedMembers = useMemo<Person[]>(() => {
-		const members = cell?.members ?? [];
+	const sortedMembers = useMemo<CellSessionMember[]>(() => {
+		const members = session?.members ?? [];
 		return [...members].sort((a, b) => {
-			// Priority 1: Status (ACTIVE first, then PENDING, then REMOVED)
-			const statusOrder = { ACTIVE: 0, PENDING: 1, REMOVED: 2 };
-			const aStatus = a.status ?? "ACTIVE";
-			const bStatus = b.status ?? "ACTIVE";
-			const aStatusPriority =
-				statusOrder[aStatus as keyof typeof statusOrder] ?? 0;
-			const bStatusPriority =
-				statusOrder[bStatus as keyof typeof statusOrder] ?? 0;
-
-			if (aStatusPriority !== bStatusPriority) {
-				return aStatusPriority - bStatusPriority;
-			}
-
-			// Priority 2: For active members, sort by check-in status (not-checked-in first)
-			if (aStatus === "ACTIVE" || aStatus === null) {
-				const aIn = attendeeMap.has(a.id) ? 1 : 0;
-				const bIn = attendeeMap.has(b.id) ? 1 : 0;
-				return aIn - bIn;
-			}
-
-			return 0;
+			const aIn = attendeeMap.has(a.id) ? 1 : 0;
+			const bIn = attendeeMap.has(b.id) ? 1 : 0;
+			if (aIn !== bIn) return aIn - bIn;
+			return (a.full_legal_name ?? "").localeCompare(
+				b.full_legal_name ?? "",
+			);
 		});
-	}, [cell?.members, attendeeMap]);
+	}, [session?.members, attendeeMap]);
+
+	const guestAttendees = useMemo(
+		() =>
+			(session?.attendees ?? []).filter(
+				(attendee) => attendee.people_id == null,
+			),
+		[session?.attendees],
+	);
 
 	// ── Actions ────────────────────────────────────────────────────────────────
 
@@ -276,12 +254,18 @@ export default function SessionDetailScreen() {
 		}
 	};
 
-	const handleMemberCheckIn = async (member: Person) => {
-		if (!session) return;
+	const showNotice = (type: "success" | "error", message: string) => {
+		setNotification({ type, message });
+		setTimeout(() => setNotification(null), 3000);
+	};
+
+	const handleMemberCheckIn = async (member: CellSessionMember) => {
+		if (!session || !canCheckIn) return;
+
+		const isCheckedIn = attendeeMap.has(member.id);
 		setCheckingInId(member.id);
 		setNotification(null);
 
-		const isCheckedIn = attendeeMap.has(member.id);
 		const action = isCheckedIn ? "checkout" : "checkin";
 		try {
 			await toggleCheckIn({
@@ -290,24 +274,48 @@ export default function SessionDetailScreen() {
 				checkedIn: isCheckedIn,
 			});
 
-			// API succeeded, show success notification
-			setNotification({
-				type: "success",
-				message: `${member.full_legal_name} ${action === "checkin" ? "checked in" : "checked out"}`,
-				undoMember: member,
-			});
-			setTimeout(() => setNotification(null), 3000);
+			showNotice(
+				"success",
+				`${member.full_legal_name} ${action === "checkin" ? "checked in" : "checked out"}`,
+			);
 		} catch (err: any) {
-			setNotification({
-				type: "error",
-				message:
-					err?.message ??
+			if (err?.err_code === "SESSION_CLOSED") refetch();
+			showNotice(
+				"error",
+				cellAttendanceErrorMessage(
+					err,
 					`Failed to ${action} ${member.full_legal_name}`,
-			});
-			setTimeout(() => setNotification(null), 3000);
+					member.full_legal_name,
+				),
+			);
 		} finally {
 			setCheckingInId(null);
 		}
+	};
+
+	const handleCloseSession = () => {
+		Alert.alert(
+			"Close session",
+			"This freezes today's attendance. People added after closing will not be included.",
+			[
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Close session",
+					style: "destructive",
+					onPress: async () => {
+						try {
+							await closeSession();
+							showNotice("success", "Session closed.");
+						} catch (err: any) {
+							showNotice(
+								"error",
+								err?.message ?? "Failed to close session.",
+							);
+						}
+					},
+				},
+			],
+		);
 	};
 
 	// ── Loading / error guards ─────────────────────────────────────────────────
@@ -350,6 +358,13 @@ export default function SessionDetailScreen() {
 									</Text>
 								</View>
 							)}
+							{isClosed && (
+								<View className="bg-gray-200 rounded-full px-2 py-0.5">
+									<Text className="text-gray-700 text-xs font-bold tracking-wide">
+										CLOSED
+									</Text>
+								</View>
+							)}
 						</View>
 						<Text className="text-2xl font-bold text-gray-900 tracking-tight leading-8">
 							{date.toLocaleDateString("default", {
@@ -360,16 +375,18 @@ export default function SessionDetailScreen() {
 							})}
 						</Text>
 						<Text className="text-sm text-gray-400 mt-1">
-							{isUpcoming && !isLive
-								? "Upcoming"
+							{isClosed
+								? `Closed · ${attendanceRate}% attendance`
 								: isLive
 									? "Session is live"
-									: `${attendanceRate}% attendance rate`}
+									: isUpcoming
+										? "Upcoming"
+										: `${attendanceRate}% attendance rate`}
 						</Text>
 					</View>
 
 					{/* Stats */}
-					{!isUpcoming && (
+					{(isClosed || !isUpcoming || isLive) && (
 						<View className="flex-row bg-gray-50 rounded-2xl p-4 mb-7 border border-gray-100">
 							<View className="flex-1 items-center">
 								<Text className="text-2xl font-bold text-gray-900">
@@ -406,16 +423,16 @@ export default function SessionDetailScreen() {
 							SESSION QR CODE
 						</Text>
 						<Text className="text-sm text-gray-300 mb-5">
-							{isUpcoming && !isLive
-								? "Members scan this to mark attendance"
+							{isClosed
+								? "Session is closed — attendance is frozen"
 								: isLive
 									? "Session is live — share QR for members to scan"
-									: "Session has passed — QR no longer active"}
+									: "Members scan this to mark attendance"}
 						</Text>
 
 						<View className="items-center">
 							<View
-								className={`p-6 bg-white rounded-3xl mb-5 ${!isLive && !isUpcoming ? "opacity-40" : ""}`}
+								className={`p-6 bg-white rounded-3xl mb-5 ${isClosed ? "opacity-40" : ""}`}
 								style={{
 									shadowColor: "#000",
 									shadowOffset: { width: 0, height: 4 },
@@ -428,17 +445,13 @@ export default function SessionDetailScreen() {
 									value={String(session.id)}
 									size={200}
 									getRef={(ref) => (qrRef.current = ref)}
-									color={
-										isLive || isUpcoming
-											? "#111111"
-											: "#cccccc"
-									}
+									color={isClosed ? "#cccccc" : "#111111"}
 								/>
-								{!isLive && !isUpcoming && (
+								{isClosed && (
 									<View className="absolute inset-0 items-center justify-center rounded-3xl">
 										<View className="bg-white/90 px-3 py-1 rounded-lg">
 											<Text className="text-gray-400 font-black tracking-widest text-sm">
-												EXPIRED
+												CLOSED
 											</Text>
 										</View>
 									</View>
@@ -449,12 +462,10 @@ export default function SessionDetailScreen() {
 							<View className="flex-row gap-3 w-full">
 								<Pressable
 									className={`flex-1 bg-red-600 rounded-xl py-3.5 items-center ${
-										!isUpcoming || sharing
-											? "opacity-40"
-											: ""
+										isClosed || sharing ? "opacity-40" : ""
 									}`}
 									onPress={handleShareQR}
-									disabled={sharing || !isUpcoming}
+									disabled={sharing || isClosed}
 								>
 									{sharing ? (
 										<ActivityIndicator
@@ -469,15 +480,38 @@ export default function SessionDetailScreen() {
 								</Pressable>
 
 								<Pressable
-									className="flex-1 border-2 border-red-600 rounded-xl py-3.5 items-center"
+									className={`flex-1 border-2 border-red-600 rounded-xl py-3.5 items-center ${
+										isClosed ? "opacity-40" : ""
+									}`}
 									onPress={handleShareQR}
-									disabled={sharing}
+									disabled={sharing || isClosed}
 								>
 									<Text className="text-red-600 font-bold text-base">
 										Download PNG
 									</Text>
 								</Pressable>
 							</View>
+
+							{canCloseSession && (
+								<Pressable
+									className={`mt-3 w-full border-2 border-gray-900 rounded-xl py-3.5 items-center ${
+										isClosing ? "opacity-40" : ""
+									}`}
+									onPress={handleCloseSession}
+									disabled={isClosing}
+								>
+									{isClosing ? (
+										<ActivityIndicator
+											color="#111"
+											size="small"
+										/>
+									) : (
+										<Text className="text-gray-900 font-bold text-base">
+											Close session
+										</Text>
+									)}
+								</Pressable>
+							)}
 						</View>
 					</View>
 
@@ -485,18 +519,20 @@ export default function SessionDetailScreen() {
 					<View>
 						<View className="flex-row items-center justify-between mb-1">
 							<Text className="text-xs font-bold text-gray-400 tracking-widest">
-								MEMBERS ({sortedMembers.length})
+								MEMBERS ({session.total_members})
 							</Text>
 							<Text className="text-xs text-gray-400">
 								{attendeeMap.size} checked in
 							</Text>
 						</View>
 
-						{canCheckIn && (
-							<Text className="text-xs text-gray-400 mb-4">
-								Tap a member to manually check them in
-							</Text>
-						)}
+						<Text className="text-xs text-gray-400 mb-4">
+							{canCheckIn
+								? "Tap a member to check them in or out"
+								: isFuture
+									? "Check-in opens on the meeting day"
+									: "Attendance is frozen for this session"}
+						</Text>
 
 						{sortedMembers.length === 0 ? (
 							<Text className="text-gray-400 text-sm text-center py-6">
@@ -506,9 +542,6 @@ export default function SessionDetailScreen() {
 							<View className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-4">
 								{sortedMembers.map((member) => {
 									const attendee = attendeeMap.get(member.id);
-									const isReadOnly =
-										member.status === "PENDING" ||
-										member.status === "REMOVED";
 									return (
 										<SessionMemberRow
 											key={member.id}
@@ -524,13 +557,37 @@ export default function SessionDetailScreen() {
 												checkingInId === member.id
 											}
 											onPress={() =>
-												!isReadOnly &&
+												canCheckIn &&
 												handleMemberCheckIn(member)
 											}
-											isReadOnly={isReadOnly}
+											isReadOnly={!canCheckIn}
 										/>
 									);
 								})}
+							</View>
+						)}
+
+						{guestAttendees.length > 0 && (
+							<View className="mt-4">
+								<Text className="text-xs font-bold text-gray-400 tracking-widest mb-2">
+									GUESTS ({guestAttendees.length})
+								</Text>
+								<View className="bg-white rounded-2xl border border-gray-100 overflow-hidden">
+									{guestAttendees.map((guest) => (
+										<View
+											key={guest.id}
+											className="px-4 py-3 border-b border-border-secondary"
+										>
+											<Text className="text-text font-semibold">
+												{guest.guest_name || "Guest"}
+											</Text>
+											<Text className="text-text-secondary text-sm">
+												{guest.guest_phone ||
+													"Checked in"}
+											</Text>
+										</View>
+									))}
+								</View>
 							</View>
 						)}
 					</View>

@@ -9,6 +9,7 @@ import MemberActionSheet from "./MemberActionSheet";
 type MemberRowProps = {
 	member: Person;
 	isLeader?: boolean;
+	canRemoveMembers?: boolean;
 	canReviewJoinRequests?: boolean;
 	currentPersonId?: number;
 	memberStatuses?: Record<number, string>;
@@ -23,6 +24,7 @@ type MemberRowProps = {
 const MemberRow = ({
 	member,
 	isLeader = false,
+	canRemoveMembers = false,
 	canReviewJoinRequests = false,
 	currentPersonId,
 	memberStatuses = {},
@@ -36,7 +38,11 @@ const MemberRow = ({
 	const { id } = useLocalSearchParams();
 	const [modalVisible, setModalVisible] = useState(false);
 
-	const memberStatus = memberStatuses[member.id] || member.status || "ACTIVE";
+	const memberStatus =
+		memberStatuses[member.id] ||
+		member.status ||
+		member.member_status ||
+		"ACTIVE";
 	const isCurrentUser =
 		currentPersonId != null && member.id === currentPersonId;
 
@@ -154,6 +160,7 @@ const MemberRow = ({
 				member={member}
 				cellId={Number(id)}
 				isLeader={isLeader}
+				canRemoveMembers={canRemoveMembers}
 				currentPersonId={currentPersonId}
 				onRemove={onRemoveMember}
 				onCoreToggled={onCoreToggled}

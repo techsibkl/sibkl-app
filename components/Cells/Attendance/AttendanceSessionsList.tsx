@@ -8,6 +8,7 @@ type Props = {
   sessions: CellSession[];
   myAttendanceMap: Record<number, boolean>;
   isLoading?: boolean;
+  emptyMessage?: string;
 };
 
 type SortBy = "newest" | "oldest" | "attendance";
@@ -16,6 +17,7 @@ export default function AttendanceSessionsList({
   sessions,
   myAttendanceMap,
   isLoading = false,
+  emptyMessage = "No history of attendance",
 }: Props) {
   const [sortBy, setSortBy] = useState<SortBy>("newest");
 
@@ -57,7 +59,7 @@ export default function AttendanceSessionsList({
     return (
       <View className="items-center py-8">
         <MaterialCommunityIcons name="calendar-blank" size={32} color="#ccc" />
-        <Text className="text-gray-400 mt-2">No sessions yet</Text>
+        <Text className="text-gray-400 mt-2">{emptyMessage}</Text>
       </View>
     );
   }

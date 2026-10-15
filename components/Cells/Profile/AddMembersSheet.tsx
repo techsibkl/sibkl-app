@@ -18,10 +18,16 @@ import {
 } from "react-native";
 import Toast from "react-native-toast-message";
 
+type CellMemberRef = {
+	id: number;
+	status?: string;
+	member_status?: string;
+};
+
 type AddMembersSheetProps = {
 	cellId: number;
-	currentMembers?: Array<{ id: number }>;
-	onSuccess?: () => void;
+	currentMembers?: CellMemberRef[];
+	onSuccess?: (addedIds: number[]) => void;
 };
 
 const AddMembersSheet = forwardRef<BottomSheetModal, AddMembersSheetProps>(
@@ -51,16 +57,36 @@ const AddMembersSheet = forwardRef<BottomSheetModal, AddMembersSheetProps>(
 			debouncedSetSearch(searchTerm);
 		}, [searchTerm, debouncedSetSearch]);
 
+		const getMemberStatus = (member: CellMemberRef) =>
+			member.status || member.member_status || "ACTIVE";
+
+		const occupiedMemberIds = useMemo(() => {
+			return new Set(
+				currentMembers
+					.filter((m) => {
+						const status = getMemberStatus(m);
+						return status === "ACTIVE" || status === "PENDING";
+					})
+					.map((m) => m.id),
+			);
+		}, [currentMembers]);
+
+		const reactivateMemberIds = useMemo(() => {
+			return new Set(
+				currentMembers
+					.filter((m) => {
+						const status = getMemberStatus(m);
+						return status === "REJECTED" || status === "REMOVED";
+					})
+					.map((m) => m.id),
+			);
+		}, [currentMembers]);
+
 		// Filter people - exclude those already in the cell and search
 		const filteredPeople = useMemo(() => {
-			const currentMemberIds = new Set(currentMembers.map((m) => m.id));
-			const selectedIds = new Set(selectedPeople.map((p) => p.id));
-
 			return people.filter((person) => {
-				// Exclude if already in cell
-				if (currentMemberIds.has(person.id)) return false;
+				if (occupiedMemberIds.has(person.id)) return false;
 
-				// Filter by search term
 				const matchesSearch =
 					(person.full_legal_name?.toLowerCase() ?? "").includes(
 						debouncedSearch.toLowerCase(),
@@ -71,7 +97,7 @@ const AddMembersSheet = forwardRef<BottomSheetModal, AddMembersSheetProps>(
 
 				return matchesSearch;
 			});
-		}, [people, debouncedSearch, currentMembers, selectedPeople]);
+		}, [people, debouncedSearch, occupiedMemberIds]);
 
 		const togglePerson = (person: any) => {
 			const isSelected = selectedPeople.some((p) => p.id === person.id);
@@ -98,24 +124,36 @@ const AddMembersSheet = forwardRef<BottomSheetModal, AddMembersSheetProps>(
 			if (selectedPeople.length === 0 || !user?.uid) return;
 
 			try {
+				const reactivateIds = selectedPeople
+					.map((p) => p.id)
+					.filter((id) => reactivateMemberIds.has(id));
+
+				const addedIds = selectedPeople.map((p) => p.id);
+
 				await addMembers({
 					cellId: cellId,
 					people: selectedPeople as Person[],
+					reactivateIds,
 				});
 
-				// Close modal and reset
 				setSelectedPeople([]);
 				setSearchTerm("");
 				(ref as React.RefObject<BottomSheetModal>).current?.close();
+				onSuccess?.(addedIds);
 				Toast.show(
 					myToast({
 						success: true,
-						message: `${selectedPeople.length} member${selectedPeople.length !== 1 ? "s" : ""} added successfully`,
+						message: `${addedIds.length} member${addedIds.length !== 1 ? "s" : ""} added successfully`,
 					}),
 				);
-				onSuccess?.();
-			} catch (error) {
+			} catch (error: any) {
 				console.error("Error adding members:", error);
+				Toast.show(
+					myToast({
+						success: false,
+						message: error?.message || "Failed to add members",
+					}),
+				);
 			}
 		};
 

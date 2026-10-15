@@ -47,7 +47,7 @@ export default function AnalyticsSummaryStats({
       <StatCard
         label="Total Members"
         value={String(totalMembers)}
-        hint="in this cell"
+        hint="tracked in attendance"
         valueClassName="text-green-600"
       />
       <StatCard
