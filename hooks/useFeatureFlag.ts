@@ -21,5 +21,5 @@ export const useFeatureFlag = (key: keyof FeatureFlags): boolean => {
   const flagEnabled = featureFlags[key] ?? false;
   // If a launch cycle is pending, gate behind activation.
   const launchGatePassed = !hasNewLaunch || hasActivatedLaunch;
-  return true;
+  return flagEnabled && launchGatePassed;
 };
