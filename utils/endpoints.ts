@@ -72,6 +72,8 @@ export const apiEndpoints = {
 			_endpoint(`cells/${cellId}/sessions`),
 		getSessionById: (cellId: number | string, sessionId: number | string) =>
 			_endpoint(`cells/${cellId}/sessions/${sessionId}`),
+		closeSession: (cellId: number | string, sessionId: number | string) =>
+			_endpoint(`cells/${cellId}/sessions/${sessionId}/close`),
 		getAttendanceStats: (cellId: number | string) =>
 			_endpoint(`cells/${cellId}/attendance/stats`),
 		getAttendanceStatsByPerson: (
@@ -129,6 +131,7 @@ export const apiEndpoints = {
 		getAll: _endpoint("events"),
 		getById: (id: number | string) => _endpoint(`events/${id}`),
 		getMyEvents: _endpoint("events/myEvents"),
+		claimMyEvents: _endpoint("events/claimMyEvents"),
 		registerParticipant: (id: number | string) =>
 			_endpoint(`events/${id}/participants`),
 		checkInParticipant: (
@@ -138,8 +141,6 @@ export const apiEndpoints = {
 			_endpoint(
 				`events/${eventId}/participants/${participantId}/checkin`,
 			),
-		// TODO: wire when backend adds GET /events/mine (or equivalent)
-		// getMyRegistrations: _endpoint("events/mine"),
 	},
 	system: {
 		getConfig: _endpoint("system/config"),

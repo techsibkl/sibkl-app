@@ -125,8 +125,13 @@ export const addCellMembers = async (cellId: number, people: Person[]) => {
 		},
 	);
 	const json: ReturnVal = await response.json();
-
-	return json;
+	if (!json.success) {
+		throw {
+			status: json.status_code,
+			message: json.message,
+		};
+	}
+	return json.data;
 };
 
 export const toggleCoreMember = async (

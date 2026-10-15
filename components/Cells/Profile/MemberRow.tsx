@@ -9,6 +9,8 @@ import MemberActionSheet from "./MemberActionSheet";
 type MemberRowProps = {
 	member: Person;
 	isLeader?: boolean;
+	canRemoveMembers?: boolean;
+	canReviewJoinRequests?: boolean;
 	currentPersonId?: number;
 	memberStatuses?: Record<number, string>;
 	onAccept?: (memberId: number) => void;
@@ -22,6 +24,8 @@ type MemberRowProps = {
 const MemberRow = ({
 	member,
 	isLeader = false,
+	canRemoveMembers = false,
+	canReviewJoinRequests = false,
 	currentPersonId,
 	memberStatuses = {},
 	onAccept,
@@ -34,7 +38,11 @@ const MemberRow = ({
 	const { id } = useLocalSearchParams();
 	const [modalVisible, setModalVisible] = useState(false);
 
-	const memberStatus = memberStatuses[member.id] || member.status || "ACTIVE";
+	const memberStatus =
+		memberStatuses[member.id] ||
+		member.status ||
+		member.member_status ||
+		"ACTIVE";
 	const isCurrentUser =
 		currentPersonId != null && member.id === currentPersonId;
 
@@ -101,7 +109,7 @@ const MemberRow = ({
 						</View>
 
 						{/* Accept/Reject Buttons or Chevron */}
-						{isLeader && memberStatus === "PENDING" && (
+						{canReviewJoinRequests && memberStatus === "PENDING" && (
 							<View className="flex-row gap-2">
 								{isUpdating ? (
 									<View className="w-9 h-9 items-center justify-center">
@@ -152,6 +160,7 @@ const MemberRow = ({
 				member={member}
 				cellId={Number(id)}
 				isLeader={isLeader}
+				canRemoveMembers={canRemoveMembers}
 				currentPersonId={currentPersonId}
 				onRemove={onRemoveMember}
 				onCoreToggled={onCoreToggled}

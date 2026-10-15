@@ -158,20 +158,21 @@ export function defineAbilityFor(person: Person | null): AnyAbility {
 			can(["read", "update"], "PeopleProfile", {
 				cell_ids: { $in: person.core_of_cell_ids ?? [] },
 			});
-
 			can(["read", "update", "assign"], "PeopleFlow", {
 				cell_ids: { $in: person.core_of_cell_ids ?? [] },
 			});
-
 			can(["create", "read", "delete"], "PeopleProfileNotes", {
 				cell_ids: { $in: person.core_of_cell_ids ?? [] },
 			});
 			can(["read"], "CellDetails", {
 				cell_ids: { $in: person.core_of_cell_ids ?? [] },
 			});
-
-			can(["read"], "CellMembers", {
+			// create and delete match leaders so cores can add and remove members
+			can(["create", "read", "update", "delete"], "CellMembers", {
 				cell_ids: { $in: person.core_of_cell_ids ?? [] },
+			});
+			can(["create", "read", "update"], "CellSession", {
+				cell_id: { $in: person.core_of_cell_ids ?? [] },
 			});
 		}
 
