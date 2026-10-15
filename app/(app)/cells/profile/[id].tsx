@@ -60,14 +60,9 @@ const CellProfileScreen = () => {
 	const { user, ability } = useAuthStore();
 	const { data: person } = useSinglePersonQuery(user?.person?.id ?? -1);
 	const queryClient = useQueryClient();
-	// console.log("person:", person);
-
-	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
-	const coreCells: number[] | undefined = person?.core_of_cell_ids;
-	const isLeader = ledCells?.map(Number).includes(Number(id));
-	const isCore = coreCells?.map(Number).includes(Number(id));
-	const canManageSessions = Boolean(isLeader || isCore);
-	const canRemoveMembers = canManageSessions;
+	const membershipPerson = person ?? user?.person;
+	const personId =
+		membershipPerson?.id != null ? Number(membershipPerson.id) : null;
 
 	// Initialize state early so it can be used in queries
 	const [activeTab, setActiveTab] = useState<
@@ -94,13 +89,34 @@ const CellProfileScreen = () => {
 		refetch,
 	} = useSingleCellQuery(Number(id));
 
-	// Zone leaders are assigned on the cell, not via leader_of_cell_ids.
+	const isSamePerson = (value: number | string | null | undefined) =>
+		personId != null && value != null && Number(value) === personId;
+
+	const isListedCellLeader = Boolean(
+		membershipPerson?.leader_of_cell_ids
+			?.map(Number)
+			.includes(Number(id)),
+	);
+	const isListedCore = Boolean(
+		membershipPerson?.core_of_cell_ids?.map(Number).includes(Number(id)),
+	);
+	const isCellLeader =
+		isListedCellLeader ||
+		isSamePerson(cellFromApi?.cell_leader_1) ||
+		isSamePerson(cellFromApi?.cell_leader_2);
 	const isZoneLeaderOfCell =
-		personId != null &&
-		[cellFromApi?.zone_leader_1, cellFromApi?.zone_leader_2].some(
-			(leaderId) => leaderId != null && Number(leaderId) === personId,
-		);
-	const canManageCell = isCellLeader || isZoneLeaderOfCell;
+		isSamePerson(cellFromApi?.zone_leader_1) ||
+		isSamePerson(cellFromApi?.zone_leader_2);
+	const isCoreMemberOfCell = Boolean(
+		cellFromApi?.members?.some(
+			(member) => isSamePerson(member.id) && Boolean(member.is_core),
+		),
+	);
+	const isLeader = isCellLeader;
+	const isCore = isListedCore || isCoreMemberOfCell;
+	const canManageCell = Boolean(isCellLeader || isZoneLeaderOfCell || isCore);
+	const canManageSessions = canManageCell;
+	const canRemoveMembers = canManageCell;
 
 	// Fetch cell sessions
 	const { data: sessions = [], isLoading: isSessionsLoading } =
@@ -116,7 +132,7 @@ const CellProfileScreen = () => {
 	const { data: myAttendanceStats, isLoading: isMyAttendanceStatsLoading } =
 		usePersonCellAttendanceStatsQuery(
 			Number(id),
-			person?.id ?? -1,
+			personId ?? -1,
 			activeTab === "attendance",
 		);
 
@@ -127,38 +143,26 @@ const CellProfileScreen = () => {
 	} = usePersonSessionAttendanceQuery(
 		Number(id),
 		sessions,
-		person?.id ?? -1,
+		personId ?? -1,
 		activeTab === "attendance",
 	);
 
-	// Get cell data from person's cells for regular members
-	// const cellFromPerson = person?.cells?.find(c => c.id === Number(id));
-
-	// Use API data for leaders, fallback to person data for members
 	const cell = cellFromApi;
-	const isCoreMemberOfCell = Boolean(
-		cell?.members?.some(
-			(member) =>
-				Number(member.id) === Number(person?.id) &&
-				Boolean(member.is_core),
-		),
-	);
+	const cellMembersSubject = subject("CellMembers", {
+		cell_ids: Number(id),
+		zone_leader_1: cell?.zone_leader_1,
+		zone_leader_2: cell?.zone_leader_2,
+	});
 	const canReviewJoinRequests = Boolean(
-		isLeader ||
-			isCore ||
-			isCoreMemberOfCell ||
-			ability.can(
-				"update",
-				subject("CellMembers", { cell_ids: Number(id) }),
-			  ),
+		canManageCell || ability.can("update", cellMembersSubject),
 	);
 	const activeCellMembers = cell?.members?.filter(
 		(member: Person) => member.status === "ACTIVE",
 	);
-	const myMemberRecord = cell?.members?.find(
-		(member) => Number(member.id) === Number(person?.id),
+	const myMemberRecord = cell?.members?.find((member) =>
+		isSamePerson(member.id),
 	);
-	const myPersonCell = person?.cells?.find(
+	const myPersonCell = membershipPerson?.cells?.find(
 		(membership) => Number(membership.id) === Number(id),
 	);
 	const canSelfCheckIn = canCheckInToCell({
@@ -168,13 +172,26 @@ const CellProfileScreen = () => {
 	});
 
 	const managedCellIds = [
-		...(person?.leader_of_cell_ids ?? []),
-		...(person?.core_of_cell_ids ?? []),
+		...(membershipPerson?.leader_of_cell_ids ?? []),
+		...(membershipPerson?.core_of_cell_ids ?? []),
 	].map(Number);
+	if (canManageCell) {
+		managedCellIds.push(Number(id));
+	}
 
-	const ledCellsFormatted = (person?.cells ?? [])
+	const ledCellsFormatted = (membershipPerson?.cells ?? [])
 		.filter((cell) => cell.id && managedCellIds.includes(Number(cell.id)))
 		.map((cell) => ({ id: cell.id!, name: cell.cell_name! }));
+	if (
+		canManageCell &&
+		cellFromApi?.id &&
+		!ledCellsFormatted.some((item) => Number(item.id) === Number(id))
+	) {
+		ledCellsFormatted.push({
+			id: cellFromApi.id,
+			name: cellFromApi.cell_name ?? "",
+		});
+	}
 
 	useEffect(() => {
 		setOpen(false);
@@ -292,7 +309,7 @@ const CellProfileScreen = () => {
 			setIsUpdating(memberId);
 			setStatusError(null);
 
-			await removeCellMembers(Number(id), [memberId], person?.id ?? -1);
+			await removeCellMembers(Number(id), [memberId], personId ?? -1);
 
 			queryClient.setQueryData(["cells", Number(id)], (old: typeof cell) => {
 				if (!old) return old;
@@ -320,7 +337,7 @@ const CellProfileScreen = () => {
 				queryKey: ["cells", Number(id)],
 			});
 			queryClient.invalidateQueries({
-				queryKey: ["people", person?.id],
+				queryKey: ["people", personId],
 			});
 			queryClient.invalidateQueries({
 				queryKey: ["cell-sessions", Number(id)],
@@ -369,7 +386,7 @@ const CellProfileScreen = () => {
 							isLeader={isLeader}
 							canRemoveMembers={canRemoveMembers}
 							canReviewJoinRequests={canReviewJoinRequests}
-							currentPersonId={person?.id}
+							currentPersonId={personId ?? undefined}
 							memberStatuses={memberStatuses}
 							onAccept={handleAcceptMember}
 							onReject={handleRejectMember}
@@ -389,7 +406,7 @@ const CellProfileScreen = () => {
 						cellId={Number(id)}
 						sessions={sessions}
 						canViewCellAnalytics={canManageSessions}
-						currentPersonId={person?.id}
+						currentPersonId={personId ?? undefined}
 						memberStats={memberAttendanceStats}
 						sessionStats={
 							myAttendanceStats ? [myAttendanceStats] : []
@@ -505,9 +522,7 @@ const CellProfileScreen = () => {
 						</TouchableOpacity>
 
 						{/* View Sessions - cell leaders and zone leaders of this cell */}
-						{cellAttendanceEnabled &&
-							canManageSessions &&
-							ability.can("read", "CellSession") && (
+						{cellAttendanceEnabled && canManageSessions && (
 								<TouchableOpacity
 									onPress={() =>
 										router.push({
@@ -528,8 +543,7 @@ const CellProfileScreen = () => {
 							)}
 
 						{/* Add Members - leaders and cores of this cell */}
-						{(isLeader || isCore) &&
-							ability.can("create", "CellMembers") && (
+						{canManageCell && (
 							<TouchableOpacity
 								onPress={() =>
 									addMembersSheetRef.current?.present()
@@ -610,7 +624,7 @@ const CellProfileScreen = () => {
 							isLeader={isLeader ?? false}
 							canRemoveMembers={canRemoveMembers}
 							canReviewJoinRequests={canReviewJoinRequests}
-							currentPersonId={person?.id}
+							currentPersonId={personId ?? undefined}
 							isUpdating={isUpdating}
 							onAccept={handleAcceptMember}
 							onReject={handleRejectMember}
