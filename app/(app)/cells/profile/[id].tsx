@@ -37,12 +37,14 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
 	CalendarClockIcon,
+	PencilIcon,
 	ScanQrCodeIcon,
 	SearchIcon,
 	UserPlusIcon,
 } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
+	Linking,
 	RefreshControl,
 	ScrollView,
 	StatusBar,
@@ -561,6 +563,22 @@ const CellProfileScreen = () => {
 							</TouchableOpacity>
 						)}
 					</View>
+
+					{isLeader && (
+						<TouchableOpacity
+							onPress={() =>
+								Linking.openURL(
+									"https://sibklcms-prod.web.app/forms/cells/update/",
+								)
+							}
+							className="bg-white mx-6 mb-6 h-12 rounded-2xl flex-row items-center justify-center gap-2"
+						>
+							<PencilIcon size={18} color="#1e40af" />
+							<Text className="text-text text-sm font-medium">
+								Edit cell details
+							</Text>
+						</TouchableOpacity>
+					)}
 
 					{/* Tab bar */}
 					<View className="flex-row mx-6 mb-2">

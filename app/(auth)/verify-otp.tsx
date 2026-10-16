@@ -58,12 +58,25 @@ const Page = () => {
 	}, [otp]);
 
 	const handleOtpChange = (value: string, index: number) => {
-		const newOtp = [...otp];
-		newOtp[index] = value;
-		setOtp(newOtp);
-
-		// Auto-focus next input
-		if (value && index < 5) {
+		const digits = value.replace(/\D/g, "");
+	
+		// Paste or SMS/Gmail autofill: the whole code arrives in one field
+		if (digits.length > 1) {
+			const chars = digits.slice(0, 6).split("");
+			const next = ["", "", "", "", "", ""];
+			chars.forEach((char, i) => {
+				next[i] = char;
+			});
+			setOtp(next);
+			inputRefs.current[Math.min(chars.length, 5)]?.focus();
+			return;
+		}
+	
+		const next = [...otp];
+		next[index] = digits;
+		setOtp(next);
+	
+		if (digits && index < 5) {
 			inputRefs.current[index + 1]?.focus();
 		}
 	};
@@ -212,14 +225,15 @@ const Page = () => {
 											Platform.OS === "android" ? 12 : 18,
 									}}
 									value={digit}
-									onChangeText={(value) =>
-										handleOtpChange(value.slice(-1), index)
-									}
+									onChangeText={(value) => handleOtpChange(value, index)}
 									onKeyPress={({ nativeEvent }) =>
 										handleKeyPress(nativeEvent.key, index)
 									}
-									keyboardType="numeric"
-									maxLength={1}
+									keyboardType="number-pad"
+									maxLength={index === 0 ? 6 : 1}
+									textContentType={index === 0 ? "oneTimeCode" : "none"}
+									autoComplete={index === 0 ? "sms-otp" : "off"}
+									importantForAutofill={index === 0 ? "yes" : "no"}
 									selectTextOnFocus
 									autoFocus={index === 0}
 								/>
