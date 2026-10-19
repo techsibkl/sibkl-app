@@ -127,6 +127,7 @@ export const apiEndpoints = {
 		updateAsClosed: _endpoint("notifications/mark-closed"),
 		updateAsReopen: _endpoint("notifications/mark-reopen"),
 	},
+	// Public function only. Staff routes (groups, imports, email) are `eventsAdmin` on the CMS.
 	events: {
 		getAll: _endpoint("events"),
 		getById: (id: number | string) => _endpoint(`events/${id}`),

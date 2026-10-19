@@ -23,14 +23,19 @@ export const SkeletonRow: React.FC<SkeletonRowProps> = ({
 	const shimmerAnim = useRef(new Animated.Value(-1)).current;
 
 	useEffect(() => {
-		Animated.loop(
+		const shimmer = Animated.loop(
 			Animated.timing(shimmerAnim, {
 				toValue: 1,
 				duration: 1000,
 				useNativeDriver: true,
-			})
-		).start();
-	}, []);
+				isInteraction: false,
+			}),
+		);
+		shimmer.start();
+		return () => {
+			shimmer.stop();
+		};
+	}, [shimmerAnim]);
 
 	const translateX = shimmerAnim.interpolate({
 		inputRange: [-1, 1],

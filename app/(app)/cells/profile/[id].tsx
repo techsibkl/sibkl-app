@@ -6,7 +6,9 @@ import CreateSessionSheet from "@/components/Cells/CreateSessionSheet";
 import AddMembersSheet from "@/components/Cells/Profile/AddMembersSheet";
 import MembersList from "@/components/Cells/Profile/MembersList";
 import SearchMembersModal from "@/components/Cells/Profile/SearchMembersModal";
+import HelpDialog from "@/components/shared/HelpDialog";
 import SharedBody from "@/components/shared/SharedBody";
+import SharedModal from "@/components/shared/SharedModal";
 import SkeletonCellProfile from "@/components/shared/Skeleton/SkeletonCellProfile";
 // import { getFabActions } from "@/constants/cont_cells";
 import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
@@ -26,9 +28,9 @@ import {
 import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
 import { canCheckInToCell } from "@/utils/cellMembership";
-import { subject } from "@casl/ability";
 import { myToast } from "@/utils/helper";
 import { getInitials } from "@/utils/helper_profile";
+import { subject } from "@casl/ability";
 import {
 	BottomSheetModal,
 	BottomSheetModalProvider,
@@ -37,7 +39,6 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useLocalSearchParams, useRouter } from "expo-router";
 import {
 	CalendarClockIcon,
-	PencilIcon,
 	ScanQrCodeIcon,
 	SearchIcon,
 	UserPlusIcon,
@@ -78,6 +79,7 @@ const CellProfileScreen = () => {
 	const [isUpdating, setIsUpdating] = useState<number | null>(null);
 	const [statusError, setStatusError] = useState<string | null>(null);
 	const [isRefreshing, setIsRefreshing] = useState(false);
+	const [featureLockedVisible, setFeatureLockedVisible] = useState(false);
 	const createSessionSheetModalRef = useRef<BottomSheetModal>(null);
 	const searchMembersSheetRef = useRef<BottomSheetModal>(null);
 	const addMembersSheetRef = useRef<BottomSheetModal>(null);
@@ -108,9 +110,7 @@ const CellProfileScreen = () => {
 		isSamePerson(cellFromApi?.zone_leader_2);
 	// Cores: person.core_of_cell_ids, or the roster is_core flag.
 	const isCore = Boolean(
-		membershipPerson?.core_of_cell_ids
-			?.map(Number)
-			.includes(Number(id)) ||
+		membershipPerson?.core_of_cell_ids?.map(Number).includes(Number(id)) ||
 			cellFromApi?.members?.some(
 				(member) => isSamePerson(member.id) && Boolean(member.is_core),
 			),
@@ -205,11 +205,9 @@ const CellProfileScreen = () => {
 	// is always the same regardless of which early-return branch executes.
 	const cellAttendanceEnabled = useFeatureFlag("cellAttendance");
 
-	const cellProfileTabs = [
-		"people",
-		...(cellAttendanceEnabled ? (["attendance"] as const) : []),
-		"announcements",
-	] as const;
+	const cellProfileTabs = ["people", "attendance", "announcements"] as const;
+
+	const showFeatureLocked = () => setFeatureLockedVisible(true);
 
 	const filteredMembers = (cell?.members ?? []).filter((member: Person) =>
 		member?.full_legal_name
@@ -315,22 +313,25 @@ const CellProfileScreen = () => {
 
 			await removeCellMembers(Number(id), [memberId], personId ?? -1);
 
-			queryClient.setQueryData(["cells", Number(id)], (old: typeof cell) => {
-				if (!old) return old;
-				return {
-					...old,
-					members:
-						old.members?.map((m) =>
-							m.id === memberId
-								? {
-										...m,
-										status: "REMOVED",
-										member_status: "REMOVED",
-									}
-								: m,
-						) ?? [],
-				};
-			});
+			queryClient.setQueryData(
+				["cells", Number(id)],
+				(old: typeof cell) => {
+					if (!old) return old;
+					return {
+						...old,
+						members:
+							old.members?.map((m) =>
+								m.id === memberId
+									? {
+											...m,
+											status: "REMOVED",
+											member_status: "REMOVED",
+										}
+									: m,
+							) ?? [],
+					};
+				},
+			);
 
 			setMemberStatuses((prev) => ({
 				...prev,
@@ -479,15 +480,27 @@ const CellProfileScreen = () => {
 								{getInitials(cell.cell_name ?? "")}
 							</Text>
 						</View>
-						<Text className="text-text text-2xl font-bold text-center mb-2">
+						<Text className="text-text text-2xl font-bold text-center">
 							{cell.cell_name}
 						</Text>
 						<Text className="text-text-secondary text-base">
 							Cell • {activeCellMembers?.length} member
 							{activeCellMembers?.length === 1 ? "" : "s"}
 						</Text>
+						{isLeader && (
+							<TouchableOpacity
+								onPress={() =>
+									Linking.openURL(
+										"https://sibklcms-prod.web.app/forms/cells/update/",
+									)
+								}
+							>
+								<Text className="text-blue-500 text-sm font-medium">
+									Edit info
+								</Text>
+							</TouchableOpacity>
+						)}
 					</View>
-
 					{statusError && (
 						<View className="bg-red-100 p-3 mx-3 rounded-lg mb-3">
 							<Text className="text-red-700 text-sm">
@@ -499,18 +512,33 @@ const CellProfileScreen = () => {
 					{/* Action Buttons */}
 					<View className="flex-row justify-center gap-2 w-full max-w-[90%] mx-6 mb-6">
 						{/* Scan QR - attendance (pilot) */}
-						{cellAttendanceEnabled && canSelfCheckIn && (
+						{canSelfCheckIn && (
 							<TouchableOpacity
-								onPress={() =>
+								onPress={() => {
+									if (!cellAttendanceEnabled) {
+										showFeatureLocked();
+										return;
+									}
 									router.push({
 										pathname: "/(app)/cells/scanner",
 										params: { cell_id: String(id) },
-									})
-								}
-								className="bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5"
+									});
+								}}
+								className={`bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5`}
 							>
-								<ScanQrCodeIcon size={25} color="#1e40af" />
-								<Text className="text-text text-sm">Scan</Text>
+								<ScanQrCodeIcon
+									size={25}
+									color={
+										cellAttendanceEnabled
+											? "#1e40af"
+											: "#9ca3af"
+									}
+								/>
+								<Text
+									className={`text-sm ${cellAttendanceEnabled ? "text-text" : "text-gray-400"}`}
+								>
+									Scan
+								</Text>
 							</TouchableOpacity>
 						)}
 
@@ -526,25 +554,34 @@ const CellProfileScreen = () => {
 						</TouchableOpacity>
 
 						{/* View Sessions - cell leaders, cores, and zone leaders of this cell */}
-						{cellAttendanceEnabled &&
-							canManageCell &&
+						{canManageCell &&
 							(isZoneLeaderOfCell ||
 								isCore ||
 								ability.can("read", "CellSession")) && (
 								<TouchableOpacity
-									onPress={() =>
+									onPress={() => {
+										if (!cellAttendanceEnabled) {
+											showFeatureLocked();
+											return;
+										}
 										router.push({
 											pathname: "/(app)/cells/sessions",
 											params: { cell_id: String(id) },
-										})
-									}
-									className="bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5"
+										});
+									}}
+									className={`bg-white min-w-[20%] px-4 h-20 rounded-2xl p-2 items-center justify-center flex-col gap-0.5`}
 								>
 									<CalendarClockIcon
 										size={25}
-										color="#1e40af"
+										color={
+											cellAttendanceEnabled
+												? "#1e40af"
+												: "#9ca3af"
+										}
 									/>
-									<Text className="text-text text-sm">
+									<Text
+										className={`text-sm ${cellAttendanceEnabled ? "text-text" : "text-gray-400"}`}
+									>
 										Sessions
 									</Text>
 								</TouchableOpacity>
@@ -564,49 +601,51 @@ const CellProfileScreen = () => {
 						)}
 					</View>
 
-					{isLeader && (
-						<TouchableOpacity
-							onPress={() =>
-								Linking.openURL(
-									"https://sibklcms-prod.web.app/forms/cells/update/",
-								)
-							}
-							className="bg-white mx-6 mb-6 h-12 rounded-2xl flex-row items-center justify-center gap-2"
-						>
-							<PencilIcon size={18} color="#1e40af" />
-							<Text className="text-text text-sm font-medium">
-								Edit cell details
-							</Text>
-						</TouchableOpacity>
-					)}
-
 					{/* Tab bar */}
 					<View className="flex-row mx-6 mb-2">
-						{cellProfileTabs.map((tab, index) => (
-							<TouchableOpacity
-								key={tab}
-								className={`flex-1 py-3 ${
-									index === 0
-										? "rounded-l-lg border border-border"
-										: index === cellProfileTabs.length - 1
-											? "rounded-r-lg border border-border"
-											: " border-t border-b border-border"
-								} ${activeTab === tab ? "bg-background" : "bg-background-secondary"}`}
-								onPress={() =>
-									setActiveTab(tab as typeof activeTab)
-								}
-							>
-								<Text
-									className={`text-center text-sm text-nowrap font-medium ${
-										activeTab === tab
-											? "text-text"
-											: "text-text-secondary"
+						{cellProfileTabs.map((tab, index) => {
+							const tabLocked =
+								tab === "attendance" && !cellAttendanceEnabled;
+							return (
+								<TouchableOpacity
+									key={tab}
+									className={`flex-1 py-3 ${
+										index === 0
+											? "rounded-l-lg border border-border"
+											: index ===
+												  cellProfileTabs.length - 1
+												? "rounded-r-lg border border-border"
+												: " border-t border-b border-border"
+									} ${
+										tabLocked
+											? "bg-gray-200"
+											: activeTab === tab
+												? "bg-background"
+												: "bg-background-secondary"
 									}`}
+									onPress={() => {
+										if (tabLocked) {
+											showFeatureLocked();
+											return;
+										}
+										setActiveTab(tab as typeof activeTab);
+									}}
 								>
-									{tab.charAt(0).toUpperCase() + tab.slice(1)}
-								</Text>
-							</TouchableOpacity>
-						))}
+									<Text
+										className={`text-center text-sm text-nowrap font-medium ${
+											tabLocked
+												? "text-gray-400"
+												: activeTab === tab
+													? "text-text"
+													: "text-text-secondary"
+										}`}
+									>
+										{tab.charAt(0).toUpperCase() +
+											tab.slice(1)}
+									</Text>
+								</TouchableOpacity>
+							);
+						})}
 					</View>
 
 					{renderTabContent()}
@@ -680,6 +719,15 @@ const CellProfileScreen = () => {
 					</Portal>
 				</Provider>
 			</BottomSheetModalProvider>
+			<SharedModal
+				visible={featureLockedVisible}
+				onClose={() => setFeatureLockedVisible(false)}
+			>
+				<HelpDialog
+					title="Feature not released yet"
+					description="Please wait for the next update."
+				/>
+			</SharedModal>
 			<Toast />
 		</SharedBody>
 	);
