@@ -85,13 +85,11 @@ const CellsScreen = () => {
 			cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase()),
 		);
 
-	// Deduplicate Joined Cells
-
-	// console.log("cells", person?.cell_ids)
+	// My Cells is approved membership only. PENDING stays on All with a badge.
 	const uniqueJoinedCells = Array.from(
 		new Map(
 			(person?.cells ?? [])
-				// .filter((cell) => cell.member_status === "ACTIVE")
+				.filter((cell) => cell.member_status === "ACTIVE")
 				.map((cell) => [cell.id, cell]),
 		).values(),
 	);
@@ -103,29 +101,6 @@ const CellsScreen = () => {
 	const filteredCells =
 		browseTab === "available" ? availableCellsFiltered : joinedCellsList;
 
-	fetch("http://127.0.0.1:7460/ingest/c9fb6a50-b73e-4ab7-9013-777157bab826", {
-		method: "POST",
-		headers: {
-			"Content-Type": "application/json",
-			"X-Debug-Session-Id": "247e04",
-		},
-		body: JSON.stringify({
-			sessionId: "247e04",
-			location: "index.tsx:60",
-			message: "Filtered cells",
-			data: {
-				availableCellsFilteredCount: availableCellsFiltered.length,
-				joinedCellsListCount: joinedCellsList.length,
-				filteredCellsCount: filteredCells.length,
-				browseTab,
-				cellsLoading,
-			},
-			timestamp: Date.now(),
-			runId: "debug1",
-			hypothesisId: "A,B,C,D,E",
-		}),
-	}).catch(() => {});
-	// #endregion
 	useEffect(() => {
 		if (userCellIds.length === 0) {
 			setBrowseTab("available");
@@ -300,7 +275,7 @@ const CellsScreen = () => {
 					<View className="flex-1 items-center justify-center">
 						<Text className="text-gray-500">Loading groups...</Text>
 					</View>
-				) : browseTab === "joined" && userCellIds.length === 0 ? (
+				) : browseTab === "joined" && activeCellIds.length === 0 ? (
 					<View className="flex-1 items-center justify-center px-6">
 						<Text className="text-center text-gray-500 text-lg mb-4">
 							No Cells
