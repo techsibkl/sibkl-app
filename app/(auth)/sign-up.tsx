@@ -2,6 +2,7 @@ import ProfileItem from "@/components/Auth/ProfileItem";
 import PulsingLogo from "@/components/shared/PulsingLogo";
 import { usePeopleWithNouidQuery } from "@/hooks/People/usePeopleWithNoUid";
 import { useClaimStore } from "@/stores/claimStore";
+import { claimConfidenceRank } from "@/utils/claimSuggestion";
 import { FlashList } from "@shopify/flash-list";
 import { Link, useRouter } from "expo-router";
 import { User2Icon, XIcon } from "lucide-react-native";
@@ -34,13 +35,11 @@ const Page = () => {
 	const [loadingMore, setLoadingMore] = useState(false);
 
 	const filteredProfiles = useMemo(() => {
-		return nameQuery
-			? (maskedPeople ?? []).filter((person) =>
-					person?.full_legal_name
-						?.toLowerCase()
-						.includes(nameQuery.trim().toLowerCase()),
-				)
-			: [];
+		const term = nameQuery.trim().toLowerCase();
+		if (!term) return [];
+		return (maskedPeople ?? [])
+			.filter((person) => person?.full_legal_name?.toLowerCase().includes(term))
+			.sort((a, b) => claimConfidenceRank(b) - claimConfidenceRank(a));
 	}, [nameQuery, maskedPeople]);
 
 	const visibleProfiles = useMemo(

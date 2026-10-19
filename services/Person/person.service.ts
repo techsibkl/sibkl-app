@@ -93,7 +93,7 @@ export async function fetchPeopleScopedFields(): Promise<Person[]> {
 		};
 	}
 
-	return json.data as Person[];
+	return sortPeopleByAccount(json.data as Person[]);
 }
 
 export async function fetchPeopleScopedMaskedFields(): Promise<MaskedPerson[]> {
@@ -106,7 +106,28 @@ export async function fetchPeopleScopedMaskedFields(): Promise<MaskedPerson[]> {
 		};
 	}
 
-	return json.data as MaskedPerson[];
+	return sortPeopleByAccount(json.data as MaskedPerson[]);
+}
+
+function personHasAccount(person: { has_account?: boolean | number | null }): boolean {
+	return person.has_account === true || person.has_account === 1;
+}
+
+function sortPeopleByAccount<T extends { has_account?: boolean | number | null; full_legal_name?: string | null }>(
+	people: T[],
+): T[] {
+	return [...people]
+		.map((person) => ({
+			...person,
+			has_account: personHasAccount(person),
+		}))
+		.sort((a, b) => {
+			const accountDiff = Number(Boolean(b.has_account)) - Number(Boolean(a.has_account));
+			if (accountDiff !== 0) return accountDiff;
+			return (a.full_legal_name ?? "").localeCompare(b.full_legal_name ?? "", undefined, {
+				sensitivity: "base",
+			});
+		});
 }
 
 export const fetchPeopleWithNoUid = async (): Promise<

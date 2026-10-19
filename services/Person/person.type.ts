@@ -50,6 +50,8 @@ export type Person = {
 	pastor_district_ids: number[];
 	admin_district_ids: number[];
 	flow_assignee_ids?: number[];
+	/** True when this person's id exists on users.people_id. */
+	has_account?: boolean;
 	// uid?: string;
 	[key: string]: any;
 };
@@ -61,5 +63,7 @@ export type MaskedPerson = {
 	full_legal_name: string;
 	email: string;
 	phone: string;
+	/** True when this person's id exists on users.people_id. */
+	has_account?: boolean;
 	migrate_extra_info?: string; // Extra info for migration
 };

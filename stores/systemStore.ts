@@ -1,7 +1,9 @@
+import { getSystemConfig } from "@/services/System/system.service";
+import { AppStatus, AppStoreVersion, FeatureFlags, SystemConfig } from "@/types/SystemConfig";
+import { isVersionLower } from "@/utils/appVersion";
+import Constants from "expo-constants";
 import * as FileSystem from "expo-file-system";
 import { create } from "zustand";
-import { getSystemConfig } from "@/services/System/system.service";
-import { AppStatus, FeatureFlags, SystemConfig } from "@/types/SystemConfig";
 
 // ---------------------------------------------------------------------------
 // Persistence helpers (expo-file-system – already in project deps)
@@ -98,6 +100,15 @@ const DEFAULT_FLAGS: FeatureFlags = {
 type SystemState = {
   featureFlags: FeatureFlags;
   appStatus: AppStatus | null;
+  /** Published store version. Independent of launch_version. */
+  appVersion: AppStoreVersion | null;
+  /**
+   * True when the installed app is older than the store version and the
+   * user has not closed the prompt during this app launch.
+   */
+  needsAppUpdate: boolean;
+  /** Memory-only. Close hides the prompt until the next cold start. */
+  updatePromptDismissed: boolean;
   /** True once fetchSystemConfig has resolved (success or fallback). */
   isLoaded: boolean;
   /** True once disk flags have been applied (or confirmed missing). */
@@ -117,6 +128,8 @@ type SystemState = {
   hydratePersistedFlags: () => Promise<void>;
   /** Fetch config from API, populate flags, and detect launch events. */
   fetchSystemConfig: () => Promise<void>;
+  /** Hide the store prompt until the next time the app is opened. */
+  dismissAppUpdate: () => void;
   /**
    * Called the moment the unlock animation plays. Persists the activated
    * launch_version to disk so the launch page restores the unlocked state
@@ -133,6 +146,9 @@ type SystemState = {
 export const useSystemStore = create<SystemState>((set, get) => ({
   featureFlags: DEFAULT_FLAGS,
   appStatus: null,
+  appVersion: null,
+  needsAppUpdate: false,
+  updatePromptDismissed: false,
   isLoaded: false,
   isHydrated: false,
   hasNewLaunch: false,
@@ -192,11 +208,22 @@ export const useSystemStore = create<SystemState>((set, get) => ({
       }
 
       const featureFlags = { ...DEFAULT_FLAGS, ...config.feature_flags };
+      const installedVersion = Constants.expoConfig?.version ?? "";
+      const requiredVersion = config.app_version?.version ?? "";
+      const needsAppUpdate =
+        !get().updatePromptDismissed &&
+        Boolean(
+          installedVersion &&
+            requiredVersion &&
+            isVersionLower(installedVersion, requiredVersion),
+        );
 
       // API flags are the source of truth — they replace disk immediately.
       set({
         featureFlags,
         appStatus: config.app_status,
+        appVersion: config.app_version ?? null,
+        needsAppUpdate,
         isLoaded: true,
         hasNewLaunch,
         hasActivatedLaunch,
@@ -208,6 +235,10 @@ export const useSystemStore = create<SystemState>((set, get) => ({
       // Network failed — keep hydrated/persisted flags, mark loaded.
       set({ isLoaded: true });
     }
+  },
+
+  dismissAppUpdate: () => {
+    set({ needsAppUpdate: false, updatePromptDismissed: true });
   },
 
   activateLaunch: async () => {

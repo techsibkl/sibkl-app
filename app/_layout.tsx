@@ -1,3 +1,4 @@
+import { AppUpdatePrompt } from "@/components/AppUpdate/AppUpdatePrompt";
 import toastConfig from "@/config/toastConfig";
 import {
   customLightTheme,
@@ -219,12 +220,14 @@ function RootLayoutNav() {
         <Stack.Screen name="(app)" options={{ headerShown: false }} />
         <Stack.Screen name="+not-found" />
       </Stack>
+      <AppUpdatePrompt />
       <Toast config={toastConfig} />
     </SafeAreaProvider>
   );
 }
 
 export default function RootLayout() {
+  const needsAppUpdate = useSystemStore(state => state.needsAppUpdate);
   const [loaded] = useFonts({
     SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
   });
@@ -237,7 +240,7 @@ export default function RootLayout() {
         <PaperProvider theme={customLightTheme}>
         <GestureHandlerRootView style={{ flex: 1 }}>
           <RootLayoutNav />
-          <StatusBar barStyle="dark-content" />
+          <StatusBar barStyle={needsAppUpdate ? "light-content" : "dark-content"} />
           </GestureHandlerRootView>
         </PaperProvider>
       </ThemeProvider>

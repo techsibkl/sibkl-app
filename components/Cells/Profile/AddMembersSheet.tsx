@@ -2,13 +2,13 @@ import SharedButton from "@/components/shared/SharedButton";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { useAddCellMembersMutation } from "@/hooks/CellAttendance/useCellAttendanceQuery";
 import { usePeopleScopedMaskedFieldsQuery } from "@/hooks/People/usePeopleQuery";
-import { Person } from "@/services/Person/person.type";
+import { MaskedPerson, Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
 import { myToast } from "@/utils/helper";
 import { BottomSheetFlatList, BottomSheetModal } from "@gorhom/bottom-sheet";
 import { debounce } from "lodash";
 import { CheckCircle, X } from "lucide-react-native";
-import React, { forwardRef, useMemo, useState } from "react";
+import React, { forwardRef, useCallback, useEffect, useMemo, useState } from "react";
 import {
 	ActivityIndicator,
 	Pressable,
@@ -29,6 +29,62 @@ type AddMembersSheetProps = {
 	currentMembers?: CellMemberRef[];
 	onSuccess?: (addedIds: number[]) => void;
 };
+
+type SearchEntry = {
+	person: MaskedPerson;
+	name: string;
+	email: string;
+};
+
+function memberStatus(member: CellMemberRef) {
+	return member.status || member.member_status || "ACTIVE";
+}
+
+function rosterSignature(members: CellMemberRef[]) {
+	let signature = "";
+	for (const member of members) {
+		signature += `${member.id}:${member.status ?? ""}:${member.member_status ?? ""};`;
+	}
+	return signature;
+}
+
+const MemberResultRow = React.memo(function MemberResultRow({
+	person,
+	selected,
+	onToggle,
+}: {
+	person: MaskedPerson;
+	selected: boolean;
+	onToggle: (person: MaskedPerson) => void;
+}) {
+	return (
+		<Pressable
+			onPress={() => onToggle(person)}
+			className={`px-6 py-3 border-b border-gray-100 flex-row items-center justify-between ${
+				selected ? "bg-blue-50" : ""
+			}`}
+		>
+			<View className="flex-1">
+				<View className="flex-row items-center gap-2">
+					<Text className="text-gray-900 font-medium shrink" numberOfLines={1}>
+						{person.full_legal_name ?? "-"}
+					</Text>
+					{person.has_account ? (
+						<View className="rounded-full bg-emerald-50 px-2 py-0.5">
+							<Text className="text-[11px] font-medium text-emerald-700">
+								Has account
+							</Text>
+						</View>
+					) : null}
+				</View>
+				<Text className="text-gray-500 text-sm" numberOfLines={1}>
+					{person.email ?? "-"}
+				</Text>
+			</View>
+			{selected && <CheckCircle size={24} color="#2563eb" />}
+		</Pressable>
+	);
+});
 
 const AddMembersSheet = forwardRef<BottomSheetModal, AddMembersSheetProps>(
 	({ cellId, currentMembers = [], onSuccess }, ref) => {
@@ -53,68 +109,88 @@ const AddMembersSheet = forwardRef<BottomSheetModal, AddMembersSheetProps>(
 			[],
 		);
 
-		React.useEffect(() => {
+		useEffect(() => {
 			debouncedSetSearch(searchTerm);
 		}, [searchTerm, debouncedSetSearch]);
 
-		const getMemberStatus = (member: CellMemberRef) =>
-			member.status || member.member_status || "ACTIVE";
+		useEffect(() => {
+			return () => {
+				debouncedSetSearch.cancel();
+			};
+		}, [debouncedSetSearch]);
 
-		const occupiedMemberIds = useMemo(() => {
-			return new Set(
-				currentMembers
-					.filter((m) => {
-						const status = getMemberStatus(m);
-						return status === "ACTIVE" || status === "PENDING";
-					})
-					.map((m) => m.id),
-			);
-		}, [currentMembers]);
-
-		const reactivateMemberIds = useMemo(() => {
-			return new Set(
-				currentMembers
-					.filter((m) => {
-						const status = getMemberStatus(m);
-						return status === "REJECTED" || status === "REMOVED";
-					})
-					.map((m) => m.id),
-			);
-		}, [currentMembers]);
-
-		// Filter people - exclude those already in the cell and search
-		const filteredPeople = useMemo(() => {
-			return people.filter((person) => {
-				if (occupiedMemberIds.has(person.id)) return false;
-
-				const matchesSearch =
-					(person.full_legal_name?.toLowerCase() ?? "").includes(
-						debouncedSearch.toLowerCase(),
-					) ||
-					(person.email?.toLowerCase() ?? "").includes(
-						debouncedSearch.toLowerCase(),
-					);
-
-				return matchesSearch;
-			});
-		}, [people, debouncedSearch, occupiedMemberIds]);
-
-		const togglePerson = (person: any) => {
-			const isSelected = selectedPeople.some((p) => p.id === person.id);
-			if (isSelected) {
-				setSelectedPeople(
-					selectedPeople.filter((p) => p.id !== person.id),
-				);
-			} else {
-				setSelectedPeople([
-					...selectedPeople,
-					{
-						id: person.id,
-						full_legal_name: person.full_legal_name,
-					},
-				]);
+		// Parent builds a new members array every render. Key off the contents.
+		const membersKey = rosterSignature(currentMembers);
+		const roster = useMemo(() => {
+			const occupiedMemberIds = new Set<number>();
+			const reactivateMemberIds = new Set<number>();
+			for (const member of currentMembers) {
+				const status = memberStatus(member);
+				if (status === "ACTIVE" || status === "PENDING") {
+					occupiedMemberIds.add(member.id);
+				} else if (status === "REJECTED" || status === "REMOVED") {
+					reactivateMemberIds.add(member.id);
+				}
 			}
-		};
+			return { occupiedMemberIds, reactivateMemberIds };
+			// currentMembers is read only when membersKey changes
+			// eslint-disable-next-line react-hooks/exhaustive-deps
+		}, [membersKey]);
+
+		const searchablePeople = useMemo(() => {
+			const entries: SearchEntry[] = [];
+			const directory: MaskedPerson[] = [];
+			for (const person of people) {
+				if (roster.occupiedMemberIds.has(person.id)) continue;
+				entries.push({
+					person,
+					name: person.full_legal_name?.toLowerCase() ?? "",
+					email: person.email?.toLowerCase() ?? "",
+				});
+				directory.push(person);
+			}
+			return { entries, directory };
+		}, [people, roster]);
+
+		const selectedIds = useMemo(
+			() => new Set(selectedPeople.map((person) => person.id)),
+			[selectedPeople],
+		);
+
+		// Query data is already account-holders first. Filter keeps that order.
+		const filteredPeople = useMemo(() => {
+			const term = debouncedSearch.trim().toLowerCase();
+			if (!term) return searchablePeople.directory;
+			const matches: MaskedPerson[] = [];
+			for (const entry of searchablePeople.entries) {
+				if (entry.name.includes(term) || entry.email.includes(term)) {
+					matches.push(entry.person);
+				}
+			}
+			return matches;
+		}, [searchablePeople, debouncedSearch]);
+
+		const togglePerson = useCallback((person: MaskedPerson) => {
+			setSelectedPeople((current) => {
+				const isSelected = current.some((item) => item.id === person.id);
+				if (isSelected) return current.filter((item) => item.id !== person.id);
+				return [
+					...current,
+					{ id: person.id, full_legal_name: person.full_legal_name },
+				];
+			});
+		}, []);
+
+		const renderPerson = useCallback(
+			({ item }: { item: MaskedPerson }) => (
+				<MemberResultRow
+					person={item}
+					selected={selectedIds.has(item.id)}
+					onToggle={togglePerson}
+				/>
+			),
+			[selectedIds, togglePerson],
+		);
 
 		const removePerson = (personId: number) => {
 			setSelectedPeople(selectedPeople.filter((p) => p.id !== personId));
@@ -126,7 +202,7 @@ const AddMembersSheet = forwardRef<BottomSheetModal, AddMembersSheetProps>(
 			try {
 				const reactivateIds = selectedPeople
 					.map((p) => p.id)
-					.filter((id) => reactivateMemberIds.has(id));
+					.filter((id) => roster.reactivateMemberIds.has(id));
 
 				const addedIds = selectedPeople.map((p) => p.id);
 
@@ -242,36 +318,13 @@ const AddMembersSheet = forwardRef<BottomSheetModal, AddMembersSheetProps>(
 					) : (
 						<BottomSheetFlatList
 							data={filteredPeople}
+							extraData={selectedIds}
 							keyExtractor={(item) => String(item.id)}
-							renderItem={({ item: person }) => (
-								<Pressable
-									onPress={() => togglePerson(person)}
-									className={`px-6 py-3 border-b border-gray-100 flex-row items-center justify-between ${
-										selectedPeople.some(
-											(p) => p.id === person.id,
-										)
-											? "bg-blue-50"
-											: ""
-									}`}
-								>
-									<View className="flex-1">
-										<Text className="text-gray-900 font-medium">
-											{person.full_legal_name ?? "-"}
-										</Text>
-										<Text className="text-gray-500 text-sm">
-											{person.email ?? "-"}
-										</Text>
-									</View>
-									{selectedPeople.some(
-										(p) => p.id === person.id,
-									) && (
-										<CheckCircle
-											size={24}
-											color="#2563eb"
-										/>
-									)}
-								</Pressable>
-							)}
+							renderItem={renderPerson}
+							initialNumToRender={12}
+							maxToRenderPerBatch={8}
+							windowSize={7}
+							keyboardShouldPersistTaps="handled"
 						/>
 					)}
 

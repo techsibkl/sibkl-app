@@ -29,7 +29,18 @@ export type AppStatus = {
   launch_date: string | null;
 };
 
+export type AppStoreVersion = {
+  version: string;
+  title: string;
+  /** YYYY-MM-DD. null hides the "Updated …" line. */
+  released_on: string | null;
+  ios_store_url: string;
+  android_store_url: string;
+};
+
 export type SystemConfig = {
   feature_flags: FeatureFlags;
   app_status: AppStatus;
+  /** Absent on configs cached before store-version support. */
+  app_version?: AppStoreVersion | null;
 };

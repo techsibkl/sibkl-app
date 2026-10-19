@@ -3,8 +3,8 @@ import { apiEndpoints } from "@/utils/endpoints";
 import { secureFetch } from "@/utils/secureFetch";
 
 /**
- * Fetches the current system config (feature flags + app launch status)
- * from GET /system/config.
+ * Fetches the current system config (feature flags, launch status, and
+ * store version) from GET /system/config.
  *
  * Returns null on network failure so callers can apply safe defaults.
  */
