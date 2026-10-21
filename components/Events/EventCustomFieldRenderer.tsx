@@ -1,6 +1,7 @@
 import { EventCustomField } from "@/services/Event/event.type";
 import { FormDateInput } from "@/components/shared/FormDateInput";
 import { FormField } from "@/components/shared/FormField";
+import { PhoneFormField } from "@/components/shared/PhoneFormField";
 import { FormSelect } from "@/components/shared/FormSelect";
 import { FormSwitch } from "@/components/shared/FormSwitch";
 import React from "react";
@@ -90,11 +91,10 @@ const EventCustomFieldRenderer = ({
 		case "phone":
 			return (
 				<View>
-					<FormField
+					<PhoneFormField
 						name={fieldName}
 						label={field.label}
 						control={control}
-						keyboardType="phone-pad"
 						disabled={disabled}
 					/>
 					{errorFooter}
