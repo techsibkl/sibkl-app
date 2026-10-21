@@ -1,4 +1,5 @@
 import { FormField } from "@/components/shared/FormField";
+import { PhoneFormField } from "@/components/shared/PhoneFormField";
 import React from "react";
 import { Control, FieldErrors } from "react-hook-form";
 import { Text, View } from "react-native";
@@ -34,12 +35,11 @@ const ParticipantContactFields = ({
 			keyboardType="email-address"
 			disabled={disabled}
 		/>
-		<FormField
+		<PhoneFormField
 			name="phone"
 			label="Mobile Number"
 			control={control}
 			errors={errors}
-			keyboardType="phone-pad"
 			disabled={disabled}
 		/>
 	</View>

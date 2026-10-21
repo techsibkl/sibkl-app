@@ -89,7 +89,15 @@ const UpdateProfilePage = () => {
 		clearErrors();
 		setSubmitAttempted(true);
 
-		const validationErrors = validatePerson(data);
+		const normalisedData: ProfileFormData = {
+			...data,
+			phone: data.phone ? formatPhone(data.phone) : data.phone,
+			emergency_contact_phone: data.emergency_contact_phone
+				? formatPhone(data.emergency_contact_phone)
+				: data.emergency_contact_phone,
+		};
+
+		const validationErrors = validatePerson(normalisedData);
 		if (Object.keys(validationErrors).length > 0) {
 			Object.entries(validationErrors).forEach(([field, message]) => {
 				setError(field, { type: "manual", message });
@@ -99,7 +107,7 @@ const UpdateProfilePage = () => {
 
 		const formPerson: Partial<Person> = {
 			id: currentPerson?.id,
-			...data,
+			...normalisedData,
 		};
 
 		try {

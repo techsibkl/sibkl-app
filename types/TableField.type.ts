@@ -26,4 +26,5 @@ export enum FieldTypeEnum {
 	SELECT = "select",
 	DATE = "date",
 	YEAR = "year",
+	PHONE = "phone",
 }

@@ -1,4 +1,5 @@
 import { ToastShowParams } from "react-native-toast-message";
+import { toInternationalDigits } from "./phone";
 import { ReturnVal } from "./types/returnVal.types";
 
 export const displayDateAsStr = (
@@ -129,22 +130,7 @@ export const dateReplacer = function (
 };
 
 export function formatPhone(phone?: string, defaultCountryCode = "60"): string {
-	if (!phone) return "";
-	// Remove all non-digit characters
-	let digitsOnly = phone.replace(/[^0-9]/g, "");
-
-	// If it already starts with a country code (e.g., 60, 65, etc.), return as is
-	if (/^6\d{8,}$/.test(digitsOnly)) {
-		return digitsOnly;
-	}
-
-	// If it starts with '0', remove it before adding the default country code
-	if (digitsOnly.startsWith("0")) {
-		digitsOnly = digitsOnly.slice(1);
-	}
-
-	// Prepend default country code
-	return defaultCountryCode + digitsOnly;
+	return toInternationalDigits(phone, defaultCountryCode);
 }
 
 export const featureNotReady = (toast: any) => {
