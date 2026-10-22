@@ -1,5 +1,6 @@
 import EventList from "@/components/Events/EventList";
 import MyEventList from "@/components/Events/MyEventList";
+import QueryErrorState from "@/components/shared/QueryErrorState";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import SkeletonList from "@/components/shared/Skeleton/SkeletonList";
@@ -22,14 +23,13 @@ const EventsPage = () => {
 		data: events,
 		isPending,
 		isError,
-		error,
 		refetch: refetchEvents,
+		isFetching,
 	} = useEventsQuery();
 	const {
 		data: myRegistrations = [],
 		isPending: myPending,
 		isError: myError,
-		error: myFetchError,
 		isFetching: myFetching,
 		refetch: refetchMyEvents,
 	} = useMyEventRegistrationsQuery();
@@ -82,10 +82,7 @@ const EventsPage = () => {
 
 	const isLoading = browseTab === "all" ? isPending : myPending;
 	const hasError = browseTab === "all" ? isError : myError;
-	const errorMessage =
-		browseTab === "all"
-			? (error as any)?.message
-			: (myFetchError as any)?.message;
+	const isRetrying = browseTab === "all" ? isFetching : myFetching;
 
 	const refreshAllEvents = async () => {
 		await refetchEvents();
@@ -158,12 +155,15 @@ const EventsPage = () => {
 				{isLoading ? (
 					<SkeletonList length={5} />
 				) : hasError ? (
-					<View className="px-4 pt-8">
-						<Text className="text-center text-red-500">
-							{errorMessage ??
-								"Failed to load events. Please try again."}
-						</Text>
-					</View>
+					<QueryErrorState
+						onRetry={() =>
+							void (browseTab === "all"
+								? refetchEvents()
+								: refetchMyEvents())
+						}
+						isRetrying={isRetrying}
+						title="Couldn't load events"
+					/>
 				) : browseTab === "all" ? (
 					<EventList
 						events={filteredEvents}

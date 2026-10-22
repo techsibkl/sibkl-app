@@ -2,8 +2,10 @@
 
 import MyCellCard, { AllCellCard } from "@/components/Cells/CellCard";
 import CellDetailModal from "@/components/shared/CellDetailModal";
+import QueryErrorState from "@/components/shared/QueryErrorState";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
+import SkeletonList from "@/components/shared/Skeleton/SkeletonList";
 import { useCellsPublicQuery } from "@/hooks/Cell/useCellQuery";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
@@ -45,7 +47,9 @@ const CellsScreen = () => {
 	const {
 		data: availableCells = [],
 		isPending: cellsLoading,
+		isError: cellsError,
 		refetch: refetchAvailableCells,
+		isFetching: cellsFetching,
 	} = useCellsPublicQuery();
 
 	// Fetch user's current person data
@@ -272,9 +276,13 @@ const CellsScreen = () => {
 			{/* Content */}
 			<View className="flex-1">
 				{cellsLoading ? (
-					<View className="flex-1 items-center justify-center">
-						<Text className="text-gray-500">Loading groups...</Text>
-					</View>
+					<SkeletonList length={5} />
+				) : cellsError ? (
+					<QueryErrorState
+						onRetry={() => void refetchAvailableCells()}
+						isRetrying={cellsFetching}
+						title="Couldn't load groups"
+					/>
 				) : browseTab === "joined" && activeCellIds.length === 0 ? (
 					<View className="flex-1 items-center justify-center px-6">
 						<Text className="text-center text-gray-500 text-lg mb-4">

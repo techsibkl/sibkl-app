@@ -2,6 +2,7 @@
 
 import CellList from "@/components/Cells/CellList";
 import NotesTab from "@/components/Flows/NotesTab";
+import QueryErrorState from "@/components/shared/QueryErrorState";
 import SharedBody from "@/components/shared/SharedBody";
 import SkeletonPeopleRow from "@/components/shared/Skeleton/SkeletonPeopleRow";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
@@ -32,8 +33,9 @@ const ProfileScreen = () => {
 	const {
 		data: person,
 		isPending,
-		error,
 		isError,
+		refetch,
+		isFetching,
 	} = useSinglePersonQuery(Number(id));
 
 	const tabs = [
@@ -155,8 +157,11 @@ const ProfileScreen = () => {
 	if (isError)
 		return (
 			<SharedBody>
-				<Text>{error.message}</Text>
-				<Text>{error.name}</Text>
+				<QueryErrorState
+					onRetry={() => void refetch()}
+					isRetrying={isFetching}
+					title="Couldn't load profile"
+				/>
 			</SharedBody>
 		);
 

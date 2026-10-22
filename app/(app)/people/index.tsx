@@ -1,6 +1,7 @@
 "use client";
 
 import PeopleList from "@/components/People/PeopleList";
+import QueryErrorState from "@/components/shared/QueryErrorState";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { usePeoplePaginatedQuery } from "@/hooks/People/usePeopleQuery";
@@ -26,8 +27,8 @@ const PeopleScreen = () => {
 		people,
 		isPending,
 		isError,
-		error,
 		refetch,
+		isFetching,
 		loadMore,
 		isLoadingMore,
 		hasMore,
@@ -72,13 +73,6 @@ const PeopleScreen = () => {
 		);
 	}
 
-	if (isError)
-		return (
-			<SharedBody>
-				<Text>{error.message}</Text>
-			</SharedBody>
-		);
-
 	return (
 		<SharedBody>
 			<StatusBar barStyle={isDark ? "light-content" : "dark-content"} />
@@ -88,14 +82,22 @@ const PeopleScreen = () => {
 				placeholder="Search people..."
 			/>
 			<View className="flex-1">
-				<PeopleList
-					people={people}
-					onRefresh={refresh}
-					onLoadMore={loadMore}
-					isPending={isPending}
-					isLoadingMore={isLoadingMore}
-					hasMore={hasMore}
-				/>
+				{isError ? (
+					<QueryErrorState
+						onRetry={() => void refetch()}
+						isRetrying={isFetching}
+						title="Couldn't load people"
+					/>
+				) : (
+					<PeopleList
+						people={people}
+						onRefresh={refresh}
+						onLoadMore={loadMore}
+						isPending={isPending}
+						isLoadingMore={isLoadingMore}
+						hasMore={hasMore}
+					/>
+				)}
 			</View>
 		</SharedBody>
 	);

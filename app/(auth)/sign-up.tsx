@@ -1,5 +1,7 @@
 import ProfileItem from "@/components/Auth/ProfileItem";
 import PulsingLogo from "@/components/shared/PulsingLogo";
+import QueryErrorState from "@/components/shared/QueryErrorState";
+import SkeletonList from "@/components/shared/Skeleton/SkeletonList";
 import { usePeopleWithNouidQuery } from "@/hooks/People/usePeopleWithNoUid";
 import { useClaimStore } from "@/stores/claimStore";
 import { claimConfidenceRank } from "@/utils/claimSuggestion";
@@ -27,8 +29,9 @@ const Page = () => {
 	const {
 		isPending,
 		isError,
-		error,
 		data: maskedPeople,
+		refetch,
+		isFetching,
 	} = usePeopleWithNouidQuery();
 	const [nameQuery, setNameQuery] = useState("");
 	const [page, setPage] = useState(1);
@@ -130,16 +133,26 @@ const Page = () => {
 					estimatedItemSize={80}
 					ListEmptyComponent={
 						nameQuery.length > 0 ? (
-							<View className="mt-4">
-								<Text className="text-gray-500 text-center italic">
-									{"Cannot find profile for " +
-										`"${nameQuery}"` +
-										" ?"}
-								</Text>
-								<Text className="text-gray-500 text-center italic">
-									Please create a new account.
-								</Text>
-							</View>
+							isPending ? (
+								<SkeletonList length={6} />
+							) : isError ? (
+								<QueryErrorState
+									onRetry={() => void refetch()}
+									isRetrying={isFetching}
+									title="Couldn't search profiles"
+								/>
+							) : (
+								<View className="mt-4">
+									<Text className="text-gray-500 text-center italic">
+										{"Cannot find profile for " +
+											`"${nameQuery}"` +
+											" ?"}
+									</Text>
+									<Text className="text-gray-500 text-center italic">
+										Please create a new account.
+									</Text>
+								</View>
+							)
 						) : null
 					}
 					renderItem={({ item }) => <ProfileItem item={item} />}

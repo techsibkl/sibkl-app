@@ -1,4 +1,5 @@
 import DynamicFormField from "@/components/shared/DynamicFormField";
+import QueryErrorState from "@/components/shared/QueryErrorState";
 import SharedBody from "@/components/shared/SharedBody";
 import SkeletonPeopleRow from "@/components/shared/Skeleton/SkeletonPeopleRow";
 import { DEFAULT_PERSON_COLUMNS } from "@/constants/const_person";
@@ -65,9 +66,13 @@ const Page = () => {
 		(Number.isFinite(claimedPeopleIdNumber)
 			? claimedPeopleIdNumber
 			: undefined);
-	const { data: selectedPerson, isPending } = useSinglePersonQuery(
-		activeClaimedPeopleId ?? -1,
-	);
+	const {
+		data: selectedPerson,
+		isPending,
+		isError,
+		refetch,
+		isFetching,
+	} = useSinglePersonQuery(activeClaimedPeopleId ?? -1);
 	const profileEmail =
 		pendingSignUp?.email ||
 		appUser?.email ||
@@ -231,10 +236,22 @@ const Page = () => {
 
 	const fullName = watch("full_legal_name");
 	const REQUIRED_FIELDS = ["full_legal_name", "email", "phone"];
-	if (isPending) {
+	if (activeClaimedPeopleId && isPending) {
 		return (
 			<SharedBody>
 				<SkeletonPeopleRow />
+			</SharedBody>
+		);
+	}
+
+	if (activeClaimedPeopleId && isError) {
+		return (
+			<SharedBody>
+				<QueryErrorState
+					onRetry={() => void refetch()}
+					isRetrying={isFetching}
+					title="Couldn't load profile"
+				/>
 			</SharedBody>
 		);
 	}

@@ -1,4 +1,6 @@
 import NoteItem from "@/components/Notes/NoteItem";
+import QueryErrorState from "@/components/shared/QueryErrorState";
+import SkeletonList from "@/components/shared/Skeleton/SkeletonList";
 import { useNotesByPersonQuery } from "@/hooks/Note/useNotesQuery";
 import { PeopleFlow } from "@/services/Flow/peopleFlow.type";
 import { createNote, deleteNote } from "@/services/Note/notes.service";
@@ -22,7 +24,13 @@ type NotesTabProps = {
 const NotesTab = ({ personFlow }: NotesTabProps) => {
 	const personId = Number(personFlow.p__id);
 	const queryClient = useQueryClient();
-	const { data: notes = [], isLoading } = useNotesByPersonQuery(personId);
+	const {
+		data: notes = [],
+		isPending,
+		isError,
+		refetch,
+		isFetching,
+	} = useNotesByPersonQuery(personId);
 	const [newNote, setNewNote] = useState<string>("");
 	const [isSubmitting, setIsSubmitting] = useState<boolean>(false);
 
@@ -92,11 +100,21 @@ const NotesTab = ({ personFlow }: NotesTabProps) => {
 		);
 	};
 
-	if (isLoading) {
+	if (isPending) {
 		return (
-			<View className="flex-1 items-center justify-center py-10">
-				<ActivityIndicator size="large" color="#3b82f6" />
+			<View className="flex-1 px-6 py-4">
+				<SkeletonList length={3} />
 			</View>
+		);
+	}
+
+	if (isError) {
+		return (
+			<QueryErrorState
+				onRetry={() => void refetch()}
+				isRetrying={isFetching}
+				title="Couldn't load notes"
+			/>
 		);
 	}
 

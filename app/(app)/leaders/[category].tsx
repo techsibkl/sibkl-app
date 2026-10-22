@@ -1,6 +1,7 @@
 import ViewResourceDialog, {
 	getThumbnail,
 } from "@/components/Leaders/ViewResourceDialog";
+import QueryErrorState from "@/components/shared/QueryErrorState";
 import SharedBody from "@/components/shared/SharedBody";
 import SharedModal from "@/components/shared/SharedModal";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
@@ -31,6 +32,8 @@ const CategoryResources = () => {
 		isFetchingNextPage,
 		isPending,
 		isError,
+		refetch,
+		isFetching,
 	} = useCategorResourceQuery(category);
 
 	const resources = useMemo(
@@ -49,7 +52,13 @@ const CategoryResources = () => {
 	if (isPending) return <Text className="p-6">Loading...</Text>;
 	if (isError)
 		return (
-			<Text className="p-6 text-red-500">Error loading resources</Text>
+			<SharedBody>
+				<QueryErrorState
+					onRetry={() => void refetch()}
+					isRetrying={isFetching}
+					title="Couldn't load resources"
+				/>
+			</SharedBody>
 		);
 
 	if (filteredResources.length === 0 && !searchQuery) {

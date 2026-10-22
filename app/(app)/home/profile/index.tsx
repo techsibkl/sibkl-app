@@ -1,3 +1,4 @@
+import QueryErrorState from "@/components/shared/QueryErrorState";
 import SharedBody from "@/components/shared/SharedBody";
 import SkeletonPeopleRow from "@/components/shared/Skeleton/SkeletonPeopleRow";
 import { groupedPersonFields } from "@/constants/const_person";
@@ -12,9 +13,14 @@ import { ScrollView, Text, TouchableOpacity, View } from "react-native";
 
 const ProfileViewPage = () => {
 	const { user, isGuest } = useAuthStore();
-	const { data: person, isPending } = useSinglePersonQuery(
-		user?.person?.id ?? -1,
-	);
+	const personId = user?.person?.id ?? -1;
+	const {
+		data: person,
+		isPending,
+		isError,
+		refetch,
+		isFetching,
+	} = useSinglePersonQuery(personId);
 	const router = useRouter();
 	// Guest user profile page
 	if (isGuest) {
@@ -45,7 +51,25 @@ const ProfileViewPage = () => {
 		);
 	}
 
-	if (isPending || !person)
+	if (isPending)
+		return (
+			<SharedBody>
+				<SkeletonPeopleRow />
+			</SharedBody>
+		);
+
+	if (isError && personId > 0)
+		return (
+			<SharedBody>
+				<QueryErrorState
+					onRetry={() => void refetch()}
+					isRetrying={isFetching}
+					title="Couldn't load your profile"
+				/>
+			</SharedBody>
+		);
+
+	if (!person)
 		return (
 			<SharedBody>
 				<SkeletonPeopleRow />

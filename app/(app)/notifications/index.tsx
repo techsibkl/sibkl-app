@@ -1,4 +1,5 @@
 import NotificationList from "@/components/Home/NotificationList";
+import QueryErrorState from "@/components/shared/QueryErrorState";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
 import { useNotificationQuery } from "@/hooks/Notifications/useNotificationsQuery";
@@ -6,8 +7,9 @@ import React, { useMemo, useState } from "react";
 import { View } from "react-native";
 
 const NotificationsPage = () => {
-	const { data, isPending, refetch } = useNotificationQuery();
-	const notifications = useMemo(() => data || [], [data]);
+	const { data, isPending, isError, refetch, isFetching } =
+		useNotificationQuery();
+	const notifications = useMemo(() => data ?? [], [data]);
 
 	const refresh = async () => {
 		await refetch();
@@ -16,11 +18,9 @@ const NotificationsPage = () => {
 	const [filter, setFilter] = useState<"all" | "unread" | "closed">("all");
 	const [searchQuery, setSearchQuery] = useState("");
 
-	// Helper function to check if notification is read
 	const isNotificationRead = (notification: any) =>
 		notification.read_at !== null;
 
-	// Helper function to check if notification is closed
 	const isNotificationClosed = (notification: any) =>
 		notification.closed_at !== null;
 
@@ -39,7 +39,6 @@ const NotificationsPage = () => {
 				filtered = notifications.filter((n) => isNotificationClosed(n));
 				break;
 		}
-		// Apply search filter
 		if (searchQuery.trim()) {
 			const q = searchQuery.toLowerCase();
 			filtered = filtered.filter(
@@ -50,16 +49,13 @@ const NotificationsPage = () => {
 			);
 		}
 
-		// Sort by created_at (newest first), with unread notifications prioritized
 		return filtered.sort((a, b) => {
 			const aIsRead = isNotificationRead(a);
 			const bIsRead = isNotificationRead(b);
 
-			// Unread notifications come first
 			if (!aIsRead && bIsRead) return -1;
 			if (aIsRead && !bIsRead) return 1;
 
-			// Then sort by creation time (newest first)
 			return (
 				new Date(b.created_at).getTime() -
 				new Date(a.created_at).getTime()
@@ -75,11 +71,19 @@ const NotificationsPage = () => {
 				placeholder="Search notifications..."
 			/>
 			<View className="flex-1 mt-4 ">
-				<NotificationList
-					notifications={filteredNotifications}
-					onRefresh={refresh}
-					isPending={isPending}
-				/>
+				{isError ? (
+					<QueryErrorState
+						onRetry={() => void refetch()}
+						isRetrying={isFetching}
+						title="Couldn't load notifications"
+					/>
+				) : (
+					<NotificationList
+						notifications={filteredNotifications}
+						onRefresh={refresh}
+						isPending={isPending}
+					/>
+				)}
 			</View>
 		</SharedBody>
 	);

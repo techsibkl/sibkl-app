@@ -4,6 +4,7 @@ import EventDetailFooter, {
 	EventDetailFooterMode,
 } from "@/components/Events/EventDetailFooter";
 import EventRegistrationClosed from "@/components/Events/EventRegistrationClosed";
+import QueryErrorState from "@/components/shared/QueryErrorState";
 import SharedBody from "@/components/shared/SharedBody";
 import SkeletonList from "@/components/shared/Skeleton/SkeletonList";
 import { useEventQuery } from "@/hooks/Event/useEventQuery";
@@ -14,6 +15,7 @@ import {
 	isEventCheckInOpen,
 	isEventRegisterable,
 } from "@/utils/eventRegistrationGates";
+import { useQueryClient } from "@tanstack/react-query";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo } from "react";
 import { ScrollView, Text, View } from "react-native";
@@ -21,6 +23,7 @@ import { ScrollView, Text, View } from "react-native";
 const EventDetailScreen = () => {
 	const { eventId } = useLocalSearchParams<{ eventId: string }>();
 	const router = useRouter();
+	const queryClient = useQueryClient();
 	const { isGuest } = useAuthStore();
 	const { data: myRegistrations = [] } = useMyEventRegistrationsQuery();
 
@@ -28,8 +31,12 @@ const EventDetailScreen = () => {
 		data: event,
 		isPending,
 		isError,
-		error: fetchError,
+		isFetching,
 	} = useEventQuery(eventId);
+
+	const retryLoadEvent = () => {
+		void queryClient.invalidateQueries({ queryKey: ["events", eventId] });
+	};
 
 	const registration = useMemo(
 		() =>
@@ -51,15 +58,27 @@ const EventDetailScreen = () => {
 		);
 	}
 
-	if (isError || !event) {
+	if (isError) {
 		return (
 			<SharedBody>
-				<View className="px-4 pt-8">
-					<Text className="text-center text-red-500">
-						{(fetchError as any)?.message ??
-							"Failed to load event. Please try again."}
-					</Text>
-				</View>
+				<QueryErrorState
+					onRetry={retryLoadEvent}
+					isRetrying={isFetching}
+					title="Couldn't load event"
+				/>
+			</SharedBody>
+		);
+	}
+
+	if (!event) {
+		return (
+			<SharedBody>
+				<QueryErrorState
+					onRetry={retryLoadEvent}
+					isRetrying={isFetching}
+					title="Couldn't load event"
+					message="This event may no longer be available."
+				/>
 			</SharedBody>
 		);
 	}

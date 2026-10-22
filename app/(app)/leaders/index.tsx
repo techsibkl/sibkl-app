@@ -19,6 +19,7 @@ import {
 
 import FolderList from "@/components/Leaders/FolderList";
 import SortDropdown from "@/components/Leaders/SortDropdown";
+import QueryErrorState from "@/components/shared/QueryErrorState";
 import SkeletonGallery from "@/components/shared/Skeleton/SkeletonGallery";
 import { useLocalSearchParams } from "expo-router";
 import { Grid3x2Icon, ListIcon } from "lucide-react-native";
@@ -27,7 +28,13 @@ const LeadersPage = () => {
 	const { isDark } = useThemeColors();
 	const { isGuest } = useAuthStore();
 	const router = useRouter();
-	const { data: resources, isPending, isError } = useResourcesQuery();
+	const {
+		data: resources,
+		isPending,
+		isError,
+		refetch,
+		isFetching,
+	} = useResourcesQuery();
 	const [searchQuery, setSearchQuery] = useState("");
 	const [viewMode, setViewMode] = useState<"gallery" | "list">("gallery");
 	const [sortAsc, setSortAsc] = useState(false);
@@ -72,7 +79,15 @@ const LeadersPage = () => {
 	}
 
 	if (isError) {
-		return <Text>Error loading resources</Text>;
+		return (
+			<SharedBody>
+				<QueryErrorState
+					onRetry={() => void refetch()}
+					isRetrying={isFetching}
+					title="Couldn't load resources"
+				/>
+			</SharedBody>
+		);
 	}
 
 	return (

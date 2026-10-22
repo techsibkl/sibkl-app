@@ -1,5 +1,6 @@
 import SharedBody from "@/components/shared/SharedBody";
 import SharedButton from "@/components/shared/SharedButton";
+import { SkeletonRow } from "@/components/shared/Skeleton/SkeletonRow";
 import { useEventQuery } from "@/hooks/Event/useEventQuery";
 import { useAuthStore } from "@/stores/authStore";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
@@ -12,7 +13,7 @@ const EventConfirmationScreen = () => {
 	const { eventId } = useLocalSearchParams<{ eventId: string }>();
 	const router = useRouter();
 	const { isGuest } = useAuthStore();
-	const { data: event } = useEventQuery(eventId);
+	const { data: event, isPending: eventPending } = useEventQuery(eventId);
 
 	if (isGuest) {
 		return <Redirect href="/(auth)/sign-in" />;
@@ -30,7 +31,12 @@ const EventConfirmationScreen = () => {
 					<Text className="text-2xl font-bold text-text text-center">
 						You're registered!
 					</Text>
-					{event?.name ? (
+					{eventPending ? (
+						<View className="w-full items-center py-1">
+							<SkeletonRow width="90%" height={18} borderRadius={6} />
+							<SkeletonRow width="70%" height={18} borderRadius={6} />
+						</View>
+					) : event?.name ? (
 						<Text className="text-base text-gray-600 text-center">
 							Your registration for{" "}
 							<Text className="font-semibold">{event.name}</Text>{" "}

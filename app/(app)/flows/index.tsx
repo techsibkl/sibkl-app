@@ -12,6 +12,7 @@ import PeopleFlowList, {
 import SortButton from "@/components/Flows/SortButton";
 import FlowStatusTabs from "@/components/Flows/StatusTabs";
 import HelpDialog from "@/components/shared/HelpDialog";
+import QueryErrorState from "@/components/shared/QueryErrorState";
 import SharedBody from "@/components/shared/SharedBody";
 import SharedModal from "@/components/shared/SharedModal";
 import {
@@ -67,14 +68,18 @@ const FlowsPage = () => {
 	const {
 		data: singleFlowPeople,
 		isPending: singleFlowPending,
+		isError: singleFlowError,
 		refetch: singleFlowRefetch,
+		isFetching: singleFlowFetching,
 	} = usePeopleFlowQuery(selectedFlowId);
 
 	// All-accessible query — one call, backend CASL-scoped; all filters applied client-side
 	const {
 		data: allPeople,
 		isPending: allPeoplePending,
+		isError: allPeopleError,
 		refetch: allPeopleRefetch,
+		isFetching: allPeopleFetching,
 	} = usePeopleFlowAllQuery();
 
 	const flowIds = useMemo(
@@ -85,13 +90,40 @@ const FlowsPage = () => {
 	const {
 		data: flows,
 		isPending: flowsPending,
+		isError: flowsError,
 		refetch: flowRefetch,
+		isFetching: flowsFetching,
 	} = useFlowsQuery(flowIds as number[]);
 
 	const allPending = useMemo(
 		() => singleFlowPending || allPeoplePending || flowsPending,
 		[singleFlowPending, allPeoplePending, flowsPending],
 	);
+
+	const listQueryError = useMemo(
+		() =>
+			selectedFlowId === 0
+				? allPeopleError || flowsError
+				: singleFlowError,
+		[selectedFlowId, allPeopleError, flowsError, singleFlowError],
+	);
+
+	const listQueryRetrying = useMemo(
+		() =>
+			selectedFlowId === 0
+				? allPeopleFetching || flowsFetching
+				: singleFlowFetching,
+		[selectedFlowId, allPeopleFetching, flowsFetching, singleFlowFetching],
+	);
+
+	const retryListQueries = () => {
+		if (selectedFlowId === 0) {
+			void allPeopleRefetch();
+			void flowRefetch();
+		} else {
+			void singleFlowRefetch();
+		}
+	};
 
 	// Derived identity sets for client-side filtering/sectioning.
 	// .map(Number) guards against the common JSON string/number type mismatch.
@@ -332,14 +364,22 @@ const FlowsPage = () => {
 				onSelect={setSelectedStatus}
 			/>
 
-			<PeopleFlowList
-				key={flows?.map((f) => f.id).toString()}
-				listData={listData}
-				flows={flows}
-				selectedFlowId={selectedFlowId}
-				onRefresh={refresh}
-				isPending={allPending}
-			/>
+			{listQueryError ? (
+				<QueryErrorState
+					onRetry={retryListQueries}
+					isRetrying={listQueryRetrying}
+					title="Couldn't load follow-up list"
+				/>
+			) : (
+				<PeopleFlowList
+					key={flows?.map((f) => f.id).toString()}
+					listData={listData}
+					flows={flows}
+					selectedFlowId={selectedFlowId}
+					onRefresh={refresh}
+					isPending={allPending}
+				/>
+			)}
 
 			{/* Help Modals */}
 			<SharedModal

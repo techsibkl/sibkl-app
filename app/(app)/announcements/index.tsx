@@ -1,11 +1,19 @@
 import AnnouncementAllList from "@/components/Announcement/AnnouncementAllList";
+import QueryErrorState from "@/components/shared/QueryErrorState";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
+import SkeletonList from "@/components/shared/Skeleton/SkeletonList";
 import { useAnnouncementsQuery } from "@/hooks/Announcement/useAnnouncementsQuery";
 import React, { useMemo, useState } from "react";
 
 const AnnouncementsPage = () => {
-	const { data: announcements, isPending } = useAnnouncementsQuery();
+	const {
+		data: announcements,
+		isPending,
+		isError,
+		refetch,
+		isFetching,
+	} = useAnnouncementsQuery();
 	const [searchQuery, setSearchQuery] = useState("");
 
 	const filtered = useMemo(() => {
@@ -19,6 +27,10 @@ const AnnouncementsPage = () => {
 		);
 	}, [announcements, searchQuery]);
 
+	const handleRetry = () => {
+		void refetch();
+	};
+
 	return (
 		<SharedBody>
 			<SharedSearchBar
@@ -26,7 +38,17 @@ const AnnouncementsPage = () => {
 				onSearchChange={setSearchQuery}
 				placeholder="Search announcements..."
 			/>
-			<AnnouncementAllList announcements={filtered} />
+			{isPending ? (
+				<SkeletonList length={5} />
+			) : isError ? (
+				<QueryErrorState
+					onRetry={handleRetry}
+					isRetrying={isFetching}
+					title="Couldn't load announcements"
+				/>
+			) : (
+				<AnnouncementAllList announcements={filtered} />
+			)}
 		</SharedBody>
 	);
 };

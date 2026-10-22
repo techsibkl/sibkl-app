@@ -7,6 +7,7 @@ import AddMembersSheet from "@/components/Cells/Profile/AddMembersSheet";
 import MembersList from "@/components/Cells/Profile/MembersList";
 import SearchMembersModal from "@/components/Cells/Profile/SearchMembersModal";
 import HelpDialog from "@/components/shared/HelpDialog";
+import QueryErrorState from "@/components/shared/QueryErrorState";
 import SharedBody from "@/components/shared/SharedBody";
 import SharedModal from "@/components/shared/SharedModal";
 import SkeletonCellProfile from "@/components/shared/Skeleton/SkeletonCellProfile";
@@ -88,9 +89,9 @@ const CellProfileScreen = () => {
 	const {
 		data: cellFromApi,
 		isPending,
-		error: queryError,
 		isError,
 		refetch,
+		isFetching,
 	} = useSingleCellQuery(Number(id));
 
 	const isSamePerson = (value: number | string | null | undefined) =>
@@ -440,12 +441,14 @@ const CellProfileScreen = () => {
 			</SharedBody>
 		);
 
-	if (isError && canManageCell)
+	if (isError)
 		return (
 			<SharedBody>
-				<Text>Type of Id: {typeof id}</Text>
-				<Text>{queryError?.message + "ID: " + id}</Text>
-				<Text>{queryError?.name}</Text>
+				<QueryErrorState
+					onRetry={() => void refetch()}
+					isRetrying={isFetching}
+					title="Couldn't load group"
+				/>
 			</SharedBody>
 		);
 
