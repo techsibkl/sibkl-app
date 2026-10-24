@@ -1,370 +1,225 @@
-# Build-Time Feature Flags (Pilot Builds)
+# Feature flags and launch gating
 
-Guide for adding and gating experimental features in the SIBKL mobile app using a single build-time flag: `PILOT_BUILD`.
+How the app decides whether a tab or feature is visible. Two layers exist. Only the runtime layer currently hides product features.
 
----
-
-## Overview
-
-The app ships two kinds of binaries from **one codebase**:
-
-| Build type | Distribution | `PILOT_BUILD` | Purpose |
-|------------|--------------|---------------|---------|
-| **Production** | App Store / Google Play (public) | `false` | Stable public release |
-| **Pilot** | TestFlight / Google Play testing | `true` | Experimental features for testers |
-
-Pilot users are identified by **which binary they installed**, not by email, profile, or Git branch.
+**Last updated:** 2026-10-24
 
 ---
 
-## Architecture
+## Layers
 
 ```
-PILOT_BUILD env var (EAS / local shell / .env)
+GET /system/config
         │
         ▼
-app.config.ts  →  expo.extra.PILOT_BUILD  (boolean)
+stores/systemStore.ts     feature flags, app_status, store version
+        │                  disk cache is fallback only
+        ▼
+hooks/useFeatureFlag.ts   flag AND launch gate
         │
         ▼
-config/featureFlags.ts  →  featureFlags.{cells, cellFollowUp, ...}
-        │
-        ▼
-Components / navigation  →  hide or show UI (no locked/disabled states)
+Tabs, screens, actions
+
+config/featureFlags.ts    binaryFeatureFlags (build-time hard guard)
+                          all product keys are commented out today
 ```
 
-**Single source of truth for app code:** `config/featureFlags.ts`
+| Layer | Source | What it does now |
+|-------|--------|------------------|
+| Runtime flag | `feature_flags` on `GET /system/config` | Turns a feature on or off for every binary |
+| Launch gate | `app_status` on the same response, plus local countdown | Keeps runtime flags off until the launch window is open |
+| Binary guard | `extra.PILOT_BUILD` via `binaryFeatureFlags` | Settings footer label only. It does not hide Cells, Events, or attendance |
 
-**Do not** read `process.env.PILOT_BUILD` in components. Environment variables are resolved at build time in `app.config.ts` and exposed through Expo `extra`, the same pattern used for `ENV` and `API_URL`.
+`PILOT_BUILD` is still set per EAS profile. It is not the switch that shows or hides tabs. Do not read `process.env.PILOT_BUILD` in components.
+
+Backend auth still applies. A hidden tab is not a permission check.
 
 ---
 
-## Current flags
+## Runtime flags
 
-Defined in `config/featureFlags.ts`:
+Defined on `FeatureFlags` in `types/SystemConfig.ts` and defaulted to `false` in `stores/systemStore.ts`:
 
-| Flag | Pilot (`true`) | Production (`false`) | What it gates |
-|------|----------------|----------------------|---------------|
-| `isPilotBuild` | `true` | `false` | Debug label only (Settings footer) |
-| `cells` | enabled | hidden | Cells tab, cells stack, profile Cells tab |
-| `cellFollowUp` | enabled | hidden | Cell assignment in Follow-up flows |
-| `cellAttendance` | enabled | hidden | Scan QR, Sessions, Attendance tab |
+| Key | What the client gates |
+|-----|------------------------|
+| `people` | People tab |
+| `guestFollowUp` | Follow-up tab (the whole tab, not only guest users) |
+| `leadersPage` | Leaders tab |
+| `cells` | Cells tab and the Cells section on a person profile |
+| `cellFollowUp` | Cell assignment UI inside Follow-up |
+| `cellAttendance` | Cell QR scan, sessions, and the attendance tab actions |
+| `events` | Events tab. Also requires a signed-in user (`!isGuest`) |
 
-All feature flags currently derive from `PILOT_BUILD`. When pilot ends, flip production builds to `false` and remove gating code in a follow-up cleanup PR if desired.
+Home and Settings are always in the tab bar.
 
----
+### Resolution order
 
-## Configuration files
+`useFeatureFlag(key)` returns `featureFlags[key] && launchGatePassed`.
 
-| File | Role |
-|------|------|
-| `config/featureFlags.ts` | Central flag definitions — **edit here first** |
-| `app.config.ts` | Reads `process.env.PILOT_BUILD`, writes `extra.PILOT_BUILD` |
-| `eas.json` | Sets `PILOT_BUILD` per EAS build profile |
-| `package.json` | Local run scripts with/without `PILOT_BUILD=true` |
+1. **API wins.** A successful `fetchSystemConfig()` replaces in-memory flags and writes `system_feature_flags.json` under the app document directory.
+2. **Disk is a fallback.** On cold start, `hydratePersistedFlags()` restores the last successful payload so the tab bar can render before the network returns. A failed fetch keeps those flags. It does not reset them to `false`.
+3. **First install.** No disk file yet, so every flag stays `false` until the first successful fetch.
 
-### EAS build profiles
-
-| Profile | `PILOT_BUILD` | `APP_ENV` | Use case |
-|---------|---------------|-----------|----------|
-| `development` | `true` | (from `.env`) | Dev client |
-| `staging` | `true` | `staging` | Internal staging builds |
-| `pilot` | `true` | `production` | TestFlight / Play testing on prod API |
-| `production` | `false` | `production` | Public App Store / Play release |
-
-The `pilot` profile uses the **production API** and **production bundle ID**, but enables pilot UI. That lets testers exercise real prod data without exposing features to the general public.
-
-### iOS build image (Xcode 26+)
-
-Apple requires App Store submissions to be built with **Xcode 26 or newer** (since April 2026). All EAS profiles use `"image": "latest"` (Xcode 26.x) via the shared `base` profile.
-
-React Native 0.79 bundles `fmt` 11.x, which fails on Xcode 26 unless patched. The app includes `plugins/withFmtConstevalFix.js`, which injects a Podfile hook during prebuild to disable `FMT_USE_CONSTEVAL`. Remove this plugin after upgrading to a React Native release that bundles `fmt` ≥ 12.1.0.
-
-**EAS Build only uploads git-tracked files.** You must commit and push `plugins/withFmtConstevalFix.js` and the `app.config.ts` plugin entry — local-only changes are not sent to EAS cloud builds.
-
----
-
-## Building
-
-### Pilot build (features ON)
-
-```bash
-# EAS — recommended for TestFlight / Play testing
-eas build --profile pilot --platform ios
-eas build --profile pilot --platform android
-
-# Submit
-eas submit --profile pilot --platform ios
-eas submit --profile pilot --platform android
-```
-
-### Production build (features OFF)
-
-```bash
-eas build --profile production --platform ios
-eas build --profile production --platform android
-```
-
-### Local device runs
-
-```bash
-# Pilot (prod API, flags on)
-npm run ios:pilot
-npm run android:pilot
-
-# Production-like (prod API, flags off)
-npm run ios:prod
-npm run android:prod
-
-# Dev / staging (flags on by default in scripts)
-npm run ios:dev
-npm run ios:staging
-```
-
-### Metro / dev client
-
-Set in your local `.env` (not committed):
-
-```env
-PILOT_BUILD=true
-```
-
-Or inline:
-
-```bash
-PILOT_BUILD=true npm start
-```
-
-If `PILOT_BUILD` is unset, it defaults to **`false`** (production-safe).
-
-> **Note:** Changing `PILOT_BUILD` requires restarting Metro and, for native builds, re-running `expo run:ios` / `expo run:android` so `app.config.ts` is re-evaluated.
-
----
-
-## Verifying the current binary
-
-1. **Settings screen** — footer shows `vX.Y.Z · Pilot` or `vX.Y.Z · Production`.
-2. **Metro console** (dev only) — look for:
-   ```
-   [featureFlags] isPilotBuild: true | flags: { cells: true, ... }
-   ```
-
----
-
-## Adding a new pilot feature
-
-### Step 1 — Add the flag
-
-In `config/featureFlags.ts`:
-
-```ts
-export const featureFlags = {
-  isPilotBuild,
-  cells: isPilotBuild,
-  cellFollowUp: isPilotBuild,
-  cellAttendance: isPilotBuild,
-  myNewFeature: isPilotBuild, // ← add here
-} as const;
-```
-
-Use a dedicated flag even if it currently mirrors `isPilotBuild`. That makes it easy to split flags later (e.g. ship cells but not attendance).
-
-### Step 2 — Gate UI entry points
-
-Import once:
-
-```ts
-import { featureFlags } from "@/config/featureFlags";
-```
-
-**Conditional render (buttons, cards, sections):**
+Call sites:
 
 ```tsx
-{featureFlags.myNewFeature && (
-  <TouchableOpacity onPress={handlePress}>
-    <Text>New Feature</Text>
-  </TouchableOpacity>
-)}
-```
+const showCells = useFeatureFlag("cells");
 
-**Tab bar (Expo Router):**
-
-```tsx
 <Tabs.Screen
-  name="my-feature"
-  options={{
-    title: "My Feature",
-    href: featureFlags.myNewFeature ? "/(app)/my-feature" : null,
-  }}
+  name="cells"
+  options={{ href: showCells ? "/(app)/cells" : null }}
 />
 ```
 
-**Stack layout guard (deep links):**
+`href: null` removes the tab. Deep links into a hidden stack are not given a second binary redirect; the tab layout is the entry gate.
+
+Cell attendance is the exception to “hide completely”: the Scan / Sessions actions stay on the cell profile and open a “Feature not released yet” dialog while `cellAttendance` is false.
+
+---
+
+## Launch window
+
+A new `app_status.launch_version` (different from the version stored in `seen_launch_version.txt`) sets `hasNewLaunch`. The launch gate applies only while `hasNewLaunch` is true. After `acknowledgeLaunch()`, flags follow the server value alone, even if `launch_date` is still in the future.
+
+While `hasNewLaunch` is true, runtime flags stay off until one of these is true:
+
+- `app_status.status === "unlocked"` (early start, even if `launch_date` is in the future)
+- the device clock has reached `launch_date` (`utils/launchWindow.ts`, `isLaunchWindowOpen`)
+- the user has activated this version (`hasActivatedLaunch`)
+
+`useFeatureFlag` ticks locally while the window is locked, so tabs can appear at `launch_date` without waiting for a backend row flip.
+
+Home shows `LaunchBanner` while `hasNewLaunch` is true. It routes to `/(app)/home/launch` and hides the tab bar on that screen.
+
+Pull-to-refresh on the launch screen calls `fetchSystemConfig()`, then `activateLaunch()` when `isLaunchWindowOpen` is true. That writes `activated_launch_version.txt`. The unlocked launch page is restored after a cold start when that file matches the current version, or when the server status is already `unlocked` (the store treats remote unlock as activation and persists it).
+
+`acknowledgeLaunch()` writes the seen version and deletes the activated file. The banner goes away. Flags stay available because `hasNewLaunch` is now false.
+
+`app_version` on the same config is separate. It drives the store-update prompt (`needsAppUpdate`) and does not gate features.
+
+### Config refresh
+
+| Trigger | Behavior |
+|---------|----------|
+| App start | `fetchSystemConfig()` |
+| Foreground FCM with `data.type === "system_config_updated"` | Refetch immediately |
+| App returns to foreground | Refetch if the last fetch was more than 5 minutes ago |
+| Background FCM | Logged only. The foreground `AppState` listener is the catch-up |
+
+The device subscribes to the FCM topic `system-config` after notification permission is granted (`app/_layout.tsx`). No per-device token is required for that topic.
+
+---
+
+## Binary flag (`PILOT_BUILD`)
+
+`app.config.ts` sets `extra.PILOT_BUILD` to the boolean `process.env.PILOT_BUILD === "true"`.
+
+`binaryFeatureFlags` in `config/featureFlags.ts` only exports `isPilotBuild` today. The `cells`, `cellAttendance`, and `cellFollowUp` binary keys are commented out. To hard-remove a feature from non-pilot binaries again, uncomment or add a key there and combine it with the hook:
 
 ```tsx
-if (!featureFlags.myNewFeature) {
-  return <Redirect href="/(app)/home" />;
-}
+const canSee = binaryFeatureFlags.cells && useFeatureFlag("cells");
 ```
 
-**Dynamic lists (tabs, menu items):**
+Features that should exist in every binary need `useFeatureFlag` only.
 
-```ts
-const tabs = [
-  "Info",
-  ...(featureFlags.myNewFeature ? ["My Feature"] : []),
-  "Settings",
-];
+### EAS profiles
+
+Shared iOS image: `macos-sequoia-15.6-xcode-26.2` on the `base` profile (`eas.json`). React Native 0.79’s `fmt` 11.x fails on Xcode 26 unless `plugins/withFmtConstevalFix.js` is applied from `app.config.ts`. That plugin file must be committed; EAS only uploads git-tracked files. Remove it after a React Native release that bundles `fmt` ≥ 12.1.0.
+
+| Profile | `PILOT_BUILD` | Use |
+|---------|---------------|-----|
+| `development` | `true` | Dev client |
+| `staging` | `true` | Internal staging |
+| `pilot` | `true` | Store distribution against the production API |
+| `production` | `false` | Public store binary |
+
+Local scripts (`package.json`):
+
+```bash
+npm run ios:dev            # .env.development, PILOT_BUILD unset
+npm run ios:dev:pilot      # .env.development, PILOT_BUILD=true
+npm run ios:staging        # .env.staging, PILOT_BUILD=true
+npm run ios:prod           # .env.production, PILOT_BUILD unset
+npm run ios:pilot          # .env.production, PILOT_BUILD=true
+# android:dev, android:dev:pilot, android:staging, android:prod, android:pilot match the same envs
 ```
 
-### Step 3 — Hide, do not disable
+Changing `PILOT_BUILD` requires a new native build. Metro restart alone does not re-run `app.config.ts` inside an existing dev client.
 
-When a feature is off:
+### Settings footer
 
-- Remove navigation items (`href: null`).
-- Do not render buttons, cards, or tabs.
-- Do **not** show greyed-out / locked UI unless product explicitly requires it.
+The footer prints `Pilot` when `binaryFeatureFlags.isPilotBuild` is true. That constant is true only when `extra.PILOT_BUILD` is boolean `false` or the string `"false"`. Because `app.config.ts` stores a boolean, a production build (`PILOT_BUILD=false`) shows **Pilot**, and a pilot build (`PILOT_BUILD=true`) shows **Production**. Do not use the footer to confirm the env var or to explain a missing tab. Check `/system/config` and `useFeatureFlag`.
 
-Existing non-pilot behaviour must stay unchanged.
-
-### Step 4 — Test both modes
-
-- [ ] Pilot build: feature visible and usable.
-- [ ] Production build: feature completely absent (not just disabled).
-- [ ] Deep link to gated route redirects or 404s gracefully in production.
-- [ ] Settings footer shows correct Pilot / Production label.
+Dev logs: `[binaryFeatureFlags] isPilotBuild: …`.
 
 ---
 
-## Gating patterns in this codebase
+## Adding a flag
 
-Reference implementations you can copy:
-
-| Pattern | Example file |
-|---------|----------------|
-| Hide bottom tab | `app/(app)/_layout.tsx` |
-| Redirect entire stack | `app/(app)/cells/_layout.tsx` |
-| Hide profile tab | `app/(app)/profile/[id].tsx` |
-| Hide action buttons + sub-tabs | `app/(app)/cells/profile/[id].tsx` |
-| Hide follow-up cell UI | `components/Flows/PeopleFlowDialog.tsx` |
-| Hide flow action component | `components/Flows/Actions/AssignDistrictCellAction.tsx` |
-| Hide list row metadata | `components/Flows/PeopleFlowRow.tsx` |
-| Hide FAB actions | `constants/cont_cells.ts` |
+1. Add the camelCase key to `FeatureFlags` in `types/SystemConfig.ts`. The key must match `app_feature_flags.key` from the API.
+2. Add the same key to `DEFAULT_FLAGS` in `stores/systemStore.ts` as `false`.
+3. Gate every entry point with `useFeatureFlag("myFeature")`: tab `href`, stack screens, buttons, and list metadata.
+4. Prefer removing the UI (`href: null`, conditional render). Cell attendance is the existing locked-dialog exception.
+5. Add a `binaryFeatureFlags` entry only if the feature must be absent from non-pilot binaries even when the server flag is on.
+6. Confirm the backend still authorizes the API. The client flag is not a security boundary.
 
 ---
 
-## What NOT to do
+## Relationship to auth
 
-| Avoid | Why |
-|-------|-----|
-| `if (process.env.PILOT_BUILD)` in components | Env is not available at runtime; use `featureFlags` |
-| Email / user-profile checks for pilot | Unreliable; build type is the source of truth |
-| Git branch logic | Same codebase must produce both binaries |
-| Third-party flag services | Out of scope; keep it lightweight |
-| Treating flags as security | Frontend hiding ≠ authorization |
-| Locked/disabled UI for hidden features | Product requirement is full hide |
+Flags decide whether the feature is shipped in this session. They do not replace:
 
----
-
-## Security
-
-**Feature flags are frontend availability only.**
-
-- A production user can still call backend APIs directly if they know the endpoints.
-- Backend must continue to authenticate (Firebase) and authorize (CASL) independently.
-- `PILOT_BUILD` is embedded in the binary at compile time — it is not secret and can be inspected.
-- Never skip server-side permission checks because a feature is “pilot only”.
-
-When rolling out a pilot feature, ensure the backend either:
-
-1. Already enforces proper roles/permissions, or
-2. Is updated to reject unauthorized access before pilot distribution.
-
----
-
-## Relationship to other access control
-
-This system is **orthogonal** to:
-
-- **Firebase Auth** — who is signed in.
-- **CASL / `useAbility()`** — what a signed-in user may do.
-- **Guest mode** — unauthenticated browsing.
-
-Typical layering:
+- Firebase Auth and guest mode (`stores/authStore.ts`)
+- CASL (`utils/casl/defineAbilityFor.ts`) — what this person may do
+- `X-Person-Revision` refresh — see `CODEBASE.md` (`secureFetch`)
 
 ```tsx
-// Pilot build AND user has permission
-{featureFlags.cells && ability.can("read", "Cell") && (
+{useFeatureFlag("cells") && ability.can("read", "CellDetails") && (
   <CellCard />
 )}
 ```
 
-Pilot flags decide **whether the feature exists in this binary**. CASL decides **whether this user can use it**.
-
----
-
-## Promoting a feature to production
-
-When a pilot feature is ready for everyone:
-
-1. Remove the `featureFlags.*` checks from UI (or set the flag to always `true` temporarily).
-2. Keep backend authorization as-is.
-3. Ship via `production` EAS profile (`PILOT_BUILD=false`).
-4. Remove the flag from `featureFlags.ts` in a cleanup PR once no longer needed.
-
-You do **not** need a separate Git branch or a new app binary type after promotion — just stop gating the UI.
+`useFeatureFlag` is a hook. Do not call it inside a condition. Read it once at the top of the component, which is what `CellProfileScreen` does so early returns do not change the hook count.
 
 ---
 
 ## Troubleshooting
 
-| Symptom | Likely cause | Fix |
-|---------|--------------|-----|
-| Feature missing in dev | `PILOT_BUILD` not set | `PILOT_BUILD=true npm start` or use `ios:dev` script |
-| Feature still visible after setting `false` | Stale native build / cache | Re-run `expo run:ios` or `eas build` |
-| iOS build fails with `fmt::basic_format_string` consteval error | Xcode 26 + unpatched fmt | Ensure `./plugins/withFmtConstevalFix` is in `app.config.ts` plugins |
-| EAS says build cannot be submitted (Xcode 16) | Old EAS image | Use `"image": "latest"` in `eas.json` (Xcode 26+) |
-| Settings says Pilot but feature hidden | Flag not wired to UI | Check `featureFlags.ts` and component import |
-| `featureFlags` all false in EAS build | Wrong profile | Use `pilot` or `staging`, not `production` |
-| Env set but flag still false | `app.config.ts` not re-run | Restart Metro; rebuild native app |
-
----
-
-## Quick checklist (copy for PRs)
-
-```markdown
-## Feature flag checklist
-
-- [ ] Added flag to `config/featureFlags.ts`
-- [ ] Gated all navigation entry points (tabs, stacks, deep links)
-- [ ] Gated buttons, cards, and sub-tabs
-- [ ] No direct `process.env.PILOT_BUILD` in components
-- [ ] No disabled/locked UI — feature fully hidden when off
-- [ ] Backend auth/authz unchanged or updated separately
-- [ ] Tested with `PILOT_BUILD=true` and `PILOT_BUILD=false`
-- [ ] Verified Settings footer shows correct build mode
-```
+| Symptom | Cause | What to check |
+|---------|--------|----------------|
+| Tab missing on a fresh install | Defaults are all `false` until `/system/config` succeeds | Network, `apiEndpoints.system.getConfig`, Metro log `[getSystemConfig]` |
+| Tab missing after a server enable | Launch gate still closed | `hasNewLaunch`, `app_status.status`, `launch_date`, `hasActivatedLaunch` |
+| Tab stuck on after a server disable | Last disk snapshot, fetch failing | `system_feature_flags.json`; a failed fetch does not clear flags |
+| Flag flipped on the server, app still old | Push not received in foreground, or app not resumed | FCM `system_config_updated`, or background the app for 5+ minutes and reopen |
+| Countdown hit zero, tabs still hidden | `launch_date` missing or unparseable while status is `locked` | `isLaunchWindowOpen` returns false without a valid date |
+| Launch screen stays locked at T=0 | Refresh ran before the clock crossed `launch_date` | Pull to refresh again; success calls `activateLaunch()` |
+| Banner returned after restart | `seen_launch_version.txt` does not match `launch_version` | `acknowledgeLaunch()` is what dismisses it |
+| Settings says Pilot on a production binary | Footer predicate is inverted relative to `extra.PILOT_BUILD` | Ignore the label; see Settings footer above |
+| iOS EAS build fails in `fmt` consteval | Xcode 26 image without the plugin | `./plugins/withFmtConstevalFix` in `app.config.ts` plugins, file committed |
+| `PILOT_BUILD=true` but feature still hidden | Binary flag is not the product gate | Server `feature_flags` and launch window |
 
 ---
 
 ## File reference
 
 ```
-config/featureFlags.ts          # Flag definitions (edit here)
-app.config.ts                   # PILOT_BUILD → extra.PILOT_BUILD
-eas.json                        # Per-profile PILOT_BUILD values
-app/(app)/_layout.tsx           # Tab bar gating
-app/(app)/cells/_layout.tsx     # Stack redirect
-app/(app)/settings/index.tsx    # Pilot / Production debug label
-package.json                    # Local pilot/prod run scripts
+types/SystemConfig.ts                 FeatureFlags, AppStatus, AppStoreVersion
+services/System/system.service.ts     GET /system/config
+stores/systemStore.ts                 fetch, disk cache, launch version files
+hooks/useFeatureFlag.ts               flag && launch gate
+utils/launchWindow.ts                 isLaunchWindowOpen
+app/(app)/_layout.tsx                 tab href gating
+app/(app)/home/index.tsx              LaunchBanner
+app/(app)/home/launch.tsx             locked / celebrate / unlocked
+app/_layout.tsx                       FCM topic + refetch
+config/featureFlags.ts                binaryFeatureFlags
+app.config.ts                         extra.PILOT_BUILD, fmt plugin
+eas.json                              per-profile PILOT_BUILD and Xcode image
+app/(app)/settings/index.tsx          footer label
 ```
 
----
+## Related
 
-## Related docs
-
-- [SDK_54_UPGRADE.md](./SDK_54_UPGRADE.md) — Expo SDK 53 → 54 upgrade checklist
-- [CODEBASE.md](../CODEBASE.md) — app architecture overview
-
----
-
-**Last updated:** 2026-08-16
+- [CODEBASE.md](../CODEBASE.md) — routes, services, `secureFetch`
+- [PHONE_NUMBERS.md](./PHONE_NUMBERS.md) — stored phone shape for profile and event forms
+- [SDK_54_UPGRADE.md](./SDK_54_UPGRADE.md) — Expo SDK upgrade notes
