@@ -1,3 +1,4 @@
+import { isSamePeopleId, toPeopleId } from "@/utils/cellMembership";
 import { apiEndpoints } from "@/utils/endpoints";
 import { secureFetch } from "@/utils/secureFetch";
 import { ReturnVal } from "@/utils/types/returnVal.types";
@@ -127,6 +128,12 @@ export const fetchCellSessionById = async (
 	const members = Array.isArray(data.members)
 		? data.members.map(normalizeSessionMember)
 		: [];
+	const attendees = Array.isArray(data.attendees)
+		? data.attendees.map((attendee) => ({
+				...attendee,
+				people_id: toPeopleId(attendee.people_id),
+			}))
+		: [];
 	return {
 		...data,
 		attendee_count: Number(data.attendee_count ?? 0),
@@ -134,7 +141,7 @@ export const fetchCellSessionById = async (
 		guest_count: Number(data.guest_count ?? 0),
 		total_members: Number(data.total_members ?? members.length),
 		status: data.status ?? "open",
-		attendees: Array.isArray(data.attendees) ? data.attendees : [],
+		attendees,
 		members,
 	};
 };
@@ -200,8 +207,8 @@ export const fetchPersonSessionAttendance = async (
 	for (const session of sessions) {
 		const detail = await fetchCellSessionById(cellId, session.id);
 		const isAttended =
-			detail.attendees?.some(
-				(attendee) => attendee.people_id === peopleId,
+			detail.attendees?.some((attendee) =>
+				isSamePeopleId(attendee.people_id, peopleId),
 			) ?? false;
 		attendanceMap[session.id] = isAttended;
 	}
