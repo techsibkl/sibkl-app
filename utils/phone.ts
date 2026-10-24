@@ -74,13 +74,29 @@ export function digitsOnly(phone?: string | null): string {
 	return (phone ?? "").replace(/\D/g, "");
 }
 
+/**
+ * National length required before a single-digit dial code is trusted.
+ * Malaysian mobiles are 9–10 digits and start with 1, so a bare "1…" must
+ * not be read as +1 unless a full NANP national number follows.
+ */
+const SINGLE_DIGIT_NATIONAL_LENGTH: Record<string, number> = {
+	"1": 10,
+	"7": 10,
+};
+
 /** Longest known dial code at the start of an already-international digit string. */
 export function matchDialCode(digits: string): string | null {
 	if (!digits) return null;
 	for (const code of DIAL_CODES_BY_LENGTH) {
-		if (digits.startsWith(code) && digits.length > code.length) {
-			return code;
+		if (!digits.startsWith(code) || digits.length <= code.length) continue;
+		const requiredNational = SINGLE_DIGIT_NATIONAL_LENGTH[code];
+		if (
+			requiredNational != null &&
+			digits.length - code.length !== requiredNational
+		) {
+			continue;
 		}
+		return code;
 	}
 	return null;
 }
@@ -116,6 +132,8 @@ export function joinPhone(dialCode: string, national: string): string {
 /**
  * Stored shape: digits only, country code included, no leading 0.
  * Numbers that already start with a known dial code are left unchanged.
+ * A local Malaysian mobile such as 123456789 does not count — dial code 1
+ * only matches a full 11-digit NANP number.
  */
 export function toInternationalDigits(
 	phone?: string | null,
