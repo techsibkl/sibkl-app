@@ -1,4 +1,5 @@
 import { MediaResource } from "@/services/Resource/resource.type";
+import { getResourceThumbnail, resourceSourceLabel } from "@/utils/videoEmbed";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
 import { Image, Text, TouchableOpacity, View } from "react-native";
@@ -7,27 +8,6 @@ import ViewResourceDialog from "./ViewResourceDialog";
 
 type SingleGalleryItemProps = {
 	item: MediaResource;
-};
-
-const getThumbnail = (item: MediaResource): string | null => {
-	if (item.thumbnail_id)
-		return `https://drive.google.com/thumbnail?id=${item.thumbnail_id}`;
-	if (item.drive_file_id)
-		return `https://drive.google.com/thumbnail?id=${item.drive_file_id}`;
-	if (item.youtube_link) {
-		try {
-			const u = new URL(item.youtube_link);
-			const videoId =
-				u.hostname === "youtu.be"
-					? u.pathname.slice(1)
-					: u.searchParams.get("v");
-			if (videoId)
-				return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-		} catch {
-			return null;
-		}
-	}
-	return null;
 };
 
 export default function SingleGalleryItem({ item }: SingleGalleryItemProps) {
@@ -47,7 +27,7 @@ export default function SingleGalleryItem({ item }: SingleGalleryItemProps) {
 		}
 	};
 
-	const thumbnail = getThumbnail(item);
+	const thumbnail = getResourceThumbnail(item);
 
 	return (
 		<>
@@ -82,11 +62,7 @@ export default function SingleGalleryItem({ item }: SingleGalleryItemProps) {
 							numberOfLines={2}
 							ellipsizeMode="tail"
 						>
-							{item.file_type === "PDF"
-								? "PDF Document"
-								: item.youtube_link
-									? "YouTube"
-									: "Video"}
+							{resourceSourceLabel(item)}
 						</Text>
 					</View>
 				</View>

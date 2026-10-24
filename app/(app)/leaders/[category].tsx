@@ -1,6 +1,5 @@
-import ViewResourceDialog, {
-	getThumbnail,
-} from "@/components/Leaders/ViewResourceDialog";
+import ViewResourceDialog from "@/components/Leaders/ViewResourceDialog";
+import { getResourceThumbnail, resourceSourceLabel } from "@/utils/videoEmbed";
 import QueryErrorState from "@/components/shared/QueryErrorState";
 import SharedBody from "@/components/shared/SharedBody";
 import SharedModal from "@/components/shared/SharedModal";
@@ -118,7 +117,7 @@ const CategoryResources = () => {
 					paddingVertical: 16,
 				}}
 				renderItem={({ item }) => {
-					const thumbnail = getThumbnail(item);
+					const thumbnail = getResourceThumbnail(item);
 					return (
 						<TouchableOpacity
 							className="bg-white rounded-[15px] p-2 mb-3"
@@ -154,11 +153,7 @@ const CategoryResources = () => {
 									{item.description || "No description"}
 								</Text>
 								<Text className="text-xs text-gray-500">
-									{item.file_type === "PDF"
-										? "PDF Document"
-										: item.youtube_link
-											? "YouTube"
-											: "Video"}
+									{resourceSourceLabel(item)}
 								</Text>
 							</View>
 						</TouchableOpacity>

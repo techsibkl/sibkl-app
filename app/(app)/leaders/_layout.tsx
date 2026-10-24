@@ -34,6 +34,19 @@ export default function Layout() {
 					},
 				})}
 			/>
+			<Stack.Screen
+				name="player"
+				options={({ route }) => ({
+					title: "Video",
+					headerShown: true,
+					header() {
+						const title =
+							(route.params as { title?: string })?.title ||
+							"Video";
+						return <SharedHeader title={title} isPop />;
+					},
+				})}
+			/>
 		</Stack>
 	);
 }
