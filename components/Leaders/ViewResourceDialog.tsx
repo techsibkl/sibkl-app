@@ -1,60 +1,21 @@
 import { MediaResource } from "@/services/Resource/resource.type";
+import { getResourceThumbnail, toVideoEmbedUrl } from "@/utils/videoEmbed";
+import { router, type Href } from "expo-router";
 import { Share2 } from "lucide-react-native";
 import React from "react";
-import {
-	Image,
-	Linking,
-	Share,
-	Text,
-	TouchableOpacity,
-	View,
-} from "react-native";
+import { Image, Linking, Share, Text, TouchableOpacity, View } from "react-native";
 
 type ViewResourceDialogProps = {
 	resource: MediaResource;
 };
 
-const toYoutubeEmbedUrl = (url: string): string | null => {
-	try {
-		const u = new URL(url);
-		if (u.hostname === "youtu.be") {
-			return `https://www.youtube.com/embed/${u.pathname.slice(1)}`;
-		}
-		if (u.hostname.includes("youtube.com")) {
-			const id = u.searchParams.get("v");
-			if (id) return `https://www.youtube.com/embed/${id}`;
-		}
-		return null;
-	} catch {
-		return null;
-	}
-};
-
-export const getThumbnail = (item: MediaResource): string | null => {
-	if (item.thumbnail_id)
-		return `https://drive.google.com/thumbnail?id=${item.thumbnail_id}`;
-	if (item.drive_file_id)
-		return `https://drive.google.com/thumbnail?id=${item.drive_file_id}`;
-	if (item.youtube_link) {
-		try {
-			const u = new URL(item.youtube_link);
-			const videoId =
-				u.hostname === "youtu.be"
-					? u.pathname.slice(1)
-					: u.searchParams.get("v");
-			if (videoId)
-				return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-		} catch {
-			return null;
-		}
-	}
-	return null;
-};
+export const getThumbnail = getResourceThumbnail;
 
 const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
-	const embedUrl = resource.youtube_link
-		? toYoutubeEmbedUrl(resource.youtube_link)
-		: null;
+	const watchUrl = resource.vimeo_link || resource.youtube_link || "";
+	const canWatch = !!toVideoEmbedUrl(watchUrl);
+	const fileUrl = resource.drive_view_link;
+	const shareUrl = watchUrl || fileUrl;
 
 	const handleItemPress = async (url: string) => {
 		try {
@@ -64,15 +25,20 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 		}
 	};
 
+	const openPlayer = () => {
+		router.push({
+			pathname: "/(app)/leaders/player",
+			params: { url: watchUrl, title: resource.title },
+		} as unknown as Href);
+	};
+
 	const handleShare = async () => {
-		const share_url = resource.drive_view_link || resource.youtube_link;
 		try {
 			await Share.share({
-				// On Android, `url` is ignored — the link must be in `message`
-				message: share_url
-					? `${resource.title}\n\nDownload the resource here: ${share_url}`
+				message: shareUrl
+					? `${resource.title}\n\n${canWatch ? "Watch it here" : "Download the resource here"}: ${shareUrl}`
 					: resource.title,
-				url: share_url,
+				url: shareUrl,
 				title: resource.title,
 			});
 		} catch (error) {
@@ -80,7 +46,7 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 		}
 	};
 
-	const thumbnail = getThumbnail(resource);
+	const thumbnail = getResourceThumbnail(resource);
 
 	return (
 		<View
@@ -109,9 +75,7 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 						className="w-full bg-gray-100 items-center justify-center mb-3"
 						style={{ aspectRatio: 16 / 9 }}
 					>
-						<Text className="text-gray-400 text-xs">
-							No Preview
-						</Text>
+						<Text className="text-gray-400 text-xs">No Preview</Text>
 					</View>
 				)}
 
@@ -132,33 +96,34 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 					</Text>
 				</View>
 
-				{(resource.drive_view_link || resource.youtube_link) && (
+				{(canWatch || fileUrl || shareUrl) && (
 					<View className="flex-row border-t mt-2 border-border">
-						<TouchableOpacity
-							className="flex-1 py-6 items-center justify-center border-r border-border"
-							onPress={() =>
-								handleItemPress(
-									resource.drive_view_link ??
-										resource.youtube_link!,
-								)
-							}
-						>
-							<Text className="text-gray-500 font-semibold">
-								{resource.youtube_link ? "Watch" : "Open File"}
-							</Text>
-						</TouchableOpacity>
-
-						<TouchableOpacity
-							className="flex-1 py-6 items-center justify-center"
-							onPress={handleShare}
-						>
-							<View className="flex-row items-center gap-2">
-								<Share2 size={16} color="#777" />
+						{(canWatch || fileUrl) && (
+							<TouchableOpacity
+								className="flex-1 py-6 items-center justify-center border-r border-border"
+								onPress={() =>
+									canWatch ? openPlayer() : handleItemPress(fileUrl!)
+								}
+							>
 								<Text className="text-gray-500 font-semibold">
-									Share
+									{canWatch ? "Watch" : "Open File"}
 								</Text>
-							</View>
-						</TouchableOpacity>
+							</TouchableOpacity>
+						)}
+
+						{shareUrl && (
+							<TouchableOpacity
+								className="flex-1 py-6 items-center justify-center"
+								onPress={handleShare}
+							>
+								<View className="flex-row items-center gap-2">
+									<Share2 size={16} color="#777" />
+									<Text className="text-gray-500 font-semibold">
+										Share
+									</Text>
+								</View>
+							</TouchableOpacity>
+						)}
 					</View>
 				)}
 			</View>
