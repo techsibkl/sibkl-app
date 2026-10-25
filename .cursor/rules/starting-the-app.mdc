@@ -1,0 +1,25 @@
+---
+description: Point the dev app at this PC, then start it only after the backend is healthy
+alwaysApply: true
+---
+
+# Starting the mobile app
+
+Start the backend first, from `sibkl-cms-backend/functions`:
+
+```powershell
+cd functions
+npm run serve
+```
+
+Wait until that process is still running and the log shows the Functions emulator on `0.0.0.0:5001` with no startup error.
+
+Then set this machine's LAN address in `.env.development` before launching the app. Run `ipconfig` and use the IPv4 address of the active Wi-Fi or Ethernet adapter. Skip `127.0.0.1` and `169.254.x.x`. Keep the existing port and project path; only replace the host:
+
+```text
+API_URL=http://<ipv4>:5001/leafy-loader-444703-d0/us-central1
+```
+
+Save that file, then start with a command that loads `.env.development`, such as `npm run android:dev`, or `npx dotenv -e .env.development -- npx expo start --dev-client` when a development build is already installed.
+
+Do not start the app while the emulator is still building, has printed an error, or has exited.

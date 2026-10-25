@@ -1,19 +1,29 @@
 import AnnouncementPinList from "@/components/Announcement/AnnouncementPinList";
+import ExploreGrid from "@/components/Home/ExploreGrid";
+import ForYouSection from "@/components/Home/ForYouSection";
 import LaunchBanner from "@/components/Home/LaunchBanner";
-import NotificationList from "@/components/Home/NotificationList";
 import QueryErrorState from "@/components/shared/QueryErrorState";
 import SharedBody from "@/components/shared/SharedBody";
 import SharedSectionHeader from "@/components/shared/SharedSectionHeader";
+import { useExploreDestinations } from "@/config/exploreDestinations";
 import { useAnnouncementsQuery } from "@/hooks/Announcement/useAnnouncementsQuery";
 import { useNotificationQuery } from "@/hooks/Notifications/useNotificationsQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { useRouter } from "expo-router";
-import React, { useMemo } from "react";
-import { StatusBar, View } from "react-native";
+import React, { useMemo, useState } from "react";
+import {
+	RefreshControl,
+	ScrollView,
+	StatusBar,
+	View,
+} from "react-native";
 
 const DashboardScreen = () => {
 	const router = useRouter();
 	const { isDark } = useThemeColors();
+	const exploreDestinations = useExploreDestinations();
+	const [refreshing, setRefreshing] = useState(false);
+
 	const {
 		data: announcements,
 		isPending: announcementsPending,
@@ -35,8 +45,10 @@ const DashboardScreen = () => {
 
 	const notifications = useMemo(() => data || [], [data]);
 
-	const refreshNotifications = async () => {
-		await refetchNotifications();
+	const handleRefresh = async () => {
+		setRefreshing(true);
+		await Promise.all([refetchAnnouncements(), refetchNotifications()]);
+		setRefreshing(false);
 	};
 
 	return (
@@ -46,47 +58,51 @@ const DashboardScreen = () => {
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
 
-			<LaunchBanner />
-
-			<SharedSectionHeader
-				title="Announcements"
-				onPress={() => router.push("/(app)/announcements")}
-			/>
-			{announcementsError ? (
-				<View className="min-h-[120px] mb-2">
-					<QueryErrorState
-						onRetry={() => void refetchAnnouncements()}
-						isRetrying={announcementsFetching}
-						title="Couldn't load announcements"
+			<ScrollView
+				className="flex-1"
+				contentContainerStyle={{ paddingBottom: 24 }}
+				refreshControl={
+					<RefreshControl
+						refreshing={refreshing}
+						onRefresh={() => void handleRefresh()}
+						tintColor="#6b7280"
+						colors={["#6b7280"]}
 					/>
+				}
+			>
+				<View className="pt-2">
+					<LaunchBanner />
 				</View>
-			) : (
-				<AnnouncementPinList
-					announcements={pinnedAnnouncements}
-					isPending={announcementsPending}
+
+				<ExploreGrid destinations={exploreDestinations} />
+
+				<SharedSectionHeader
+					title="Announcements"
+					onPress={() => router.push("/(app)/announcements")}
 				/>
-			)}
-
-			<SharedSectionHeader
-				title="Notifications"
-				onPress={() => router.push("/(app)/notifications")}
-			/>
-			{notificationsError ? (
-				<View className="min-h-[160px]">
-					<QueryErrorState
-						onRetry={() => void refetchNotifications()}
-						isRetrying={notificationsFetching}
-						title="Couldn't load notifications"
+				{announcementsError ? (
+					<View className="min-h-[120px] mb-2">
+						<QueryErrorState
+							onRetry={() => void refetchAnnouncements()}
+							isRetrying={announcementsFetching}
+							title="Couldn't load announcements"
+						/>
+					</View>
+				) : (
+					<AnnouncementPinList
+						announcements={pinnedAnnouncements}
+						isPending={announcementsPending}
 					/>
-				</View>
-			) : (
-				<NotificationList
-					notifications={notifications.slice(0, 5)}
-					onRefresh={refreshNotifications}
+				)}
+
+				<ForYouSection
+					notifications={notifications}
 					isPending={notificationsPending}
-					limited
+					isError={notificationsError}
+					onRetry={() => void refetchNotifications()}
+					isRetrying={notificationsFetching}
 				/>
-			)}
+			</ScrollView>
 		</SharedBody>
 	);
 };

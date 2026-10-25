@@ -3,13 +3,10 @@ import { useAuthStore } from "@/stores/authStore";
 import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
 import { Tabs } from "expo-router";
 import {
-    Calendar,
-    Circle,
-    FunnelIcon,
-    GraduationCap,
-    Home,
-    Settings,
-    Users,
+	Calendar,
+	Circle,
+	Ellipsis,
+	Home,
 } from "lucide-react-native";
 import React from "react";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
@@ -21,11 +18,8 @@ const CAMERA_ROUTES = new Set(["scanner", "qrScan"]);
 export default function AppLayout() {
 	const insets = useSafeAreaInsets();
 	const isGuest = useAuthStore((s) => s.isGuest);
-	const showPeople = useFeatureFlag("people");
 	const showEventsTab = useFeatureFlag("events") && !isGuest;
 	const showCells = useFeatureFlag("cells");
-	const showGuestFollowUp = useFeatureFlag("guestFollowUp");
-	const showLeadersPage = useFeatureFlag("leadersPage");
 	const defaultTabBarStyle = {
 		height: 50 + Math.max(insets.bottom, 8),
 		paddingTop: 2,
@@ -111,63 +105,41 @@ export default function AppLayout() {
 				}}
 			/>
 			<Tabs.Screen
-				name="people"
+				name="more"
 				options={{
-					title: "People",
-					href: showPeople ? "/(app)/people" : null,
+					title: "More",
 					tabBarIcon: ({ color, size, focused }) => (
-						<Users
+						<Ellipsis
 							size={size}
 							color={color}
 							strokeWidth={1}
 							fill={focused ? color : "none"}
 						/>
 					),
+				}}
+			/>
+			<Tabs.Screen
+				name="people"
+				options={{
+					href: null,
 				}}
 			/>
 			<Tabs.Screen
 				name="flows"
 				options={{
-					title: "Follow-up",
-					href: showGuestFollowUp ? "/(app)/flows" : null,
-					tabBarIcon: ({ color, size, focused }) => (
-						<FunnelIcon
-							size={size}
-							color={color}
-							strokeWidth={1}
-							fill={focused ? color : "none"}
-						/>
-					),
+					href: null,
 				}}
 			/>
 			<Tabs.Screen
-				// Note: with leaders/_layout, the name just needs to be (route) and not (route)/index
 				name="leaders"
 				options={{
-					title: "Leaders",
-					href: showLeadersPage ? "/(app)/leaders" : null,
-					tabBarIcon: ({ color, size, focused }) => (
-						<GraduationCap
-							size={size}
-							color={color}
-							strokeWidth={1}
-							fill={focused ? color : "none"}
-						/>
-					),
+					href: null,
 				}}
 			/>
 			<Tabs.Screen
 				name="settings"
 				options={{
-					title: "Settings",
-					tabBarIcon: ({ color, size, focused }) => (
-						<Settings
-							size={size}
-							color={color}
-							strokeWidth={1}
-							fill={focused ? color : "none"}
-						/>
-					),
+					href: null,
 				}}
 			/>
 
