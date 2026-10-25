@@ -2,6 +2,7 @@ import { EventCustomField } from "@/services/Event/event.type";
 import { Person } from "@/services/Person/person.type";
 import { getVisibleCustomFields } from "@/utils/eventCustomFields";
 import { formatPhone } from "@/utils/helper";
+import { toCalendarDateString } from "@/utils/localDate";
 
 export function buildDefaultMetadata(
 	fields: EventCustomField[] | undefined | null,
@@ -60,12 +61,8 @@ export function formatMetadataForSubmit(
 				break;
 			}
 			case "date": {
-				if (typeof value === "string") {
-					const date = new Date(value);
-					if (!Number.isNaN(date.getTime())) {
-						result[field.key] = date.toISOString().slice(0, 10);
-					}
-				}
+				const formatted = toCalendarDateString(value);
+				if (formatted) result[field.key] = formatted;
 				break;
 			}
 			case "boolean":
