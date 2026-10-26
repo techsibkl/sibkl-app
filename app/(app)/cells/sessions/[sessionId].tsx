@@ -1,4 +1,5 @@
 import SharedBody from "@/components/shared/SharedBody";
+import { useSingleCellQuery } from "@/hooks/Cell/useSingleCellQuery";
 import {
 	useCloseCellSessionMutation,
 	useToggleMemberCheckInMutation,
@@ -10,7 +11,10 @@ import {
 	CellSessionMember,
 } from "@/services/CellAttendance/cellAttendance.type";
 import { useAuthStore } from "@/stores/authStore";
-import { cellAttendanceErrorMessage } from "@/utils/cellMembership";
+import {
+	cellAttendanceErrorMessage,
+	isZoneLeaderOfCell,
+} from "@/utils/cellMembership";
 import * as FileSystem from "expo-file-system";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import * as Sharing from "expo-sharing";
@@ -159,6 +163,7 @@ export default function SessionDetailScreen() {
 		isError,
 		refetch,
 	} = useCellSessionByIdQuery(numericCellId, numericSessionId);
+	const { data: cell } = useSingleCellQuery(numericCellId);
 
 	const { mutateAsync: toggleCheckIn } = useToggleMemberCheckInMutation(
 		numericCellId,
@@ -196,7 +201,9 @@ export default function SessionDetailScreen() {
 		.includes(numericCellId);
 	const canCloseSession =
 		!isClosed &&
-		(ability.can("manage", "all") || isLeaderOrCoreOfCell);
+		(ability.can("manage", "all") ||
+			isLeaderOrCoreOfCell ||
+			isZoneLeaderOfCell(membershipPerson?.id, cell));
 
 	const attendanceRate =
 		session && session.total_members > 0
