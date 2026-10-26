@@ -3,6 +3,28 @@ type MembershipFields = {
 	member_status?: string | null;
 };
 
+type ZoneLeaderCell = {
+	zone_leader_1?: number | string | null;
+	zone_leader_2?: number | string | null;
+};
+
+/**
+ * Zone leaders are assigned on the cell (`zone_leader_1` / `zone_leader_2`),
+ * not via `leader_of_cell_ids`. Ids may arrive as strings.
+ */
+export function isZoneLeaderOfCell(
+	personId: number | string | null | undefined,
+	cell?: ZoneLeaderCell | null,
+): boolean {
+	if (personId == null || personId === "") return false;
+	const id = Number(personId);
+	if (!Number.isFinite(id)) return false;
+	return [cell?.zone_leader_1, cell?.zone_leader_2].some(
+		(leaderId) =>
+			leaderId != null && leaderId !== "" && Number(leaderId) === id,
+	);
+}
+
 const BLOCKED = new Set(["REMOVED", "REJECTED", "PENDING"]);
 
 const normalize = (value?: string | null) =>

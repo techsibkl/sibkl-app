@@ -6,6 +6,7 @@ import { useCellSessionsQuery } from "@/hooks/CellAttendance/useCellAttendanceQu
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { CellSession } from "@/services/CellAttendance/cellAttendance.type";
 import { useAuthStore } from "@/stores/authStore";
+import { isZoneLeaderOfCell } from "@/utils/cellMembership";
 import {
 	BottomSheetModal,
 	BottomSheetModalProvider,
@@ -77,9 +78,6 @@ export default function SessionsScreen() {
 	]
 		.map(Number)
 		.includes(cellId);
-	const canCreateSession =
-		ability.can("manage", "all") ||
-		(isLeaderOrCoreOfCell && ability.can("create", "CellSession"));
 
 	const {
 		data: sessions,
@@ -89,6 +87,11 @@ export default function SessionsScreen() {
 	} = useCellSessionsQuery(cellId);
 
 	const { data: cellData } = useSingleCellQuery(cellId);
+	const isZoneLeader = isZoneLeaderOfCell(membershipPerson?.id, cellData);
+	const canCreateSession =
+		ability.can("manage", "all") ||
+		isZoneLeader ||
+		(isLeaderOrCoreOfCell && ability.can("create", "CellSession"));
 
 	const handleRefresh = async () => {
 		setRefreshing(true);
