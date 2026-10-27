@@ -22,4 +22,5 @@ export type MediaResource = {
 	youtube_url?: string;
 	upload_to_youtube?: boolean;
 	youtube_link?: string;
+	vimeo_link?: string;
 };

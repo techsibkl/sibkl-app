@@ -1,3 +1,5 @@
+import VimeoFullscreenHost from "@/components/Leaders/VimeoFullscreenHost";
+import VimeoThumbnailBridge from "@/components/Leaders/VimeoThumbnailBridge";
 import SharedHeader from "@/components/shared/SharedHeader";
 import { Stack } from "expo-router";
 import React from "react";
@@ -8,32 +10,36 @@ export const unstable_settings = {
 
 export default function Layout() {
 	return (
-		<Stack>
-			<Stack.Screen
-				name="index"
-				options={{
-					title: "Leaders",
-					headerShown: true,
-					header() {
-						return <SharedHeader title="Leader's Page" />;
-					},
-				}}
-			/>
-			<Stack.Screen
-				name="[category]"
-				options={({ route }) => ({
-					title: "Resource",
-					headerShown: true,
-					header() {
-						return (
-							<SharedHeader
-								title={(route.params as any).category}
-								isPop
-							/>
-						);
-					},
-				})}
-			/>
-		</Stack>
+		<>
+			<Stack>
+				<Stack.Screen
+					name="index"
+					options={{
+						title: "Leaders",
+						headerShown: true,
+						header() {
+							return <SharedHeader title="Leader's Page" />;
+						},
+					}}
+				/>
+				<Stack.Screen
+					name="[category]"
+					options={({ route }) => ({
+						title: "Resource",
+						headerShown: true,
+						header() {
+							return (
+								<SharedHeader
+									title={(route.params as any).category}
+									isPop
+								/>
+							);
+						},
+					})}
+				/>
+			</Stack>
+			<VimeoThumbnailBridge />
+			<VimeoFullscreenHost />
+		</>
 	);
 }

@@ -55,7 +55,7 @@ function throwApiError(json: ReturnVal): never {
 }
 
 export const fetchEvents = async (): Promise<Event[]> => {
-	const response = await secureFetch(apiEndpoints.events.getAll);
+	const response = await secureFetch(`${apiEndpoints.events.getAll}?status=published`);
 	const json: ReturnVal = await response.json();
 
 	if (!json.success) {
