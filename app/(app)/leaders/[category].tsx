@@ -1,6 +1,5 @@
-import ViewResourceDialog, {
-	getThumbnail,
-} from "@/components/Leaders/ViewResourceDialog";
+import ResourceThumbnail from "@/components/Leaders/ResourceThumbnail";
+import ViewResourceDialog from "@/components/Leaders/ViewResourceDialog";
 import SharedBody from "@/components/shared/SharedBody";
 import SharedModal from "@/components/shared/SharedModal";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
@@ -11,7 +10,6 @@ import { useLocalSearchParams, useRouter } from "expo-router";
 import React, { useMemo, useState } from "react";
 import {
 	ActivityIndicator,
-	Image,
 	Text,
 	TouchableOpacity,
 	View,
@@ -109,7 +107,6 @@ const CategoryResources = () => {
 					paddingVertical: 16,
 				}}
 				renderItem={({ item }) => {
-					const thumbnail = getThumbnail(item);
 					return (
 						<TouchableOpacity
 							className="bg-white rounded-[15px] p-2 mb-3"
@@ -117,19 +114,10 @@ const CategoryResources = () => {
 							onPress={() => setSelectedResource(item)}
 						>
 							<View className="flex-1 gap-y-1">
-								{thumbnail ? (
-									<Image
-										source={{ uri: thumbnail }}
-										className="w-full h-56 rounded-[15px] mb-3"
-										resizeMode="cover"
-									/>
-								) : (
-									<View className="w-full h-56 rounded-[15px] mb-3 bg-gray-100 items-center justify-center">
-										<Text className="text-gray-400 text-xs">
-											No Preview
-										</Text>
-									</View>
-								)}
+								<ResourceThumbnail
+									resource={item}
+									className="w-full h-56 rounded-[15px] mb-3"
+								/>
 								<Text
 									className="font-bold text-xl"
 									numberOfLines={2}
@@ -147,9 +135,11 @@ const CategoryResources = () => {
 								<Text className="text-xs text-gray-500">
 									{item.file_type === "PDF"
 										? "PDF Document"
-										: item.youtube_link
-											? "YouTube"
-											: "Video"}
+										: item.vimeo_link
+											? "Vimeo"
+											: item.youtube_link
+												? "YouTube"
+												: "Video"}
 								</Text>
 							</View>
 						</TouchableOpacity>
