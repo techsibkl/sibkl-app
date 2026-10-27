@@ -121,7 +121,7 @@ export default function LaunchScreen() {
 			{/* Hides header during animation */}
 			{!(screenState === "celebrating") && (
 				<SharedHeader
-					title="Leader's Advance 2026"
+					title="Leaders Advance 2026"
 					isPop
 					className="!bg-white"
 				/>
@@ -175,7 +175,7 @@ export default function LaunchScreen() {
 						>
 							<View className="px-3 py-1 bg-amber-100 rounded-full">
 								<Text className="text-amber-700 text-xs font-bold tracking-widest">
-									LEADER'S ADVANCE 2026
+									LEADERS ADVANCE 2026
 								</Text>
 							</View>
 							<Text className="text-3xl font-bold text-text text-center leading-tight">
