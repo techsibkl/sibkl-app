@@ -43,7 +43,7 @@ export const UnlockedView = ({ onCheckIn, onBack }: Props) => (
 			>
 				<QrCodeIcon size={18} color="white" strokeWidth={2} />
 				<Text className="text-white font-bold text-base">
-					Check in for Leader's Advance
+					Check in for Leaders Advance
 				</Text>
 			</TouchableOpacity>
 

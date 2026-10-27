@@ -1,7 +1,6 @@
 import { EventCustomField } from "@/services/Event/event.type";
 import { Person } from "@/services/Person/person.type";
 import { getVisibleCustomFields } from "@/utils/eventCustomFields";
-import { formatPhone } from "@/utils/helper";
 
 export function buildDefaultMetadata(
 	fields: EventCustomField[] | undefined | null,
@@ -71,11 +70,6 @@ export function formatMetadataForSubmit(
 			case "boolean":
 				result[field.key] = Boolean(value);
 				break;
-			case "phone": {
-				const formatted = formatPhone(String(value));
-				if (formatted) result[field.key] = formatted;
-				break;
-			}
 			default:
 				result[field.key] = value;
 		}
