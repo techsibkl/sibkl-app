@@ -3,6 +3,23 @@ type MembershipFields = {
 	member_status?: string | null;
 };
 
+/**
+ * Person ids arrive as numbers or numeric strings. `===` and Map keys miss
+ * a checked-in member when one side was coerced and the other was not.
+ * Null stays null so guest rows are not turned into person 0.
+ */
+export function toPeopleId(value: unknown): number | null {
+	if (value == null || value === "") return null;
+	const id = Number(value);
+	return Number.isFinite(id) ? id : null;
+}
+
+export function isSamePeopleId(left: unknown, right: unknown): boolean {
+	const a = toPeopleId(left);
+	const b = toPeopleId(right);
+	return a != null && a === b;
+}
+
 const BLOCKED = new Set(["REMOVED", "REJECTED", "PENDING"]);
 
 const normalize = (value?: string | null) =>
