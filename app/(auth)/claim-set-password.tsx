@@ -2,6 +2,7 @@ import { FormField } from "@/components/shared/FormField";
 import PulsingLogo from "@/components/shared/PulsingLogo";
 import { fetchPersonById } from "@/services/Person/person.service";
 import { useClaimStore } from "@/stores/claimStore";
+import { useSignUpStore } from "@/stores/signUpStore";
 import { apiEndpoints } from "@/utils/endpoints";
 import { secureFetch } from "@/utils/secureFetch";
 import {
@@ -51,7 +52,10 @@ const Page = () => {
 		defaultValues: { email: String(full_email) ?? "", password: "" },
 	});
 
-	const createUserAndGoToCompleteProfile = async (personId: number) => {
+	const createUserAndGoToCompleteProfile = async (
+		personId: number,
+		accountEmail: string,
+	) => {
 		const res = await secureFetch(
 			apiEndpoints.users.createUserWithExistingPerson,
 			{
@@ -70,7 +74,10 @@ const Page = () => {
 			});
 			router.replace({
 				pathname: "/(auth)/complete-profile",
-				params: { claimedPeopleId: String(personId) },
+				params: {
+					claimedPeopleId: String(personId),
+					accountEmail,
+				},
 			});
 			return;
 		}
@@ -88,8 +95,12 @@ const Page = () => {
 				return;
 			}
 
+			// Record the login email before Firebase auth. Creating the user
+			// can redirect into complete-profile before this function resumes,
+			// and that screen's email field is locked.
+			useSignUpStore.getState().setPendingSignUp({ email, password: "" });
 			await createUserWithEmailAndPassword(getAuth(), email, password);
-			await createUserAndGoToCompleteProfile(Number(id));
+			await createUserAndGoToCompleteProfile(Number(id), email);
 		} catch (err: any) {
 			Alert.alert("Error", err.message || "Failed to create account.");
 		}

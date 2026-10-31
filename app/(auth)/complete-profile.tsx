@@ -9,6 +9,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useClaimStore } from "@/stores/claimStore";
 import { useSignUpStore } from "@/stores/signUpStore";
 import { SectionEnum } from "@/types/TableField.type";
+import { resolveClaimedProfileEmail } from "@/utils/claimAccountEmail";
 import { formatPhone } from "@/utils/helper";
 import {
 	getAgeGroup,
@@ -53,10 +54,15 @@ const Page = () => {
 	const { signUp, user: appUser } = authStore;
 	const { selectedProfile } = useClaimStore();
 	const { bottom } = useSafeAreaInsets();
-	const { claimedPeopleId } = useLocalSearchParams();
+	const { claimedPeopleId, accountEmail } = useLocalSearchParams();
 	const routeClaimedPeopleId = Array.isArray(claimedPeopleId)
 		? claimedPeopleId[0]
 		: claimedPeopleId;
+	const rawAccountEmail = Array.isArray(accountEmail)
+		? accountEmail[0]
+		: accountEmail;
+	const routeAccountEmail =
+		typeof rawAccountEmail === "string" ? rawAccountEmail.trim() : "";
 	const claimedPeopleIdNumber = routeClaimedPeopleId
 		? Number(routeClaimedPeopleId)
 		: undefined;
@@ -69,9 +75,10 @@ const Page = () => {
 		activeClaimedPeopleId ?? -1,
 	);
 	const profileEmail =
-		pendingSignUp?.email ||
-		appUser?.email ||
-		authStore.firebaseUser?.email ||
+		routeAccountEmail ||
+		pendingSignUp?.email?.trim() ||
+		appUser?.email?.trim() ||
+		authStore.firebaseUser?.email?.trim() ||
 		"";
 	const [submitAttempted, setSubmitAttempted] = useState(false);
 
@@ -104,9 +111,17 @@ const Page = () => {
 				}
 				return acc;
 			}, {} as ProfileFormData);
+			const directoryEmail =
+				typeof profileData.email === "string" ? profileData.email : "";
+			// Email is locked. Prefer the address used to create the Firebase
+			// account so SMS claim can finish when the directory email is blank.
+			profileData.email = resolveClaimedProfileEmail(
+				directoryEmail,
+				profileEmail,
+			);
 			reset(profileData);
 		}
-	}, [selectedPerson, reset]);
+	}, [selectedPerson, reset, profileEmail]);
 
 	useEffect(() => {
 		if (!selectedPerson && profileEmail && !getValues("email")) {
