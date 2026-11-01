@@ -103,6 +103,8 @@ export const apiEndpoints = {
 	otp: {
 		create: _endpoint("otp/create"),
 		verify: _endpoint("otp/verify"),
+		sendSms: _endpoint("otp/send-sms"),
+		verifySms: _endpoint("otp/verify-sms"),
 	},
 	users: {
 		createAccount: _endpoint("users/create-account"),

@@ -1,16 +1,19 @@
 import SharedBody from "@/components/shared/SharedBody";
 import { Colors } from "@/constants/Colors";
-import { sendOTP, verifyOTP } from "@/services/OTP/otp.service";
-import { useAuthStore } from "@/stores/authStore";
+import {
+	sendOTP,
+	sendSmsOTP,
+	verifyOTP,
+	verifySmsOTP,
+} from "@/services/OTP/otp.service";
 import { useClaimStore } from "@/stores/claimStore";
 import { useSignUpStore } from "@/stores/signUpStore";
 import {
 	createUserWithEmailAndPassword,
 	getAuth,
 } from "@react-native-firebase/auth";
-import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
-import { Mail, RefreshCw } from "lucide-react-native";
+import { Mail, MessageSquare } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
 	ActivityIndicator,
@@ -27,12 +30,24 @@ const Page = () => {
 	const router = useRouter();
 	const claimStore = useClaimStore();
 	const { pendingSignUp } = useSignUpStore();
-	const authStore = useAuthStore();
+	// Derive channel first so timer constants can reference it.
+	// Require a selectedProfile — without one the SMS path has no person_id
+	// to look up, so a stale verificationChannel="sms" (e.g. from an abandoned
+	// claim) must not bleed into the new-account email-OTP flow.
+	const isSmsChannel =
+		claimStore.verificationChannel === "sms" && !!claimStore.selectedProfile;
+
+	// SMS uses a longer initial cooldown (60 s) to match the backend enforced delay.
+	const INITIAL_TIMER = isSmsChannel ? 60 : 30;
+	// Backend window = 3 sends per 10 min. The initial send on selected-account
+	// consumes 1, leaving 2 resends before the backend would reject.
+	const MAX_RESENDS = isSmsChannel ? 2 : 3;
+
 	const [otp, setOtp] = useState(["", "", "", "", "", ""]);
 	const [isLoading, setIsLoading] = useState(false);
-	const [resendTimer, setResendTimer] = useState(30);
+	const [resendTimer, setResendTimer] = useState(INITIAL_TIMER);
 	const [canResend, setCanResend] = useState(false);
-	const qc = useQueryClient();
+	const [resendCount, setResendCount] = useState(0);
 
 	const inputRefs = useRef<(TextInput | null)[]>([]);
 
@@ -59,7 +74,7 @@ const Page = () => {
 
 	const handleOtpChange = (value: string, index: number) => {
 		const digits = value.replace(/\D/g, "");
-	
+
 		// Paste or SMS/Gmail autofill: the whole code arrives in one field
 		if (digits.length > 1) {
 			const chars = digits.slice(0, 6).split("");
@@ -71,11 +86,11 @@ const Page = () => {
 			inputRefs.current[Math.min(chars.length, 5)]?.focus();
 			return;
 		}
-	
+
 		const next = [...otp];
 		next[index] = digits;
 		setOtp(next);
-	
+
 		if (digits && index < 5) {
 			inputRefs.current[index + 1]?.focus();
 		}
@@ -93,43 +108,67 @@ const Page = () => {
 			Alert.alert("Invalid OTP", "Please enter a 6-digit code");
 			return;
 		}
-		console.log("Verifying OTP:", otpString);
 		setIsLoading(true);
 
 		try {
-			// If claimed selectedProfile, use its ID
-			const personId = claimStore.selectedProfile?.id || null;
-			const email = pendingSignUp?.email || null;
-			const result = await verifyOTP(personId, email, otpString);
+			const personId = claimStore.selectedProfile?.id ?? null;
 
-			if (!result.success) {
-				Alert.alert(
-					"Invalid OTP",
-					"The code you entered is incorrect. Please try again.",
-				);
-				setOtp(["", "", "", "", "", ""]);
-				inputRefs.current[0]?.focus();
-				return;
-			}
-
-			// create firebase account
-			const resEmail = result.data?.email.trim();
-
-			// get full person if selectedProfile is true
-			console.log("Selected profile", claimStore.selectedProfile);
-			if (claimStore.selectedProfile) {
-				// await fetchClaimedPerson(claimStore.selectedProfile.id);
+			if (isSmsChannel) {
+				// ── SMS OTP path (Twilio Verify) ──────────────────────────
+				if (!personId) {
+					Alert.alert(
+						"Error",
+						"No profile selected. Please go back and try again.",
+					);
+					return;
+				}
+				const result = await verifySmsOTP(personId, otpString);
+				if (!result.success) {
+					Alert.alert(
+						"Invalid OTP",
+						"The code you entered is incorrect or has expired. Please try again.",
+					);
+					setOtp(["", "", "", "", "", ""]);
+					inputRefs.current[0]?.focus();
+					return;
+				}
+				// email may be empty when the person has no email on record —
+				// pass as empty string so the field in claim-set-password is
+				// blank (editable) rather than pre-filled with "undefined".
+				const resEmail = (result.data as any)?.email?.trim() ?? "";
 				router.push(
-					`/(auth)/claim-set-password?full_email=${resEmail}&id=${claimStore.selectedProfile.id}`,
+					`/(auth)/claim-set-password?full_email=${encodeURIComponent(resEmail)}&id=${personId}`,
 				);
 			} else {
-				// No claimed profile, proceed to complete profile
-				await createUserWithEmailAndPassword(
-					getAuth(),
-					resEmail,
-					pendingSignUp?.password!,
-				);
-				router.push("/(auth)/complete-profile");
+				// ── Email OTP path (existing flow) ─────────────────────────
+				const email = pendingSignUp?.email || null;
+				const result = await verifyOTP(personId, email, otpString);
+
+				if (!result.success) {
+					Alert.alert(
+						"Invalid OTP",
+						"The code you entered is incorrect. Please try again.",
+					);
+					setOtp(["", "", "", "", "", ""]);
+					inputRefs.current[0]?.focus();
+					return;
+				}
+
+				const resEmail = result.data?.email.trim() ?? "";
+
+				if (claimStore.selectedProfile) {
+					router.push(
+						`/(auth)/claim-set-password?full_email=${encodeURIComponent(resEmail)}&id=${claimStore.selectedProfile.id}`,
+					);
+				} else {
+					// No claimed profile, proceed to complete profile
+					await createUserWithEmailAndPassword(
+						getAuth(),
+						resEmail,
+						pendingSignUp?.password!,
+					);
+					router.push("/(auth)/complete-profile");
+				}
 			}
 		} catch (error: any) {
 			if (error.code == "auth/email-already-in-use") {
@@ -146,32 +185,50 @@ const Page = () => {
 	};
 
 	const handleResendOTP = async () => {
-		if (!canResend) return;
+		if (!canResend || resendCount >= MAX_RESENDS) return;
 
 		try {
-			// TODO: Implement resend OTP API call
-			console.log("[v0] Resending OTP to:", pendingSignUp?.email);
-
-			// Simulate API call
-			setResendTimer(30);
+			setResendTimer(INITIAL_TIMER);
 			setCanResend(false);
 
-			if (claimStore.selectedProfile) {
+			if (isSmsChannel && claimStore.selectedProfile) {
+				const result = await sendSmsOTP(claimStore.selectedProfile.id);
+				if (!result?.success) {
+					// Backend rate-limit rejection — surface the message directly
+					Alert.alert(
+						"Too Many Requests",
+						result?.message ??
+							"Please wait before requesting another code.",
+					);
+					setResendTimer(0);
+					setCanResend(true);
+					return;
+				}
+				Alert.alert(
+					"OTP Sent",
+					"A new verification code has been sent via SMS.",
+				);
+			} else if (claimStore.selectedProfile) {
 				await sendOTP(claimStore.selectedProfile.id, null);
+				Alert.alert(
+					"OTP Sent",
+					"A new verification code has been sent to your email.",
+				);
 			} else {
-				if (!pendingSignUp || !pendingSignUp.email) {
+				if (!pendingSignUp?.email) {
 					console.error(
-						"[v0] OTP verification error:",
-						"no email found",
+						"[v0] OTP verification error: no email found",
 					);
 					return;
 				}
 				await sendOTP(null, pendingSignUp.email);
+				Alert.alert(
+					"OTP Sent",
+					"A new verification code has been sent to your email.",
+				);
 			}
-			Alert.alert(
-				"OTP Sent",
-				"A new verification code has been sent to your email.",
-			);
+
+			setResendCount((c) => c + 1);
 		} catch (error) {
 			console.error("[v0] Resend OTP error:", error);
 			Alert.alert("Error", "Failed to resend OTP. Please try again.");
@@ -179,6 +236,11 @@ const Page = () => {
 	};
 
 	const otpString = otp.join("");
+
+	/** Masked identifier shown under the title */
+	const maskedTarget = isSmsChannel
+		? claimStore.selectedProfile?.phone
+		: (claimStore.selectedProfile?.email ?? pendingSignUp?.email);
 
 	return (
 		<KeyboardAwareScrollView
@@ -191,9 +253,16 @@ const Page = () => {
 				<View className="flex-1 px-6 py-8">
 					{/* Content */}
 					<View className="flex-1 justify-center items-center px-4">
-						{/* Email icon */}
+						{/* Channel icon */}
 						<View className="w-20 h-20 bg-primary-100 rounded-full items-center justify-center mb-4">
-							<Mail size={40} color={Colors.primary[700]} />
+							{isSmsChannel ? (
+								<MessageSquare
+									size={40}
+									color={Colors.primary[700]}
+								/>
+							) : (
+								<Mail size={40} color={Colors.primary[700]} />
+							)}
 						</View>
 						{/* Title */}
 						<Text className="text-2xl font-bold text-text text-center mb-2">
@@ -201,14 +270,15 @@ const Page = () => {
 						</Text>
 
 						{/* Description */}
-						<Text className="font-regular text-center mb-1">
-							We sent a 6-digit verification code to
+						<Text className="font-regular text-center text-gray-700 mb-1">
+							{isSmsChannel
+								? "We sent a 6-digit code via SMS to"
+								: "We sent a 6-digit verification code to"}
 						</Text>
 						<Text className="font-semibold text-text mb-8">
-							{claimStore.selectedProfile?.email ||
-								pendingSignUp?.email}
+							{maskedTarget}
 						</Text>
-						<Text className="font-regular text-center mb-4">
+						<Text className="font-regular text-center text-gray-700 mb-4">
 							Please enter the code below:
 						</Text>
 
@@ -225,15 +295,23 @@ const Page = () => {
 											Platform.OS === "android" ? 12 : 18,
 									}}
 									value={digit}
-									onChangeText={(value) => handleOtpChange(value, index)}
+									onChangeText={(value) =>
+										handleOtpChange(value, index)
+									}
 									onKeyPress={({ nativeEvent }) =>
 										handleKeyPress(nativeEvent.key, index)
 									}
 									keyboardType="number-pad"
 									maxLength={index === 0 ? 6 : 1}
-									textContentType={index === 0 ? "oneTimeCode" : "none"}
-									autoComplete={index === 0 ? "sms-otp" : "off"}
-									importantForAutofill={index === 0 ? "yes" : "no"}
+									textContentType={
+										index === 0 ? "oneTimeCode" : "none"
+									}
+									autoComplete={
+										index === 0 ? "sms-otp" : "off"
+									}
+									importantForAutofill={
+										index === 0 ? "yes" : "no"
+									}
 									selectTextOnFocus
 									autoFocus={index === 0}
 								/>
@@ -257,23 +335,37 @@ const Page = () => {
 
 						{/* Resend Section */}
 						<View className="items-center mt-6">
-							<Text className="font-regular text-sm mb-2">
+							<Text className="font-regular text-sm text-gray-700 mb-2">
 								Didn&apos;t receive the code?
 							</Text>
 
-							{canResend ? (
+							{resendCount >= MAX_RESENDS ? (
+								// Hard cap hit — direct to admin
+								<View className="items-center px-4">
+									<Text className="text-muted-foreground text-sm text-center">
+										Too many attempts. Please contact your
+										cell leader or an administrator for
+										assistance.
+									</Text>
+								</View>
+							) : canResend ? (
 								<TouchableOpacity
 									onPress={handleResendOTP}
 									className="flex-row items-center"
 								>
-									<RefreshCw size={16} color="#AC2212" />
-									<Text className="text-primary-600 font-semibold ml-2">
+									<Text className="text-blue-500 font-semibold ml-2">
 										Send Again
+										{isSmsChannel && resendCount > 0
+											? ` (${MAX_RESENDS - resendCount} left)`
+											: ""}
 									</Text>
 								</TouchableOpacity>
 							) : (
-								<Text className="text-muted-foreground text-sm">
+								<Text className=" text-sm text-gray-700">
 									Resend in {resendTimer}s
+									{isSmsChannel && resendCount > 0
+										? ` · ${MAX_RESENDS - resendCount} attempt${MAX_RESENDS - resendCount !== 1 ? "s" : ""} left`
+										: ""}
 								</Text>
 							)}
 						</View>

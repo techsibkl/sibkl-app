@@ -14,6 +14,7 @@ import { useAuthStore } from "@/stores/authStore";
 import {
 	cellAttendanceErrorMessage,
 	isZoneLeaderOfCell,
+	toPeopleId,
 } from "@/utils/cellMembership";
 import * as FileSystem from "expo-file-system";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
@@ -214,7 +215,8 @@ export default function SessionDetailScreen() {
 	const attendeeMap = useMemo<Map<number, CellSessionAttendee>>(() => {
 		const map = new Map<number, CellSessionAttendee>();
 		for (const a of session?.attendees ?? []) {
-			if (a.people_id != null) map.set(a.people_id, a);
+			const peopleId = toPeopleId(a.people_id);
+			if (peopleId != null) map.set(peopleId, a);
 		}
 		return map;
 	}, [session?.attendees]);
@@ -222,8 +224,8 @@ export default function SessionDetailScreen() {
 	const sortedMembers = useMemo<CellSessionMember[]>(() => {
 		const members = session?.members ?? [];
 		return [...members].sort((a, b) => {
-			const aIn = attendeeMap.has(a.id) ? 1 : 0;
-			const bIn = attendeeMap.has(b.id) ? 1 : 0;
+			const aIn = attendeeMap.has(toPeopleId(a.id) ?? -1) ? 1 : 0;
+			const bIn = attendeeMap.has(toPeopleId(b.id) ?? -1) ? 1 : 0;
 			if (aIn !== bIn) return aIn - bIn;
 			return (a.full_legal_name ?? "").localeCompare(
 				b.full_legal_name ?? "",
@@ -267,9 +269,10 @@ export default function SessionDetailScreen() {
 	};
 
 	const handleMemberCheckIn = async (member: CellSessionMember) => {
-		if (!session || !canCheckIn) return;
+		const peopleId = toPeopleId(member.id);
+		if (!session || !canCheckIn || peopleId == null) return;
 
-		const isCheckedIn = attendeeMap.has(member.id);
+		const isCheckedIn = attendeeMap.has(peopleId);
 		setCheckingInId(member.id);
 		setNotification(null);
 
@@ -277,7 +280,7 @@ export default function SessionDetailScreen() {
 		try {
 			await toggleCheckIn({
 				attendanceId: String(session.id),
-				peopleId: member.id,
+				peopleId,
 				checkedIn: isCheckedIn,
 			});
 
@@ -548,14 +551,16 @@ export default function SessionDetailScreen() {
 						) : (
 							<View className="bg-white rounded-2xl border border-gray-100 overflow-hidden mb-4">
 								{sortedMembers.map((member) => {
-									const attendee = attendeeMap.get(member.id);
+									const memberId = toPeopleId(member.id);
+									const attendee =
+										memberId == null
+											? undefined
+											: attendeeMap.get(memberId);
 									return (
 										<SessionMemberRow
 											key={member.id}
 											member={member}
-											checkedIn={attendeeMap.has(
-												member.id,
-											)}
+											checkedIn={attendee != null}
 											checkedInAt={
 												attendee?.checked_in_at
 											}

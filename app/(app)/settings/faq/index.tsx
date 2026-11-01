@@ -23,12 +23,8 @@ const faqData = [
 		answer: "This app is for members, leaders, pastors of SIBKL church. (Guests can sign up but will have limited access to features)",
 	},
 	{
-		question: "What does UAT include?",
-		answer: "UAT (User Acceptance Testing) includes core features such as profile management, guest follow-up, leader's page, and announcements. Some advanced features may still be under development.",
-	},
-	{
 		question: "When will the full version be released?",
-		answer: "The full version is expected to be released in Q4 2026, after thorough testing and feedback collection during the UAT phase.",
+		answer: "The full version will be released in Q4 2026.",
 	},
 	{
 		question: "How do I reset my password?",

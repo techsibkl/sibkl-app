@@ -11,7 +11,10 @@ import {
 	CellSessionAttendee,
 	CellSessionDetail,
 } from "@/services/CellAttendance/cellAttendance.type";
-import { cellAttendanceErrorMessage } from "@/utils/cellMembership";
+import {
+	cellAttendanceErrorMessage,
+	isSamePeopleId,
+} from "@/utils/cellMembership";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 
 const isSessionClosedError = (error: unknown) =>
@@ -216,9 +219,8 @@ export const useToggleMemberCheckInMutation = (
 			const cacheKey = ["cell-session", numericCellId, numericSessionId];
 			const previousData: any = queryClient.getQueryData(cacheKey);
 			const alreadyCheckedIn =
-				previousData?.attendees?.some(
-					(attendee: CellSessionAttendee) =>
-						attendee.people_id === peopleId,
+				previousData?.attendees?.some((attendee: CellSessionAttendee) =>
+					isSamePeopleId(attendee.people_id, peopleId),
 				) ?? false;
 
 			if (!alreadyCheckedIn) {
@@ -235,8 +237,8 @@ export const useToggleMemberCheckInMutation = (
 				if (!oldData) return oldData;
 
 				const isCheckedIn =
-					oldData.attendees?.some(
-						(a: CellSessionAttendee) => a.people_id === peopleId,
+					oldData.attendees?.some((a: CellSessionAttendee) =>
+						isSamePeopleId(a.people_id, peopleId),
 					) ?? false;
 
 				if (isCheckedIn) {
@@ -246,7 +248,7 @@ export const useToggleMemberCheckInMutation = (
 						attendees:
 							oldData.attendees?.filter(
 								(a: CellSessionAttendee) =>
-									a.people_id !== peopleId,
+									!isSamePeopleId(a.people_id, peopleId),
 							) ?? [],
 						attendee_count: (oldData.attendee_count ?? 0) - 1,
 					};

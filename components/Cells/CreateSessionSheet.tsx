@@ -1,5 +1,6 @@
 import ConsistentPicker from "@/components/DatePickers/ConsistentPicker";
 import { useCreateCellSessionMutation } from "@/hooks/CellAttendance/useCellAttendanceMutation";
+import { formatLocalDate } from "@/utils/localDate";
 import { BottomSheetModal, BottomSheetScrollView } from "@gorhom/bottom-sheet";
 import * as FileSystem from "expo-file-system";
 import { useRouter } from "expo-router";
@@ -97,9 +98,7 @@ const CreateSessionSheet = forwardRef<
 
 		setShowDuplicateWarning(false);
 		try {
-			const result = await createSession(
-				date.toISOString().split("T")[0],
-			);
+			const result = await createSession(formatLocalDate(date));
 			setInsertedSessionId(result.insertedId);
 			setQrCodeValue(String(result.insertedId));
 			onCreated?.(result.insertedId);

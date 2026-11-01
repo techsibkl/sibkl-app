@@ -169,7 +169,7 @@ const Page = () => {
 											Platform.OS === "android" ? 14 : 16,
 									}}
 									onPress={() => {
-										claimStore.setSelectedProfile(null);
+										claimStore.reset(); // clear profile + verificationChannel
 										router.push("/(auth)/new-account");
 									}}
 								>

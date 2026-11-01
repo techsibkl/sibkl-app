@@ -1,5 +1,6 @@
 import { FormDateInput } from "@/components/shared/FormDateInput";
 import { FormField } from "@/components/shared/FormField";
+import { PhoneFormField } from "@/components/shared/PhoneFormField";
 import { FormSelect } from "@/components/shared/FormSelect";
 import {
 	FieldTypeEnum,
@@ -54,7 +55,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		header: "Mobile Number",
 		class: "min-w-[12rem]",
 		visible: true,
-		type: FieldTypeEnum.TEXT,
+		type: FieldTypeEnum.PHONE,
 		section: SectionEnum.PERSONAL_INFORMATION,
 		editable: true,
 		completeProfileOnly: true,
@@ -199,7 +200,7 @@ export const DEFAULT_PERSON_COLUMNS: TableField[] = [
 		header: "Emergency Contact Phone",
 		class: "min-w-[12rem]",
 		visible: false,
-		type: FieldTypeEnum.TEXT,
+		type: FieldTypeEnum.PHONE,
 		section: SectionEnum.EMERGENCY_CONTACT,
 		editable: true,
 	},
@@ -518,6 +519,7 @@ export const inputComponentMap = {
 	select: FormSelect,
 	multiselect: FormSelect,
 	year: FormDateInput,
+	phone: PhoneFormField,
 };
 
 export const resolveInputComponent = (field: TableField) =>

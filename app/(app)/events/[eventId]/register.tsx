@@ -24,7 +24,7 @@ import {
 	hasValidationErrors,
 	validateEventRegistrationForm,
 } from "@/utils/eventRegistrationValidation";
-import { myToast } from "@/utils/helper";
+import { formatPhone, myToast } from "@/utils/helper";
 import { Redirect, useLocalSearchParams, useRouter } from "expo-router";
 import React, { useEffect, useMemo, useState } from "react";
 import { useForm } from "react-hook-form";
@@ -111,7 +111,9 @@ const EventRegisterScreen = () => {
 			return;
 		}
 
-		const phone = values.phone?.trim();
+		const phone = values.phone?.trim()
+			? formatPhone(values.phone.trim())
+			: "";
 		const email = values.email?.trim();
 
 		try {

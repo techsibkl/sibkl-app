@@ -1,6 +1,7 @@
 import { FormField } from "@/components/shared/FormField";
 import PulsingLogo from "@/components/shared/PulsingLogo";
 import { fetchPersonById } from "@/services/Person/person.service";
+import { useClaimStore } from "@/stores/claimStore";
 import { apiEndpoints } from "@/utils/endpoints";
 import { secureFetch } from "@/utils/secureFetch";
 import {
@@ -35,6 +36,12 @@ const Page = () => {
 	const router = useRouter();
 	const qc = useQueryClient();
 	const { full_email, id } = useLocalSearchParams();
+	const { verificationChannel } = useClaimStore();
+
+	// When verified via SMS the person may not have an email on file, so the
+	// field must be editable. Email-verified accounts already have a confirmed
+	// address and must stay read-only.
+	const isEmailEditable = verificationChannel === "sms";
 
 	const {
 		control,
@@ -109,21 +116,45 @@ const Page = () => {
 					Claim Account
 				</Text>
 				<Text className="font-regular text-gray-700 mb-8">
-					You&apos;re almost there! Enter your new password to claim your
-					account.
+					You&apos;re almost there! Enter your new password to claim
+					your account.
 				</Text>
 
 				<View className="gap-y-6">
-					{/* Email input */}
+					{/* Email input — read-only when verified via email, editable when via SMS */}
 					<View className="ml-[-2px]">
 						<FormField
 							name="email"
-							label="Claim Email (Verified)"
+							label={
+								isEmailEditable
+									? "Email Address"
+									: "Claim Email (Verified)"
+							}
 							control={control}
 							errors={errors}
-							disabled
+							disabled={!isEmailEditable}
+							keyboardType="email-address"
+							rules={
+								isEmailEditable
+									? {
+											required: "Email is required",
+											pattern: {
+												value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+												message:
+													"Enter a valid email address",
+											},
+										}
+									: undefined
+							}
 							icon={<Mail size={20} color="#6b7280" />}
 						/>
+						{isEmailEditable && (
+							<Text className="text-xs text-text-secondary mt-1 ml-1">
+								Your profile doesn&apos;t have an email. Enter
+								the email you&apos;d like to use to create your
+								account.
+							</Text>
+						)}
 					</View>
 
 					{/* Password input */}
