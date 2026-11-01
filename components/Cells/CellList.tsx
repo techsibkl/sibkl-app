@@ -16,9 +16,7 @@ const CellList = ({ cells }: CellListProps) => {
 				paddingHorizontal: 16,
 				paddingVertical: 16,
 			}}
-			ListEmptyComponent={<EmptyList />}
-			estimatedItemSize={100}
-			renderItem={({ item: cell }) => <MyCellCard cell={cell} />}
+			ListEmptyComponent={<EmptyList />}			renderItem={({ item: cell }) => <MyCellCard cell={cell} />}
 		/>
 	);
 };

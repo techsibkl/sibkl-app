@@ -41,9 +41,7 @@ const NotificationList = ({
 			}}
 		>
 			<FlashList
-				data={notifications}
-				estimatedItemSize={133}
-				contentContainerStyle={{
+				data={notifications}				contentContainerStyle={{
 					paddingHorizontal: 16,
 					paddingVertical: 16,
 				}}

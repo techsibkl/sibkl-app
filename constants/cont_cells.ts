@@ -1,7 +1,7 @@
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { AnyAbility } from "@casl/ability";
 import { BottomSheetModal } from "@gorhom/bottom-sheet";
-import { Router } from "expo-router";
+import type { ImperativeRouter } from "expo-router";
 import React from "react";
 import { FAB } from "react-native-paper";
 
@@ -9,7 +9,7 @@ type FABActionItem = React.ComponentProps<typeof FAB.Group>["actions"][number];
 
 type getFabActionsProps = {
 	ability: AnyAbility;
-	router: Router;
+	router: ImperativeRouter;
 	createSessionSheetModalRef: React.RefObject<BottomSheetModal | null>;
 	cellId: number;
 };

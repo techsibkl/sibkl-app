@@ -1,6 +1,150 @@
 {
   "version": 1,
   "skills": {
+    "eas-app-stores": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/eas-app-stores/SKILL.md",
+      "computedHash": "3f508f1546fae0b7a93d159d0fa332adb42a28c679a6839152d864bde695357b"
+    },
+    "eas-hosting": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/eas-hosting/SKILL.md",
+      "computedHash": "f157e5625376a88112fb4ccb5f94e84a1e16df3b1fe6bd08f9dd5036d7be3816"
+    },
+    "eas-observe": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/eas-observe/SKILL.md",
+      "computedHash": "ae8b1b9204fab3a86ffd837fe00444bc489d948585c32bdb4d23fe4359f84147"
+    },
+    "eas-simulator": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/eas-simulator/SKILL.md",
+      "computedHash": "c767428d09dff1ffa795520481e58f36b7aaf0c5e812de270b9ef7062b4bb14e"
+    },
+    "eas-update": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/eas-update/SKILL.md",
+      "computedHash": "85f9aa3de2c63b1f4b7d1da16b9dd86e2de6484c92108d5f2f72a2ffe4eeb33f"
+    },
+    "eas-update-insights": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/eas-update-insights/SKILL.md",
+      "computedHash": "50547be8fd12b30ab4618a294a642f285d21b0298eaca2602f726b00ca8a2a8e"
+    },
+    "eas-workflows": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/eas-workflows/SKILL.md",
+      "computedHash": "5fa8e105d3cc217ab831c13330d758e803e7a20f075a00eb85edf766c9cd4acd"
+    },
+    "expo-animation": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-animation/SKILL.md",
+      "computedHash": "26ba1a909b25aae56a2c048a3e12a2b11655ad5ae6ce3fbb3b1158d8a4277254"
+    },
+    "expo-app-clip": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-app-clip/SKILL.md",
+      "computedHash": "146006afb27bee635e20296e9f8e21731d9c7ebe9aee77d70699c3e0f0b75aad"
+    },
+    "expo-brownfield": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-brownfield/SKILL.md",
+      "computedHash": "fcde27a8d997e60029a10a82c031f1206583d5a9a68f302b7d6ce6587d74d528"
+    },
+    "expo-data-fetching": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-data-fetching/SKILL.md",
+      "computedHash": "8fe82b42347eac81667692f13c6cacc2d61fafef771fc0c8292fdb66c58ce6e6"
+    },
+    "expo-design-system": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-design-system/SKILL.md",
+      "computedHash": "08d904f9690af0d528ebde92fb2739e5313cfbbab41da5c33e28e8d337d3abf0"
+    },
+    "expo-dev-client": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-dev-client/SKILL.md",
+      "computedHash": "bca07410b1ebc92f254bc3b04fe9b8390f5f8545cf44578a87e765ef877c64c5"
+    },
+    "expo-dom": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-dom/SKILL.md",
+      "computedHash": "c22b9d74b4825a9bcf05dda9bda181b70d3cc71a26e07b95e938dc17229e3fa5"
+    },
+    "expo-examples": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-examples/SKILL.md",
+      "computedHash": "59f53c998052e13ea871040a82b816f4328f6fbc7a01291ead427033c895a529"
+    },
+    "expo-migrate-module": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo-experiments/skills/expo-migrate-module/SKILL.md",
+      "computedHash": "dd89d58df37e95152d7e4a1750f126bbb63e52901a4f82f4315845138f9d40f2"
+    },
+    "expo-module": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-module/SKILL.md",
+      "computedHash": "462df4158b94bf18db30b650bb070df30c6498b950513561e338eb6761bc42d3"
+    },
+    "expo-native-ui": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-native-ui/SKILL.md",
+      "computedHash": "72a87aff36f85f391c510a28534dc399978f5f1615e7bd62337cbacb37bc78fa"
+    },
+    "expo-overview": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-overview/SKILL.md",
+      "computedHash": "3390cea2dd6a6b2d361c40c32f86d19e033e6369a042a0b56b3330fa27098331"
+    },
+    "expo-router": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-router/SKILL.md",
+      "computedHash": "f2f505b84f260ae29ea3f01d689c0e6b490e49d3dad2eec19cf4947d7c67ef9d"
+    },
+    "expo-skill-eval": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": ".claude/skills/expo-skill-eval/SKILL.md",
+      "computedHash": "e494afa8e07acd87d406da0df5b6a8eb86e5ee8a4a32a3685047d07a7165e19e"
+    },
+    "expo-ui": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-ui/SKILL.md",
+      "computedHash": "4a0f10513f5af4df9c5cbc57e4f50541f563942ef6823e48bec81473585168b4"
+    },
+    "expo-upgrade": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-upgrade/SKILL.md",
+      "computedHash": "2e9f80adf1afac2293e7c23dbef9abd8ba560f6a8bde0749952db740fd5e5ac9"
+    },
+    "expo-web-to-native": {
+      "source": "expo/skills",
+      "sourceType": "github",
+      "skillPath": "plugins/expo/skills/expo-web-to-native/SKILL.md",
+      "computedHash": "dec9e72d4c659cefd353094b219dbc943275c832c64bd277c802873160e285d3"
+    },
     "find-skills": {
       "source": "vercel-labs/skills",
       "sourceType": "github",

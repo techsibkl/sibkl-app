@@ -22,11 +22,7 @@ const AddNoteDialog = ({
 
 	const handleSave = async () => {
 		setIsLoading(true);
-		const res = await createNote(
-			personFlow.people_id!,
-			note,
-			personFlow.p__district_ids,
-		);
+		const res = await createNote(personFlow.people_id!, note);
 		if (res.success) {
 			setIsLoading(false);
 			setNote("");

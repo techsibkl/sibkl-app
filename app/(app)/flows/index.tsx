@@ -265,7 +265,7 @@ const FlowsPage = () => {
 
 	return (
 		<SharedBody>
-			<StatusBar className="bg-background" />
+			<StatusBar />
 			<View className="flex-row items-center pr-4 pb-4 border-b border-border">
 				<View className="flex-1">
 					<SharedSearchBar

@@ -310,9 +310,7 @@ const CellsScreen = () => {
 						contentContainerStyle={{
 							paddingHorizontal: 16,
 							paddingVertical: 16,
-						}}
-						estimatedItemSize={140}
-						refreshControl={
+						}}						refreshControl={
 							<RefreshControl
 								refreshing={isRefreshing}
 								onRefresh={handleRefresh}

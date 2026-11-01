@@ -29,7 +29,6 @@ const DashboardScreen = () => {
 	return (
 		<SharedBody>
 			<StatusBar
-				className="bg-white"
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
 

@@ -22,9 +22,7 @@ const AnnouncementPinList = ({ announcements }: AnnouncementProps) => {
 			renderItem={({ item: announcement }) => (
 				<AnnouncementBanner announcement={announcement} />
 			)}
-			ListEmptyComponent={SkeletonCarousel}
-			estimatedItemSize={100}
-			className="mb-5"
+			ListEmptyComponent={SkeletonCarousel}			className="mb-5"
 			snapToInterval={350} // width of item + separator
 			snapToAlignment="center"
 			decelerationRate="fast"

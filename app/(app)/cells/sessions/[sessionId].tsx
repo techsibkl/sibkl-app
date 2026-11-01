@@ -11,7 +11,7 @@ import {
 } from "@/services/CellAttendance/cellAttendance.type";
 import { useAuthStore } from "@/stores/authStore";
 import { cellAttendanceErrorMessage } from "@/utils/cellMembership";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import { useFocusEffect, useLocalSearchParams } from "expo-router";
 import * as Sharing from "expo-sharing";
 import { CheckIcon, UserIcon } from "lucide-react-native";

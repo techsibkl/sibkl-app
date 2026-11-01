@@ -3,12 +3,12 @@ import React, { ReactElement } from "react";
 import { Controller } from "react-hook-form";
 import {
 	KeyboardTypeOptions,
-	NativeSyntheticEvent,
 	Text,
 	TextInput,
-	TextInputSubmitEditingEventData,
+	TextInputProps,
 	View,
 } from "react-native";
+import type { TextInputInstance } from "@/types/react-native";
 
 type Props = {
 	name: string;
@@ -24,11 +24,9 @@ type Props = {
 	keyboardType?: KeyboardTypeOptions;
 	onBlur?: Function;
 	onChangeText?: Function;
-	onSubmitEditing?:
-		| ((e: NativeSyntheticEvent<TextInputSubmitEditingEventData>) => void)
-		| undefined;
+	onSubmitEditing?: TextInputProps["onSubmitEditing"];
 	secureTextEntry?: boolean;
-	ref?: React.RefObject<TextInput | null>;
+	ref?: React.Ref<TextInputInstance>;
 };
 
 export const FormField = ({

@@ -9,6 +9,7 @@ import {
 } from "@react-native-firebase/auth";
 import { useRouter } from "expo-router";
 import { AlertTriangle, Eye, EyeOff, Lock, Mail } from "lucide-react-native";
+import type { TextInputInstance } from "@/types/react-native";
 import React, { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -34,7 +35,7 @@ export default function DeleteAccountScreen() {
 	const [step, setStep] = useState<"confirm" | "login" | "final">("confirm");
 	const [isLoading, setIsLoading] = useState(false);
 	const [showPassword, setShowPassword] = useState(false);
-	const passwordRef = useRef<TextInput>(null);
+	const passwordRef = useRef<TextInputInstance>(null);
 
 	const inputPadding =
 		Platform.OS === "android"
@@ -374,7 +375,7 @@ export default function DeleteAccountScreen() {
 						{/* Submit Button */}
 						<TouchableOpacity
 							disabled={isSubmitting || isLoading}
-							onPress={handleSubmit(onSubmit)}
+							onPress={() => void handleSubmit(onSubmit)()}
 							className="w-full py-4 rounded-[15px] items-center justify-center mt-6 bg-primary-600"
 						>
 							{isSubmitting || isLoading ? (

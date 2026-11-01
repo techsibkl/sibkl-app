@@ -126,9 +126,7 @@ const Page = () => {
 				{/* List */}
 				<FlashList
 					data={visibleProfiles}
-					keyExtractor={(item) => item.id.toString()}
-					estimatedItemSize={80}
-					ListEmptyComponent={
+					keyExtractor={(item) => item.id.toString()}					ListEmptyComponent={
 						nameQuery.length > 0 ? (
 							<View className="mt-4">
 								<Text className="text-gray-500 text-center italic">

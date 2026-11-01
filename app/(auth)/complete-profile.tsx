@@ -307,7 +307,7 @@ const Page = () => {
 			<TouchableOpacity
 				className="absolute bottom-0 w-full items-center justify-center bg-primary-600"
 				style={{ paddingBottom: bottom + 16, paddingTop: 16 }}
-				onPress={handleSubmit(onSubmit)}
+				onPress={() => void handleSubmit(onSubmit)()}
 				disabled={isSubmitting}
 			>
 				{isSubmitting ? (

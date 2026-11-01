@@ -61,9 +61,7 @@ const PeopleList = ({
 				paddingHorizontal: 12,
 				paddingVertical: 8,
 			}}
-			keyExtractor={(item) => item.id.toString()}
-			estimatedItemSize={100}
-			removeClippedSubviews
+			keyExtractor={(item) => item.id.toString()}			removeClippedSubviews
 			renderItem={renderItem}
 			onEndReached={handleEndReached}
 			onEndReachedThreshold={0.3}

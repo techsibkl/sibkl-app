@@ -459,7 +459,6 @@ const CellProfileScreen = () => {
 	return (
 		<SharedBody>
 			<StatusBar
-				className="bg-background"
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
 			<BottomSheetModalProvider>

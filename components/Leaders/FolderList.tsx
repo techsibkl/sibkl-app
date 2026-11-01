@@ -46,10 +46,8 @@ const FolderList: React.FC<FolderListProps> = ({ groupedResources }) => {
 			keyExtractor={(item, index) =>
 				typeof item === "string"
 					? `header-${item}-${index}`
-					: (item.id ?? `${index}`)
-			}
-			estimatedItemSize={70}
-			stickyHeaderIndices={stickyHeaderIndices}
+					: String(item.id ?? index)
+			}			stickyHeaderIndices={stickyHeaderIndices}
 			getItemType={(item) =>
 				typeof item === "string" ? "sectionHeader" : "row"
 			}

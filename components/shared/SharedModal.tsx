@@ -2,7 +2,6 @@ import { XIcon } from "lucide-react-native";
 import React, { useEffect, useState } from "react";
 import {
 	Dimensions,
-	GestureResponderEvent,
 	Modal,
 	StyleSheet,
 	TouchableOpacity,
@@ -12,7 +11,7 @@ const SCREEN_HEIGHT = Dimensions.get("window").height;
 
 interface SharedModalProps {
 	visible: boolean;
-	onClose: (event?: GestureResponderEvent) => void;
+	onClose: () => void;
 	children: React.ReactNode;
 }
 

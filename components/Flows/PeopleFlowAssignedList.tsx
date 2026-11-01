@@ -146,9 +146,7 @@ const PeopleFlowList = ({
 					paddingBottom: 16,
 				}}
 				renderItem={renderItem}
-				getItemType={(item) => item.kind}
-				estimatedItemSize={80}
-				ListEmptyComponent={
+				getItemType={(item) => item.kind}				ListEmptyComponent={
 					(isPending && <SkeletonList length={20} />) || <EmptyList />
 				}
 				refreshControl={

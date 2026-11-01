@@ -258,7 +258,7 @@ const UpdateProfilePage = () => {
 			{/* Sticky button */}
 			<TouchableOpacity
 				className={`absolute bottom-0 w-full py-4 items-center justify-center mt-6 ${changeValid ? " bg-primary-600" : "bg-primary-100"}`}
-				onPress={handleSubmit(onSubmit)}
+				onPress={() => void handleSubmit(onSubmit)()}
 				disabled={isSubmitting || !changeValid}
 			>
 				{isSubmitting ? (

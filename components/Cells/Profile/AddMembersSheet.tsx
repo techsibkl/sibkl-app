@@ -319,7 +319,7 @@ const AddMembersSheet = forwardRef<BottomSheetModal, AddMembersSheetProps>(
 						<BottomSheetFlatList
 							data={filteredPeople}
 							extraData={selectedIds}
-							keyExtractor={(item) => String(item.id)}
+							keyExtractor={(item: Person) => String(item.id)}
 							renderItem={renderPerson}
 							initialNumToRender={12}
 							maxToRenderPerBatch={8}

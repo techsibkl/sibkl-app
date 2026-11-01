@@ -23,9 +23,7 @@ const CategoryItemsList = ({ items }: CategoryItemsListProps) => {
 		<FlashList
 			horizontal
 			data={items}
-			keyExtractor={(_, index) => index.toString()}
-			estimatedItemSize={70}
-			showsHorizontalScrollIndicator={false}
+			keyExtractor={(_, index) => index.toString()}			showsHorizontalScrollIndicator={false}
 			contentContainerStyle={{
 				paddingHorizontal: 12,
 			}}

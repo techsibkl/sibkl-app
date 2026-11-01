@@ -1,6 +1,7 @@
 import { useAuthStore } from "@/stores/authStore";
 import { Link, router } from "expo-router";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
+import type { TextInputInstance } from "@/types/react-native";
 import React, { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
@@ -28,7 +29,7 @@ const Page = () => {
 
 	const [showPassword, setShowPassword] = useState<boolean>(false);
 	const [isLoading, setIsLoading] = useState<boolean>(false);
-	const passwordRef = useRef<TextInput>(null);
+	const passwordRef = useRef<TextInputInstance>(null);
 
 	const {
 		control,
@@ -252,7 +253,7 @@ const Page = () => {
 							paddingVertical:
 								Platform.OS === "android" ? 14 : 16,
 						}}
-						onPress={handleSubmit(onSubmit)}
+						onPress={() => void handleSubmit(onSubmit)()}
 						disabled={isLoading}
 					>
 						{isLoading ? (

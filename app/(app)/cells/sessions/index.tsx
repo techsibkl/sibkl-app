@@ -181,9 +181,7 @@ export default function SessionsScreen() {
 		<SharedBody>
 			<BottomSheetModalProvider>
 				<FlashList
-					data={listData}
-					estimatedItemSize={90}
-					refreshing={refreshing}
+					data={listData}					refreshing={refreshing}
 					onRefresh={handleRefresh}
 					keyExtractor={(item, index) => {
 						if (item.type === "header") return `header-${index}`;

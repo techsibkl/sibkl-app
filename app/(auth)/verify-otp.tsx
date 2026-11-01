@@ -11,6 +11,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "expo-router";
 import { Mail, RefreshCw } from "lucide-react-native";
+import type { TextInputInstance } from "@/types/react-native";
 import React, { useEffect, useRef, useState } from "react";
 import {
 	ActivityIndicator,
@@ -34,7 +35,7 @@ const Page = () => {
 	const [canResend, setCanResend] = useState(false);
 	const qc = useQueryClient();
 
-	const inputRefs = useRef<(TextInput | null)[]>([]);
+	const inputRefs = useRef<(TextInputInstance | null)[]>([]);
 
 	// Resend timer countdown
 	useEffect(() => {

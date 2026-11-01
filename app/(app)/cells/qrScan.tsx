@@ -146,7 +146,7 @@ export default function QrScan() {
 			/>
 
 			{/* Dark overlay — 4 exact regions around scan window */}
-			<View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+			<View style={StyleSheet.absoluteFill} pointerEvents="none">
 					{/* Top */}
 					<View
 						style={[
@@ -193,7 +193,7 @@ export default function QrScan() {
 			</View>
 
 			{/* Corner brackets */}
-			<View style={StyleSheet.absoluteFillObject} pointerEvents="none">
+			<View style={StyleSheet.absoluteFill} pointerEvents="none">
 					{/* Top Left */}
 					<View
 						style={[

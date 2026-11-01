@@ -50,7 +50,6 @@ const LeadersPage = () => {
 		return (
 			<SharedBody>
 				<StatusBar
-					className="bg-background"
 					barStyle={isDark ? "light-content" : "dark-content"}
 				/>
 				<View className="flex-1 items-center justify-center px-6">
@@ -78,7 +77,6 @@ const LeadersPage = () => {
 	return (
 		<SharedBody>
 			<StatusBar
-				className="bg-background"
 				barStyle={isDark ? "light-content" : "dark-content"}
 			/>
 

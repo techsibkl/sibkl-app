@@ -28,7 +28,6 @@ const CategoryList = ({ groupedResources }: CategoryListProps) => {
 			contentContainerStyle={{
 				paddingVertical: 8,
 			}}
-			estimatedItemSize={200} // tune this for better perf
 			renderItem={({ item: group }) => (
 				<View>
 					{/* Category Header */}

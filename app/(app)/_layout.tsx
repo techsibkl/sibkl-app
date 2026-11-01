@@ -1,6 +1,6 @@
 import { useFeatureFlag } from "@/hooks/useFeatureFlag";
 import { useAuthStore } from "@/stores/authStore";
-import { getFocusedRouteNameFromRoute } from "@react-navigation/native";
+import { getFocusedRouteNameFromRoute } from "expo-router/react-navigation";
 import { Tabs } from "expo-router";
 import {
     Calendar,

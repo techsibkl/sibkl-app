@@ -1,6 +1,6 @@
 import { Announcement } from "@/services/Announcement/announcement.types";
 import { displayDateAsStr } from "@/utils/helper";
-import * as FileSystem from "expo-file-system";
+import * as FileSystem from "expo-file-system/legacy";
 import * as Sharing from "expo-sharing";
 import {
 	Calendar1Icon,

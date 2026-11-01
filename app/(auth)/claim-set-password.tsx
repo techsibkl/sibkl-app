@@ -10,6 +10,7 @@ import {
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useLocalSearchParams, useRouter } from "expo-router";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
+import type { TextInputInstance } from "@/types/react-native";
 import React, { useRef, useState } from "react";
 import { useForm } from "react-hook-form";
 import {
@@ -30,7 +31,7 @@ type signUpFormData = {
 };
 const Page = () => {
 	const [showPassword, setShowPassword] = useState(false);
-	const passwordRef = useRef<TextInput>(null);
+	const passwordRef = useRef<TextInputInstance>(null);
 
 	const router = useRouter();
 	const qc = useQueryClient();
@@ -160,7 +161,7 @@ const Page = () => {
 					{/* Submit */}
 					<TouchableOpacity
 						className={`w-full py-4 rounded-[15px] items-center justify-center mt-6 bg-primary-600`}
-						onPress={handleSubmit(onSubmit)}
+						onPress={() => void handleSubmit(onSubmit)()}
 						disabled={isSubmitting}
 					>
 						{isSubmitting ? (

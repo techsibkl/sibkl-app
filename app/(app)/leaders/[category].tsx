@@ -103,7 +103,6 @@ const CategoryResources = () => {
 			<FlashList
 				data={filteredResources}
 				keyExtractor={(item) => item.id!.toString()}
-				estimatedItemSize={80}
 				contentContainerStyle={{
 					paddingHorizontal: 16,
 					paddingVertical: 16,

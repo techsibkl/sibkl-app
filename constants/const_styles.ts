@@ -1,4 +1,4 @@
-import { DefaultTheme } from "@react-navigation/native";
+import { DefaultTheme } from "expo-router/react-navigation";
 import { Platform } from "react-native";
 import { MD3LightTheme } from "react-native-paper";
 import { Colors } from "./Colors";

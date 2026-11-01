@@ -104,7 +104,7 @@ const Page = () => {
 				{/* Submit */}
 				<TouchableOpacity
 					disabled={isSubmitting}
-					onPress={handleSubmit(onSubmit)}
+					onPress={() => void handleSubmit(onSubmit)()}
 					className={`w-full py-4 rounded-[15px] items-center justify-center mt-6 bg-primary-600`}
 				>
 					{isSubmitting ? (

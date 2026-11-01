@@ -127,7 +127,7 @@ const Page = () => {
 							paddingVertical:
 								Platform.OS === "android" ? 14 : 16,
 						}}
-						onPress={handleSubmit(onSubmit)}
+						onPress={() => void handleSubmit(onSubmit)()}
 						disabled={isLoading}
 					>
 						{isLoading ? (

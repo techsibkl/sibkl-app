@@ -57,9 +57,7 @@ const EventList = ({ events, onRefresh }: EventListProps) => {
 			}}
 			ItemSeparatorComponent={() => <View className="h-4" />}
 			renderItem={({ item }) => <EventCard key={item.id} event={item} />}
-			ListEmptyComponent={<EventListEmpty />}
-			estimatedItemSize={130}
-			refreshControl={
+			ListEmptyComponent={<EventListEmpty />}			refreshControl={
 				onRefresh ? (
 					<RefreshControl
 						refreshing={refreshing}

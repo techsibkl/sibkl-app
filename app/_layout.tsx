@@ -19,7 +19,7 @@ import {
   setBackgroundMessageHandler,
   subscribeToTopic,
 } from "@react-native-firebase/messaging";
-import { ThemeProvider } from "@react-navigation/native";
+import { ThemeProvider } from "expo-router/react-navigation";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Device from "expo-device";
 import { useFonts } from "expo-font";

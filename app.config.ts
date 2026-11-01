@@ -16,7 +16,6 @@ export default ({ config }: { config: any }) => ({
 		icon: "./assets/images/sibkl-app-icon.png",
 		scheme: "sibklapp",
 		userInterfaceStyle: "automatic",
-		newArchEnabled: false,
 
 		ios: {
 			supportsTablet: true,
@@ -86,7 +85,7 @@ export default ({ config }: { config: any }) => ({
 				{
 					ios: {
 						useFrameworks: "static",
-						deploymentTarget: "15.1",
+						deploymentTarget: "16.4",
 					},
 					android: {
 						compileSdkVersion: 36,

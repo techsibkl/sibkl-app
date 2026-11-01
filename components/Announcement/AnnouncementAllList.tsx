@@ -1,5 +1,5 @@
 import { Announcement } from "@/services/Announcement/announcement.types";
-import { FlashList } from "@shopify/flash-list";
+import { FlashList, FlashListRef } from "@shopify/flash-list";
 import { useLocalSearchParams } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { View } from "react-native";
@@ -12,7 +12,7 @@ type AnnouncementAllListProps = {
 
 const AnnouncementAllList = ({ announcements }: AnnouncementAllListProps) => {
 	const { announcement_id } = useLocalSearchParams();
-	const listRef = useRef<FlashList<Announcement>>(null);
+	const listRef = useRef<FlashListRef<Announcement>>(null);
 
 	useEffect(() => {
 		setTimeout(() => {
@@ -46,9 +46,7 @@ const AnnouncementAllList = ({ announcements }: AnnouncementAllListProps) => {
 			renderItem={({ item: announcement }) => (
 				<AnnouncementCard announcement={announcement} />
 			)}
-			ListEmptyComponent={<EmptyList />}
-			estimatedItemSize={100}
-			className="pb-40"
+			ListEmptyComponent={<EmptyList />}			className="pb-40"
 		/>
 	);
 };
