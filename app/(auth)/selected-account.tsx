@@ -2,6 +2,7 @@ import SharedBody from "@/components/shared/SharedBody";
 import { sendOTP, sendSmsOTP } from "@/services/OTP/otp.service";
 import { useClaimStore } from "@/stores/claimStore";
 import { useSignUpStore } from "@/stores/signUpStore";
+import { hasClaimPhone } from "@/utils/claimSuggestion";
 import { useRouter } from "expo-router";
 import { Mail, MessageSquare } from "lucide-react-native";
 import React, { useState } from "react";
@@ -18,12 +19,6 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 const hasValidEmail = (email?: string | null): boolean =>
 	!!email && email.includes("@") && email.trim().length > 0;
 
-/** Returns true when the string has at least 7 digits (a plausible phone number). */
-const hasValidPhone = (phone?: string | null): boolean => {
-	if (!phone) return false;
-	return phone.replace(/\D/g, "").length >= 7;
-};
-
 const Page = () => {
 	const router = useRouter();
 	const { selectedProfile, setVerificationChannel } = useClaimStore();
@@ -32,7 +27,7 @@ const Page = () => {
 	const [smsLoading, setSmsLoading] = useState(false);
 
 	const emailEnabled = hasValidEmail(selectedProfile?.email);
-	const phoneEnabled = hasValidPhone(selectedProfile?.phone);
+	const phoneEnabled = hasClaimPhone(selectedProfile?.phone);
 
 	const handleVerifyViaEmail = async () => {
 		if (!selectedProfile) return;
