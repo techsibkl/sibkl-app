@@ -1,33 +1,13 @@
 import { MediaResource } from "@/services/Resource/resource.type";
 import { router, useLocalSearchParams } from "expo-router";
 import React, { useEffect, useState } from "react";
-import { Image, Text, TouchableOpacity, View } from "react-native";
+import { Text, TouchableOpacity, View } from "react-native";
 import SharedModal from "../shared/SharedModal";
+import ResourceThumbnail from "./ResourceThumbnail";
 import ViewResourceDialog from "./ViewResourceDialog";
 
 type SingleGalleryItemProps = {
 	item: MediaResource;
-};
-
-const getThumbnail = (item: MediaResource): string | null => {
-	if (item.thumbnail_id)
-		return `https://drive.google.com/thumbnail?id=${item.thumbnail_id}`;
-	if (item.drive_file_id)
-		return `https://drive.google.com/thumbnail?id=${item.drive_file_id}`;
-	if (item.youtube_link) {
-		try {
-			const u = new URL(item.youtube_link);
-			const videoId =
-				u.hostname === "youtu.be"
-					? u.pathname.slice(1)
-					: u.searchParams.get("v");
-			if (videoId)
-				return `https://img.youtube.com/vi/${videoId}/hqdefault.jpg`;
-		} catch {
-			return null;
-		}
-	}
-	return null;
 };
 
 export default function SingleGalleryItem({ item }: SingleGalleryItemProps) {
@@ -47,8 +27,6 @@ export default function SingleGalleryItem({ item }: SingleGalleryItemProps) {
 		}
 	};
 
-	const thumbnail = getThumbnail(item);
-
 	return (
 		<>
 			<TouchableOpacity
@@ -56,19 +34,10 @@ export default function SingleGalleryItem({ item }: SingleGalleryItemProps) {
 				onPress={() => setModalVisible(true)}
 			>
 				<View className="flex flex-col">
-					{thumbnail ? (
-						<Image
-							source={{ uri: thumbnail }}
-							className="w-full h-28 rounded-t-lg"
-							resizeMode="cover"
-						/>
-					) : (
-						<View className="w-full h-28 rounded-t-lg bg-gray-100 items-center justify-center">
-							<Text className="text-gray-400 text-xs">
-								No Preview
-							</Text>
-						</View>
-					)}
+					<ResourceThumbnail
+						resource={item}
+						className="w-full h-28 rounded-t-lg"
+					/>
 					<View className="flex-grow p-4">
 						<Text
 							className="text-text text-base font-medium"
@@ -84,9 +53,11 @@ export default function SingleGalleryItem({ item }: SingleGalleryItemProps) {
 						>
 							{item.file_type === "PDF"
 								? "PDF Document"
-								: item.youtube_link
-									? "YouTube"
-									: "Video"}
+								: item.vimeo_link
+									? "Vimeo"
+									: item.youtube_link
+										? "YouTube"
+										: "Video"}
 						</Text>
 					</View>
 				</View>

@@ -1,4 +1,5 @@
 import { formStyles } from "@/constants/const_styles";
+import { formatLocalDate, parseCalendarDate } from "@/utils/localDate";
 import DateTimePicker from "@react-native-community/datetimepicker";
 import React, { useState } from "react";
 import { Controller } from "react-hook-form";
@@ -45,16 +46,22 @@ export const FormDateInput = ({
 				control={control}
 				name={name}
 				rules={rules}
-				render={({ field: { onChange, value } }) => (
+				render={({ field: { onChange, value } }) => {
+					const pickerDate = parseCalendarDate(value) ?? new Date();
+					const commit = (selectedDate: Date) => {
+						const formatted = formatLocalDate(selectedDate);
+						onChange(formatted);
+						onChangeTextCallback?.(formatted);
+					};
+
+					return (
 					<>
 						{/* Trigger */}
 						<TouchableOpacity
 							disabled={disabled}
 							className={`${formStyles.inputDate} ${disabled ? "opacity-50" : ""}`}
 							onPress={() => {
-								setTempDate(
-									value ? new Date(value) : new Date(),
-								);
+								setTempDate(pickerDate);
 								setShow(true);
 							}}
 						>
@@ -63,8 +70,8 @@ export const FormDateInput = ({
 									value ? "text-gray-900" : "text-gray-400"
 								}
 							>
-								{value
-									? new Date(value).toLocaleDateString()
+								{parseCalendarDate(value)
+									? pickerDate.toLocaleDateString()
 									: (placeholder ?? "Select a date")}
 							</Text>
 						</TouchableOpacity>
@@ -72,16 +79,13 @@ export const FormDateInput = ({
 						{/* Android — native modal picker, no bottom sheet needed */}
 						{Platform.OS === "android" && show && (
 							<DateTimePicker
-								value={value ? new Date(value) : new Date()}
+								value={pickerDate}
 								mode="date"
 								display="default"
 								onChange={(event, selectedDate) => {
 									setShow(false);
 									if (event.type === "set" && selectedDate) {
-										onChange(selectedDate.toISOString());
-										onChangeTextCallback?.(
-											selectedDate.toISOString(),
-										);
+										commit(selectedDate);
 									}
 								}}
 							/>
@@ -122,14 +126,9 @@ export const FormDateInput = ({
 													</Text>
 													<TouchableOpacity
 														onPress={() => {
-															const selected =
+															commit(
 																tempDate ??
-																new Date();
-															onChange(
-																selected.toISOString(),
-															);
-															onChangeTextCallback?.(
-																selected.toISOString(),
+																	pickerDate,
 															);
 															setShow(false);
 														}}
@@ -143,10 +142,7 @@ export const FormDateInput = ({
 												{/* Spinner */}
 												<DateTimePicker
 													value={
-														tempDate ??
-														(value
-															? new Date(value)
-															: new Date())
+														tempDate ?? pickerDate
 													}
 													mode="date"
 													display="spinner"
@@ -169,7 +165,8 @@ export const FormDateInput = ({
 							</Modal>
 						)}
 					</>
-				)}
+					);
+				}}
 			/>
 
 			{errors[name] && (
