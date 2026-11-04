@@ -78,7 +78,7 @@ export default function SessionsScreen() {
 		.map(Number)
 		.includes(cellId);
 	const canCreateSession =
-		ability.can("manage", "all") ||
+		ability.can("manage", "CellSession") ||
 		(isLeaderOrCoreOfCell && ability.can("create", "CellSession"));
 
 	const {
