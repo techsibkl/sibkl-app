@@ -10,7 +10,6 @@ export enum Role {
 	SENIOR_PASTOR = "Senior Pastor",
 	SUPER_ADMIN = "Super Admin",
 	CELL_ADMIN = "Cell Admin",
-	CELL_COORDINATOR = "Cell Coordinator",
 	CELL_LEADER = "Cell Leader",
 	CELL_CORE = "Cell Core",
 	ZONE_LEADER = "Zone Leader",
@@ -30,7 +29,7 @@ export enum Role {
 }
 
 export function defineAbilityFor(person: Person | null): AnyAbility {
-	const { can, cannot, build } = new AbilityBuilder(createMongoAbility);
+	const { can, build } = new AbilityBuilder(createMongoAbility);
 	try {
 		// Guest user (person === null): ONLY allow public announcements
 		if (person === null) {
@@ -89,26 +88,23 @@ export function defineAbilityFor(person: Person | null): AnyAbility {
 			can("manage", "all");
 		}
 
-		if (
-			person?.roles?.includes(Role.CELL_ADMIN) ||
-			person?.roles?.includes(Role.CELL_COORDINATOR)
-		) {
-			can("manage", "all");
-			cannot("manage", "Permissions");
-			cannot("manage", "Duplicates");
-			cannot("manage", "PeopleProfile");
-			can(["update", "read"], "PeopleProfile", { id: person.id });
-			can("read", "PeopleProfile", {
-				assignee_ids: { $in: [person.id] },
-			});
-
-			cannot(["create", "update", "delete"], "Flow");
-			can("read", "Flow", { district_id: null, get_public: true });
-
-			cannot("manage", "PeopleFlow");
-			can(["read", "update", "assign", "add"], "PeopleFlow", {
-				assignee_id: person.id,
-			});
+		// Role blocks below only grant (can); avoid cannot() so permissions from multiple roles stack.
+		if (person?.roles?.includes(Role.CELL_ADMIN)) {
+			can("manage", [
+				"Cell",
+				"CellDetails",
+				"CellMembers",
+				"CellCreationRequest",
+				"CellChangeRequest",
+				"CellSession",
+				"CellMap",
+				"CellScoped",
+				"District",
+				"DistrictDetails",
+				"Zone",
+				"ZoneCreationRequest",
+				"LeadershipResignationRequest",
+			]);
 		}
 
 		if (person?.roles?.includes(Role.CELL_LEADER) || person?.roles?.includes(Role.ZONE_LEADER)) {
@@ -177,20 +173,31 @@ export function defineAbilityFor(person: Person | null): AnyAbility {
 		}
 
 		if (person?.roles?.includes(Role.PEOPLE_ADMIN)) {
-			can("manage", "all");
-			cannot("manage", "Permissions");
-			cannot(["create", "update", "delete"], "CellDetails");
-			cannot(["create", "update", "delete"], "CellMembers");
-			cannot(["create", "update", "delete"], "CellCreationRequest");
-			cannot(["create", "update", "delete"], "CellChangeRequest");
-			cannot(["create", "update", "delete"], "DistrictDetails");
-			cannot(["create", "update", "delete"], "Zone");
-			cannot(["create", "update", "delete"], "ZoneCreationRequest");
-			cannot(["create", "update", "delete"], "LeadershipResignationRequest");
+			can("manage", [
+				"PeopleProfile",
+				"PeopleProfileNotes",
+				"PeopleScoped",
+				"Duplicates",
+				"Flow",
+				"PeopleFlow",
+			]);
+			// Read-only access to cell structure for people lookups and filters
+			can("read", [
+				"CellDetails",
+				"CellMembers",
+				"CellCreationRequest",
+				"CellChangeRequest",
+				"CellSession",
+				"CellMap",
+				"CellScoped",
+				"DistrictDetails",
+				"Zone",
+				"ZoneCreationRequest",
+				"LeadershipResignationRequest",
+			]);
 		}
 
 		if (person?.roles?.includes(Role.MEDIA_ADMIN)) {
-			cannot("manage", "all");
 			can("manage", "Announcements");
 			can("manage", "Resource");
 		}

@@ -199,7 +199,7 @@ export default function SessionDetailScreen() {
 		.includes(numericCellId);
 	const canCloseSession =
 		!isClosed &&
-		(ability.can("manage", "all") || isLeaderOrCoreOfCell);
+		(ability.can("manage", "CellSession") || isLeaderOrCoreOfCell);
 
 	const attendanceRate =
 		session && session.total_members > 0
