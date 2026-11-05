@@ -110,10 +110,18 @@ const ProfileViewPage = () => {
 								{/* DISPLAY FIELDS */}
 								<View className="gap-y-4">
 									{fields
-										.filter((f) => f.editable !== false)
+										.filter(
+											(f) =>
+												f.key === "email" ||
+												f.editable !== false,
+										)
 										.map((field) => {
 											const rawValue =
-												person[field.key] ?? "";
+												field.key === "email"
+													? person.email ||
+														user?.email ||
+														""
+													: (person[field.key] ?? "");
 											const formattedValue =
 												formatValue(rawValue);
 
