@@ -80,7 +80,13 @@ const UpdateProfilePage = () => {
 				SectionEnum.PERSONAL_INFORMATION,
 			);
 
-			reset(personalInfoData as ProfileFormData);
+			reset({
+				...personalInfoData,
+				email:
+					(personalInfoData.email as string) ||
+					appUser?.email ||
+					"",
+			} as ProfileFormData);
 		}
 	}, [currentPerson, reset]);
 
@@ -105,9 +111,11 @@ const UpdateProfilePage = () => {
 			return;
 		}
 
+		const profileUpdates: ProfileFormData = { ...normalisedData };
+		delete profileUpdates.email;
 		const formPerson: Partial<Person> = {
 			id: currentPerson?.id,
-			...normalisedData,
+			...profileUpdates,
 		};
 
 		try {
@@ -228,7 +236,11 @@ const UpdateProfilePage = () => {
 
 									<View className="ml-1 pt-2 gap-y-4 border-t border-border">
 										{fields
-											.filter((f) => f.editable !== false)
+											.filter(
+												(f) =>
+													f.key === "email" ||
+													f.editable !== false,
+											)
 											.map((field) => {
 												return (
 													<DynamicFormField
