@@ -46,8 +46,6 @@ Auth init: `useAuthStore().init()` on mount (Firebase `onAuthStateChanged`).
 
 The effect depends on `user?.people_id`, not the whole `user` object. A person-revision refresh updates roles in place and does not redirect to home.
 
-`| `scanner.tsx` | Scanner entry |` should be fixed too.
-
 #### Root Stack screens
 
 ```tsx
@@ -153,10 +151,12 @@ Each tab folder has `_layout.tsx` (Stack + headers) and `index.tsx` (main screen
 | `_layout.tsx` | Stack: `index`, `launch`, `profile/index`, `profile/updateProfile/index` |
 | `index.tsx` | Dashboard — pinned announcements, notification preview, launch banner |
 | `launch.tsx` | Launch countdown and unlock (`docs/FEATURE_FLAGS.md`) |
-| `profile/index.tsx` | “My Profile” (logged-in user) |
-| `profile/updateProfile/index.tsx` | Edit own profile (phone field: `docs/PHONE_NUMBERS.md`) |
+| `profile/index.tsx` | “My Profile” (logged-in user). Email is shown even though the field is `editable: false` |
+| `profile/updateProfile/index.tsx` | Edit own profile. Email is disabled and stripped before `updatePeople`. Phone: `docs/PHONE_NUMBERS.md` |
 
 **Header:** `SharedHeader` with `<Greeting />` on home; titled headers on sub-screens.
+
+**Email on My Profile.** `constants/const_person.ts` marks `email` `editable: false`, but both screens still render it (`key === "email"` is included anyway). The value is `person.email`, then the Firebase `user.email`. The edit form disables that field for every signed-in user and `delete`s `email` from the payload, so a profile save cannot change the person email. Changing the login address is Settings → change email, which calls Firebase `updateEmail` after re-auth and does not write the person row. A verified email-change flow for people who already have an account is not in this screen yet.
 
 **`index.tsx` pattern:** compose `SharedBody` + section components + TanStack hooks (`useAnnouncementsQuery`, `useNotificationQuery`). Links to full lists via `router.push("/(app)/announcements")`.
 
@@ -188,17 +188,21 @@ Guest users see limited UI (handled in screen + CASL).
 
 **My Cells** lists memberships whose `member_status` is `ACTIVE`. `PENDING` stays on All with a badge (optimistic local ids plus the person payload). Check-in is blocked for `PENDING`, `REJECTED`, and `REMOVED` (`utils/cellMembership.ts`).
 
+**Attendance ids.** Person ids arrive as numbers or numeric strings. Session screens and `cellAttendance.service.ts` compare them with `toPeopleId` / `isSamePeopleId`. `null` and `""` stay `null` so a guest row is not person `0`. A `Map` keyed with the raw value will miss a checked-in member.
+
+**Sessions.** Create is `ability.can("manage", "CellSession")`, or the person is in `leader_of_cell_ids` / `core_of_cell_ids` for this cell **and** `can("create", "CellSession")`. Close uses `manage` CellSession, or leader/core of this cell. Cell Admin has `manage` on `CellSession`. A zone leader who is not also leader or core of that cell can open the list from the profile (`isZoneLeaderOfCell`) but does not pass the create/close check. `meeting_date` for a new session is a local calendar day (`utils/localDate.ts`), not `toISOString()`.
+
 **Who can manage a cell** (`profile/[id].tsx`), from the loaded cell and the current person:
 
 | Role | How it is detected | What the screen allows |
 |------|--------------------|------------------------|
-| Cell leader | `leader_of_cell_ids`, or `cell_leader_1` / `cell_leader_2` | Members, sessions, join requests. **Edit info** opens the CMS form in the browser |
-| Zone leader | `zone_leader_1` / `zone_leader_2` on this cell (not `leader_of_cell_ids`) | Same manage actions, including **Edit info** |
+| Cell leader | `leader_of_cell_ids`, or `cell_leader_1` / `cell_leader_2` | Members, sessions, join requests. **Edit info** opens `https://sibklcms-prod.web.app/forms/cells/update/` in the browser |
+| Zone leader | `zone_leader_1` / `zone_leader_2` on this cell (not `leader_of_cell_ids`) | Same profile actions, including **Edit info**. Session create/close still requires leader/core of this cell or `manage` `CellSession` |
 | Cell core | `core_of_cell_ids`, or `is_core` on their roster row | Add/remove members, review joins, sessions. Not treated as a leader for Edit info |
 
 CASL (`utils/casl/defineAbilityFor.ts`) mirrors that split. Cell leaders and zone leaders share rules on `leader_of_cell_ids` (profile, flows, notes, cell details, members, sessions). Zone leaders also get `CellMembers` and `CellSession` on any cell where `zone_leader_1` or `zone_leader_2` is their person id. They do not get `CellDetails` update from the zone slot alone.
 
-Client CASL is UX. The API still authorizes.
+Client CASL is UX. The API still authorizes. Role grants stack with `can` only; there is no `cannot()`, so a second role cannot revoke the first. `Cell Coordinator` is not a client role. See the permissions section below.
 
 ---
 
@@ -234,17 +238,23 @@ Uses `useFlowsQuery`, `usePeopleFlowQuery`. Supports `flow_id` and `isMeMode` UR
 
 Components: `FlowSelect`, `StatusTabs`, `PeopleFlowAssignedList`, action dialogs.
 
+**Assign person.** `PersonListItem` shows a “Has account” chip when `person.has_account` is true. The same chip is on the cell add-member sheet. `has_account` means the person id exists on `users.people_id` (`person.type.ts`). `fetchPeopleScopedFields` and `fetchPeopleScopedMaskedFields` coerce `true` or `1` to boolean and sort those people first, then by name. The assign dialog still groups cell, then district, then others inside that list.
+
 ---
 
 ### `leaders/`
 
 | File | Role |
 |------|------|
-| `_layout.tsx` | Stack: `index`, `[category]` |
+| `_layout.tsx` | Stack: `index`, `[category]`. Mounts `VimeoThumbnailBridge` and `VimeoFullscreenHost` |
 | `index.tsx` | Resource categories (gallery / list) |
-| `[category].tsx` | Files in one category |
+| `[category].tsx` | Files in one category. A row with `vimeo_link` is labeled “Vimeo” |
 
 Uses `useResourcesQuery`, `useFilteredResources`. Category name shown in header on `[category]`.
+
+**Vimeo.** Only links `parseVimeoLink` accepts play inside the app (`utils/vimeo.ts`): `vimeo.com` and `player.vimeo.com`, including an unlisted hash (`/123456789/abcdef` or `?h=`). Anything else stays an external open (YouTube or Drive). Watch calls `openVimeoFullscreen`, which sets `autoplay=1` and renders `VimeoPlayer`.
+
+The player is a WebView whose `baseUrl` is `VIMEO_EMBED_ORIGIN` (`https://sibklcms-prod.web.app/`, trailing slash required so Android sends that document origin). Vimeo privacy checks the embedding Referer and has no app-id allowlist, so a new player host will not load until that domain is on the video’s embed allowlist. Thumbnails use one hidden WebView (`VimeoThumbnailBridge`) that fetches oEmbed with the same base URL, 8s timeout, in-memory cache in `utils/vimeoThumbnail.ts`. Do not put a WebView on every card.
 
 ---
 
@@ -303,11 +313,13 @@ Navigate: `router.push({ pathname: "/(app)/profile/[id]", params: { id, backPath
 | `sign-in.tsx` | Email/password login |
 | `sign-up.tsx` | New user registration |
 | `new-account.tsx` | Account creation flow |
-| `claim-set-password.tsx` | Claim existing person record |
+| `claim-set-password.tsx` | Password after a successful claim OTP. See `docs/CLAIM_ACCOUNT.md` |
 | `complete-profile.tsx` | Post-signup profile completion |
 | `forgot-password.tsx` | Password reset |
-| `selected-account.tsx` | Pick account to claim |
-| `verify-otp.tsx` | OTP verification |
+| `selected-account.tsx` | Email or SMS verification for the selected person |
+| `verify-otp.tsx` | Email OTP and Twilio SMS OTP |
+
+Claiming a CMS person (email or SMS) is `docs/CLAIM_ACCOUNT.md`. Event registration claim is the events section above.
 
 `complete-profile` header back triggers sign-out confirm dialog.
 
@@ -489,6 +501,10 @@ Server data lives in TanStack Query, not stores. Flags and launch state are the 
 | `endpoints.ts` | API URL builder |
 | `helper.ts` | Dates, `formatPhone` (delegates to `phone.ts`), toast errors |
 | `phone.ts` | Dial code + national digits. See `docs/PHONE_NUMBERS.md` |
+| `localDate.ts` | Calendar days in the device timezone. See below |
+| `vimeo.ts` | Allowlisted Vimeo embed URL and player HTML |
+| `claimSuggestion.ts` | “Suggested” rank on the claim search list |
+| `appVersion.ts` | Store-update prompt comparison (`major.minor.patch`) |
 | `helper_profile.ts` | Profile initials, field helpers |
 | `helper_flows.ts` | Flow-specific helpers |
 | `helper_leaders.tsx` | Leader resource helpers |
@@ -500,7 +516,25 @@ Server data lives in TanStack Query, not stores. Flags and launch state are the 
 | `tempEnv.ts` | Local dev API URL override |
 | `types/` | Shared TS types (`returnVal`, `TableField`, etc.) |
 
-Permissions: `authStore.ability` from `defineAbilityFor(person)`. Use `hooks/useAbility.ts` in components. Roles worth knowing when debugging a cell screen: Cell Leader, Zone Leader, Cell Core, Cell Coordinator, District Pastor, District Admin. Zone Leader is a real role string (`"Zone Leader"`), not an alias of Cell Leader.
+Permissions: `authStore.ability` from `defineAbilityFor(person)`. Use `hooks/useAbility.ts` in components. Zone Leader is a real role string (`"Zone Leader"`), not an alias of Cell Leader. `Cell Coordinator` was removed from the `Role` enum and from the follow-up assignment filter. A person whose only role string is `Cell Coordinator` gets the authenticated defaults (own profile, public flows, own notes) and not the “known role” extras (`PeopleScoped`, `CellScoped`, archived profiles).
+
+Role blocks only call `can()`. Do not add `cannot()` to take a subject away from a combined role; it used to wipe Media Admin and made Cell Admin / People Admin depend on `manage all` plus exceptions. Current shape:
+
+| Role | Grants beyond the authenticated defaults |
+|------|------------------------------------------|
+| Senior Pastor, Super Admin | `manage` `all` |
+| Cell Admin | `manage` cell, district, zone, session, and leadership-request subjects |
+| Cell Leader | On `leader_of_cell_ids`: profile, flows (including `complete`), notes, cell details, members, sessions |
+| Zone Leader | Same as Cell Leader on `leader_of_cell_ids`, plus `CellMembers` and `CellSession` where `zone_leader_1` or `zone_leader_2` is this person. No `CellDetails` update from the zone slot |
+| Cell Core | On `core_of_cell_ids`: profile, flows (`assign`, not `complete`), notes, read cell details, members (including create/delete), sessions |
+| People Admin | `manage` people, notes, duplicates, flows. Read-only on cell structure |
+| Media Admin | `manage` announcements and resources. Does not clear other roles |
+| District Pastor / District Admin | District-scoped people, cells, zones, flows. Both can `complete` `PeopleFlow` in their districts |
+| Staff | Only what is already in the defaults for that assignee (explicit repeat, not `manage all`) |
+
+Anyone with at least one known role (not `None`, not an unknown string) can also read `PeopleScoped`, `CellScoped`, and archived profiles.
+
+**Calendar dates.** `formatLocalDate` / `parseCalendarDate` / `toCalendarDateString` keep a `YYYY-MM-DD` value on that civil day. An ISO instant uses the device’s local day, so a local midnight that was serialized with `toISOString()` is not stored as the previous day. `FormDateInput`, cell session create, and event date fields go through this module. Do not send `date.toISOString()` for a date-only field.
 
 ---
 
@@ -569,7 +603,7 @@ npx expo run:android --device   # or ios
 
 See `README.md` for EAS builds, Play Store signing, and deployment.
 
-See `docs/FEATURE_FLAGS.md` for server feature flags, the launch window, and the build-time `PILOT_BUILD` label. See `docs/PHONE_NUMBERS.md` for the stored phone format.
+See `docs/FEATURE_FLAGS.md` for server feature flags, the launch window, and the build-time `PILOT_BUILD` label. See `docs/PHONE_NUMBERS.md` for the stored phone format. See `docs/CLAIM_ACCOUNT.md` for email and SMS claim.
 
 ---
 
@@ -590,5 +624,10 @@ See `docs/FEATURE_FLAGS.md` for server feature flags, the launch window, and the
 | Bottom navbar | `(app)/_layout.tsx` only |
 | Show or hide a feature | `hooks/useFeatureFlag.ts`, `docs/FEATURE_FLAGS.md` |
 | Phone input / stored format | `utils/phone.ts`, `docs/PHONE_NUMBERS.md` |
+| Claim a person (email or SMS) | `docs/CLAIM_ACCOUNT.md`, `stores/claimStore.ts` |
+| Calendar date off by one day | `utils/localDate.ts` |
+| Attendance check missing a member | `toPeopleId` / `isSamePeopleId` in `utils/cellMembership.ts` |
+| Vimeo embed blocked | `VIMEO_EMBED_ORIGIN` in `utils/vimeo.ts` |
 | Event list, claim, check-in | `services/Event/event.service.ts`, `hooks/Event/` |
+| Store update prompt | `needsAppUpdate` in `stores/systemStore.ts`, `docs/FEATURE_FLAGS.md` |
 | Expo SDK upgrade (53 → 54) | `docs/SDK_54_UPGRADE.md` |
