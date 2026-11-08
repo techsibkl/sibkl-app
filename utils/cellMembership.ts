@@ -20,6 +20,26 @@ export function isSamePeopleId(left: unknown, right: unknown): boolean {
 	return a != null && a === b;
 }
 
+type ZoneLeaderCell = {
+	zone_leader_1?: number | string | null;
+	zone_leader_2?: number | string | null;
+};
+
+/**
+ * Zone leaders are assigned on the cell (`zone_leader_1` / `zone_leader_2`),
+ * not via `leader_of_cell_ids`. Ids may arrive as strings.
+ */
+export function isZoneLeaderOfCell(
+	personId: number | string | null | undefined,
+	cell?: ZoneLeaderCell | null,
+): boolean {
+	const id = toPeopleId(personId);
+	if (id == null) return false;
+	return [cell?.zone_leader_1, cell?.zone_leader_2].some(
+		(leaderId) => toPeopleId(leaderId) === id,
+	);
+}
+
 const BLOCKED = new Set(["REMOVED", "REJECTED", "PENDING"]);
 
 const normalize = (value?: string | null) =>
