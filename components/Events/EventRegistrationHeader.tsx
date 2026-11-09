@@ -15,7 +15,7 @@ const EventRegistrationHeader = ({ event }: EventRegistrationHeaderProps) => (
 			<View className="flex-row items-center gap-2">
 				<Calendar1Icon size={16} color="#6B7280" />
 				<Text className="text-sm text-gray-600 flex-1">
-					{formatEventDateTime(event.start_at)}
+					{formatEventDateTime(event.start_at, event.start_includes_time)}
 				</Text>
 			</View>
 		)}

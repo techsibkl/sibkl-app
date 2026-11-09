@@ -14,7 +14,11 @@ function formatCheckedInTime(checkedInAt?: string | null): string | null {
 	if (!checkedInAt) return null;
 	const date = new Date(checkedInAt);
 	if (Number.isNaN(date.getTime())) return null;
-	return date.toLocaleTimeString("en-MY", {
+	return date.toLocaleDateString("en-MY", {
+		weekday: "short",
+		day: "numeric",
+		month: "short",
+		year: "numeric",
 		hour: "numeric",
 		minute: "2-digit",
 	});
@@ -37,7 +41,7 @@ const EventCheckInSection = ({
 
 	const secondaryText = isCheckedIn
 		? checkedInTime
-			? `Checked in at ${checkedInTime}`
+			? `Checked in on ${checkedInTime}`
 			: "Enjoy the event!"
 		: canScan
 			? "Tap the QR to check in"

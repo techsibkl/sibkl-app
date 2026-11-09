@@ -56,7 +56,7 @@ export function AppPicker<T>({
 			<Pressable
 				className={
 					renderTrigger
-						? "w-full h-full items-center justify-center"
+						? "w-full h-full items-start justify-center"
 						: "w-full justify-center py-2 h-full"
 				}
 				disabled={disabled}

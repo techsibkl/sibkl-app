@@ -22,6 +22,12 @@ function normalizeEvent(raw: Record<string, unknown>): Event {
 		venue: get("venue", "venue") as string | undefined,
 		start_at: get("start_at", "startAt") as string | undefined,
 		end_at: get("end_at", "endAt") as string | undefined,
+		start_includes_time: Boolean(
+			get("start_includes_time", "start_at_includes_time"),
+		),
+		end_includes_time: Boolean(
+			get("end_includes_time", "end_at_includes_time"),
+		),
 		status: String(get("status", "status") ?? "draft"),
 		registration_open_at: get(
 			"registration_open_at",

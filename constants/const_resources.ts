@@ -2,8 +2,8 @@ export const CATEGORIES = [
 	"Cell",
 	"Worship",
 	"Discipleship",
-	"Policies",
 	"Training",
+	"Policies",
 ];
 export const FORMATS = ["Video", "PDF"];
 export const RESOURCE_DRIVES = [

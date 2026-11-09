@@ -117,7 +117,7 @@ function PhoneControl({
 		<View
 			className={`h-12 flex-row items-center border border-border rounded-[15px] overflow-hidden ${disabled ? "bg-gray-100" : "bg-white"}`}
 		>
-			<View className="h-full justify-center border-r border-border pl-3 pr-1 min-w-[92px]">
+			<View className="h-full justify-center border-r border-border pl-3 pr-1 min-w-[60px]">
 				<AppPicker
 					value={dialCode || DEFAULT_DIAL_CODE}
 					options={countryOptions}
@@ -131,7 +131,7 @@ function PhoneControl({
 					renderTrigger={() => (
 						<View className="flex-row items-center justify-between pr-2">
 							<Text
-								className={`font-regular text-sm ${disabled ? "text-gray-400" : "text-gray-600"}`}
+								className={`font-regular text-base pr-1 ${disabled ? "text-gray-400" : "text-text"}`}
 							>
 								+{dialCode || DEFAULT_DIAL_CODE}
 							</Text>
@@ -142,7 +142,7 @@ function PhoneControl({
 			</View>
 			<TextInput
 				style={inputPadding}
-				className={`font-regular flex-1 px-3 ${disabled ? "text-gray-400" : "text-gray-600"}`}
+				className={`font-regular flex-1 px-3 ${disabled ? "text-gray-400" : "text-text"}`}
 				placeholder={placeholder}
 				placeholderTextColor="#9ca3af"
 				keyboardType="phone-pad"
@@ -157,7 +157,10 @@ function PhoneControl({
 					commit(dialRef.current, text.replace(/[^\d]/g, ""));
 				}}
 				onBlur={() => {
-					const joined = joinPhone(dialRef.current, nationalRef.current);
+					const joined = joinPhone(
+						dialRef.current,
+						nationalRef.current,
+					);
 					const parsed = splitPhone(joined);
 					nationalRef.current = parsed.national;
 					setNational(parsed.national);
