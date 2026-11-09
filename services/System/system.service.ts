@@ -10,9 +10,11 @@ import { secureFetch } from "@/utils/secureFetch";
  */
 export const getSystemConfig = async (): Promise<SystemConfig | null> => {
   try {
-    const response = await secureFetch(apiEndpoints.system.getConfig, {
-      method: "GET",
-    });
+    const response = await secureFetch(
+      apiEndpoints.system.getConfig,
+      { method: "GET" },
+      { allowUnauthenticated: true },
+    );
     const json = await response.json();
     if (json.success && json.data) {
       return json.data as SystemConfig;

@@ -30,7 +30,7 @@ Everything boots here. Two layers:
 
 Handles **auth state routing**, **FCM push notifications**, and the **root Stack navigator**.
 
-FCM registration subscribes the device to the `system-config` topic and refetches `GET /system/config` when a foreground message has `data.type === "system_config_updated"`. Background messages are logged; the app refetches config on resume if the last fetch is older than 5 minutes. See `docs/FEATURE_FLAGS.md`.
+FCM registration subscribes the device to the `system-config` topic and refetches `GET /system/config` (public; works signed out) after a random 0–20s delay when a foreground message has `data.type === "system_config_updated"`. Background messages are logged; the app refetches config on resume if the last fetch is older than 5 minutes. See `docs/FEATURE_FLAGS.md`.
 
 #### Auth routing (`useEffect` on `authLoaded`, `firebaseUser`, `user`, `isGuest`)
 

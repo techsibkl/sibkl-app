@@ -21,7 +21,7 @@ export const inputPaddingComfort =
 
 export const inputPadding =
 	Platform.OS === "android"
-		? { paddingVertical: 8 }
+		? { paddingVertical: 6 }
 		: { paddingVertical: 14 };
 
 // Custom light theme using your brand colors

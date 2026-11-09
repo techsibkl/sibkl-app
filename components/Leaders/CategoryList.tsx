@@ -8,9 +8,10 @@ import CategoryItemsList from "./CategoryItemsList";
 
 type CategoryListProps = {
 	groupedResources: { category: string; items: MediaResource[] }[];
+	isLoading?: boolean;
 };
 
-const CategoryList = ({ groupedResources }: CategoryListProps) => {
+const CategoryList = ({ groupedResources, isLoading }: CategoryListProps) => {
 	const router = useRouter();
 
 	const goToAll = (category: string) => {
@@ -29,6 +30,7 @@ const CategoryList = ({ groupedResources }: CategoryListProps) => {
 				paddingVertical: 8,
 			}}
 			estimatedItemSize={200} // tune this for better perf
+			extraData={isLoading}
 			renderItem={({ item: group }) => (
 				<View>
 					{/* Category Header */}
@@ -38,7 +40,10 @@ const CategoryList = ({ groupedResources }: CategoryListProps) => {
 					/>
 
 					{/* Category Items */}
-					<CategoryItemsList items={group.items.slice(0, 10)} />
+					<CategoryItemsList
+						items={group.items.slice(0, 10)}
+						isLoading={isLoading}
+					/>
 				</View>
 			)}
 		/>

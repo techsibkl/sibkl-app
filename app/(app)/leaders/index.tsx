@@ -10,6 +10,7 @@ import { useAuthStore } from "@/stores/authStore";
 import { useRouter } from "expo-router";
 import React, { useEffect, useState } from "react";
 import {
+	RefreshControl,
 	ScrollView,
 	StatusBar,
 	Text,
@@ -27,7 +28,15 @@ const LeadersPage = () => {
 	const { isDark } = useThemeColors();
 	const { isGuest } = useAuthStore();
 	const router = useRouter();
-	const { data: resources, isPending, isError } = useResourcesQuery();
+	const {
+		data: resources,
+		isPending,
+		isPlaceholderData,
+		isError,
+		refetch,
+	} = useResourcesQuery();
+	const isLoading = isPending || isPlaceholderData;
+	const [refreshing, setRefreshing] = useState(false);
 	const [searchQuery, setSearchQuery] = useState("");
 	const [viewMode, setViewMode] = useState<"gallery" | "list">("gallery");
 	const [sortAsc, setSortAsc] = useState(false);
@@ -44,6 +53,24 @@ const LeadersPage = () => {
 			setViewMode("gallery");
 		}
 	}, [resource_id]);
+
+	const handleRefresh = async () => {
+		setRefreshing(true);
+		try {
+			await refetch();
+		} finally {
+			setRefreshing(false);
+		}
+	};
+
+	const refreshControl = (
+		<RefreshControl
+			refreshing={refreshing}
+			onRefresh={handleRefresh}
+			colors={["#d6361e"]}
+			tintColor="#d6361e"
+		/>
+	);
 
 	// Guest users cannot access leaders page
 	if (isGuest) {
@@ -104,14 +131,23 @@ const LeadersPage = () => {
 				</TouchableOpacity>
 			</View>
 
-			{isPending ? (
-				<SkeletonGallery />
-			) : viewMode === "gallery" ? (
-				<ScrollView showsVerticalScrollIndicator={false}>
-					<CategoryList groupedResources={groupedResources} />
+			{viewMode === "gallery" ? (
+				<ScrollView
+					showsVerticalScrollIndicator={false}
+					refreshControl={refreshControl}
+				>
+					<CategoryList
+						groupedResources={groupedResources}
+						isLoading={isLoading}
+					/>
 				</ScrollView>
+			) : isLoading ? (
+				<SkeletonGallery />
 			) : (
-				<FolderList groupedResources={groupedResources} />
+				<FolderList
+					groupedResources={groupedResources}
+					refreshControl={refreshControl}
+				/>
 			)}
 		</SharedBody>
 	);

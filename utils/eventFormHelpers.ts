@@ -79,7 +79,10 @@ export function formatMetadataForSubmit(
 	return result;
 }
 
-export function formatEventDateTime(dateString?: string | null): string {
+export function formatEventDateTime(
+	dateString?: string | null,
+	includesTime = true,
+): string {
 	if (!dateString) return "Date TBC";
 	const date = new Date(dateString);
 	if (Number.isNaN(date.getTime())) return "Date TBC";
@@ -88,7 +91,6 @@ export function formatEventDateTime(dateString?: string | null): string {
 		day: "numeric",
 		month: "short",
 		year: "numeric",
-		hour: "numeric",
-		minute: "2-digit",
+		...(includesTime ? { hour: "numeric", minute: "2-digit" } : {}),
 	});
 }

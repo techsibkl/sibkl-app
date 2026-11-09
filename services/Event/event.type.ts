@@ -25,6 +25,10 @@ export interface Event {
 	venue?: string;
 	start_at?: string;
 	end_at?: string;
+	/** False when `start_at` is date-only (stored as midnight UTC). */
+	start_includes_time?: boolean;
+	/** False when `end_at` is date-only (stored as midnight UTC). */
+	end_includes_time?: boolean;
 	status: EventStatus;
 	allow_rsvp?: boolean;
 	rsvp_start_at?: string | null;

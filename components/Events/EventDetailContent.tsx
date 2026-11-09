@@ -43,6 +43,29 @@ function formatEventTimeLabel(dateString?: string | null): string | null {
 	});
 }
 
+function isSameCalendarDay(start?: string | null, end?: string | null) {
+	const startDate = parseEventDate(start);
+	const endDate = parseEventDate(end);
+	if (!startDate || !endDate) return true;
+	return startDate.toDateString() === endDate.toDateString();
+}
+
+function formatSingleDayTimeRange(event: Event): string | null {
+	const startTime = event.start_includes_time
+		? formatEventTimeLabel(event.start_at)
+		: null;
+	const endTime = event.end_includes_time
+		? formatEventTimeLabel(event.end_at)
+		: null;
+
+	if (startTime && endTime) {
+		return startTime === endTime ? startTime : `${startTime} – ${endTime}`;
+	}
+	if (startTime) return startTime;
+	if (endTime) return `Until ${endTime}`;
+	return null;
+}
+
 const InfoRow = ({
 	icon,
 	label,
@@ -74,14 +97,7 @@ const EventDetailContent = ({
 	event,
 	participant,
 }: EventDetailContentProps) => {
-	const startTime = formatEventTimeLabel(event.start_at);
-	const endTime = formatEventTimeLabel(event.end_at);
-	const timeRange =
-		startTime && endTime
-			? `${startTime} – ${endTime}`
-			: startTime
-				? startTime
-				: null;
+	const isSingleDay = isSameCalendarDay(event.start_at, event.end_at);
 
 	return (
 		<View className="gap-4">
@@ -165,19 +181,32 @@ const EventDetailContent = ({
 					elevation: 2,
 				}}
 			>
-				{event.start_at && (
+				{event.start_at && isSingleDay && (
 					<InfoRow
 						icon={<Calendar1Icon size={18} color="#d6361e" />}
 						label="Date"
 						value={formatEventDateLabel(event.start_at)}
-						subValue={timeRange}
+						subValue={formatSingleDayTimeRange(event)}
 					/>
 				)}
-				{event.end_at && !timeRange && (
+				{event.start_at && !isSingleDay && (
+					<InfoRow
+						icon={<Calendar1Icon size={18} color="#d6361e" />}
+						label="Starts"
+						value={formatEventDateTime(
+							event.start_at,
+							event.start_includes_time,
+						)}
+					/>
+				)}
+				{event.end_at && !isSingleDay && (
 					<InfoRow
 						icon={<ClockIcon size={18} color="#d6361e" />}
 						label="Ends"
-						value={formatEventDateTime(event.end_at)}
+						value={formatEventDateTime(
+							event.end_at,
+							event.end_includes_time,
+						)}
 					/>
 				)}
 				{event.venue ? (

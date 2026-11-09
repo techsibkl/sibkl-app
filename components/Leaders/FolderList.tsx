@@ -2,7 +2,12 @@ import { MediaResource } from "@/services/Resource/resource.type";
 import { FlashList } from "@shopify/flash-list";
 import { ChevronDown, ChevronRight, FolderIcon } from "lucide-react-native";
 import React, { useMemo, useState } from "react";
-import { Text, TouchableOpacity, View } from "react-native";
+import {
+	RefreshControlProps,
+	Text,
+	TouchableOpacity,
+	View,
+} from "react-native";
 import SingleFileItem from "./SingleFileItem";
 
 interface GroupedResource {
@@ -12,9 +17,13 @@ interface GroupedResource {
 
 interface FolderListProps {
 	groupedResources: GroupedResource[];
+	refreshControl?: React.ReactElement<RefreshControlProps>;
 }
 
-const FolderList: React.FC<FolderListProps> = ({ groupedResources }) => {
+const FolderList: React.FC<FolderListProps> = ({
+	groupedResources,
+	refreshControl,
+}) => {
 	const [expandedCategories, setExpandedCategories] = useState<
 		Record<string, boolean>
 	>({});
@@ -50,6 +59,7 @@ const FolderList: React.FC<FolderListProps> = ({ groupedResources }) => {
 			}
 			estimatedItemSize={70}
 			stickyHeaderIndices={stickyHeaderIndices}
+			refreshControl={refreshControl}
 			getItemType={(item) =>
 				typeof item === "string" ? "sectionHeader" : "row"
 			}
