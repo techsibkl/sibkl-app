@@ -1,7 +1,7 @@
 import { MediaResource } from "@/services/Resource/resource.type";
 import { toVimeoEmbedUrl } from "@/utils/vimeo";
 import { Share2, Tv2Icon } from "lucide-react-native";
-import React from "react";
+import React, { useState } from "react";
 import {
 	Image,
 	Linking,
@@ -11,7 +11,7 @@ import {
 	View,
 } from "react-native";
 import ResourceThumbnail from "./ResourceThumbnail";
-import { openVimeoFullscreen } from "./VimeoFullscreenHost";
+import VimeoFullscreenModal from "./VimeoFullscreenModal";
 
 type ViewResourceDialogProps = {
 	resource: MediaResource;
@@ -19,6 +19,7 @@ type ViewResourceDialogProps = {
 
 const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 	const vimeoEmbedUrl = toVimeoEmbedUrl(resource.vimeo_link);
+	const [isWatching, setIsWatching] = useState(false);
 
 	const handleItemPress = async (url: string) => {
 		try {
@@ -94,12 +95,7 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 						{vimeoEmbedUrl ? (
 							<TouchableOpacity
 								className="flex-1 py-6 items-center justify-center border-r border-border"
-								onPress={() =>
-									openVimeoFullscreen(
-										vimeoEmbedUrl,
-										resource.title,
-									)
-								}
+								onPress={() => setIsWatching(true)}
 							>
 								<View className="flex-row items-center gap-2">
 									<Tv2Icon size={16} color="#777" />
@@ -143,6 +139,14 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 					</View>
 				)}
 			</View>
+			{vimeoEmbedUrl && (
+				<VimeoFullscreenModal
+					visible={isWatching}
+					embedUrl={vimeoEmbedUrl}
+					title={resource.title}
+					onClose={() => setIsWatching(false)}
+				/>
+			)}
 		</View>
 	);
 };
