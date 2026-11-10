@@ -1,4 +1,3 @@
-import VimeoFullscreenHost from "@/components/Leaders/VimeoFullscreenHost";
 import VimeoThumbnailBridge from "@/components/Leaders/VimeoThumbnailBridge";
 import SharedHeader from "@/components/shared/SharedHeader";
 import { Stack } from "expo-router";
@@ -39,7 +38,6 @@ export default function Layout() {
 				/>
 			</Stack>
 			<VimeoThumbnailBridge />
-			<VimeoFullscreenHost />
 		</>
 	);
 }

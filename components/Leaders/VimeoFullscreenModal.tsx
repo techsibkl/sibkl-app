@@ -1,53 +1,49 @@
 import { withVimeoAutoplay } from "@/utils/vimeo";
 import { XIcon } from "lucide-react-native";
-import React, { useEffect, useState } from "react";
+import React from "react";
 import { Modal, StatusBar, TouchableOpacity, View } from "react-native";
 import { useSafeAreaInsets } from "react-native-safe-area-context";
 import VimeoPlayer from "./VimeoPlayer";
 
-type FullscreenVideo = {
+type VimeoFullscreenModalProps = {
+	visible: boolean;
 	embedUrl: string;
 	title: string;
+	onClose: () => void;
 };
 
-type Listener = (video: FullscreenVideo | null) => void;
-
-let listener: Listener | null = null;
-
-export function openVimeoFullscreen(embedUrl: string, title: string) {
-	listener?.({ embedUrl, title });
-}
-
-const VimeoFullscreenHost = () => {
+/**
+ * Render this inside the modal that opens it. On iOS a Modal is presented by
+ * its parent's view controller; one mounted outside an already-open Modal
+ * cannot present and leaves the app unresponsive.
+ */
+const VimeoFullscreenModal = ({
+	visible,
+	embedUrl,
+	title,
+	onClose,
+}: VimeoFullscreenModalProps) => {
 	const insets = useSafeAreaInsets();
-	const [video, setVideo] = useState<FullscreenVideo | null>(null);
-
-	useEffect(() => {
-		listener = setVideo;
-		return () => {
-			if (listener === setVideo) listener = null;
-		};
-	}, []);
 
 	return (
 		<Modal
-			visible={!!video}
+			visible={visible}
 			animationType="fade"
 			presentationStyle="fullScreen"
 			statusBarTranslucent
-			onRequestClose={() => setVideo(null)}
+			onRequestClose={onClose}
 		>
 			<View className="flex-1 bg-black">
 				<StatusBar barStyle="light-content" />
-				{video && (
+				{visible && (
 					<VimeoPlayer
-						embedUrl={withVimeoAutoplay(video.embedUrl)}
-						title={video.title}
+						embedUrl={withVimeoAutoplay(embedUrl)}
+						title={title}
 						fill
 					/>
 				)}
 				<TouchableOpacity
-					onPress={() => setVideo(null)}
+					onPress={onClose}
 					style={{
 						position: "absolute",
 						top: insets.top + 12,
@@ -69,4 +65,4 @@ const VimeoFullscreenHost = () => {
 	);
 };
 
-export default VimeoFullscreenHost;
+export default VimeoFullscreenModal;
