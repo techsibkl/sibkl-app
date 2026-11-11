@@ -92,7 +92,12 @@ const AddMembersSheet = forwardRef<BottomSheetModal, AddMembersSheetProps>(
 		const [searchTerm, setSearchTerm] = useState("");
 		const [debouncedSearch, setDebouncedSearch] = useState("");
 		const [selectedPeople, setSelectedPeople] = useState<
-			Array<{ id: number; full_legal_name?: string }>
+			Array<{
+				id: number;
+				full_legal_name?: string;
+				phone?: string;
+				email?: string;
+			}>
 		>([]);
 
 		const { data: people = [], isLoading } =
@@ -176,7 +181,12 @@ const AddMembersSheet = forwardRef<BottomSheetModal, AddMembersSheetProps>(
 				if (isSelected) return current.filter((item) => item.id !== person.id);
 				return [
 					...current,
-					{ id: person.id, full_legal_name: person.full_legal_name },
+					{
+						id: person.id,
+						full_legal_name: person.full_legal_name,
+						phone: person.phone,
+						email: person.email,
+					},
 				];
 			});
 		}, []);

@@ -18,6 +18,8 @@ type MembersListProps = {
 	onCoreToggled?: () => void;
 	cellLeader1Id?: number | null;
 	cellLeader2Id?: number | null;
+	zoneLeader1Id?: number | null;
+	zoneLeader2Id?: number | null;
 	scrollable?: boolean;
 };
 
@@ -38,6 +40,8 @@ const MembersList = ({
 	onCoreToggled,
 	cellLeader1Id,
 	cellLeader2Id,
+	zoneLeader1Id,
+	zoneLeader2Id,
 	scrollable = true,
 }: MembersListProps) => {
 	const [expandedSections, setExpandedSections] = useState<
@@ -56,12 +60,20 @@ const MembersList = ({
 		"ACTIVE";
 
 	// Helper function to determine member role priority
+	const isSamePerson = (memberId: number, leaderId?: number | null) =>
+		leaderId != null && Number(memberId) === Number(leaderId);
+
 	const getMemberRolePriority = (member: any) => {
-		const isLeader =
-			member.id === cellLeader1Id || member.id === cellLeader2Id;
-		if (isLeader) return 0; // Leaders first
-		if (member.is_core) return 1; // Then cores
-		return 2; // Then regular members
+		const isCellLeader =
+			isSamePerson(member.id, cellLeader1Id) ||
+			isSamePerson(member.id, cellLeader2Id);
+		if (isCellLeader) return 0;
+		const isZoneLeader =
+			isSamePerson(member.id, zoneLeader1Id) ||
+			isSamePerson(member.id, zoneLeader2Id);
+		if (isZoneLeader) return 1;
+		if (member.is_core) return 2;
+		return 3;
 	};
 
 	// Sort members by role and name
@@ -164,7 +176,11 @@ const MembersList = ({
 		const displayList = searchQuery ? filteredList : membersList;
 		return displayList.map((member) => {
 			const isCellLeader =
-				member.id === cellLeader1Id || member.id === cellLeader2Id;
+				isSamePerson(member.id, cellLeader1Id) ||
+				isSamePerson(member.id, cellLeader2Id);
+			const isZoneLeader =
+				isSamePerson(member.id, zoneLeader1Id) ||
+				isSamePerson(member.id, zoneLeader2Id);
 			return (
 				<MemberRow
 					key={member.id}
@@ -180,6 +196,7 @@ const MembersList = ({
 					onRemoveMember={onRemoveMember}
 					onCoreToggled={onCoreToggled}
 					isCellLeader={isCellLeader}
+					isZoneLeader={isZoneLeader}
 				/>
 			);
 		});
