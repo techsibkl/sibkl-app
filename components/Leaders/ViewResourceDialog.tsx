@@ -20,6 +20,7 @@ type ViewResourceDialogProps = {
 const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 	const vimeoEmbedUrl = toVimeoEmbedUrl(resource.vimeo_link);
 	const [isWatching, setIsWatching] = useState(false);
+	const canShare = resource.shareable !== false && Number(resource.shareable) !== 0;
 
 	const handleItemPress = async (url: string) => {
 		try {
