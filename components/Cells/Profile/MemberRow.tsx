@@ -1,7 +1,7 @@
 import { Person } from "@/services/Person/person.type";
 import { getInitials } from "@/utils/helper_profile";
 import { useLocalSearchParams } from "expo-router";
-import { Check, Crown, StarIcon, X } from "lucide-react-native";
+import { Check, Crown, Shield, StarIcon, X } from "lucide-react-native";
 import React, { useState } from "react";
 import { ActivityIndicator, Text, TouchableOpacity, View } from "react-native";
 import MemberActionSheet from "./MemberActionSheet";
@@ -19,6 +19,7 @@ type MemberRowProps = {
 	onRemoveMember?: (memberId: number) => void;
 	onCoreToggled?: () => void;
 	isCellLeader?: boolean;
+	isZoneLeader?: boolean;
 };
 
 const MemberRow = ({
@@ -34,6 +35,7 @@ const MemberRow = ({
 	onRemoveMember,
 	onCoreToggled,
 	isCellLeader = false,
+	isZoneLeader = false,
 }: MemberRowProps) => {
 	const { id } = useLocalSearchParams();
 	const [modalVisible, setModalVisible] = useState(false);
@@ -89,12 +91,20 @@ const MemberRow = ({
 							</View>
 						</View>
 
-						<View>
+						<View className="shrink-0 items-end gap-1">
 							{isCellLeader && (
 								<View className="bg-blue-100 px-2 py-0.5 rounded-full flex-row items-center gap-0.5">
 									<Crown size={12} color="#1e40af" />
 									<Text className="text-xs font-semibold text-blue-700">
 										Leader
+									</Text>
+								</View>
+							)}
+							{isZoneLeader && (
+								<View className="bg-violet-100 px-2 py-0.5 rounded-full flex-row items-center gap-0.5">
+									<Shield size={12} color="#6d28d9" />
+									<Text className="text-xs font-semibold text-violet-700">
+										Zone Leader
 									</Text>
 								</View>
 							)}
@@ -154,17 +164,19 @@ const MemberRow = ({
 				</View>
 			</TouchableOpacity>
 
-			<MemberActionSheet
-				visible={modalVisible}
-				onClose={() => setModalVisible(false)}
-				member={member}
-				cellId={Number(id)}
-				isLeader={isLeader}
-				canRemoveMembers={canRemoveMembers}
-				currentPersonId={currentPersonId}
-				onRemove={onRemoveMember}
-				onCoreToggled={onCoreToggled}
-			/>
+			{modalVisible ? (
+				<MemberActionSheet
+					visible
+					onClose={() => setModalVisible(false)}
+					member={member}
+					cellId={Number(id)}
+					isLeader={isLeader}
+					canRemoveMembers={canRemoveMembers}
+					currentPersonId={currentPersonId}
+					onRemove={onRemoveMember}
+					onCoreToggled={onCoreToggled}
+				/>
+			) : null}
 		</>
 	);
 };
