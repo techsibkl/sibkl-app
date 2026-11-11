@@ -20,6 +20,7 @@ type ViewResourceDialogProps = {
 const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 	const vimeoEmbedUrl = toVimeoEmbedUrl(resource.vimeo_link);
 	const [isWatching, setIsWatching] = useState(false);
+	const canShare = resource.shareable !== false && Number(resource.shareable) !== 0;
 
 	const handleItemPress = async (url: string) => {
 		try {
@@ -94,7 +95,7 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 					<View className="flex-row border-t mt-2 border-border">
 						{vimeoEmbedUrl ? (
 							<TouchableOpacity
-								className="flex-1 py-6 items-center justify-center border-r border-border"
+								className={`flex-1 py-6 items-center justify-center${canShare ? " border-r border-border" : ""}`}
 								onPress={() => setIsWatching(true)}
 							>
 								<View className="flex-row items-center gap-2">
@@ -108,7 +109,7 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 							(resource.drive_view_link ||
 								resource.youtube_link) && (
 								<TouchableOpacity
-									className="flex-1 py-6 items-center justify-center border-r border-border"
+									className={`flex-1 py-6 items-center justify-center${canShare ? " border-r border-border" : ""}`}
 									onPress={() =>
 										handleItemPress(
 											resource.drive_view_link ??
@@ -125,17 +126,19 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 							)
 						)}
 
-						<TouchableOpacity
-							className="flex-1 py-6 items-center justify-center"
-							onPress={handleShare}
-						>
-							<View className="flex-row items-center gap-2">
-								<Share2 size={16} color="#777" />
-								<Text className="text-gray-500 font-semibold">
-									Share
-								</Text>
-							</View>
-						</TouchableOpacity>
+						{canShare && (
+							<TouchableOpacity
+								className="flex-1 py-6 items-center justify-center"
+								onPress={handleShare}
+							>
+								<View className="flex-row items-center gap-2">
+									<Share2 size={16} color="#777" />
+									<Text className="text-gray-500 font-semibold">
+										Share
+									</Text>
+								</View>
+							</TouchableOpacity>
+						)}
 					</View>
 				)}
 			</View>
