@@ -15,9 +15,10 @@ import { InfoRow } from "../Cards/InfoRow";
 
 type CellCardProps = {
 	cell: Cell;
+	detail?: string;
 };
 
-const MyCellCard = ({ cell }: CellCardProps) => {
+const MyCellCard = ({ cell, detail }: CellCardProps) => {
 	const router = useRouter();
 	const pathname = usePathname();
 
@@ -49,6 +50,11 @@ const MyCellCard = ({ cell }: CellCardProps) => {
 							<Text className="text-xs text-text-secondary">
 								Leader: {cell.cell_leader_1_name}
 							</Text>
+							{detail ? (
+								<Text className="text-xs text-text-secondary">
+									{detail}
+								</Text>
+							) : null}
 						</View>
 					</View>
 				</View>
