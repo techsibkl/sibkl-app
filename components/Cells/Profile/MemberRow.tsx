@@ -47,9 +47,10 @@ const MemberRow = ({
 		"ACTIVE";
 	const isCurrentUser =
 		currentPersonId != null && member.id === currentPersonId;
+	const canOpenMemberSheet = isLeader || canRemoveMembers;
 
 	const handleMemberPress = () => {
-		if (isCurrentUser) return;
+		if (isCurrentUser || !canOpenMemberSheet) return;
 		setModalVisible(true);
 	};
 
@@ -57,8 +58,8 @@ const MemberRow = ({
 		<>
 			<TouchableOpacity
 				onPress={handleMemberPress}
-				disabled={isCurrentUser}
-				activeOpacity={isCurrentUser ? 1 : 0.6}
+				disabled={isCurrentUser || !canOpenMemberSheet}
+				activeOpacity={isCurrentUser || !canOpenMemberSheet ? 1 : 0.6}
 			>
 				<View className="flex-col px-4 py-4 border-b border-border-secondary">
 					{/* Main row: avatar + info + status/actions */}
@@ -164,7 +165,7 @@ const MemberRow = ({
 				</View>
 			</TouchableOpacity>
 
-			{modalVisible ? (
+			{modalVisible && canOpenMemberSheet ? (
 				<MemberActionSheet
 					visible
 					onClose={() => setModalVisible(false)}
@@ -172,6 +173,7 @@ const MemberRow = ({
 					cellId={Number(id)}
 					isLeader={isLeader}
 					canRemoveMembers={canRemoveMembers}
+					isTargetCellLeader={isCellLeader}
 					currentPersonId={currentPersonId}
 					onRemove={onRemoveMember}
 					onCoreToggled={onCoreToggled}
