@@ -98,15 +98,27 @@ export const useAddCellMembersMutation = (cellId: number) => {
 			const toReactivate = payload.people.filter((p) =>
 				reactivate.has(p.id),
 			);
+			// add-members returns the full roster (phone, status, is_core).
+			// The picker selection only has id and name.
+			let latestMembers: Person[] | undefined;
+			const captureMembers = (data: unknown) => {
+				if (Array.isArray(data) && data.length > 0) {
+					latestMembers = data as Person[];
+				}
+			};
 
 			if (toAdd.length > 0) {
 				try {
-					await addCellMembers(payload.cellId, toAdd);
+					captureMembers(
+						await addCellMembers(payload.cellId, toAdd),
+					);
 				} catch {
 					// Batch add can fail if a removed membership row still exists.
 					for (const person of toAdd) {
 						try {
-							await addCellMembers(payload.cellId, [person]);
+							captureMembers(
+								await addCellMembers(payload.cellId, [person]),
+							);
 						} catch {
 							await updateMemberStatus(
 								payload.cellId,
@@ -120,20 +132,29 @@ export const useAddCellMembersMutation = (cellId: number) => {
 			for (const person of toReactivate) {
 				await updateMemberStatus(payload.cellId, person.id, "ACTIVE");
 			}
+
+			return latestMembers;
 		},
-		onSuccess: async (_res, variables) => {
+		onSuccess: async (latestMembers, variables) => {
 			await qc.cancelQueries({ queryKey: ["cells", variables.cellId] });
 			qc.setQueryData(
 				["cells", variables.cellId],
 				(oldData: Cell | undefined) => {
 					if (!oldData) return oldData;
 
+					if (latestMembers) {
+						return {
+							...oldData,
+							members: latestMembers,
+						};
+					}
+
 					const selectedIds = new Set(
-						variables.people.map((p) => p.id),
+						variables.people.map((p) => Number(p.id)),
 					);
 					const existing = oldData.members ?? [];
 					const updatedExisting = existing.map((m) =>
-						selectedIds.has(m.id)
+						selectedIds.has(Number(m.id))
 							? {
 									...m,
 									status: "ACTIVE",
@@ -141,9 +162,11 @@ export const useAddCellMembersMutation = (cellId: number) => {
 								}
 							: m,
 					);
-					const existingIds = new Set(existing.map((m) => m.id));
+					const existingIds = new Set(
+						existing.map((m) => Number(m.id)),
+					);
 					const added = variables.people
-						.filter((p) => !existingIds.has(p.id))
+						.filter((p) => !existingIds.has(Number(p.id)))
 						.map((p) => ({
 							...p,
 							status: "ACTIVE",
@@ -156,6 +179,9 @@ export const useAddCellMembersMutation = (cellId: number) => {
 					};
 				},
 			);
+			qc.invalidateQueries({
+				queryKey: ["cells", variables.cellId],
+			});
 			qc.invalidateQueries({
 				queryKey: ["cell-sessions", variables.cellId],
 			});

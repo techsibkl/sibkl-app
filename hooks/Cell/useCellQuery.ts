@@ -2,10 +2,14 @@ import { fetchCells, fetchCellsPublic } from "@/services/Cell/cell.service";
 import { Cell } from "@/services/Cell/cell.types";
 import { useQuery } from "@tanstack/react-query";
 
-export const useCellsQuery = () => {
+export const useCellsQuery = (options?: { enabled?: boolean }) => {
   return useQuery<Cell[]>({
     queryKey: ["cells"],
-    queryFn: () => fetchCells(),
+    queryFn: async () => {
+      const cells = await fetchCells();
+      return Array.isArray(cells) ? cells : [];
+    },
+    enabled: options?.enabled ?? true,
     retry: (failureCount, error: any) => {
       if (error?.status === 401 || error?.status === 403) {
         return false;

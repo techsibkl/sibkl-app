@@ -16,6 +16,7 @@ export type MediaResource = {
 	uploaded_by_name?: string;
 	file_size?: string;
 	is_featured?: boolean;
+	shareable?: boolean;
 	role_group_ids?: number[];
 	// NEW
 	youtube_video_id?: string;
