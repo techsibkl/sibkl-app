@@ -303,6 +303,13 @@ const CellProfileScreen = () => {
 	};
 
 	const handleRemoveMember = async (memberId: number) => {
+		const isTargetCellLeader =
+			Number(memberId) === Number(cell?.cell_leader_1) ||
+			Number(memberId) === Number(cell?.cell_leader_2);
+		if (!canRemoveMembers || (!isLeader && isTargetCellLeader)) {
+			return;
+		}
+
 		const memberName = cell?.members?.find(
 			(m) => m.id === memberId,
 		)?.full_legal_name;
