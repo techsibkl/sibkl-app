@@ -87,8 +87,7 @@ export default function SettingsScreen() {
 			icon: <ThumbsUpIcon className="w-6 h-6 text-gray-400" />,
 			title: "Feedback Form",
 			subtitle: "Submit your feedback here",
-			onPress: () =>
-				Linking.openURL("https://forms.gle/PWixJJ5dYgSVuqXv6"),
+			onPress: () => Linking.openURL("http://tiny.cc/sibklapp-support"),
 		},
 		// {
 		// 	id: "privacyPolicy",
