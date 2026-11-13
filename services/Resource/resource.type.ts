@@ -16,6 +16,8 @@ export type MediaResource = {
 	uploaded_by_name?: string;
 	file_size?: string;
 	is_featured?: boolean;
+	/** False hides the Share button. Absent or 1 means sharing is allowed. */
+	shareable?: boolean | number;
 	role_group_ids?: number[];
 	// NEW
 	youtube_video_id?: string;
