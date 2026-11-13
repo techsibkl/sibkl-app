@@ -73,10 +73,17 @@ export default function AnalyticsPanel({
     [sessions],
   );
 
-  const memberCoreById = useMemo(() => {
-    const map = new Map<number, boolean>();
+  const memberRoleById = useMemo(() => {
+    const map = new Map<number, "leader" | "zone-leader" | "core" | "member">();
     for (const member of members) {
-      map.set(member.id, Boolean(member.is_core));
+      const role = member.is_cell_leader
+        ? "leader"
+        : member.is_zone_leader
+          ? "zone-leader"
+          : member.is_core
+            ? "core"
+            : "member";
+      map.set(Number(member.id), role);
     }
     return map;
   }, [members]);
@@ -114,7 +121,7 @@ export default function AnalyticsPanel({
             <MemberAttendanceCard
               key={stat.people_id}
               stat={stat}
-              isCore={memberCoreById.get(stat.people_id) ?? false}
+              role={memberRoleById.get(Number(stat.people_id)) ?? "member"}
               cellId={cellId}
             />
           ))

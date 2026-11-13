@@ -3,10 +3,33 @@ import { router } from "expo-router";
 import React from "react";
 import { Pressable, Text, View } from "react-native";
 
+type MemberRole = "leader" | "zone-leader" | "core" | "member";
+
 type Props = {
 	stat: CellAttendanceStat;
-	isCore?: boolean;
+	role?: MemberRole;
 	cellId?: number;
+};
+
+const roleLabel: Record<MemberRole, string> = {
+	leader: "Leader",
+	"zone-leader": "Zone Leader",
+	core: "Core",
+	member: "Member",
+};
+
+const roleClass: Record<MemberRole, string> = {
+	leader: "bg-blue-100",
+	"zone-leader": "bg-violet-100",
+	core: "bg-red-50",
+	member: "bg-gray-100",
+};
+
+const roleTextClass: Record<MemberRole, string> = {
+	leader: "text-blue-700",
+	"zone-leader": "text-violet-700",
+	core: "text-red-600",
+	member: "text-gray-500",
 };
 
 /** Backend sends 0–1 ratios (e.g. 0.5); show as 0–100. */
@@ -17,7 +40,7 @@ const toAttendancePercent = (rate: number) => {
 
 export default function MemberAttendanceCard({
 	stat,
-	isCore = false,
+	role = "member",
 	cellId,
 }: Props) {
 	const attendancePercent = toAttendancePercent(stat.attendance_rate);
@@ -45,17 +68,9 @@ export default function MemberAttendanceCard({
 						>
 							{stat.full_legal_name || "Unknown member"}
 						</Text>
-						<View
-							className={`rounded-full px-2 py-0.5 ${
-								isCore ? "bg-red-50" : "bg-gray-100"
-							}`}
-						>
-							<Text
-								className={`text-xs font-semibold ${
-									isCore ? "text-red-600" : "text-gray-500"
-								}`}
-							>
-								{isCore ? "Core" : "Member"}
+						<View className={`rounded-full px-2 py-0.5 ${roleClass[role]}`}>
+							<Text className={`text-xs font-semibold ${roleTextClass[role]}`}>
+								{roleLabel[role]}
 							</Text>
 						</View>
 					</View>
