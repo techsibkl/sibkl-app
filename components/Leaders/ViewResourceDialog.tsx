@@ -28,7 +28,16 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 		}
 	};
 
+	const canShare =
+		resource.shareable !== false && Number(resource.shareable) !== 0;
+	const hasShareTarget = !!(
+		resource.drive_view_link ||
+		resource.vimeo_link ||
+		resource.youtube_link
+	);
+
 	const handleShare = async () => {
+		if (!canShare) return;
 		const share_url =
 			resource.drive_view_link ||
 			resource.vimeo_link ||
@@ -87,13 +96,11 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 					</Text>
 				</View>
 
-				{(resource.drive_view_link ||
-					resource.youtube_link ||
-					resource.vimeo_link) && (
+				{hasShareTarget && (
 					<View className="flex-row border-t mt-2 border-border">
 						{vimeoEmbedUrl ? (
 							<TouchableOpacity
-								className="flex-1 py-6 items-center justify-center border-r border-border"
+								className={`flex-1 py-6 items-center justify-center ${canShare ? "border-r border-border" : ""}`}
 								onPress={() =>
 									openVimeoFullscreen(
 										vimeoEmbedUrl,
@@ -112,7 +119,7 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 							(resource.drive_view_link ||
 								resource.youtube_link) && (
 								<TouchableOpacity
-									className="flex-1 py-6 items-center justify-center border-r border-border"
+									className={`flex-1 py-6 items-center justify-center ${canShare ? "border-r border-border" : ""}`}
 									onPress={() =>
 										handleItemPress(
 											resource.drive_view_link ??
@@ -129,17 +136,19 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 							)
 						)}
 
-						<TouchableOpacity
-							className="flex-1 py-6 items-center justify-center"
-							onPress={handleShare}
-						>
-							<View className="flex-row items-center gap-2">
-								<Share2 size={16} color="#777" />
-								<Text className="text-gray-500 font-semibold">
-									Share
-								</Text>
-							</View>
-						</TouchableOpacity>
+						{canShare && (
+							<TouchableOpacity
+								className="flex-1 py-6 items-center justify-center"
+								onPress={handleShare}
+							>
+								<View className="flex-row items-center gap-2">
+									<Share2 size={16} color="#777" />
+									<Text className="text-gray-500 font-semibold">
+										Share
+									</Text>
+								</View>
+							</TouchableOpacity>
+						)}
 					</View>
 				)}
 			</View>
