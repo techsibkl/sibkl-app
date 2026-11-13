@@ -23,12 +23,24 @@ const PersonListItem = ({ person, selected, onPress }: PersonListItemProps) => (
 				</Text>
 			</View>
 			<View className="flex-1">
-				<Text className="font-semibold text-text text-sm" numberOfLines={1}>
-					{person.full_legal_name}
-				</Text>
-				{person.phone && (
+				<View className="flex-row items-center gap-2">
+					<Text
+						className="font-semibold text-text text-sm shrink"
+						numberOfLines={1}
+					>
+						{person.full_legal_name}
+					</Text>
+					{person.has_account ? (
+						<View className="shrink-0 rounded-full bg-emerald-50 px-2 py-0.5">
+							<Text className="text-[11px] font-medium text-emerald-700">
+								Has account
+							</Text>
+						</View>
+					) : null}
+				</View>
+				{person.phone ? (
 					<Text className="text-xs text-gray-500 mt-0.5">{person.phone}</Text>
-				)}
+				) : null}
 			</View>
 		</View>
 		{selected && <Text className="text-blue-600 font-bold">✓</Text>}

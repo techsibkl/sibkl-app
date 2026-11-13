@@ -78,7 +78,7 @@ const LaunchBanner = () => {
 					>
 						{isUnlocked
 							? "Tap to explore everything that's now available"
-							: "Unlock the full experience at Leader's Advance"}
+							: "Unlock the full experience at Leaders Advance"}
 					</Text>
 				</View>
 

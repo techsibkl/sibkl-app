@@ -4,12 +4,13 @@ import MyCellCard, { AllCellCard } from "@/components/Cells/CellCard";
 import CellDetailModal from "@/components/shared/CellDetailModal";
 import SharedBody from "@/components/shared/SharedBody";
 import { SharedSearchBar } from "@/components/shared/SharedSearchBar";
-import { useCellsPublicQuery } from "@/hooks/Cell/useCellQuery";
+import { useCellsPublicQuery, useCellsQuery } from "@/hooks/Cell/useCellQuery";
 import { useSinglePersonQuery } from "@/hooks/People/usePeopleQuery";
 import { useThemeColors } from "@/hooks/useThemeColor";
 import { joinCell } from "@/services/Cell/cell.service";
-import { Cell } from "@/services/Cell/cell.types";
+import { Cell, CellStatus } from "@/services/Cell/cell.types";
 import { useAuthStore } from "@/stores/authStore";
+import { Role } from "@/utils/casl/defineAbilityFor";
 import { myToast } from "@/utils/helper";
 import { FlashList } from "@shopify/flash-list";
 import { useQueryClient } from "@tanstack/react-query";
@@ -30,9 +31,9 @@ const CellsScreen = () => {
 	const { isDark } = useThemeColors();
 	const { user } = useAuthStore();
 	const [searchQuery, setSearchQuery] = useState("");
-	const [browseTab, setBrowseTab] = useState<"available" | "joined">(
-		"joined",
-	);
+	const [browseTab, setBrowseTab] = useState<
+		"available" | "joined" | "district"
+	>("joined");
 	const [joinedCells, setJoinedCells] = useState<number[]>([]);
 	const [selectedCell, setSelectedCell] = useState<Cell | null>(null);
 	const [modalVisible, setModalVisible] = useState(false);
@@ -52,6 +53,27 @@ const CellsScreen = () => {
 	const { data: person, refetch: refetchPerson } = useSinglePersonQuery(
 		user?.person?.id ?? -1,
 	);
+	const profile = person ?? user?.person;
+	const overseenDistrictIds = Array.from(
+		new Set(
+			[
+				...(profile?.pastor_district_ids ?? []),
+				...(profile?.admin_district_ids ?? []),
+			]
+				.map(Number)
+				.filter((id) => Number.isFinite(id)),
+		),
+	);
+	const showDistrictTab =
+		(profile?.roles?.includes(Role.DISTRICT_PASTOR) ||
+			profile?.roles?.includes(Role.DISTRICT_ADMIN)) &&
+		overseenDistrictIds.length > 0;
+	const {
+		data: overseenCells = [],
+		isLoading: districtCellsLoading,
+		isError: districtCellsError,
+		refetch: refetchDistrictCells,
+	} = useCellsQuery({ enabled: showDistrictTab });
 	// Get leader cell IDs
 	const ledCells: number[] | undefined = person?.leader_of_cell_ids;
 	// Active (approved) cell IDs — PENDING cells excluded so they remain
@@ -79,7 +101,20 @@ const CellsScreen = () => {
 		new Map((availableCells ?? []).map((cell) => [cell.id, cell])).values(),
 	);
 
+	const cellStatusById = new Map<number, Cell["status"]>();
+	for (const cell of [...uniqueAvailableCells, ...overseenCells]) {
+		if (cell.id == null || !cell.status) continue;
+		cellStatusById.set(Number(cell.id), cell.status);
+	}
+	const isActiveCell = (cell: Cell) => {
+		const status =
+			cell.status ??
+			(cell.id != null ? cellStatusById.get(Number(cell.id)) : undefined);
+		return !status || status === CellStatus.ACTIVE;
+	};
+
 	const availableCellsFiltered = uniqueAvailableCells
+		.filter((cell: Cell) => cell.status === CellStatus.ACTIVE)
 		.filter((cell: Cell) => !activeCellIds.includes(cell.id as number))
 		.filter((cell: Cell) =>
 			cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase()),
@@ -94,12 +129,34 @@ const CellsScreen = () => {
 		).values(),
 	);
 
-	const joinedCellsList = uniqueJoinedCells.filter((cell: Cell) =>
+	const joinedCellsList = uniqueJoinedCells
+		.filter(isActiveCell)
+		.filter((cell: Cell) =>
+			cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase()),
+		);
+
+	const districtIdSet = new Set(overseenDistrictIds);
+	const districtCellsList = Array.from(
+		new Map(
+			overseenCells
+				.filter(
+					(cell) =>
+						cell.status === CellStatus.ACTIVE &&
+						cell.district_id != null &&
+						districtIdSet.has(Number(cell.district_id)),
+				)
+				.map((cell) => [cell.id, cell]),
+		).values(),
+	).filter((cell: Cell) =>
 		cell?.cell_name?.toLowerCase().includes(searchQuery.toLowerCase()),
 	);
 
 	const filteredCells =
-		browseTab === "available" ? availableCellsFiltered : joinedCellsList;
+		browseTab === "available"
+			? availableCellsFiltered
+			: browseTab === "district"
+				? districtCellsList
+				: joinedCellsList;
 
 	useEffect(() => {
 		if (userCellIds.length === 0) {
@@ -110,8 +167,15 @@ const CellsScreen = () => {
 	}, []); // Empty dependency array - runs only once on mount
 
 	useEffect(() => {
+		if (!showDistrictTab && browseTab === "district") {
+			setBrowseTab("joined");
+		}
+	}, [showDistrictTab, browseTab]);
+
+	useEffect(() => {
 		Animated.timing(underlinePosition, {
-			toValue: browseTab === "available" ? 0 : 1,
+			toValue:
+				browseTab === "available" ? 0 : browseTab === "joined" ? 1 : 2,
 			duration: 300,
 			useNativeDriver: false,
 		}).start();
@@ -158,7 +222,11 @@ const CellsScreen = () => {
 	const handleRefresh = async () => {
 		setIsRefreshing(true);
 		try {
-			await Promise.all([refetchAvailableCells(), refetchPerson()]);
+			await Promise.all([
+				refetchAvailableCells(),
+				refetchPerson(),
+				showDistrictTab ? refetchDistrictCells() : Promise.resolve(),
+			]);
 		} catch (err) {
 			console.error("Refresh error:", err);
 		} finally {
@@ -192,6 +260,14 @@ const CellsScreen = () => {
 				/>
 			);
 		}
+		if (browseTab === "district") {
+			return (
+				<MyCellCard
+					cell={cell}
+					detail={cell.district_name ?? undefined}
+				/>
+			);
+		}
 		return <MyCellCard cell={cell} />;
 	};
 
@@ -220,6 +296,9 @@ const CellsScreen = () => {
 						style={[
 							styles.tab,
 							browseTab === "available" && styles.tabActive,
+							showDistrictTab &&
+								browseTab === "available" &&
+								styles.tabActiveBorder,
 						]}
 					>
 						<Text
@@ -237,6 +316,9 @@ const CellsScreen = () => {
 						style={[
 							styles.tab,
 							browseTab === "joined" && styles.tabActive,
+							showDistrictTab &&
+								browseTab === "joined" &&
+								styles.tabActiveBorder,
 						]}
 					>
 						<Text
@@ -248,34 +330,79 @@ const CellsScreen = () => {
 							My Cells
 						</Text>
 					</Pressable>
+					{showDistrictTab ? (
+						<Pressable
+							onPress={() => setBrowseTab("district")}
+							style={[
+								styles.tab,
+								browseTab === "district" && styles.tabActive,
+								browseTab === "district" &&
+									styles.tabActiveBorder,
+							]}
+						>
+							<Text
+								style={[
+									styles.tabText,
+									browseTab === "district" &&
+										styles.tabTextActive,
+								]}
+							>
+								District
+							</Text>
+						</Pressable>
+					) : null}
 				</View>
-				<Animated.View
-					style={[
-						styles.underline,
-						browseTab === "available"
-							? { marginLeft: 16 }
-							: { marginRight: 16 },
-						{
-							transform: [
-								{
-									translateX: underlinePosition.interpolate({
-										inputRange: [0, 1],
-										outputRange: [0, 200],
-									}),
-								},
-							],
-						},
-					]}
-				/>
+				{showDistrictTab ? null : (
+					<Animated.View
+						style={[
+							styles.underline,
+							browseTab === "available"
+								? { marginLeft: 16 }
+								: { marginRight: 16 },
+							{
+								transform: [
+									{
+										translateX:
+											underlinePosition.interpolate({
+												inputRange: [0, 1],
+												outputRange: [0, 200],
+											}),
+									},
+								],
+							},
+						]}
+					/>
+				)}
 			</View>
 
 			{/* Content */}
 			<View className="flex-1">
-				{cellsLoading ? (
+				{(browseTab === "district"
+					? districtCellsLoading
+					: cellsLoading) ? (
 					<View className="flex-1 items-center justify-center">
 						<Text className="text-gray-500">Loading groups...</Text>
 					</View>
-				) : browseTab === "joined" && activeCellIds.length === 0 ? (
+				) : browseTab === "district" && districtCellsError ? (
+					<View className="flex-1 items-center justify-center px-6">
+						<Text className="text-center text-gray-500">
+							Couldn't load district cells
+						</Text>
+					</View>
+				) : browseTab === "district" && districtCellsList.length === 0 ? (
+					<View className="flex-1 items-center justify-center px-6">
+						<Text className="text-center text-gray-500 text-lg mb-4">
+							No Cells
+						</Text>
+						<Text className="text-center text-gray-400">
+							{searchQuery
+								? "No groups found matching your search"
+								: "No cells in your district"}
+						</Text>
+					</View>
+				) : browseTab === "joined" &&
+				  joinedCellsList.length === 0 &&
+				  !searchQuery ? (
 					<View className="flex-1 items-center justify-center px-6">
 						<Text className="text-center text-gray-500 text-lg mb-4">
 							No Cells
@@ -367,6 +494,10 @@ const styles = StyleSheet.create({
 	},
 	tabActive: {
 		opacity: 1,
+	},
+	tabActiveBorder: {
+		borderBottomWidth: 3,
+		borderBottomColor: "#d6361e",
 	},
 	tabText: {
 		fontSize: 15,

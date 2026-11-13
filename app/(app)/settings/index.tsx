@@ -1,5 +1,4 @@
 import SharedBody from "@/components/shared/SharedBody";
-import { binaryFeatureFlags } from "@/config/featureFlags";
 import { useAuthStore } from "@/stores/authStore";
 import { useSystemStore } from "@/stores/systemStore";
 import Constants from "expo-constants";
@@ -87,8 +86,7 @@ export default function SettingsScreen() {
 			icon: <ThumbsUpIcon className="w-6 h-6 text-gray-400" />,
 			title: "Feedback Form",
 			subtitle: "Submit your feedback here",
-			onPress: () =>
-				Linking.openURL("https://forms.gle/PWixJJ5dYgSVuqXv6"),
+			onPress: () => Linking.openURL("http://tiny.cc/sibklapp-support"),
 		},
 		// {
 		// 	id: "privacyPolicy",
@@ -194,8 +192,7 @@ export default function SettingsScreen() {
 					</TouchableOpacity>
 				))}
 				<Text className="text-center text-xs text-gray-400 mt-6 mb-4">
-					v{Constants.expoConfig?.version ?? "—"} ·{" "}
-					{binaryFeatureFlags.isPilotBuild ? "Pilot" : "Production"}
+					v{Constants.expoConfig?.version ?? "—"}
 				</Text>
 			</View>
 		</SharedBody>

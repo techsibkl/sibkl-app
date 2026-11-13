@@ -303,6 +303,13 @@ const CellProfileScreen = () => {
 	};
 
 	const handleRemoveMember = async (memberId: number) => {
+		const isTargetCellLeader =
+			Number(memberId) === Number(cell?.cell_leader_1) ||
+			Number(memberId) === Number(cell?.cell_leader_2);
+		if (!canRemoveMembers || (!isLeader && isTargetCellLeader)) {
+			return;
+		}
+
 		const memberName = cell?.members?.find(
 			(m) => m.id === memberId,
 		)?.full_legal_name;
@@ -400,6 +407,8 @@ const CellProfileScreen = () => {
 							onCoreToggled={() => refetch()}
 							cellLeader1Id={cell?.cell_leader_1}
 							cellLeader2Id={cell?.cell_leader_2}
+							zoneLeader1Id={cell?.zone_leader_1}
+							zoneLeader2Id={cell?.zone_leader_2}
 							scrollable={false}
 						/>
 					</View>
@@ -692,6 +701,10 @@ const CellProfileScreen = () => {
 							onAccept={handleAcceptMember}
 							onReject={handleRejectMember}
 							onRemoveMember={handleRemoveMember}
+							cellLeader1Id={cell?.cell_leader_1}
+							cellLeader2Id={cell?.cell_leader_2}
+							zoneLeader1Id={cell?.zone_leader_1}
+							zoneLeader2Id={cell?.zone_leader_2}
 						/>
 
 						{/* Add Members Sheet */}

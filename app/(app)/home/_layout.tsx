@@ -26,7 +26,7 @@ export default function Layout() {
 					header() {
 						return (
 							<SharedHeader
-								title="Leader's Advance 2026"
+								title="Leaders Advance 2026"
 								isPop
 								className="!bg-white"
 							/>

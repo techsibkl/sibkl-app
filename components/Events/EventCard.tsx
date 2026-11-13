@@ -145,7 +145,9 @@ const EventCard = ({ event, participant }: EventCardProps) => {
 						<View className="flex-row items-center gap-1.5">
 							<Calendar1Icon size={13} color="#9CA3AF" />
 							<Text className="text-xs text-gray-500">
-								{dateParts.fullDate} · {dateParts.time}
+								{event.start_includes_time
+									? `${dateParts.fullDate} · ${dateParts.time}`
+									: dateParts.fullDate}
 							</Text>
 						</View>
 					)}

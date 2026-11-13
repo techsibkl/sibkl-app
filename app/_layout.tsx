@@ -34,15 +34,15 @@ import Toast from "react-native-toast-message";
 import "../global.css";
 
 const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 10 * 60 * 1000,        // 10 minutes - data is fresh for 10 mins
-      gcTime: 5 * 60 * 1000,            // 5 minutes - keep in memory for 5 mins
-      refetchOnWindowFocus: false,       // Don't refetch when app regains focus
-      refetchOnReconnect: true,       // Only refetch if data is stale when reconnecting
-      refetchOnMount: true,           // Only refetch if data is stale when component mounts
-    },
-  },
+	defaultOptions: {
+		queries: {
+			staleTime: 10 * 60 * 1000, // 10 minutes - data is fresh for 10 mins
+			gcTime: 5 * 60 * 1000, // 5 minutes - keep in memory for 5 mins
+			refetchOnWindowFocus: false, // Don't refetch when app regains focus
+			refetchOnReconnect: true, // Only refetch if data is stale when reconnecting
+			refetchOnMount: true, // Only refetch if data is stale when component mounts
+		},
+	},
 });
 
 // ─── Module-level messaging instance ─────────────────────────────────────────
@@ -50,202 +50,228 @@ const messagingInstance = getMessaging(getApp());
 
 // ─── Must be at file root, outside any component ──────────────────────────────
 Notifications.setNotificationHandler({
-  handleNotification: async () => ({
-    shouldPlaySound: true,
-    shouldSetBadge: true,
-    shouldShowBanner: true,
-    shouldShowList: true,
-  }),
+	handleNotification: async () => ({
+		shouldPlaySound: true,
+		shouldSetBadge: true,
+		shouldShowBanner: true,
+		shouldShowList: true,
+	}),
 });
 
 setBackgroundMessageHandler(messagingInstance, async (remoteMessage) => {
-  console.log("[FCM] Background:", remoteMessage);
-  // system_config_updated background messages are handled when the app
-  // comes to foreground via the AppState listener in RootLayoutNav.
+	console.log("[FCM] Background:", remoteMessage);
+	// system_config_updated background messages are handled when the app
+	// comes to foreground via the AppState listener in RootLayoutNav.
 });
 // ─────────────────────────────────────────────────────────────────────────────
 
 async function registerAndGetToken(): Promise<string | null> {
-  if (!Device.isDevice) {
-    console.warn("[FCM] Push notifications require a physical device");
-    return null;
-  }
+	if (!Device.isDevice) {
+		console.warn("[FCM] Push notifications require a physical device");
+		return null;
+	}
 
-  if (Platform.OS === "android") {
-    await Notifications.setNotificationChannelAsync("default", {
-      name: "default",
-      importance: Notifications.AndroidImportance.MAX,
-      vibrationPattern: [0, 250, 250, 250],
-      lightColor: "#FF231F7C",
-    });
+	if (Platform.OS === "android") {
+		await Notifications.setNotificationChannelAsync("default", {
+			name: "default",
+			importance: Notifications.AndroidImportance.MAX,
+			vibrationPattern: [0, 250, 250, 250],
+			lightColor: "#FF231F7C",
+		});
 
-    // Android 13+ (API 33) requires an explicit POST_NOTIFICATIONS permission request.
-    // expo-notifications handles this correctly across Android versions.
-    const { status } = await Notifications.requestPermissionsAsync();
-    if (status !== "granted") {
-      console.warn("[FCM] Android notification permission denied:", status);
-      return null;
-    }
-  }
+		// Android 13+ (API 33) requires an explicit POST_NOTIFICATIONS permission request.
+		// expo-notifications handles this correctly across Android versions.
+		const { status } = await Notifications.requestPermissionsAsync();
+		if (status !== "granted") {
+			console.warn(
+				"[FCM] Android notification permission denied:",
+				status,
+			);
+			return null;
+		}
+	}
 
-  // Handles APNs registration on iOS automatically
-  const authStatus = await requestPermission(messagingInstance);
-  const granted =
-    authStatus === AuthorizationStatus.AUTHORIZED ||
-    authStatus === AuthorizationStatus.PROVISIONAL;
+	// Handles APNs registration on iOS automatically
+	const authStatus = await requestPermission(messagingInstance);
+	const granted =
+		authStatus === AuthorizationStatus.AUTHORIZED ||
+		authStatus === AuthorizationStatus.PROVISIONAL;
 
-  if (!granted) {
-    console.warn("[FCM] Permission denied:", authStatus);
-    return null;
-  }
+	if (!granted) {
+		console.warn("[FCM] Permission denied:", authStatus);
+		return null;
+	}
 
-  const token = await getToken(messagingInstance);
-  console.log("[FCM] Token:", token);
+	const token = await getToken(messagingInstance);
+	console.log("[FCM] Token:", token);
 
-  // Subscribe to the system-config topic so the server can push
-  // a config-invalidation signal without storing per-device tokens.
-  try {
-    await subscribeToTopic(messagingInstance, "system-config");
-    console.log("[FCM] Subscribed to topic: system-config");
-  } catch (err) {
-    console.warn("[FCM] Topic subscription failed (non-fatal):", err);
-  }
+	// Subscribe to the system-config topic so the server can push
+	// a config-invalidation signal without storing per-device tokens.
+	try {
+		await subscribeToTopic(messagingInstance, "system-config");
+		console.log("[FCM] Subscribed to topic: system-config");
+	} catch (err) {
+		console.warn("[FCM] Topic subscription failed (non-fatal):", err);
+	}
 
-  return token;
+	return token;
 }
 
 function RootLayoutNav() {
-  const router = useRouter();
-  const { firebaseUser, user, authLoaded, init, isGuest } = useAuthStore();
+	const router = useRouter();
+	const { firebaseUser, user, authLoaded, init, isGuest } = useAuthStore();
 
-  // Auth init
-  useEffect(() => {
-    init();
-  }, [init]);
+	// Auth init
+	useEffect(() => {
+		init();
+	}, [init]);
 
-  // Auth routing
-  useEffect(() => {
-    if (!authLoaded) {
-      router.replace("/(auth)/splash");
-    } else if (isGuest) {
-      // Guest users go straight to app
-      router.replace("/(app)/home");
-    } else if (!firebaseUser) {
-      router.replace("/(auth)/sign-in");
-    } else if (!user?.people_id) {
-      router.replace("/(auth)/complete-profile");
-    } else {
-      router.replace("/(app)/home");
-    }
-  // people_id only: refreshing person must not send the user back to home.
-  }, [user?.people_id, authLoaded, router, firebaseUser, isGuest]);
+	// Auth routing
+	useEffect(() => {
+		if (!authLoaded) {
+			router.replace("/(auth)/splash");
+		} else if (isGuest) {
+			// Guest users go straight to app
+			router.replace("/(app)/home");
+		} else if (!firebaseUser) {
+			router.replace("/(auth)/sign-in");
+		} else if (!user?.people_id) {
+			router.replace("/(auth)/complete-profile");
+		} else {
+			router.replace("/(app)/home");
+		}
+		// people_id only: refreshing person must not send the user back to home.
+	}, [user?.people_id, authLoaded, router, firebaseUser, isGuest]);
 
-  // Register + save token when user logs in
-  useEffect(() => {
-    if (!firebaseUser) return;
+	// Register + save token when user logs in
+	useEffect(() => {
+		if (!firebaseUser) return;
 
-    let active = true;
+		let active = true;
 
-    registerAndGetToken()
-      .then(async (token) => {
-        if (!active || !token) return;
-        const res = await updateDeviceToken(firebaseUser.uid, token);
-        console.log("[FCM] Device token updated:", res);
-      })
-      .catch((err) => console.error("[FCM] Token registration error:", err));
+		registerAndGetToken()
+			.then(async (token) => {
+				if (!active || !token) return;
+				const res = await updateDeviceToken(firebaseUser.uid, token);
+				console.log("[FCM] Device token updated:", res);
+			})
+			.catch((err) =>
+				console.error("[FCM] Token registration error:", err),
+			);
 
-    return () => {
-      active = false;
-    };
-  }, [firebaseUser?.uid]);
+		return () => {
+			active = false;
+		};
+	}, [firebaseUser?.uid]);
 
-  // ─── FCM + AppState listeners ─────────────────────────────────────────────
-  const lastConfigFetch = useRef<number>(0);
+	// ─── FCM + AppState listeners ─────────────────────────────────────────────
+	const lastConfigFetch = useRef<number>(0);
+	const configPushTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  const refetchConfigIfStale = () => {
-    const FIVE_MINUTES = 5 * 60 * 1000;
-    if (Date.now() - lastConfigFetch.current > FIVE_MINUTES) {
-      lastConfigFetch.current = Date.now();
-      useSystemStore.getState().fetchSystemConfig();
-    }
-  };
+	const refetchConfigIfStale = () => {
+		const FIVE_MINUTES = 5 * 60 * 1000;
+		if (Date.now() - lastConfigFetch.current > FIVE_MINUTES) {
+			lastConfigFetch.current = Date.now();
+			useSystemStore.getState().fetchSystemConfig();
+		}
+	};
 
-  useEffect(() => {
-    // Foreground FCM — handle system-config invalidation signal directly
-    const unsubscribeForeground = onMessage(messagingInstance, async (msg) => {
-      console.log("[FCM] Foreground:", msg);
-      if (msg.data?.type === "system_config_updated") {
-        console.log("[FCM] system_config_updated → refetching config");
-        lastConfigFetch.current = Date.now();
-        useSystemStore.getState().fetchSystemConfig();
-      }
-    });
+	useEffect(() => {
+		// Foreground FCM — handle system-config invalidation signal directly
+		const unsubscribeForeground = onMessage(
+			messagingInstance,
+			async (msg) => {
+				console.log("[FCM] Foreground:", msg);
+				if (msg.data?.type === "system_config_updated") {
+					// The topic reaches every device at once; spread refetches so they
+					// don't all hit GET /system/config in the same second.
+					const delayMs = Math.floor(Math.random() * 5_000);
+					console.log(
+						`[FCM] system_config_updated → refetching config in ${delayMs}ms`,
+					);
+					if (configPushTimer.current)
+						clearTimeout(configPushTimer.current);
+					configPushTimer.current = setTimeout(() => {
+						configPushTimer.current = null;
+						lastConfigFetch.current = Date.now();
+						useSystemStore.getState().fetchSystemConfig();
+					}, delayMs);
+				}
+			},
+		);
 
-    // Background → foreground tap
-    const unsubscribeOpened = onNotificationOpenedApp(
-      messagingInstance,
-      (msg) => {
-        console.log("[FCM] Background→foreground tap:", msg);
-      },
-    );
+		// Background → foreground tap
+		const unsubscribeOpened = onNotificationOpenedApp(
+			messagingInstance,
+			(msg) => {
+				console.log("[FCM] Background→foreground tap:", msg);
+			},
+		);
 
-    // Quit state — app opened from notification
-    getInitialNotification(messagingInstance).then((msg) => {
-      if (msg) console.log("[FCM] Quit state:", msg);
-    });
+		// Quit state — app opened from notification
+		getInitialNotification(messagingInstance).then((msg) => {
+			if (msg) console.log("[FCM] Quit state:", msg);
+		});
 
-    // AppState: refetch config when app returns to foreground (safety net for
-    // background FCM messages that the OS may have suppressed, and for users
-    // who left the app open without receiving the push).
-    const appStateSub = AppState.addEventListener(
-      "change",
-      (nextState: AppStateStatus) => {
-        if (nextState === "active") {
-          refetchConfigIfStale();
-        }
-      }
-    );
+		// AppState: refetch config when app returns to foreground (safety net for
+		// background FCM messages that the OS may have suppressed, and for users
+		// who left the app open without receiving the push).
+		const appStateSub = AppState.addEventListener(
+			"change",
+			(nextState: AppStateStatus) => {
+				if (nextState === "active") {
+					refetchConfigIfStale();
+				}
+			},
+		);
 
-    return () => {
-      unsubscribeForeground();
-      unsubscribeOpened();
-      appStateSub.remove();
-    };
-  }, []);
+		return () => {
+			if (configPushTimer.current) clearTimeout(configPushTimer.current);
+			unsubscribeForeground();
+			unsubscribeOpened();
+			appStateSub.remove();
+		};
+	}, []);
 
-  return (
-    <SafeAreaProvider>
-      <Stack screenOptions={{ headerShown: false }}>
-        <Stack.Screen name="(auth)" options={{ headerShown: false }} />
-        <Stack.Screen name="(app)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <AppUpdatePrompt />
-      <Toast config={toastConfig} />
-    </SafeAreaProvider>
-  );
+	return (
+		<SafeAreaProvider>
+			<Stack screenOptions={{ headerShown: false }}>
+				<Stack.Screen name="(auth)" options={{ headerShown: false }} />
+				<Stack.Screen name="(app)" options={{ headerShown: false }} />
+				<Stack.Screen name="+not-found" />
+			</Stack>
+			<AppUpdatePrompt />
+			<Toast config={toastConfig} />
+		</SafeAreaProvider>
+	);
 }
 
 export default function RootLayout() {
-  const needsAppUpdate = useSystemStore(state => state.needsAppUpdate);
-  const [loaded] = useFonts({
-    SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
-  });
+	const needsAppUpdate = useSystemStore((state) => state.needsAppUpdate);
+	const [loaded] = useFonts({
+		SpaceMono: require("../assets/fonts/SpaceMono-Regular.ttf"),
+	});
 
-  if (!loaded) return null;
+	if (!loaded) return null;
 
-  return (
-    <QueryClientProvider client={queryClient}>
-      <ThemeProvider value={customNavigationTheme}>
-        <PaperProvider theme={customLightTheme}>
-        <GestureHandlerRootView style={{ flex: 1 }}>
-          <RootLayoutNav />
-          <StatusBar barStyle={needsAppUpdate ? "light-content" : "dark-content"} />
-          </GestureHandlerRootView>
-        </PaperProvider>
-      </ThemeProvider>
-    </QueryClientProvider>
-  );
+	return (
+		<QueryClientProvider client={queryClient}>
+			<ThemeProvider value={customNavigationTheme}>
+				<PaperProvider theme={customLightTheme}>
+					<GestureHandlerRootView style={{ flex: 1 }}>
+						<RootLayoutNav />
+						<StatusBar
+							barStyle={
+								needsAppUpdate
+									? "light-content"
+									: "dark-content"
+							}
+						/>
+					</GestureHandlerRootView>
+				</PaperProvider>
+			</ThemeProvider>
+		</QueryClientProvider>
+	);
 }
 
 // IOS

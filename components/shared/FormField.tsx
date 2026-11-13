@@ -59,12 +59,12 @@ export const FormField = ({
 				name={name}
 				rules={rules}
 				render={({ field: { onChange, onBlur, value } }) => (
-					<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
+					<View className="flex-row items-center bg-white border border-border rounded-[15px] px-3">
 						{icon && <View className="mr-3">{icon}</View>}
 						<TextInput
 							ref={ref}
 							style={inputPadding}
-							className={`font-regular flex-1 ${disabled ? `text-gray-400` : `text-gray-600`}`}
+							className={`font-regular flex-1 ${disabled ? `text-gray-400` : `text-text`}`}
 							placeholder={placeholder}
 							placeholderTextColor="#9ca3af"
 							onBlur={() => {
