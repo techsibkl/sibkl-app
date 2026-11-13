@@ -98,7 +98,14 @@ const MemberRow = ({
 									</Text>
 								</View>
 							)}
-							{!!member?.is_core && (
+							{!isCellLeader && !!member?.is_zone_leader && (
+								<View className="bg-violet-100 px-2 py-0.5 rounded-full">
+									<Text className="text-xs font-semibold text-violet-700">
+										Zone Leader
+									</Text>
+								</View>
+							)}
+							{!isCellLeader && !member?.is_zone_leader && !!member?.is_core && (
 								<View className="px-2 py-1 rounded-full bg-amber-100 flex-row items-center gap-1">
 									<StarIcon size={12} color="#d97706" />
 									<Text className="text-xs font-semibold text-amber-700">

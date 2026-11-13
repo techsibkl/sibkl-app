@@ -58,10 +58,12 @@ const MembersList = ({
 	// Helper function to determine member role priority
 	const getMemberRolePriority = (member: any) => {
 		const isLeader =
-			member.id === cellLeader1Id || member.id === cellLeader2Id;
-		if (isLeader) return 0; // Leaders first
-		if (member.is_core) return 1; // Then cores
-		return 2; // Then regular members
+			Number(member.id) === Number(cellLeader1Id) ||
+			Number(member.id) === Number(cellLeader2Id);
+		if (isLeader) return 0;
+		if (member.is_zone_leader) return 1;
+		if (member.is_core) return 2;
+		return 3;
 	};
 
 	// Sort members by role and name
@@ -164,7 +166,8 @@ const MembersList = ({
 		const displayList = searchQuery ? filteredList : membersList;
 		return displayList.map((member) => {
 			const isCellLeader =
-				member.id === cellLeader1Id || member.id === cellLeader2Id;
+				Number(member.id) === Number(cellLeader1Id) ||
+				Number(member.id) === Number(cellLeader2Id);
 			return (
 				<MemberRow
 					key={member.id}
