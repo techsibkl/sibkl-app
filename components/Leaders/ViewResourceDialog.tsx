@@ -30,7 +30,16 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 		}
 	};
 
+	const canShare =
+		resource.shareable !== false && Number(resource.shareable) !== 0;
+	const hasShareTarget = !!(
+		resource.drive_view_link ||
+		resource.vimeo_link ||
+		resource.youtube_link
+	);
+
 	const handleShare = async () => {
+		if (!canShare) return;
 		const share_url =
 			resource.drive_view_link ||
 			resource.vimeo_link ||
@@ -89,14 +98,17 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 					</Text>
 				</View>
 
-				{(resource.drive_view_link ||
-					resource.youtube_link ||
-					resource.vimeo_link) && (
+				{hasShareTarget && (
 					<View className="flex-row border-t mt-2 border-border">
 						{vimeoEmbedUrl ? (
 							<TouchableOpacity
-								className={`flex-1 py-6 items-center justify-center${canShare ? " border-r border-border" : ""}`}
-								onPress={() => setIsWatching(true)}
+								className={`flex-1 py-6 items-center justify-center ${canShare ? "border-r border-border" : ""}`}
+								onPress={() =>
+									openVimeoFullscreen(
+										vimeoEmbedUrl,
+										resource.title,
+									)
+								}
 							>
 								<View className="flex-row items-center gap-2">
 									<Tv2Icon size={16} color="#777" />
@@ -109,7 +121,7 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 							(resource.drive_view_link ||
 								resource.youtube_link) && (
 								<TouchableOpacity
-									className={`flex-1 py-6 items-center justify-center${canShare ? " border-r border-border" : ""}`}
+									className={`flex-1 py-6 items-center justify-center ${canShare ? "border-r border-border" : ""}`}
 									onPress={() =>
 										handleItemPress(
 											resource.drive_view_link ??
