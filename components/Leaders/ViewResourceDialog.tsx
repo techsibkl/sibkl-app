@@ -20,16 +20,6 @@ type ViewResourceDialogProps = {
 const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 	const vimeoEmbedUrl = toVimeoEmbedUrl(resource.vimeo_link);
 	const [isWatching, setIsWatching] = useState(false);
-	const canShare = resource.shareable !== false && Number(resource.shareable) !== 0;
-
-	const handleItemPress = async (url: string) => {
-		try {
-			await Linking.openURL(url);
-		} catch (error) {
-			console.error("Error opening URL:", error);
-		}
-	};
-
 	const canShare =
 		resource.shareable !== false && Number(resource.shareable) !== 0;
 	const hasShareTarget = !!(
@@ -103,12 +93,7 @@ const ViewResourceDialog = ({ resource }: ViewResourceDialogProps) => {
 						{vimeoEmbedUrl ? (
 							<TouchableOpacity
 								className={`flex-1 py-6 items-center justify-center ${canShare ? "border-r border-border" : ""}`}
-								onPress={() =>
-									openVimeoFullscreen(
-										vimeoEmbedUrl,
-										resource.title,
-									)
-								}
+								onPress={() => setIsWatching(true)}
 							>
 								<View className="flex-row items-center gap-2">
 									<Tv2Icon size={16} color="#777" />
