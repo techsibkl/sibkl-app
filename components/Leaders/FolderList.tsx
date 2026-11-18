@@ -52,6 +52,13 @@ const FolderList: React.FC<FolderListProps> = ({
 	return (
 		<FlashList
 			data={flatData}
+			ListEmptyComponent={
+				<View className="h-24 items-center justify-center px-12">
+					<Text className="text-gray-400 text-sm text-center">
+						No content available
+					</Text>
+				</View>
+			}
 			keyExtractor={(item, index) =>
 				typeof item === "string"
 					? `header-${item}-${index}`

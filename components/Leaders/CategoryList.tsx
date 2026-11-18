@@ -2,7 +2,7 @@ import { MediaResource } from "@/services/Resource/resource.type";
 import { FlashList } from "@shopify/flash-list";
 import { useRouter } from "expo-router";
 import React from "react";
-import { View } from "react-native";
+import { Text, View } from "react-native";
 import SharedSectionHeader from "../shared/SharedSectionHeader";
 import CategoryItemsList from "./CategoryItemsList";
 
@@ -20,6 +20,26 @@ const CategoryList = ({ groupedResources, isLoading }: CategoryListProps) => {
 			params: { category: category },
 		});
 	};
+
+	if (isLoading && groupedResources.length === 0) {
+		return (
+			<View>
+				<CategoryItemsList items={[]} isLoading />
+				<View className="h-6" />
+				<CategoryItemsList items={[]} isLoading />
+			</View>
+		);
+	}
+
+	if (groupedResources.length === 0) {
+		return (
+			<View className="h-24 items-center justify-center px-12">
+				<Text className="text-gray-400 text-sm text-center">
+					No content available
+				</Text>
+			</View>
+		);
+	}
 
 	return (
 		<FlashList

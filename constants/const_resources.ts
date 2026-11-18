@@ -4,6 +4,8 @@ export const CATEGORIES = [
 	"Discipleship",
 	"Training",
 	"Policies",
+	"Sermons",
+	"Onboarding",
 ];
 export const FORMATS = ["Video", "PDF"];
 export const RESOURCE_DRIVES = [
@@ -30,5 +32,13 @@ export const RESOURCE_DRIVES = [
 	{
 		category: "Training",
 		parentFolder: "18Y2WCjHnNyIUhHq1yTz43x1ggXxEn0fE",
+	},
+	{
+		category: "Sermons",
+		parentFolder: "1FoAak6bUQhQacmP2013HKK7v0sPuvMo4",
+	},
+	{
+		category: "Onboarding",
+		parentFolder: "1VLxsJUZDUq_jFk2gJcqMDbGk62m5kjYV",
 	},
 ];

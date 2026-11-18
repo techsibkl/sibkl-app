@@ -22,10 +22,11 @@ export const useFilteredResources = (
 			return sortAsc ? dateA - dateB : dateB - dateA;
 		});
 
-		// Group by categories
+		// Group by categories. Drop a category when this user has no
+		// viewable items in it (role filtering happens on the server).
 		return CATEGORIES.map((category) => ({
 			category,
 			items: sorted.filter((r) => r.category === category),
-		}));
+		})).filter((group) => group.items.length > 0);
 	}, [resources, searchQuery, sortAsc]);
 };
