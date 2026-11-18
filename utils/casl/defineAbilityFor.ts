@@ -81,6 +81,27 @@ export function defineAbilityFor(person: Person | null): AnyAbility {
 			});
 		}
 
+		// Matches the backend grant for GET /people/scoped. The server still masks
+		// name, email, and phone unless this permission is present.
+		const unmaskedPeopleScopedRoles: string[] = [
+			Role.SENIOR_PASTOR,
+			Role.SUPER_ADMIN,
+			Role.CELL_ADMIN,
+			Role.PEOPLE_ADMIN,
+			Role.STAFF,
+			Role.DISTRICT_PASTOR,
+			Role.DISTRICT_ADMIN,
+			Role.MINISTRY_PASTOR,
+			Role.MINISTRY_ADMIN,
+		];
+		if (
+			person.roles?.some((role) =>
+				unmaskedPeopleScopedRoles.includes(role),
+			)
+		) {
+			can("read", "PeopleScopedUnmasked");
+		}
+
 		if (
 			person?.roles?.includes(Role.SENIOR_PASTOR) ||
 			person?.roles?.includes(Role.SUPER_ADMIN)
@@ -107,7 +128,10 @@ export function defineAbilityFor(person: Person | null): AnyAbility {
 			]);
 		}
 
-		if (person?.roles?.includes(Role.CELL_LEADER) || person?.roles?.includes(Role.ZONE_LEADER)) {
+		if (
+			person?.roles?.includes(Role.CELL_LEADER) ||
+			person?.roles?.includes(Role.ZONE_LEADER)
+		) {
 			can(["read", "update"], "PeopleProfile", {
 				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});
