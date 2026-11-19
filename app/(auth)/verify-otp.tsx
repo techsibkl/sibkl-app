@@ -1,7 +1,7 @@
 import SharedBody from "@/components/shared/SharedBody";
 import { Colors } from "@/constants/Colors";
 import {
-	sendOTP,
+	sendEmailOTP,
 	sendSmsOTP,
 	verifyOTP,
 	verifySmsOTP,
@@ -35,7 +35,8 @@ const Page = () => {
 	// to look up, so a stale verificationChannel="sms" (e.g. from an abandoned
 	// claim) must not bleed into the new-account email-OTP flow.
 	const isSmsChannel =
-		claimStore.verificationChannel === "sms" && !!claimStore.selectedProfile;
+		claimStore.verificationChannel === "sms" &&
+		!!claimStore.selectedProfile;
 
 	// SMS uses a longer initial cooldown (60 s) to match the backend enforced delay.
 	const INITIAL_TIMER = isSmsChannel ? 60 : 30;
@@ -209,7 +210,7 @@ const Page = () => {
 					"A new verification code has been sent via SMS.",
 				);
 			} else if (claimStore.selectedProfile) {
-				await sendOTP(claimStore.selectedProfile.id, null);
+				await sendEmailOTP(claimStore.selectedProfile.id, null);
 				Alert.alert(
 					"OTP Sent",
 					"A new verification code has been sent to your email.",
@@ -221,7 +222,7 @@ const Page = () => {
 					);
 					return;
 				}
-				await sendOTP(null, pendingSignUp.email);
+				await sendEmailOTP(null, pendingSignUp.email);
 				Alert.alert(
 					"OTP Sent",
 					"A new verification code has been sent to your email.",

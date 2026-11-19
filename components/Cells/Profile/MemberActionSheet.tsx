@@ -40,8 +40,7 @@ interface MemberActionSheetProps {
 	member: Person | null;
 	cellId?: number;
 	isLeader?: boolean;
-	canRemoveMembers?: boolean;
-	isTargetCellLeader?: boolean;
+	canRemoveMember?: boolean;
 	currentPersonId?: number;
 	onRemove?: (memberId: number) => void;
 	onCoreToggled?: () => void;
@@ -53,8 +52,7 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
 	member,
 	cellId,
 	isLeader = false,
-	canRemoveMembers = false,
-	isTargetCellLeader = false,
+	canRemoveMember = false,
 	currentPersonId,
 	onRemove,
 	onCoreToggled,
@@ -213,13 +211,16 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
 		handleToggleCore();
 	};
 
-	const canRemoveMember =
-		canRemoveMembers &&
-		currentPersonId != null &&
-		member.id !== currentPersonId &&
-		(isLeader || !isTargetCellLeader);
+	const isCellOrZoneLeader = Boolean(
+		member?.is_cell_leader || member?.is_zone_leader,
+	);
 	const canToggleCore =
-		isLeader && currentPersonId != null && member.id !== currentPersonId;
+		isLeader &&
+		currentPersonId != null &&
+		member != null &&
+		member.id !== currentPersonId &&
+		!isCellOrZoneLeader;
+	const showRemoveMember = canRemoveMember && !isCellOrZoneLeader;
 
 	return (
 		<Modal
@@ -373,7 +374,7 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
 								</TouchableOpacity>
 							)}
 							{/* Remove */}
-							{canRemoveMember && (
+							{showRemoveMember && (
 								<TouchableOpacity
 									className="flex-1 p-1 aspect-square items-center justify-center bg-[#fee2e2] rounded-2xl"
 									onPress={() => setShowConfirmDialog(true)}

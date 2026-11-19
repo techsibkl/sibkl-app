@@ -7,7 +7,7 @@ type MembersListProps = {
 	members: any[];
 	searchQuery: string;
 	isLeader?: boolean;
-	canRemoveMembers?: boolean;
+	canRemoveMember?: (member: any) => boolean;
 	canReviewJoinRequests?: boolean;
 	currentPersonId?: number;
 	memberStatuses?: Record<number, string>;
@@ -25,7 +25,7 @@ const MembersList = ({
 	members,
 	searchQuery,
 	isLeader = false,
-	canRemoveMembers = false,
+	canRemoveMember,
 	canReviewJoinRequests = false,
 	currentPersonId,
 	memberStatuses = {},
@@ -161,7 +161,7 @@ const MembersList = ({
 				key={member.id}
 				member={member}
 				isLeader={isLeader}
-				canRemoveMembers={canRemoveMembers}
+				canRemoveMember={canRemoveMember}
 				canReviewJoinRequests={canReviewJoinRequests}
 				currentPersonId={currentPersonId}
 				memberStatuses={memberStatuses}

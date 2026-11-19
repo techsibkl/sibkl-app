@@ -4,6 +4,7 @@ import {
 	type AnyAbility,
 	createMongoAbility,
 } from "@casl/ability";
+import { CellMemberRank } from "@/utils/casl/helper";
 
 export enum Role {
 	NONE = "None",
@@ -128,10 +129,7 @@ export function defineAbilityFor(person: Person | null): AnyAbility {
 			]);
 		}
 
-		if (
-			person?.roles?.includes(Role.CELL_LEADER) ||
-			person?.roles?.includes(Role.ZONE_LEADER)
-		) {
+		if (person?.roles?.includes(Role.CELL_LEADER)) {
 			can(["read", "update"], "PeopleProfile", {
 				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});
@@ -148,8 +146,14 @@ export function defineAbilityFor(person: Person | null): AnyAbility {
 				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
 			});
 
-			can(["create", "read", "update", "delete"], "CellMembers", {
+			can(["create", "read", "update"], "CellMembers", {
 				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
+			});
+
+			can("delete", "CellMembers", {
+				id: { $ne: person.id },
+				cell_ids: { $in: person.leader_of_cell_ids ?? [] },
+				rank: { $lt: CellMemberRank.CELL_LEADER },
 			});
 
 			can(["create", "update", "delete"], "CellChangeRequest", {
@@ -161,17 +165,41 @@ export function defineAbilityFor(person: Person | null): AnyAbility {
 			});
 		}
 
-		// Zone leaders manage every cell in their zone, not only cells they
-		// personally lead. Match either zone-leader slot on the cell record.
+		// Cells in zones this person leads. Cells they personally lead stay on the Cell Leader block.
 		if (person?.roles?.includes(Role.ZONE_LEADER)) {
-			for (const field of ["zone_leader_1", "zone_leader_2"] as const) {
-				can(["create", "read", "update", "delete"], "CellMembers", {
-					[field]: person.id,
-				});
-				can(["create", "read", "update"], "CellSession", {
-					[field]: person.id,
-				});
-			}
+			can(["read", "update"], "PeopleProfile", {
+				cell_ids: { $in: person.zone_leader_of_cell_ids ?? [] },
+			});
+
+			can(["read", "update", "assign", "complete"], "PeopleFlow", {
+				cell_ids: { $in: person.zone_leader_of_cell_ids ?? [] },
+			});
+
+			can(["create", "read", "delete"], "PeopleProfileNotes", {
+				cell_ids: { $in: person.zone_leader_of_cell_ids ?? [] },
+			});
+
+			can(["read", "update"], "CellDetails", {
+				cell_ids: { $in: person.zone_leader_of_cell_ids ?? [] },
+			});
+
+			can(["create", "read", "update"], "CellMembers", {
+				cell_ids: { $in: person.zone_leader_of_cell_ids ?? [] },
+			});
+
+			can("delete", "CellMembers", {
+				id: { $ne: person.id },
+				cell_ids: { $in: person.zone_leader_of_cell_ids ?? [] },
+				rank: { $lt: CellMemberRank.ZONE_LEADER },
+			});
+
+			can(["create", "update", "delete"], "CellChangeRequest", {
+				cell_ids: { $in: person.zone_leader_of_cell_ids ?? [] },
+			});
+
+			can(["create", "read", "update"], "CellSession", {
+				cell_id: { $in: person.zone_leader_of_cell_ids ?? [] },
+			});
 		}
 
 		if (person?.roles?.includes(Role.CELL_CORE)) {
@@ -187,9 +215,13 @@ export function defineAbilityFor(person: Person | null): AnyAbility {
 			can(["read"], "CellDetails", {
 				cell_ids: { $in: person.core_of_cell_ids ?? [] },
 			});
-			// create and delete match leaders so cores can add and remove members
-			can(["create", "read", "update", "delete"], "CellMembers", {
+			can(["create", "read", "update"], "CellMembers", {
 				cell_ids: { $in: person.core_of_cell_ids ?? [] },
+			});
+			can("delete", "CellMembers", {
+				id: { $ne: person.id },
+				cell_ids: { $in: person.core_of_cell_ids ?? [] },
+				rank: { $lt: CellMemberRank.CORE },
 			});
 			can(["create", "read", "update"], "CellSession", {
 				cell_id: { $in: person.core_of_cell_ids ?? [] },

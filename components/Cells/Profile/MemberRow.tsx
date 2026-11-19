@@ -1,5 +1,7 @@
 import { Person } from "@/services/Person/person.type";
+import { useAuthStore } from "@/stores/authStore";
 import { getInitials } from "@/utils/helper_profile";
+import { subject } from "@casl/ability";
 import { useLocalSearchParams } from "expo-router";
 import { Check, Crown, Shield, StarIcon, X } from "lucide-react-native";
 import React, { useState } from "react";
@@ -9,7 +11,7 @@ import MemberActionSheet from "./MemberActionSheet";
 type MemberRowProps = {
 	member: Person;
 	isLeader?: boolean;
-	canRemoveMembers?: boolean;
+	canRemoveMember?: (member: Person) => boolean;
 	canReviewJoinRequests?: boolean;
 	currentPersonId?: number;
 	memberStatuses?: Record<number, string>;
@@ -25,7 +27,7 @@ type MemberRowProps = {
 const MemberRow = ({
 	member,
 	isLeader = false,
-	canRemoveMembers = false,
+	canRemoveMember,
 	canReviewJoinRequests = false,
 	currentPersonId,
 	memberStatuses = {},
@@ -38,6 +40,7 @@ const MemberRow = ({
 	isZoneLeader = false,
 }: MemberRowProps) => {
 	const { id } = useLocalSearchParams();
+	const ability = useAuthStore((state) => state.ability);
 	const [modalVisible, setModalVisible] = useState(false);
 
 	const memberStatus =
@@ -47,7 +50,14 @@ const MemberRow = ({
 		"ACTIVE";
 	const isCurrentUser =
 		currentPersonId != null && member.id === currentPersonId;
-	const canOpenMemberSheet = isLeader || canRemoveMembers;
+	const canRemoveThisMember = Boolean(canRemoveMember?.(member));
+	const canOpenMemberSheet =
+		isLeader ||
+		canRemoveThisMember ||
+		ability.can(
+			"update",
+			subject("CellMembers", { cell_ids: Number(id) }),
+		);
 
 	const handleMemberPress = () => {
 		if (isCurrentUser || !canOpenMemberSheet) return;
@@ -172,8 +182,7 @@ const MemberRow = ({
 					member={member}
 					cellId={Number(id)}
 					isLeader={isLeader}
-					canRemoveMembers={canRemoveMembers}
-					isTargetCellLeader={isCellLeader}
+					canRemoveMember={canRemoveThisMember}
 					currentPersonId={currentPersonId}
 					onRemove={onRemoveMember}
 					onCoreToggled={onCoreToggled}

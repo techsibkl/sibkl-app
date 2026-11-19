@@ -15,7 +15,7 @@ export const sendSmsOTP = async (personId: number): Promise<ReturnVal> => {
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ person_id: personId }),
 			},
-			{ allowUnauthenticated: true }
+			{ allowUnauthenticated: true },
 		);
 		return response.json();
 	} catch (error) {
@@ -30,7 +30,7 @@ export const sendSmsOTP = async (personId: number): Promise<ReturnVal> => {
  */
 export const verifySmsOTP = async (
 	personId: number,
-	otpCode: string
+	otpCode: string,
 ): Promise<ReturnVal> => {
 	try {
 		const response = await secureFetch(
@@ -40,7 +40,7 @@ export const verifySmsOTP = async (
 				headers: { "Content-Type": "application/json" },
 				body: JSON.stringify({ person_id: personId, otpCode }),
 			},
-			{ allowUnauthenticated: true }
+			{ allowUnauthenticated: true },
 		);
 		return response.json();
 	} catch (error) {
@@ -49,9 +49,9 @@ export const verifySmsOTP = async (
 	}
 };
 
-export const sendOTP = async (
+export const sendEmailOTP = async (
 	personid: number | null,
-	email: string | null
+	email: string | null,
 ) => {
 	try {
 		let payload = {};
@@ -75,7 +75,7 @@ export const sendOTP = async (
 				},
 				body: JSON.stringify(payload),
 			},
-			{ allowUnauthenticated: true }
+			{ allowUnauthenticated: true },
 		);
 		const json = await response.json();
 		return json;
@@ -87,7 +87,7 @@ export const sendOTP = async (
 export const verifyOTP = async (
 	personid: number | null,
 	email: string | null,
-	otpCode: string
+	otpCode: string,
 ): Promise<ReturnVal> => {
 	try {
 		let payload = {};
@@ -113,7 +113,7 @@ export const verifyOTP = async (
 				},
 				body: JSON.stringify(payload),
 			},
-			{ allowUnauthenticated: true }
+			{ allowUnauthenticated: true },
 		);
 		const json = await response.json();
 		return json;

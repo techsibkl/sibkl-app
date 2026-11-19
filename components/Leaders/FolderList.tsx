@@ -52,10 +52,10 @@ const FolderList: React.FC<FolderListProps> = ({
 	return (
 		<FlashList
 			data={flatData}
-			keyExtractor={(item, index) =>
+			keyExtractor={(item, index: number): string =>
 				typeof item === "string"
 					? `header-${item}-${index}`
-					: (item.id ?? `${index}`)
+					: ((item.id ?? index.toString()) as string)
 			}
 			estimatedItemSize={70}
 			stickyHeaderIndices={stickyHeaderIndices}

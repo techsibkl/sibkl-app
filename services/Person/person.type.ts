@@ -46,6 +46,7 @@ export type Person = {
 	cell_ids: number[];
 	district_ids: number[];
 	leader_of_cell_ids?: number[]; // Cell leader of these cells
+	zone_leader_of_cell_ids?: number[]; // Cells in zones this person leads
 	core_of_cell_ids?: number[]; // Cell core team of these cells
 	pastor_district_ids: number[];
 	admin_district_ids: number[];

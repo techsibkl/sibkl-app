@@ -1,19 +1,19 @@
 import PulsingLogo from "@/components/shared/PulsingLogo";
 import { inputPadding } from "@/constants/const_styles";
-import { sendOTP } from "@/services/OTP/otp.service";
+import { sendEmailOTP } from "@/services/OTP/otp.service";
 import { useSignUpStore } from "@/stores/signUpStore";
 import { Link, useRouter } from "expo-router";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
 import React, { useRef, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-	ActivityIndicator,
-	Alert,
-	ImageSourcePropType,
-	Text,
-	TextInput,
-	TouchableOpacity,
-	View,
+    ActivityIndicator,
+    Alert,
+    ImageSourcePropType,
+    Text,
+    TextInput,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import SibklText from "../../assets/images/sibkl-text-white.png";
@@ -47,7 +47,7 @@ const Page = () => {
 				Alert.alert("Error", "Email and password are required.");
 				return;
 			}
-			await sendOTP(null, email);
+			await sendEmailOTP(null, email);
 			signUpStore.setPendingSignUp({ email, password });
 
 			// Navigate to OTP verification page

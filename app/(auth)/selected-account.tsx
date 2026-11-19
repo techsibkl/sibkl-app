@@ -1,16 +1,16 @@
 import SharedBody from "@/components/shared/SharedBody";
-import { sendOTP, sendSmsOTP } from "@/services/OTP/otp.service";
+import { sendEmailOTP, sendSmsOTP } from "@/services/OTP/otp.service";
 import { useClaimStore } from "@/stores/claimStore";
 import { useSignUpStore } from "@/stores/signUpStore";
 import { useRouter } from "expo-router";
 import { Mail, MessageSquare } from "lucide-react-native";
 import React, { useState } from "react";
 import {
-	ActivityIndicator,
-	Alert,
-	Text,
-	TouchableOpacity,
-	View,
+    ActivityIndicator,
+    Alert,
+    Text,
+    TouchableOpacity,
+    View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 
@@ -38,7 +38,7 @@ const Page = () => {
 		if (!selectedProfile) return;
 		setEmailLoading(true);
 		try {
-			const result = await sendOTP(selectedProfile.id, null);
+			const result = await sendEmailOTP(selectedProfile.id, null);
 			if (!result?.success) {
 				Alert.alert(
 					"Error",

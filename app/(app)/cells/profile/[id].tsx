@@ -28,6 +28,7 @@ import {
 import { Person } from "@/services/Person/person.type";
 import { useAuthStore } from "@/stores/authStore";
 import { canCheckInToCell } from "@/utils/cellMembership";
+import { canDeleteCellMember } from "@/utils/casl/helper";
 import { myToast } from "@/utils/helper";
 import { getInitials } from "@/utils/helper_profile";
 import { subject } from "@casl/ability";
@@ -117,7 +118,6 @@ const CellProfileScreen = () => {
 	);
 	const canManageCell = Boolean(isCellLeader || isZoneLeaderOfCell || isCore);
 	const canManageSessions = canManageCell;
-	const canRemoveMembers = canManageCell;
 	// Cell and zone leaders keep leader actions. Cores are not leaders, but they
 	// can accept or reject pending join requests and add members.
 	const isLeader = isCellLeader || isZoneLeaderOfCell;
@@ -155,9 +155,9 @@ const CellProfileScreen = () => {
 	const cell = cellFromApi;
 	const cellMembersSubject = subject("CellMembers", {
 		cell_ids: Number(id),
-		zone_leader_1: cell?.zone_leader_1,
-		zone_leader_2: cell?.zone_leader_2,
 	});
+	const canRemoveMember = (member: Person) =>
+		canDeleteCellMember(ability, Number(id), member, cell?.district_id);
 	const canUpdateCellMembers =
 		canReviewJoinRequests || ability.can("update", cellMembersSubject);
 	const activeCellMembers = cell?.members?.filter(
@@ -303,10 +303,8 @@ const CellProfileScreen = () => {
 	};
 
 	const handleRemoveMember = async (memberId: number) => {
-		const isTargetCellLeader =
-			Number(memberId) === Number(cell?.cell_leader_1) ||
-			Number(memberId) === Number(cell?.cell_leader_2);
-		if (!canRemoveMembers || (!isLeader && isTargetCellLeader)) {
+		const member = cell?.members?.find((m) => m.id === memberId);
+		if (!member || !canRemoveMember(member)) {
 			return;
 		}
 
@@ -396,7 +394,7 @@ const CellProfileScreen = () => {
 							}
 							searchQuery={searchQuery}
 							isLeader={isLeader}
-							canRemoveMembers={canRemoveMembers}
+							canRemoveMember={canRemoveMember}
 							canReviewJoinRequests={canUpdateCellMembers}
 							currentPersonId={personId ?? undefined}
 							memberStatuses={memberStatuses}
@@ -690,7 +688,7 @@ const CellProfileScreen = () => {
 							members={filteredMembers}
 							memberStatuses={memberStatuses}
 							isLeader={isLeader ?? false}
-							canRemoveMembers={canRemoveMembers}
+							canRemoveMember={canRemoveMember}
 							canReviewJoinRequests={canUpdateCellMembers}
 							currentPersonId={personId ?? undefined}
 							isUpdating={isUpdating}
