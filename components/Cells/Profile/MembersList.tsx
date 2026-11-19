@@ -16,10 +16,6 @@ type MembersListProps = {
 	isUpdating?: number | null;
 	onRemoveMember?: (memberId: number) => void;
 	onCoreToggled?: () => void;
-	cellLeader1Id?: number | null;
-	cellLeader2Id?: number | null;
-	zoneLeader1Id?: number | null;
-	zoneLeader2Id?: number | null;
 	scrollable?: boolean;
 };
 
@@ -38,10 +34,6 @@ const MembersList = ({
 	isUpdating = null,
 	onRemoveMember,
 	onCoreToggled,
-	cellLeader1Id,
-	cellLeader2Id,
-	zoneLeader1Id,
-	zoneLeader2Id,
 	scrollable = true,
 }: MembersListProps) => {
 	const [expandedSections, setExpandedSections] = useState<
@@ -59,19 +51,9 @@ const MembersList = ({
 		member.member_status ||
 		"ACTIVE";
 
-	// Helper function to determine member role priority
-	const isSamePerson = (memberId: number, leaderId?: number | null) =>
-		leaderId != null && Number(memberId) === Number(leaderId);
-
 	const getMemberRolePriority = (member: any) => {
-		const isCellLeader =
-			isSamePerson(member.id, cellLeader1Id) ||
-			isSamePerson(member.id, cellLeader2Id);
-		if (isCellLeader) return 0;
-		const isZoneLeader =
-			isSamePerson(member.id, zoneLeader1Id) ||
-			isSamePerson(member.id, zoneLeader2Id);
-		if (isZoneLeader) return 1;
+		if (member.is_zone_leader) return 0;
+		if (member.is_cell_leader) return 1;
 		if (member.is_core) return 2;
 		return 3;
 	};
@@ -174,32 +156,24 @@ const MembersList = ({
 		sectionKey: SectionKey,
 	) => {
 		const displayList = searchQuery ? filteredList : membersList;
-		return displayList.map((member) => {
-			const isCellLeader =
-				isSamePerson(member.id, cellLeader1Id) ||
-				isSamePerson(member.id, cellLeader2Id);
-			const isZoneLeader =
-				isSamePerson(member.id, zoneLeader1Id) ||
-				isSamePerson(member.id, zoneLeader2Id);
-			return (
-				<MemberRow
-					key={member.id}
-					member={member}
-					isLeader={isLeader}
-					canRemoveMembers={canRemoveMembers}
-					canReviewJoinRequests={canReviewJoinRequests}
-					currentPersonId={currentPersonId}
-					memberStatuses={memberStatuses}
-					onAccept={onAccept}
-					onReject={onReject}
-					isUpdating={isUpdating === member.id}
-					onRemoveMember={onRemoveMember}
-					onCoreToggled={onCoreToggled}
-					isCellLeader={isCellLeader}
-					isZoneLeader={isZoneLeader}
-				/>
-			);
-		});
+		return displayList.map((member) => (
+			<MemberRow
+				key={member.id}
+				member={member}
+				isLeader={isLeader}
+				canRemoveMembers={canRemoveMembers}
+				canReviewJoinRequests={canReviewJoinRequests}
+				currentPersonId={currentPersonId}
+				memberStatuses={memberStatuses}
+				onAccept={onAccept}
+				onReject={onReject}
+				isUpdating={isUpdating === member.id}
+				onRemoveMember={onRemoveMember}
+				onCoreToggled={onCoreToggled}
+				isCellLeader={Boolean(member.is_cell_leader)}
+				isZoneLeader={Boolean(member.is_zone_leader)}
+			/>
+		));
 	};
 
 	const sections = (

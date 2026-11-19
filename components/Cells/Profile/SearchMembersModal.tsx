@@ -16,10 +16,6 @@ type SearchMembersModalProps = {
 	onAccept?: (memberId: number) => void;
 	onReject?: (memberId: number) => void;
 	onRemoveMember?: (memberId: number) => void;
-	cellLeader1Id?: number | null;
-	cellLeader2Id?: number | null;
-	zoneLeader1Id?: number | null;
-	zoneLeader2Id?: number | null;
 };
 
 const SearchMembersModal = forwardRef<
@@ -38,10 +34,6 @@ const SearchMembersModal = forwardRef<
 			onAccept,
 			onReject,
 			onRemoveMember,
-			cellLeader1Id,
-			cellLeader2Id,
-			zoneLeader1Id,
-			zoneLeader2Id,
 		},
 		ref,
 	) => {
@@ -107,10 +99,6 @@ const SearchMembersModal = forwardRef<
 						onReject={onReject}
 						isUpdating={isUpdating}
 						onRemoveMember={onRemoveMember}
-						cellLeader1Id={cellLeader1Id}
-						cellLeader2Id={cellLeader2Id}
-						zoneLeader1Id={zoneLeader1Id}
-						zoneLeader2Id={zoneLeader2Id}
 					/>
 				</View>
 			</BottomSheetModal>
