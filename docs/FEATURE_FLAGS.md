@@ -2,7 +2,7 @@
 
 How the app decides whether a tab or feature is visible. Two layers exist. Only the runtime layer currently hides product features.
 
-**Last updated:** 2026-10-24
+**Last updated:** 2026-11-06
 
 ---
 
@@ -95,7 +95,7 @@ Pull-to-refresh on the launch screen calls `fetchSystemConfig()`, then `activate
 
 `acknowledgeLaunch()` writes the seen version and deletes the activated file. The banner goes away. Flags stay available because `hasNewLaunch` is now false.
 
-`app_version` on the same config is separate. It drives the store-update prompt (`needsAppUpdate`) and does not gate features.
+`app_version` on the same config is separate. It drives the store-update prompt (`needsAppUpdate`) and does not gate features. The prompt shows when `utils/appVersion.ts` `isVersionLower` says the installed `expoConfig.version` is an older `major.minor.patch` than `app_version.version` (optional leading `v`). An invalid version string does not show the prompt. Dismiss is memory-only (`updatePromptDismissed`); the dialog returns on the next cold start. Store URLs fall back to the SIBKL App Store and Play Store links in `components/AppUpdate/AppUpdatePrompt.tsx` when the payload omits them.
 
 ### Config refresh
 
@@ -222,4 +222,5 @@ app/(app)/settings/index.tsx          footer label
 
 - [CODEBASE.md](../CODEBASE.md) — routes, services, `secureFetch`
 - [PHONE_NUMBERS.md](./PHONE_NUMBERS.md) — stored phone shape for profile and event forms
+- [CLAIM_ACCOUNT.md](./CLAIM_ACCOUNT.md) — email and SMS claim before a Firebase user exists
 - [SDK_54_UPGRADE.md](./SDK_54_UPGRADE.md) — Expo SDK upgrade notes
