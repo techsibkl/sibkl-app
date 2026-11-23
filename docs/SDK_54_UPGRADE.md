@@ -249,19 +249,17 @@ Use this checklist before merging. Test on **physical devices** where noted.
 - [ ] People — list, search, profile navigation
 - [ ] Follow-up (flows) — list, filters, person dialog, notes tab
 - [ ] Leaders — categories, files, gallery
-- [ ] Settings — all menu items, build mode label (Pilot/Production)
+- [ ] Settings — menu items, version footer (`v` plus `expoConfig.version`)
 
-### Pilot feature flags
+### Feature flags
 
-Test with both build modes:
+`PILOT_BUILD` does not show or hide Cells. Those gates are runtime flags plus the launch window. See [FEATURE_FLAGS.md](./FEATURE_FLAGS.md).
 
-- [ ] **Pilot** (`PILOT_BUILD=true`): Cells tab visible, attendance, cell follow-up assignment
-- [ ] **Production** (`PILOT_BUILD=false`): Cells hidden, no attendance UI, no cell assignment in flows
-- [ ] Settings footer shows correct `Pilot` / `Production` label
+- [ ] Server flags on and the launch window open: Cells tab, attendance, cell follow-up assignment
+- [ ] Server flags off: those tabs and actions stay hidden
+- [ ] Settings footer shows the app version only
 
-See [FEATURE_FLAGS.md](./FEATURE_FLAGS.md).
-
-### Cells (pilot builds only)
+### Cells
 
 - [ ] Cells list, join cell, cell profile
 - [ ] Members list, search, add/remove members

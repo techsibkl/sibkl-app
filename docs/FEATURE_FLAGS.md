@@ -2,7 +2,7 @@
 
 How the app decides whether a tab or feature is visible. Two layers exist. Only the runtime layer currently hides product features.
 
-**Last updated:** 2026-10-24
+**Last updated:** 2026-11-13
 
 ---
 
@@ -28,7 +28,7 @@ config/featureFlags.ts    binaryFeatureFlags (build-time hard guard)
 |-------|--------|------------------|
 | Runtime flag | `feature_flags` on `GET /system/config` | Turns a feature on or off for every binary |
 | Launch gate | `app_status` on the same response, plus local countdown | Keeps runtime flags off until the launch window is open |
-| Binary guard | `extra.PILOT_BUILD` via `binaryFeatureFlags` | Settings footer label only. It does not hide Cells, Events, or attendance |
+| Binary guard | `extra.PILOT_BUILD` via `binaryFeatureFlags` | Logged in development. It does not hide Cells, Events, or attendance, and Settings does not print it |
 
 `PILOT_BUILD` is still set per EAS profile. It is not the switch that shows or hides tabs. Do not read `process.env.PILOT_BUILD` in components.
 
@@ -148,9 +148,9 @@ Changing `PILOT_BUILD` requires a new native build. Metro restart alone does not
 
 ### Settings footer
 
-The footer prints `Pilot` when `binaryFeatureFlags.isPilotBuild` is true. That constant is true only when `extra.PILOT_BUILD` is boolean `false` or the string `"false"`. Because `app.config.ts` stores a boolean, a production build (`PILOT_BUILD=false`) shows **Pilot**, and a pilot build (`PILOT_BUILD=true`) shows **Production**. Do not use the footer to confirm the env var or to explain a missing tab. Check `/system/config` and `useFeatureFlag`.
+The footer prints the app version from `Constants.expoConfig.version` (`v` plus that string). It does not print Pilot or Production.
 
-Dev logs: `[binaryFeatureFlags] isPilotBuild: …`.
+`binaryFeatureFlags.isPilotBuild` is still computed. It is true only when `extra.PILOT_BUILD` is boolean `false` or the string `"false"`, so the name does not match a production build. Nothing in the UI reads it. Development logs: `[binaryFeatureFlags] isPilotBuild: …`. Do not use that log, or the Settings footer, to explain a missing tab. Check `/system/config` and `useFeatureFlag`.
 
 ---
 
@@ -194,7 +194,7 @@ Flags decide whether the feature is shipped in this session. They do not replace
 | Countdown hit zero, tabs still hidden | `launch_date` missing or unparseable while status is `locked` | `isLaunchWindowOpen` returns false without a valid date |
 | Launch screen stays locked at T=0 | Refresh ran before the clock crossed `launch_date` | Pull to refresh again; success calls `activateLaunch()` |
 | Banner returned after restart | `seen_launch_version.txt` does not match `launch_version` | `acknowledgeLaunch()` is what dismisses it |
-| Settings says Pilot on a production binary | Footer predicate is inverted relative to `extra.PILOT_BUILD` | Ignore the label; see Settings footer above |
+| Settings footer has no Pilot or Production label | The version row is `expoConfig.version` only | Expected. See Settings footer above |
 | iOS EAS build fails in `fmt` consteval | Xcode 26 image without the plugin | `./plugins/withFmtConstevalFix` in `app.config.ts` plugins, file committed |
 | `PILOT_BUILD=true` but feature still hidden | Binary flag is not the product gate | Server `feature_flags` and launch window |
 
@@ -215,11 +215,12 @@ app/_layout.tsx                       FCM topic + refetch
 config/featureFlags.ts                binaryFeatureFlags
 app.config.ts                         extra.PILOT_BUILD, fmt plugin
 eas.json                              per-profile PILOT_BUILD and Xcode image
-app/(app)/settings/index.tsx          footer label
+app/(app)/settings/index.tsx          version footer
 ```
 
 ## Related
 
 - [CODEBASE.md](../CODEBASE.md) — routes, services, `secureFetch`
 - [PHONE_NUMBERS.md](./PHONE_NUMBERS.md) — stored phone shape for profile and event forms
+- [CALENDAR_DATES.md](./CALENDAR_DATES.md) — picker dates saved as `YYYY-MM-DD`
 - [SDK_54_UPGRADE.md](./SDK_54_UPGRADE.md) — Expo SDK upgrade notes
