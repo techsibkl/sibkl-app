@@ -14,6 +14,9 @@ export interface PeopleFlow extends PrefixedPerson {
 	district_id?: number; // Foreign key to district.id
 	district_name?: string; // Name of the assigned district
 	assigned_cell_id?: number; // Foreign key to cells.id
+	district_ids?: number[]; // [district_id], for PeopleProfile / note checks
+	cell_ids?: number[]; // [assigned_cell_id], for PeopleProfile / note checks
+	flow_assignee_ids?: number[]; // [assignee_id], for PeopleProfile / note checks
 	cell_name?: string; // Name of the assigned cell
 	assignee?: string; // Optional, person responsible for the flow
 	remarks?: string; // Optional notes
