@@ -46,8 +46,6 @@ Auth init: `useAuthStore().init()` on mount (Firebase `onAuthStateChanged`).
 
 The effect depends on `user?.people_id`, not the whole `user` object. A person-revision refresh updates roles in place and does not redirect to home.
 
-`| `scanner.tsx` | Scanner entry |` should be fixed too.
-
 #### Root Stack screens
 
 ```tsx
@@ -173,6 +171,8 @@ Uses `usePeoplePaginatedQuery` (infinite scroll). Row tap → `/(app)/profile/[i
 
 Guest users see limited UI (handled in screen + CASL).
 
+**Scoped people.** Any known role (not `None`, and not an unrecognized role string) may `read` `PeopleScoped` and `CellScoped`. `GET people/scoped` and `GET people/scoped-masked` both exist. The client treats `PeopleScopedUnmasked` as the grant that lets the server return name, email, and phone. That grant is Senior Pastor, Super Admin, Cell Admin, People Admin, Staff, District Pastor, District Admin, Ministry Pastor, and Ministry Admin. People Admin also `manage`s `PeopleScoped`. Add Members uses the masked endpoint. See `docs/CELLS.md`.
+
 ---
 
 ### `cells/`
@@ -180,25 +180,21 @@ Guest users see limited UI (handled in screen + CASL).
 | File | Role |
 |------|------|
 | `_layout.tsx` | Stack: `index`, `profile/[id]`, `scanner`, `qrScan`, `sessions/` |
-| `index.tsx` | All cells vs My Cells |
+| `index.tsx` | All, My Cells, and District for pastors and admins who oversee districts |
 | `profile/[id].tsx` | Members, attendance, announcements |
 | `scanner.tsx` | Camera permission, then routes to `qrScan` (flag `cellAttendance`) |
 | `qrScan.tsx` | Session check-in scan |
 | `sessions/` | Session list and one session |
 
-**My Cells** lists memberships whose `member_status` is `ACTIVE`. `PENDING` stays on All with a badge (optimistic local ids plus the person payload). Check-in is blocked for `PENDING`, `REJECTED`, and `REMOVED` (`utils/cellMembership.ts`).
+All, My Cells, and an optional District tab, roster badges, and who may remove a member are in `docs/CELLS.md`.
 
-**Who can manage a cell** (`profile/[id].tsx`), from the loaded cell and the current person:
+Short version: My Cells is `ACTIVE` memberships, and cells that are not `ACTIVE` are hidden once their status is known. `PENDING` stays on All. District Pastor and District Admin with district ids get a District tab of active cells in those districts.
 
-| Role | How it is detected | What the screen allows |
-|------|--------------------|------------------------|
-| Cell leader | `leader_of_cell_ids`, or `cell_leader_1` / `cell_leader_2` | Members, sessions, join requests. **Edit info** opens the CMS form in the browser |
-| Zone leader | `zone_leader_1` / `zone_leader_2` on this cell (not `leader_of_cell_ids`) | Same manage actions, including **Edit info** |
-| Cell core | `core_of_cell_ids`, or `is_core` on their roster row | Add/remove members, review joins, sessions. Not treated as a leader for Edit info |
+The profile screen treats someone as a cell leader from `leader_of_cell_ids` or `cell_leader_1` / `cell_leader_2`, and as a zone leader of this cell from `zone_leader_1` / `zone_leader_2`. CASL does not use those slot fields for zone leaders. Zone Leader grants use `zone_leader_of_cell_ids`. Cell Leader grants use `leader_of_cell_ids`. Delete is allowed only for a strictly lower roster rank (`is_zone_leader`, then `is_cell_leader`, then `is_core`). The action sheet also hides Remove and Make Core on cell-leader and zone-leader rows.
 
-CASL (`utils/casl/defineAbilityFor.ts`) mirrors that split. Cell leaders and zone leaders share rules on `leader_of_cell_ids` (profile, flows, notes, cell details, members, sessions). Zone leaders also get `CellMembers` and `CellSession` on any cell where `zone_leader_1` or `zone_leader_2` is their person id. They do not get `CellDetails` update from the zone slot alone.
+**Edit info** (cell and zone leaders only) opens `https://sibklcms-prod.web.app/forms/cells/update/`.
 
-Client CASL is UX. The API still authorizes.
+Check-in is blocked for `PENDING`, `REJECTED`, and `REMOVED` (`utils/cellMembership.ts`). Client CASL is UX. The API still authorizes. There is no Cell Coordinator role.
 
 ---
 
@@ -220,6 +216,8 @@ Gated by `useFeatureFlag("events")` and hidden for guests.
 **Claim.** `useMyEventRegistrationsQuery` POSTs `events/claimMyEvents` once per signed-in Firebase uid per app session (no body). That links existing participant rows to the person. Later reads in the same session GET `events/myEvents`. A failed claim is removed from the in-memory map so the next fetch can retry. Guests do not run the query.
 
 Phone fields on the registration form use `docs/PHONE_NUMBERS.md`.
+
+**Calendar dates.** Event custom date fields, the shared date input, and new cell sessions store `YYYY-MM-DD` via `utils/localDate.ts`. A date-only string is that calendar day in the device timezone. An ISO instant is converted to the local calendar day, which keeps a local-midnight value that was passed through `toISOString()` from landing on the previous day in Malaysia. Do not send `toISOString()` as the stored value for these fields. `formatMetadataForSubmit` writes date fields with `toCalendarDateString`.
 
 ---
 
@@ -245,6 +243,10 @@ Components: `FlowSelect`, `StatusTabs`, `PeopleFlowAssignedList`, action dialogs
 | `[category].tsx` | Files in one category |
 
 Uses `useResourcesQuery`, `useFilteredResources`. Category name shown in header on `[category]`.
+
+**Share.** `ViewResourceDialog` shows Share when `shareable` is not `false` and not `0`, and the resource has `drive_view_link`, `vimeo_link`, or `youtube_link`. Android ignores `Share`’s `url` field, so the link is also placed in `message`.
+
+**Vimeo.** `utils/vimeo.ts` accepts `vimeo.com` and `player.vimeo.com` links, including an unlisted privacy hash (`h`, or the path segment after the id). Anything else does not become an in-app player. The WebView document base URL must stay `https://sibklcms-prod.web.app/` (trailing slash). Vimeo domain privacy checks that Referer; there is no app-id allowlist. `VimeoFullscreenModal` has to be rendered inside the modal that opens it. On iOS a second `Modal` mounted outside an already-presented one cannot present, and the screen stops responding.
 
 ---
 
@@ -303,13 +305,24 @@ Navigate: `router.push({ pathname: "/(app)/profile/[id]", params: { id, backPath
 | `sign-in.tsx` | Email/password login |
 | `sign-up.tsx` | New user registration |
 | `new-account.tsx` | Account creation flow |
-| `claim-set-password.tsx` | Claim existing person record |
+| `selected-account.tsx` | Confirm the matched person, then send email or SMS |
+| `verify-otp.tsx` | Email OTP, or Twilio SMS OTP when claiming |
+| `claim-set-password.tsx` | Set the Firebase password after a claim code is accepted |
 | `complete-profile.tsx` | Post-signup profile completion |
 | `forgot-password.tsx` | Password reset |
-| `selected-account.tsx` | Pick account to claim |
-| `verify-otp.tsx` | OTP verification |
 
 `complete-profile` header back triggers sign-out confirm dialog.
+
+### Claiming an existing person
+
+`selected-account.tsx` offers email when the masked profile email contains `@`, and SMS when the phone has at least 7 digits. Tapping a missing channel explains that a leader or admin must update the contact.
+
+| Channel | Send | Verify | After a valid code |
+|---------|------|--------|--------------------|
+| Email | `POST otp/create` with `person_id` | `POST otp/verify` | `claim-set-password`. The email field stays read-only |
+| SMS | `POST otp/send-sms` with `person_id` (`sendSmsOTP`) | `POST otp/verify-sms` with `person_id` and `otpCode` | `claim-set-password`. Email is editable, because the person may have none. `data.email` from verify pre-fills it when present |
+
+Both claim calls use `secureFetch` with `allowUnauthenticated: true`. SMS is Twilio Verify. The verify screen treats the channel as SMS only when `claimStore.verificationChannel` is `"sms"` and a profile is selected, so an abandoned claim does not turn a new-account email OTP into SMS. SMS starts a 60s resend cooldown and allows 2 resends (the send on the previous screen already used one of the backend’s 3 sends per 10 minutes). Email starts at 30s and allows 3 resends. **Create New Account** on the sign-up screen resets the claim store, including the channel, before opening `new-account`.
 
 ---
 
@@ -376,7 +389,7 @@ Pure async functions — one folder per domain, paired with `*.types.ts` where n
 | Service | File | Main exports |
 |---------|------|--------------|
 | Auth | `Auth/auth.service.ts` | `createAccount`, `getPersonOfUid`, `deleteAccount` |
-| Person | `Person/person.service.ts` | `fetchPeople`, `fetchPeoplePaginated`, `fetchPersonById`, `updatePeople` |
+| Person | `Person/person.service.ts` | `fetchPeople`, `fetchPeoplePaginated`, `fetchPersonById`, `updatePeople`, `fetchPeopleScopedFields`, `fetchPeopleScopedMaskedFields` |
 | Cell | `Cell/cell.service.ts` | Cell fetch helpers |
 | Flow | `Flow/flow.service.ts` | `fetchFlows`, `fetchPeopleFlow`, mutations |
 | Note | `Note/notes.service.ts` | CRUD notes |
@@ -385,7 +398,7 @@ Pure async functions — one folder per domain, paired with `*.types.ts` where n
 | Resource | `Resource/resource.service.ts` | `getResources`, `getCategoryResources` |
 | Template | `Template/template.service.ts` | WhatsApp templates |
 | User | `User/user.service.ts` | `updateDeviceToken` |
-| OTP | `OTP/otp.service.ts` | `sendOTP`, `verifyOTP` |
+| OTP | `OTP/otp.service.ts` | `sendEmailOTP`, `verifyOTP`, `sendSmsOTP`, `verifySmsOTP` |
 | Event | `Event/event.service.ts` | List, detail, register, claim, check-in |
 | System | `System/system.service.ts` | `getSystemConfig` (`GET /system/config`) |
 
@@ -450,7 +463,7 @@ TanStack Query layer — mirrors `services/`:
 
 | Folder | Hooks |
 |--------|-------|
-| `People/` | `usePeopleQuery`, `usePeoplePaginatedQuery`, `useSinglePersonQuery` |
+| `People/` | `usePeopleQuery`, `usePeoplePaginatedQuery`, `useSinglePersonQuery`, `usePeopleScopedFieldsQuery`, `usePeopleScopedMaskedFieldsQuery` |
 | `Flows/` | `useFlowsQuery`, `usePeopleFlowQuery`, mutations |
 | `Cell/` | `useCellQuery`, `useSingleCellQuery` |
 | `CellAttendance/` | Session and attendance queries / mutations |
@@ -474,7 +487,7 @@ Zustand for client/session state:
 |-------|------|
 | `authStore.ts` | Firebase user, app user, guest mode, CASL `ability`, `personRevision`, sign-in/out |
 | `signUpStore.ts` | Multi-step signup state |
-| `claimStore.ts` | Claim-existing-account flow (person records, not event claim) |
+| `claimStore.ts` | Claim-existing-account flow: selected person and `verificationChannel` (`email` or `sms`). Not event claim |
 | `systemStore.ts` | Runtime feature flags, launch status, store-update prompt. Disk files are fallback only |
 
 Server data lives in TanStack Query, not stores. Flags and launch state are the exception: they live in `systemStore` because tabs read them before a screen mounts. See `docs/FEATURE_FLAGS.md`.
@@ -489,18 +502,20 @@ Server data lives in TanStack Query, not stores. Flags and launch state are the 
 | `endpoints.ts` | API URL builder |
 | `helper.ts` | Dates, `formatPhone` (delegates to `phone.ts`), toast errors |
 | `phone.ts` | Dial code + national digits. See `docs/PHONE_NUMBERS.md` |
+| `localDate.ts` | `YYYY-MM-DD` calendar days. See the Events section |
 | `helper_profile.ts` | Profile initials, field helpers |
 | `helper_flows.ts` | Flow-specific helpers |
 | `helper_leaders.tsx` | Leader resource helpers |
+| `vimeo.ts` | Allowlisted Vimeo page URLs and the embed origin. See Leaders |
 | `launchWindow.ts` | `isLaunchWindowOpen` for the launch countdown |
 | `eventRegistrationGates.ts` | Published + registration window; check-in gate |
 | `cellMembership.ts` | `PENDING` / `ACTIVE` / `REJECTED` / `REMOVED` and check-in copy |
-| `casl/defineAbilityFor.ts` | Role → permission rules, including `Zone Leader` |
-| `casl/helper.ts` | CASL utilities |
+| `casl/defineAbilityFor.ts` | Role → permission rules. Zone Leader is scoped with `zone_leader_of_cell_ids` |
+| `casl/helper.ts` | `CellMemberRank`, `canDeleteCellMember`. See `docs/CELLS.md` |
 | `tempEnv.ts` | Local dev API URL override |
 | `types/` | Shared TS types (`returnVal`, `TableField`, etc.) |
 
-Permissions: `authStore.ability` from `defineAbilityFor(person)`. Use `hooks/useAbility.ts` in components. Roles worth knowing when debugging a cell screen: Cell Leader, Zone Leader, Cell Core, Cell Coordinator, District Pastor, District Admin. Zone Leader is a real role string (`"Zone Leader"`), not an alias of Cell Leader.
+Permissions: `authStore.ability` from `defineAbilityFor(person)`. Use `hooks/useAbility.ts` in components. Roles worth knowing when debugging a cell screen: Cell Leader, Zone Leader, Cell Core, District Pastor, District Admin. Zone Leader is a real role string (`"Zone Leader"`), not an alias of Cell Leader. There is no Cell Coordinator role. Removal ranks are in `docs/CELLS.md`.
 
 ---
 
@@ -569,7 +584,7 @@ npx expo run:android --device   # or ios
 
 See `README.md` for EAS builds, Play Store signing, and deployment.
 
-See `docs/FEATURE_FLAGS.md` for server feature flags, the launch window, and the build-time `PILOT_BUILD` label. See `docs/PHONE_NUMBERS.md` for the stored phone format.
+See `docs/FEATURE_FLAGS.md` for server feature flags, the launch window, and the build-time `PILOT_BUILD` label. See `docs/PHONE_NUMBERS.md` for the stored phone format. See `docs/CELLS.md` for cell lists and member removal.
 
 ---
 
@@ -584,7 +599,11 @@ See `docs/FEATURE_FLAGS.md` for server feature flags, the launch window, and the
 | Auth / guest behavior | `stores/authStore.ts`, `app/_layout.tsx` routing |
 | Permissions | `utils/casl/defineAbilityFor.ts` |
 | Stale roles after an admin change | `X-Person-Revision` in `utils/secureFetch.ts`, `authStore.refreshPerson` |
-| Zone leader cell access | `defineAbilityFor` (`zone_leader_1` / `zone_leader_2`) and `cells/profile/[id].tsx` |
+| Zone leader cell access | `defineAbilityFor` (`zone_leader_of_cell_ids`) and `docs/CELLS.md` |
+| Hide or show Remove on a roster row | `canDeleteCellMember`, then `MemberActionSheet` |
+| Leader video or Share | `utils/vimeo.ts`, `components/Leaders/ViewResourceDialog.tsx` |
+| Claim account by SMS | `app/(auth)/selected-account.tsx`, `services/OTP/otp.service.ts` |
+| Date field off by one day | `utils/localDate.ts` |
 | Push notifications | `app/_layout.tsx` FCM setup, `User/user.service` token, topic `system-config` |
 | Top bar title / back | Domain `_layout.tsx` + `SharedHeader` |
 | Bottom navbar | `(app)/_layout.tsx` only |
