@@ -5,6 +5,7 @@
 - [CODEBASE.md](./CODEBASE.md) — routes, services, and permissions
 - [docs/FEATURE_FLAGS.md](./docs/FEATURE_FLAGS.md) — server feature flags and the launch window
 - [docs/PHONE_NUMBERS.md](./docs/PHONE_NUMBERS.md) — stored phone format for profile and events
+- [docs/CELLS.md](./docs/CELLS.md) — cell lists, roster ranks, and member removal
 
 ## Setup
 
