@@ -32,6 +32,10 @@ export const handleAuthStateChange = async (
 			isLoading: false,
 			authLoaded: true,
 			personRevision: null,
+			privacyConsent: "unknown",
+			privacyConsentEmail: null,
+			privacyConsentedAt: null,
+			privacyConsentError: null,
 		});
 		console.log("No firebase user");
 		return;

@@ -24,7 +24,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import * as Device from "expo-device";
 import { useFonts } from "expo-font";
 import * as Notifications from "expo-notifications";
-import { Stack, useRouter } from "expo-router";
+import { Href, Stack, useRouter } from "expo-router";
 import React, { useEffect, useRef } from "react";
 import { AppState, AppStateStatus, Platform, StatusBar } from "react-native";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -119,7 +119,15 @@ async function registerAndGetToken(): Promise<string | null> {
 
 function RootLayoutNav() {
 	const router = useRouter();
-	const { firebaseUser, user, authLoaded, init, isGuest } = useAuthStore();
+	const {
+		firebaseUser,
+		user,
+		authLoaded,
+		init,
+		isGuest,
+		privacyConsent,
+		loadPrivacyConsent,
+	} = useAuthStore();
 
 	// Auth init
 	useEffect(() => {
@@ -135,13 +143,26 @@ function RootLayoutNav() {
 			router.replace("/(app)/home");
 		} else if (!firebaseUser) {
 			router.replace("/(auth)/sign-in");
+		} else if (privacyConsent === "unknown") {
+			router.replace("/(auth)/splash");
+			void loadPrivacyConsent();
+		} else if (privacyConsent !== "accepted") {
+			router.replace("/(auth)/privacy-consent" as Href);
 		} else if (!user?.people_id) {
 			router.replace("/(auth)/complete-profile");
 		} else {
 			router.replace("/(app)/home");
 		}
 		// people_id only: refreshing person must not send the user back to home.
-	}, [user?.people_id, authLoaded, router, firebaseUser, isGuest]);
+	}, [
+		user?.people_id,
+		authLoaded,
+		router,
+		firebaseUser,
+		isGuest,
+		privacyConsent,
+		loadPrivacyConsent,
+	]);
 
 	// Register + save token when user logs in
 	useEffect(() => {

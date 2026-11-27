@@ -1,6 +1,7 @@
 import { ProfileFormData } from "@/app/(auth)/complete-profile";
 import { handleAuthStateChange } from "@/hooks/Auth/useAuthHandler";
 import { createAccount, getPersonOfUid } from "@/services/Auth/auth.service";
+import { fetchPrivacyConsentStatus } from "@/services/Privacy/privacyConsent.service";
 import { Person } from "@/services/Person/person.type";
 import { AppUser } from "@/services/User/user.types";
 import { defineAbilityFor, Role } from "@/utils/casl/defineAbilityFor";
@@ -24,7 +25,12 @@ export type AuthState = {
 	authLoaded: boolean;
 	ability: AnyAbility;
 	personRevision: string | null;
+	privacyConsent: "unknown" | "accepted" | "required";
+	privacyConsentEmail: string | null;
+	privacyConsentedAt: string | null;
+	privacyConsentError: string | null;
 	setFirebaseUser: (firebaseUser: FirebaseAuthTypes.User | null) => void;
+	loadPrivacyConsent: () => Promise<void>;
 	setUser: (user: AppUser | null) => void;
 	signIn: (
 		email: string,
@@ -41,6 +47,7 @@ export type AuthState = {
 
 let personRefresh: Promise<void> | null = null;
 let personRefreshBlockedUntil = 0;
+let privacyConsentLoad: Promise<void> | null = null;
 
 export const useAuthStore = create<AuthState>((set, get) => ({
 	firebaseUser: null,
@@ -51,6 +58,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 	authLoaded: false,
 	ability: defineAbilityFor(<Person>{ id: 0, roles: [Role.NONE] }),
 	personRevision: null,
+	privacyConsent: "unknown",
+	privacyConsentEmail: null,
+	privacyConsentedAt: null,
+	privacyConsentError: null,
 
 	setUser: (user: AppUser | null) =>
 		set({
@@ -70,8 +81,12 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 				email,
 				password,
 			);
-			set({ firebaseUser: res?.user });
-			set({ authLoaded: false, isGuest: false });
+			set({
+				firebaseUser: res?.user,
+				authLoaded: false,
+				isGuest: false,
+				privacyConsent: "unknown",
+			});
 			await handleAuthStateChange(res?.user ?? null, set);
 			return res?.user;
 		} catch (error: FirebaseAuthTypes.NativeFirebaseAuthError | any) {
@@ -143,8 +158,39 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 			authLoaded: true,
 			ability: defineAbilityFor(<Person>{ id: 0, roles: [Role.NONE] }),
 			personRevision: null,
+			privacyConsent: "unknown",
+			privacyConsentEmail: null,
+			privacyConsentedAt: null,
+			privacyConsentError: null,
 			isLoading: false,
 		});
+	},
+
+	loadPrivacyConsent: () => {
+		if (privacyConsentLoad) return privacyConsentLoad;
+		privacyConsentLoad = (async () => {
+			try {
+				const status = await fetchPrivacyConsentStatus();
+				set({
+					privacyConsent: status.accepted ? "accepted" : "required",
+					privacyConsentEmail: status.email,
+					privacyConsentedAt: status.consented_at,
+					privacyConsentError: null,
+				});
+			} catch (error) {
+				console.error("Failed to check privacy consent:", error);
+				set({
+					privacyConsent: "required",
+					privacyConsentError:
+						error instanceof Error
+							? error.message
+							: "Could not check privacy consent",
+				});
+			} finally {
+				privacyConsentLoad = null;
+			}
+		})();
+		return privacyConsentLoad;
 	},
 
 	// Sign out
@@ -156,6 +202,10 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 			isAuthenticated: false,
 			isGuest: false,
 			personRevision: null,
+			privacyConsent: "unknown",
+			privacyConsentEmail: null,
+			privacyConsentedAt: null,
+			privacyConsentError: null,
 		});
 	},
 

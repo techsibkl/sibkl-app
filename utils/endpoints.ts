@@ -114,6 +114,8 @@ export const apiEndpoints = {
 		getPersonOfUid: _endpoint("users/get-person-of-uid"),
 		updateDeviceToken: _endpoint("users/update-device-token"),
 		deleteAccount: _endpoint("users/delete-account"),
+		privacyConsent: _endpoint("users/privacy-consent"),
+		privacyConsentWithdraw: _endpoint("users/privacy-consent/withdraw"),
 	},
 	templates: {
 		create: _endpoint("templates/create"),

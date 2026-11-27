@@ -22,7 +22,7 @@ import {
 } from "react-native";
 
 export default function SettingsScreen() {
-	const { signOut, isGuest } = useAuthStore();
+	const { signOut, isGuest, privacyConsentedAt } = useAuthStore();
 	const appStatus = useSystemStore((state) => state.appStatus);
 	const router = useRouter();
 	const [darkTheme, setDarkTheme] = useState(true);
@@ -41,6 +41,10 @@ export default function SettingsScreen() {
 	const handleLogin = () => {
 		router.replace("/(auth)/sign-in");
 	};
+
+	const agreedLabel = privacyConsentedAt
+		? `Agreed ${new Date(privacyConsentedAt).toLocaleDateString()}`
+		: "View our privacy policy";
 
 	const settingsOptions = [
 		// {
@@ -77,9 +81,8 @@ export default function SettingsScreen() {
 			id: "privacy",
 			icon: <FileTextIcon className="w-6 h-6 text-gray-400" />,
 			title: "Privacy Policy",
-			subtitle: "View our privacy policy",
-			onPress: () =>
-				Linking.openURL("https://sibklcms-prod.web.app/privacy"),
+			subtitle: agreedLabel,
+			onPress: () => router.push("/(app)/settings/privacy" as any),
 		},
 		{
 			id: "feedback",

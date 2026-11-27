@@ -46,6 +46,15 @@ export default function Layout() {
 				})}
 			/>
 			<Stack.Screen
+				name="privacy/index"
+				options={{
+					headerShown: true,
+					header() {
+						return <SharedHeader title="Privacy Notice" isPop />;
+					},
+				}}
+			/>
+			<Stack.Screen
 				name="delete-account/index"
 				options={{
 					headerShown: true,
