@@ -36,12 +36,12 @@ const Page = () => {
 	const router = useRouter();
 	const qc = useQueryClient();
 	const { full_email, id } = useLocalSearchParams();
-	const { verificationChannel } = useClaimStore();
+	const { verificationChannel, claimToken } = useClaimStore();
 
 	// When verified via SMS the person may not have an email on file, so the
 	// field must be editable. Email-verified accounts already have a confirmed
 	// address and must stay read-only.
-	const isEmailEditable = verificationChannel === "sms";
+	const isEmailEditable = verificationChannel === "sms" && !claimToken;
 
 	const {
 		control,
@@ -91,6 +91,20 @@ const Page = () => {
 			await createUserWithEmailAndPassword(getAuth(), email, password);
 			await createUserAndGoToCompleteProfile(Number(id));
 		} catch (err: any) {
+			if (err.code === "auth/email-already-in-use") {
+				Alert.alert(
+					"Email Already In Use",
+					"The email is already in use by another account. Try logging in instead.",
+					[
+						{ text: "Cancel", style: "cancel" },
+						{
+							text: "Sign In",
+							onPress: () => router.replace("/sign-in"),
+						},
+					],
+				);
+				return;
+			}
 			Alert.alert("Error", err.message || "Failed to create account.");
 		}
 	};

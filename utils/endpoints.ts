@@ -24,7 +24,7 @@ export const apiEndpoints = {
 		getScopedMasked: _endpoint("people/scoped-masked"),
 		getPaginated: _endpoint("people/paginated"),
 		getById: (id: number | string) => _endpoint(`people/${id}`),
-		geteWithNoUid: _endpoint(`people/with-no-uid`),
+		suggestUnclaimed: _endpoint("people/suggest-unclaimed"),
 		update: (id: number | string) => _endpoint(`people/update/${id}`),
 	},
 	peopleFlows: {

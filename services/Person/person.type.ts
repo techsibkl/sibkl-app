@@ -68,3 +68,9 @@ export type MaskedPerson = {
 	has_account?: boolean;
 	migrate_extra_info?: string; // Extra info for migration
 };
+
+/** Minimal row returned after a verified-email claim lookup. */
+export type UnclaimedSuggestion = {
+	id: number;
+	full_legal_name: string;
+};

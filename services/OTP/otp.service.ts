@@ -49,10 +49,13 @@ export const verifySmsOTP = async (
 	}
 };
 
+/** Returned by otp/create when Firebase already has this email. No OTP is sent. */
+export const EMAIL_ALREADY_REGISTERED = "EMAIL_ALREADY_REGISTERED";
+
 export const sendEmailOTP = async (
 	personid: number | null,
 	email: string | null,
-) => {
+): Promise<ReturnVal> => {
 	try {
 		let payload = {};
 		if (personid && !email) {
@@ -77,10 +80,14 @@ export const sendEmailOTP = async (
 			},
 			{ allowUnauthenticated: true },
 		);
-		const json = await response.json();
+		const json: ReturnVal = await response.json();
 		return json;
 	} catch (error) {
 		console.error(error);
+		return {
+			success: false,
+			message: "Failed to send verification code.",
+		};
 	}
 };
 
@@ -103,6 +110,8 @@ export const verifyOTP = async (
 				otpCode: otpCode,
 			};
 		}
+
+		console.log("verifyOTP payload", payload);
 
 		const response = await secureFetch(
 			`${apiEndpoints.otp.verify}`,

@@ -1,64 +1,86 @@
 import PulsingLogo from "@/components/shared/PulsingLogo";
 import { inputPadding } from "@/constants/const_styles";
-import { sendEmailOTP } from "@/services/OTP/otp.service";
+import { useClaimStore } from "@/stores/claimStore";
 import { useSignUpStore } from "@/stores/signUpStore";
+import {
+	createUserWithEmailAndPassword,
+	getAuth,
+} from "@react-native-firebase/auth";
 import { Link, useRouter } from "expo-router";
 import { Eye, EyeOff, Lock, Mail } from "lucide-react-native";
-import React, { useRef, useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Controller, useForm } from "react-hook-form";
 import {
-    ActivityIndicator,
-    Alert,
-    ImageSourcePropType,
-    Text,
-    TextInput,
-    TouchableOpacity,
-    View,
+	ActivityIndicator,
+	Alert,
+	ImageSourcePropType,
+	Text,
+	TextInput,
+	TouchableOpacity,
+	View,
 } from "react-native";
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import SibklText from "../../assets/images/sibkl-text-white.png";
 
+type PasswordFormData = {
+	password: string;
+};
+
 const Page = () => {
-	type signUpFormData = {
-		email: string;
-		password: string;
-	};
-
-	const [showPassword, setShowPassword] = useState(false);
-	const passwordRef = useRef<TextInput>(null);
-
 	const router = useRouter();
-	const signUpStore = useSignUpStore();
+	const claimToken = useClaimStore((state) => state.claimToken);
+	const setSelectedProfile = useClaimStore((state) => state.setSelectedProfile);
+	const { pendingSignUp, setPendingSignUp } = useSignUpStore();
+	const email = pendingSignUp?.email?.trim() ?? "";
+	const [showPassword, setShowPassword] = useState(false);
 	const {
 		control,
 		handleSubmit,
 		formState: { errors, isSubmitting },
-	} = useForm<signUpFormData>({
-		defaultValues: { email: "", password: "" },
+	} = useForm<PasswordFormData>({
+		defaultValues: { password: "" },
 	});
 
-	// Create Account clicked -> send OTP and navigate to OTP verification page
-	const onSubmit = async (data: signUpFormData) => {
-		try {
-			const email = data.email.trim();
-			const password = data.password.trim();
+	useEffect(() => {
+		if (!claimToken || !email) {
+			router.replace("/(auth)/sign-up");
+		}
+	}, [claimToken, email, router]);
 
-			if (!email || !password) {
-				Alert.alert("Error", "Email and password are required.");
+	const onSubmit = async (data: PasswordFormData) => {
+		const password = data.password.trim();
+		if (!email || !password) {
+			Alert.alert("Error", "Email and password are required.");
+			return;
+		}
+
+		try {
+			setSelectedProfile(null);
+			await createUserWithEmailAndPassword(getAuth(), email, password);
+			setPendingSignUp({ email, password: "" });
+			router.replace("/(auth)/complete-profile");
+		} catch (err: any) {
+			if (err.code === "auth/email-already-in-use") {
+				Alert.alert(
+					"Email Already In Use",
+					"The email is already in use by another account. Try logging in instead.",
+					[
+						{ text: "Cancel", style: "cancel" },
+						{
+							text: "Sign In",
+							onPress: () => router.replace("/sign-in"),
+						},
+					],
+				);
 				return;
 			}
-			await sendEmailOTP(null, email);
-			signUpStore.setPendingSignUp({ email, password });
-
-			// Navigate to OTP verification page
-			router.push("/(auth)/verify-otp");
-		} catch (err: any) {
-			Alert.alert(
-				"Error",
-				err.message || "Failed to send verification code.",
-			);
+			Alert.alert("Error", err.message || "Failed to create account.");
 		}
 	};
+
+	if (!claimToken || !email) {
+		return null;
+	}
 
 	return (
 		<KeyboardAwareScrollView
@@ -66,9 +88,7 @@ const Page = () => {
 			enableOnAndroid={true}
 			extraScrollHeight={5}
 			keyboardShouldPersistTaps="handled"
-			contentContainerStyle={{
-				flexGrow: 1,
-			}}
+			contentContainerStyle={{ flexGrow: 1 }}
 		>
 			<View className="items-center justify-center mt-16 py-[7rem]">
 				<PulsingLogo
@@ -81,66 +101,33 @@ const Page = () => {
 					Create Account
 				</Text>
 				<Text className="font-regular text-gray-700 mb-8">
-					Let's get you started! Enter your email and password to
-					create your account.
+					Your email is verified. Choose a password to finish creating
+					your account.
 				</Text>
 
 				<View className="gap-y-6">
-					{/* Email input */}
 					<View className="ml-[-2px]">
 						<Text className="font-semibold text-gray-700 ml-1 mb-2">
-							New Email
+							Verified Email
 						</Text>
-						<View className="">
-							<Controller
-								control={control}
-								rules={{
-									required: "Email is required",
-									pattern: {
-										value: /^\S+@\S+$/i,
-										message: "Invalid email format",
-									},
-								}}
-								render={({
-									field: { onChange, onBlur, value },
-								}) => (
-									<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
-										<Mail size={20} color="#6b7280" />
-										<TextInput
-											className="font-regular flex-1 ml-3 text-gray-600"
-											style={inputPadding}
-											placeholder="Enter your email"
-											placeholderTextColor="#9ca3af"
-											onBlur={onBlur}
-											onChangeText={onChange}
-											value={value}
-											keyboardType="email-address"
-											autoCapitalize="none"
-											autoComplete="email"
-											returnKeyType="next"
-											onSubmitEditing={() =>
-												passwordRef.current?.focus()
-											}
-										/>
-									</View>
-								)}
-								name="email"
-							/>
-							{errors.email && (
-								<Text className="text-primary-500 text-sm ml-1 mt-2">
-									{errors.email.message}
-								</Text>
-							)}
+						<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
+							<Mail size={20} color="#6b7280" />
+							<Text
+								className="font-regular flex-1 ml-3 text-gray-400"
+								style={inputPadding}
+							>
+								{email}
+							</Text>
 						</View>
 					</View>
 
-					{/* Password input */}
 					<View className="ml-[-2px]">
 						<Text className="font-semibold text-gray-700 ml-1 mb-2">
 							Password
 						</Text>
 						<Controller
 							control={control}
+							name="password"
 							rules={{
 								required: "Password is required",
 								minLength: {
@@ -149,14 +136,11 @@ const Page = () => {
 										"Password must be at least 6 characters",
 								},
 							}}
-							render={({
-								field: { onChange, onBlur, value },
-							}) => (
+							render={({ field: { onChange, onBlur, value } }) => (
 								<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
 									<Lock size={20} color="#6b7280" />
 									<TextInput
-										ref={passwordRef}
-										className="font-regular flex-1 ml-3  text-gray-600"
+										className="font-regular flex-1 ml-3 text-gray-600"
 										style={inputPadding}
 										placeholder="Enter your password"
 										placeholderTextColor="#9ca3af"
@@ -165,14 +149,20 @@ const Page = () => {
 										value={value}
 										secureTextEntry={!showPassword}
 										autoCapitalize="none"
-										autoComplete="password"
+										autoComplete="password-new"
 										returnKeyType="done"
+										onSubmitEditing={handleSubmit(onSubmit)}
 									/>
 									<TouchableOpacity
 										onPress={() =>
 											setShowPassword(!showPassword)
 										}
-										activeOpacity={1}
+										accessibilityRole="button"
+										accessibilityLabel={
+											showPassword
+												? "Hide password"
+												: "Show password"
+										}
 									>
 										{showPassword ? (
 											<Eye size={20} color="#9ca3af" />
@@ -182,9 +172,7 @@ const Page = () => {
 									</TouchableOpacity>
 								</View>
 							)}
-							name="password"
 						/>
-
 						{errors.password && (
 							<Text className="text-primary-500 text-sm ml-1 mt-2">
 								{errors.password.message}
@@ -192,11 +180,11 @@ const Page = () => {
 						)}
 					</View>
 
-					{/* Submit */}
 					<TouchableOpacity
-						className={`w-full py-4 rounded-[15px] items-center justify-center mt-6 bg-primary-600`}
+						className="w-full py-4 rounded-[15px] items-center justify-center mt-6 bg-primary-600"
 						onPress={handleSubmit(onSubmit)}
 						disabled={isSubmitting}
+						accessibilityRole="button"
 					>
 						{isSubmitting ? (
 							<ActivityIndicator color="white" />
@@ -207,7 +195,6 @@ const Page = () => {
 						)}
 					</TouchableOpacity>
 
-					{/* Sign in link */}
 					<View className="items-center">
 						<Text className="font-regular text-gray-600 text-sm">
 							Already have an account?{" "}

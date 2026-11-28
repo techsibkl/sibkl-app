@@ -6,12 +6,9 @@ import {
 	verifyOTP,
 	verifySmsOTP,
 } from "@/services/OTP/otp.service";
+import { useSuggestUnclaimedMutation } from "@/hooks/People/useSuggestUnclaimedMutation";
 import { useClaimStore } from "@/stores/claimStore";
 import { useSignUpStore } from "@/stores/signUpStore";
-import {
-	createUserWithEmailAndPassword,
-	getAuth,
-} from "@react-native-firebase/auth";
 import { useRouter } from "expo-router";
 import { Mail, MessageSquare } from "lucide-react-native";
 import React, { useEffect, useRef, useState } from "react";
@@ -29,7 +26,8 @@ import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view
 const Page = () => {
 	const router = useRouter();
 	const claimStore = useClaimStore();
-	const { pendingSignUp } = useSignUpStore();
+	const { pendingSignUp, setPendingSignUp } = useSignUpStore();
+	const suggestUnclaimed = useSuggestUnclaimedMutation();
 	// Derive channel first so timer constants can reference it.
 	// Require a selectedProfile — without one the SMS path has no person_id
 	// to look up, so a stale verificationChannel="sms" (e.g. from an abandoned
@@ -141,7 +139,8 @@ const Page = () => {
 					`/(auth)/claim-set-password?full_email=${encodeURIComponent(resEmail)}&id=${personId}`,
 				);
 			} else {
-				// ── Email OTP path (existing flow) ─────────────────────────
+				// Email OTP. A selected profile is the legacy claim screen.
+				// Registration has no profile yet: store the claim token, then suggest.
 				const email = pendingSignUp?.email || null;
 				const result = await verifyOTP(personId, email, otpString);
 
@@ -155,31 +154,43 @@ const Page = () => {
 					return;
 				}
 
-				const resEmail = result.data?.email.trim() ?? "";
+				const resEmail =
+					result.data?.email?.trim() || pendingSignUp?.email || "";
 
 				if (claimStore.selectedProfile) {
 					router.push(
 						`/(auth)/claim-set-password?full_email=${encodeURIComponent(resEmail)}&id=${claimStore.selectedProfile.id}`,
 					);
-				} else {
-					// No claimed profile, proceed to complete profile
-					await createUserWithEmailAndPassword(
-						getAuth(),
-						resEmail,
-						pendingSignUp?.password!,
-					);
-					router.push("/(auth)/complete-profile");
+					return;
 				}
+
+				const claimToken =
+					typeof result.data?.claim_token === "string"
+						? result.data.claim_token
+						: "";
+				if (!claimToken || !resEmail) {
+					Alert.alert(
+						"Error",
+						"Your email was verified, but we couldn't start a profile lookup. Please try again.",
+					);
+					return;
+				}
+
+				setPendingSignUp({ email: resEmail, password: "" });
+				// Keep the token even if the lookup fails so the next screen can
+				// retry without asking the user to verify the same code again.
+				claimStore.setClaimSession(claimToken, null);
+				try {
+					const suggestions =
+						await suggestUnclaimed.mutateAsync(claimToken);
+					claimStore.setClaimSession(claimToken, suggestions);
+				} catch {
+					// suggest-profile shows a retry while suggestions is null.
+				}
+				router.replace("/(auth)/suggest-profile");
 			}
-		} catch (error: any) {
-			if (error.code == "auth/email-already-in-use") {
-				Alert.alert(
-					"Email Already In Use",
-					"The email is already in use by another account. Try logging in instead.",
-				);
-			} else {
-				Alert.alert("Error", "Failed to verify OTP. Please try again.");
-			}
+		} catch {
+			Alert.alert("Error", "Failed to verify OTP. Please try again.");
 		} finally {
 			setIsLoading(false);
 		}

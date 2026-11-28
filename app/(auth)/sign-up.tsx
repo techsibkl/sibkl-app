@@ -1,16 +1,19 @@
-import ProfileItem from "@/components/Auth/ProfileItem";
 import PulsingLogo from "@/components/shared/PulsingLogo";
-import { usePeopleWithNouidQuery } from "@/hooks/People/usePeopleWithNoUid";
+import { inputPadding } from "@/constants/const_styles";
+import {
+	EMAIL_ALREADY_REGISTERED,
+	sendEmailOTP,
+} from "@/services/OTP/otp.service";
 import { useClaimStore } from "@/stores/claimStore";
-import { claimConfidenceRank } from "@/utils/claimSuggestion";
-import { FlashList } from "@shopify/flash-list";
+import { useSignUpStore } from "@/stores/signUpStore";
 import { Link, useRouter } from "expo-router";
-import { User2Icon, XIcon } from "lucide-react-native";
-import React, { useMemo, useState } from "react";
+import { Mail } from "lucide-react-native";
+import React from "react";
+import { Controller, useForm } from "react-hook-form";
 import {
 	ActivityIndicator,
+	Alert,
 	ImageSourcePropType,
-	Platform,
 	Text,
 	TextInput,
 	TouchableOpacity,
@@ -19,48 +22,66 @@ import {
 import { KeyboardAwareScrollView } from "react-native-keyboard-aware-scroll-view";
 import SibklText from "../../assets/images/sibkl-text-white.png";
 
-const PAGE_SIZE = 20;
+type EmailFormData = {
+	email: string;
+};
 
 const Page = () => {
 	const router = useRouter();
 	const claimStore = useClaimStore();
+	const signUpStore = useSignUpStore();
 	const {
-		isPending,
-		isError,
-		error,
-		data: maskedPeople,
-	} = usePeopleWithNouidQuery();
-	const [nameQuery, setNameQuery] = useState("");
-	const [page, setPage] = useState(1);
-	const [loadingMore, setLoadingMore] = useState(false);
+		control,
+		handleSubmit,
+		formState: { errors, isSubmitting },
+	} = useForm<EmailFormData>({
+		defaultValues: { email: "" },
+	});
 
-	const filteredProfiles = useMemo(() => {
-		const term = nameQuery.trim().toLowerCase();
-		if (!term) return [];
-		return (maskedPeople ?? [])
-			.filter((person) => person?.full_legal_name?.toLowerCase().includes(term))
-			.sort((a, b) => claimConfidenceRank(b) - claimConfidenceRank(a));
-	}, [nameQuery, maskedPeople]);
-
-	const visibleProfiles = useMemo(
-		() => filteredProfiles.slice(0, page * PAGE_SIZE),
-		[filteredProfiles, page],
-	);
-
-	const handleLoadMore = () => {
-		if (page * PAGE_SIZE < filteredProfiles.length && !loadingMore) {
-			setLoadingMore(true);
-			setTimeout(() => {
-				setPage((prev) => prev + 1);
-				setLoadingMore(false);
-			}, 300);
-		}
+	const showEmailTaken = () => {
+		Alert.alert(
+			"Account already exists",
+			"An account with this email already exists.",
+			[
+				{ text: "Cancel", style: "cancel" },
+				{
+					text: "Forgot Password",
+					onPress: () => router.push("/forgot-password"),
+				},
+				{
+					text: "Sign In",
+					onPress: () => router.replace("/sign-in"),
+				},
+			],
+		);
 	};
 
-	const inputPadding =
-		Platform.OS === "android"
-			? { paddingVertical: 12 }
-			: { paddingVertical: 18 };
+	const onSubmit = async (data: EmailFormData) => {
+		const email = data.email.trim();
+		try {
+			const result = await sendEmailOTP(null, email);
+			if (result.err_code === EMAIL_ALREADY_REGISTERED) {
+				showEmailTaken();
+				return;
+			}
+			if (!result.success) {
+				Alert.alert(
+					"Error",
+					result.message || "Failed to send verification code.",
+				);
+				return;
+			}
+
+			claimStore.reset();
+			signUpStore.setPendingSignUp({ email, password: "" });
+			router.push("/(auth)/verify-otp");
+		} catch (err: any) {
+			Alert.alert(
+				"Error",
+				err.message || "Failed to send verification code.",
+			);
+		}
+	};
 
 	return (
 		<KeyboardAwareScrollView
@@ -70,128 +91,90 @@ const Page = () => {
 			keyboardShouldPersistTaps="handled"
 			contentContainerStyle={{ flexGrow: 1 }}
 		>
-			{/* Logo section */}
-			<View
-				className="items-center justify-center my-16"
-				style={{
-					paddingTop: Platform.OS === "android" ? 48 : 64,
-					paddingBottom: Platform.OS === "android" ? 32 : 48,
-				}}
-			>
+			<View className="items-center justify-center mt-16 py-[7rem]">
 				<PulsingLogo
 					source={SibklText as ImageSourcePropType}
 					className="h-18"
 				/>
 			</View>
-
-			<View className="bg-background py-8 px-6 rounded-t-[30px] flex-1">
+			<View className="bg-background py-10 px-6 rounded-t-[30px] h-full">
 				<Text className="text-3xl font-bold text-gray-700 mb-2">
-					New Here?
+					Create Account
 				</Text>
-				<Text className="font-regular text-gray-700 mb-6">
-					Welcome! Enter your name, email, or phone to find an
-					existing profile. Or create a new one.
+				<Text className="font-regular text-gray-700 mb-8">
+					Enter your email. We&apos;ll verify it before looking for an
+					existing profile.
 				</Text>
 
-				{/* Search input */}
-				<View className="ml-[-2px]">
-					<Text className="font-semibold text-gray-700 ml-1 mb-2">
-						Search for an existing profile
-					</Text>
-					<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
-						<User2Icon size={20} color="#6b7280" />
-						<TextInput
-							className="font-regular flex-1 ml-3 text-gray-600"
-							style={inputPadding}
-							placeholder="Search by name"
-							value={nameQuery}
-							onChangeText={setNameQuery}
-							placeholderTextColor="#9ca3af"
-							keyboardType="email-address"
-							autoCapitalize="none"
-							autoComplete="email"
+				<View className="gap-y-6">
+					<View className="ml-[-2px]">
+						<Text className="font-semibold text-gray-700 ml-1 mb-2">
+							Email
+						</Text>
+						<Controller
+							control={control}
+							name="email"
+							rules={{
+								required: "Email is required",
+								pattern: {
+									value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+									message: "Enter a valid email address",
+								},
+							}}
+							render={({ field: { onChange, onBlur, value } }) => (
+								<View className="flex-row items-center bg-white border border-border rounded-[15px] px-4">
+									<Mail size={20} color="#6b7280" />
+									<TextInput
+										className="font-regular flex-1 ml-3 text-gray-600"
+										style={inputPadding}
+										placeholder="Enter your email"
+										placeholderTextColor="#9ca3af"
+										onBlur={onBlur}
+										onChangeText={onChange}
+										value={value}
+										keyboardType="email-address"
+										autoCapitalize="none"
+										autoComplete="email"
+										autoCorrect={false}
+										returnKeyType="done"
+										onSubmitEditing={handleSubmit(onSubmit)}
+									/>
+								</View>
+							)}
 						/>
-						<TouchableOpacity onPress={() => setNameQuery("")}>
-							<XIcon size={20} color="#6b7280" />
-						</TouchableOpacity>
+						{errors.email && (
+							<Text className="text-primary-500 text-sm ml-1 mt-2">
+								{errors.email.message}
+							</Text>
+						)}
+					</View>
+
+					<TouchableOpacity
+						className="w-full py-4 rounded-[15px] items-center justify-center mt-6 bg-primary-600"
+						onPress={handleSubmit(onSubmit)}
+						disabled={isSubmitting}
+						accessibilityRole="button"
+					>
+						{isSubmitting ? (
+							<ActivityIndicator color="white" />
+						) : (
+							<Text className="text-lg text-white font-bold">
+								Continue
+							</Text>
+						)}
+					</TouchableOpacity>
+
+					<View className="items-center">
+						<Text className="font-regular text-gray-600 text-sm">
+							Already have an account?{" "}
+							<Link href="/sign-in" asChild>
+								<Text className="text-primary-600 font-semibold">
+									Sign In
+								</Text>
+							</Link>
+						</Text>
 					</View>
 				</View>
-
-				{visibleProfiles.length > 0 && nameQuery && (
-					<Text className="font-semibold text-gray-700 ml-1 mb-2 mt-6">
-						Then, select a profile that matches:
-					</Text>
-				)}
-
-				{/* List */}
-				<FlashList
-					data={visibleProfiles}
-					keyExtractor={(item) => item.id.toString()}
-					estimatedItemSize={80}
-					ListEmptyComponent={
-						nameQuery.length > 0 ? (
-							<View className="mt-4">
-								<Text className="text-gray-500 text-center italic">
-									{"Cannot find profile for " +
-										`"${nameQuery}"` +
-										" ?"}
-								</Text>
-								<Text className="text-gray-500 text-center italic">
-									Please create a new account.
-								</Text>
-							</View>
-						) : null
-					}
-					renderItem={({ item }) => <ProfileItem item={item} />}
-					onEndReached={handleLoadMore}
-					onEndReachedThreshold={0.5}
-					ListFooterComponent={
-						loadingMore ? (
-							<ActivityIndicator
-								size="small"
-								color="#007AFF"
-								className="my-4"
-							/>
-						) : (
-							<>
-								<View className="flex-row items-center mt-4">
-									<View className="flex-1 h-[1px] bg-gray-300" />
-									<Text className="mx-4 text-gray-500 font-semibold">
-										or
-									</Text>
-									<View className="flex-1 h-[1px] bg-gray-300" />
-								</View>
-
-								<TouchableOpacity
-									className="w-full rounded-[15px] items-center justify-center mt-6 bg-primary-600"
-									style={{
-										paddingVertical:
-											Platform.OS === "android" ? 14 : 16,
-									}}
-									onPress={() => {
-										claimStore.reset(); // clear profile + verificationChannel
-										router.push("/(auth)/new-account");
-									}}
-								>
-									<Text className="text-lg text-white font-bold">
-										Create New Account
-									</Text>
-								</TouchableOpacity>
-
-								<View className="mt-6 items-center">
-									<Text className="font-regular text-gray-600 text-sm">
-										Already have an account?{" "}
-										<Link href="/sign-in" asChild>
-											<Text className="text-primary-600 font-semibold">
-												Sign In
-											</Text>
-										</Link>
-									</Text>
-								</View>
-							</>
-						)
-					}
-				/>
 			</View>
 		</KeyboardAwareScrollView>
 	);

@@ -13,6 +13,15 @@ export default function AuthLayout() {
 			<Stack.Screen name="sign-in" />
 			<Stack.Screen name="sign-up" />
 			<Stack.Screen name="new-account" />
+			<Stack.Screen
+				name="suggest-profile"
+				options={{
+					headerShown: true,
+					header() {
+						return <SharedHeader title="Find Your Profile" isPop />;
+					},
+				}}
+			/>
 			<Stack.Screen name="claim-set-password" />
 			<Stack.Screen
 				name="complete-profile"

@@ -9,7 +9,7 @@ import { secureFetch } from "@/utils/secureFetch";
 import { ReturnVal } from "@/utils/types/returnVal.types";
 import { Cell } from "../Cell/cell.types";
 import { District } from "../District/district.types";
-import { MaskedPerson, Person } from "./person.type";
+import { MaskedPerson, Person, UnclaimedSuggestion } from "./person.type";
 
 export const fetchPeople = async (): Promise<Person[]> => {
 	// Fetch data from the server
@@ -130,29 +130,32 @@ function sortPeopleByAccount<T extends { has_account?: boolean | number | null; 
 		});
 }
 
-export const fetchPeopleWithNoUid = async (): Promise<
-	MaskedPerson[] | null
-> => {
-	// Fetch data from the server
-	try {
-		let response = await secureFetch(
-			apiEndpoints.people.geteWithNoUid,
-			{ method: "GET" },
-			{ allowUnauthenticated: true },
-		);
-		let json: ReturnVal = await response.json();
-		if (!json.success) {
-			throw {
-				status: json.status_code,
-				message: json.message,
-			};
-		}
-
-		return json?.data as MaskedPerson[];
-	} catch (error) {
-		console.error(error);
-		return null;
+export const suggestUnclaimedPeople = async (
+	claimToken: string,
+): Promise<UnclaimedSuggestion[]> => {
+	const response = await secureFetch(
+		apiEndpoints.people.suggestUnclaimed,
+		{
+			method: "POST",
+			body: JSON.stringify({ claim_token: claimToken }),
+		},
+		{ allowUnauthenticated: true },
+	);
+	const json: ReturnVal = await response.json();
+	if (!json.success) {
+		throw {
+			status: json.status_code,
+			message: json.message ?? "Could not look up profiles.",
+			err_code: json.err_code,
+		};
 	}
+
+	const data = json.data;
+	if (!Array.isArray(data)) return [];
+	return data.map((item) => ({
+		id: Number(item.id),
+		full_legal_name: String(item.full_legal_name ?? ""),
+	}));
 };
 
 export const updatePeople = async (
