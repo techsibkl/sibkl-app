@@ -69,6 +69,9 @@ const Page = () => {
 				);
 				return;
 			}
+			// Drop a leftover new-account email so it cannot be treated as the
+			// login address chosen on the next screen.
+			signUpStore.setPendingSignUp({ email: "", password: "" });
 			setVerificationChannel("sms");
 			router.push("/(auth)/verify-otp");
 		} catch (err: any) {
