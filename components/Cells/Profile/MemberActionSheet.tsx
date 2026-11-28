@@ -220,7 +220,9 @@ const MemberActionSheet: React.FC<MemberActionSheetProps> = ({
 		member != null &&
 		member.id !== currentPersonId &&
 		!isCellOrZoneLeader;
-	const showRemoveMember = canRemoveMember && !isCellOrZoneLeader;
+	// Rank is already enforced by canRemoveMember. Hiding every cell and zone
+	// leader here also hid Remove from callers who outrank that person.
+	const showRemoveMember = canRemoveMember;
 
 	return (
 		<Modal
